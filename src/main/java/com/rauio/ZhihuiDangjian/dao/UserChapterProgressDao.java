@@ -1,0 +1,33 @@
+package com.rauio.ZhihuiDangjian.dao;
+
+import com.rauio.ZhihuiDangjian.mapper.UserChapterProgressMapper;
+import com.rauio.ZhihuiDangjian.pojo.UserChapterProgress;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class UserChapterProgressDao {
+
+    private final UserChapterProgressMapper userChapterProgressMapper;
+
+    @Autowired
+    public UserChapterProgressDao(UserChapterProgressMapper userChapterProgressMapper) {
+        this.userChapterProgressMapper = userChapterProgressMapper;
+    }
+
+    public UserChapterProgress get(Long progressId) {
+        return userChapterProgressMapper.selectById(progressId);
+    }
+
+    public Boolean update(UserChapterProgress userChapterProgress) {
+        return userChapterProgressMapper.updateById(userChapterProgress) > 0;
+    }
+
+    public Boolean insert(UserChapterProgress userChapterProgress) {
+        return userChapterProgressMapper.insert(userChapterProgress) > 0;
+    }
+
+    public Boolean delete(Long progressId) {
+        return userChapterProgressMapper.deleteById(progressId) > 0;
+    }
+}
