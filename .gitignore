@@ -17,6 +17,10 @@ bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 
+#
+logs/
+src/main/generated
+src/main/resources/application.yaml
 ### IntelliJ IDEA ###
 .idea
 *.iws
