@@ -10,9 +10,9 @@ import org.springframework.cache.annotation.EnableCaching;
 @MapperScan("com.rauio.ZhihuiDangjiang.mapper")
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class, FreeMarkerAutoConfiguration.class})
 @EnableCaching
-public class ZhiHuiDangJiangApplication {
+public class ZhiHuiDangJianApplication {
 
 	public static void main(String[] args) {
-    SpringApplication.run(ZhiHuiDangJiangApplication.class, args);
+    SpringApplication.run(ZhiHuiDangJianApplication.class, args);
     }
 }
