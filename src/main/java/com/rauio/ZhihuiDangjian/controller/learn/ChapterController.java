@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Service
+@RestController
 @RequestMapping("/learning/chapter")
 @RequiredArgsConstructor
 public class ChapterController {
