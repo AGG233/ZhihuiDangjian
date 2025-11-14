@@ -14,7 +14,9 @@ allprojects {
         mavenCentral()
     }
 }
-
+jar {
+    archiveFileName = "app.jar"
+}
 group = 'com.rauio'
 version = '0.2.0'
 description = 'Zhihuidangjiang Demo project for Spring Boot'
