@@ -1,0 +1,119 @@
+plugins {
+	id 'java'
+    id 'org.springframework.boot' version '3.5.4'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+ext {
+    set('springCloudVersion', "2025.0.0")
+    set('springAiVersion', "1.0.3")
+}
+allprojects {
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        mavenCentral()
+    }
+}
+
+group = 'com.rauio'
+version = '0.2.0'
+description = 'Zhihuidangjiang Demo project for Spring Boot'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+    maven { url 'https://maven.aliyun.com/repository/public' }
+    maven { url 'https://maven.aliyun.com/repository/google' }
+    maven { url 'https://maven.aliyun.com/repository/central' }
+    maven { url 'https://central.sonatype.com/repository/maven-snapshots/' }
+    mavenCentral()
+}
+
+dependencies {
+	// Spring Boot Starters
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-web-services'
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+//	implementation 'org.springframework.boot:spring-boot-starter-data-neo4j'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// Spring Cloud
+//	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
+    // Spring AI
+    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+
+	// Security
+	implementation 'org.springframework.security:spring-security-oauth2-jose:6.5.1'
+	implementation 'org.springframework.security:spring-security-test'
+
+	// Database related
+	implementation 'com.baomidou:mybatis-plus-spring-boot3-starter:3.5.14'
+	implementation 'com.baomidou:mybatis-plus-generator:3.5.14'
+    implementation "com.baomidou:mybatis-plus-jsqlparser:3.5.14"
+    implementation 'com.github.yulichang:mybatis-plus-join-boot-starter:1.5.4'
+	implementation 'org.mybatis:mybatis:3.5.19'
+	implementation 'com.zaxxer:HikariCP:7.0.2'
+
+	// Utility libraries
+	implementation 'org.apache.commons:commons-lang3:3.18.0'
+    implementation "commons-codec:commons-codec:1.15"
+    implementation "com.qcloud:cos_api:5.6.251"
+    implementation "com.qcloud:cos-sts_api:3.1.0"
+    implementation "org.mapstruct:mapstruct:1.6.3"
+    implementation "org.apache.tika:tika-core:3.1.0"
+	implementation 'cn.hutool:hutool-all:5.8.40'
+	implementation 'com.auth0:java-jwt:4.5.0'
+
+	// Documentation
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13"
+
+	// Annotation processors
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+	annotationProcessor 'org.projectlombok:lombok'
+	annotationProcessor "org.mapstruct:mapstruct-processor:1.6.3"
+
+	// Testing
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// Runtime only
+	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	// Compile only
+	compileOnly 'org.projectlombok:lombok'
+    compileOnly "org.apache.maven.plugins:maven-compiler-plugin:3.14.1"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+//        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+// 统一版本管理
+configurations.configureEach {
+    resolutionStrategy {
+        force 'ch.qos.logback:logback-classic:1.5.8'
+        force 'ch.qos.logback:logback-core:1.5.8'
+    }
+}
