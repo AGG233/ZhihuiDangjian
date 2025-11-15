@@ -2,10 +2,14 @@ package com.rauio.ZhihuiDangjian.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rauio.ZhihuiDangjian.pojo.CategoryArticle;
+import com.rauio.ZhihuiDangjian.pojo.CategoryCourse;
 import com.rauio.ZhihuiDangjian.pojo.dto.CategoryDto;
 import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
 import com.rauio.ZhihuiDangjian.pojo.vo.CategoryVO;
+import com.rauio.ZhihuiDangjian.service.ArticleService;
 import com.rauio.ZhihuiDangjian.service.CategoryService;
+import com.rauio.ZhihuiDangjian.service.CourseService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +23,8 @@ import java.util.List;
 public class CategoryController {
     private final CategoryService categoryService;
     private final ObjectMapper objectMapper;
+    private final CourseService courseService;
+    private final ArticleService articleService;
 
 
     @Operation(
@@ -127,6 +133,31 @@ public class CategoryController {
     @DeleteMapping("/{id}/all")
     public ResponseEntity<String> deleteAll(@PathVariable String id) throws JsonProcessingException {
         Boolean result = categoryService.deleteAll(id);
+        String json = objectMapper.writeValueAsString(ApiResponse.builder()
+                .data(result)
+                .build());
+        return ResponseEntity.ok(json);
+    }
+
+    @Operation(
+            summary = "获取目录下的所有课程ID",
+            description = "获取目录下的所有课程ID"
+    )
+    @GetMapping("/{categoryId}/courses")
+    public ResponseEntity<String> getAllCoursesOfCategory(@PathVariable String categoryId) throws JsonProcessingException {
+        List<CategoryCourse> result = courseService.getAllCoursesOfCategory(categoryId);
+        String json = objectMapper.writeValueAsString(ApiResponse.builder()
+                .data(result)
+                .build());
+        return ResponseEntity.ok(json);
+    }
+    @Operation(
+            summary = "获取目录下的所有文章ID",
+            description = "获取目录下的所有文章ID"
+    )
+    @GetMapping("/{categoryId}/articles")
+    public ResponseEntity<String> getAllArticlesOfCategory(@PathVariable String categoryId) throws JsonProcessingException {
+        List<CategoryArticle> result = articleService.getAllArticlesOfCategory(categoryId);
         String json = objectMapper.writeValueAsString(ApiResponse.builder()
                 .data(result)
                 .build());

@@ -2,6 +2,7 @@ package com.rauio.ZhihuiDangjian.service.impl;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.ZhihuiDangjian.pojo.Article;
+import com.rauio.ZhihuiDangjian.pojo.CategoryArticle;
 import com.rauio.ZhihuiDangjian.service.ArticleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public List<Article> getAllArticlesOfCategory(String id) {
+    public List<CategoryArticle> getAllArticlesOfCategory(String id) {
         return List.of();
     }
 

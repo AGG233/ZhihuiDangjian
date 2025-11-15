@@ -74,7 +74,6 @@ public class CourseController {
 //                .build());
 //        return ResponseEntity.ok(json);
 //    }
-    
     @Operation(summary = "分页获取课程", description = "根据分页参数获取课程列表")
     @GetMapping("/page/{pageNum}/{pageSize}")
     public ResponseEntity<String> getPage(@RequestBody PageRequest pageRequest) throws JsonProcessingException {

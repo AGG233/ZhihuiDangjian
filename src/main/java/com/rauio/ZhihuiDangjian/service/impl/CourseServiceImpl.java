@@ -1,7 +1,9 @@
 package com.rauio.ZhihuiDangjian.service.impl;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.ZhihuiDangjian.dao.CategoryCourseDao;
 import com.rauio.ZhihuiDangjian.dao.CourseDao;
+import com.rauio.ZhihuiDangjian.pojo.CategoryCourse;
 import com.rauio.ZhihuiDangjian.pojo.Course;
 import com.rauio.ZhihuiDangjian.pojo.User;
 import com.rauio.ZhihuiDangjian.pojo.convertor.CourseConvertor;
@@ -14,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -24,6 +25,8 @@ public class CourseServiceImpl implements CourseService {
     private final CourseDao         courseDao;
     private final UserService       userService;
     private final CourseConvertor   courseConvertor;
+    private final CategoryCourseDao categoryCourseDao;
+
 
     @Override
     public CourseVO get(String courseId) {
@@ -37,9 +40,14 @@ public class CourseServiceImpl implements CourseService {
         Course  course      = courseConvertor.CourseDtoToCourse(courseDto);
 
         course.setCreatorId(user.getId());
-        course.setCreatedAt(new Date());
-        course.setUpdatedAt(new Date());
-        return courseDao.insert(course);
+
+        courseDao.insert(course);
+        return categoryCourseDao.insert(CategoryCourse.builder()
+                .courseId(course.getId())
+                .categoryId(courseDto.getCategoryId())
+                .build()
+        ) > 0;
+
     }
 
     @Override
@@ -68,8 +76,8 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public List<Course> getAllCoursesOfCategory(String categoryId) {
-        return courseDao.getAllCoursesOfCategory(categoryId);
+    public List<CategoryCourse> getAllCoursesOfCategory(String categoryId) {
+        return categoryCourseDao.getAllCoursesOfCategory(categoryId);
     }
 
 
