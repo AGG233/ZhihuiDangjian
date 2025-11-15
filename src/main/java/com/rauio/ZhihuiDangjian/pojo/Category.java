@@ -1,6 +1,8 @@
 package com.rauio.ZhihuiDangjian.pojo;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -13,8 +15,8 @@ import java.time.LocalDateTime;
  * @since 2024-09-06 11:06:42
  */
 @Data
-@TableName("course_category")
-public class CourseCategory implements Serializable {
+@TableName("category")
+public class Category implements Serializable {
 
     @TableId(type = IdType.AUTO)
     private String  id;

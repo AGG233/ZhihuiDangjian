@@ -1,14 +1,13 @@
 package com.rauio.ZhihuiDangjian.service.impl;
 
-import com.rauio.ZhihuiDangjian.dao.CourseCategoryDao;
+import com.rauio.ZhihuiDangjian.dao.CategoryDao;
 import com.rauio.ZhihuiDangjian.exception.BusinessException;
-import com.rauio.ZhihuiDangjian.pojo.CourseCategory;
-import com.rauio.ZhihuiDangjian.pojo.convertor.CourseCategoryConvertor;
-import com.rauio.ZhihuiDangjian.pojo.dto.CourseCategoryDto;
-import com.rauio.ZhihuiDangjian.pojo.vo.CourseCategoryVO;
-import com.rauio.ZhihuiDangjian.service.CourseCategoryService;
+import com.rauio.ZhihuiDangjian.pojo.Category;
+import com.rauio.ZhihuiDangjian.pojo.convertor.CategoryConvertor;
+import com.rauio.ZhihuiDangjian.pojo.dto.CategoryDto;
+import com.rauio.ZhihuiDangjian.pojo.vo.CategoryVO;
+import com.rauio.ZhihuiDangjian.service.CategoryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -19,11 +18,10 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
-public class CourseCategoryImpl implements CourseCategoryService {
+public class CategoryImpl implements CategoryService {
 
-    private final CourseCategoryDao courseCategoryDao;
-    @Qualifier("courseCategoryConvertorImpl")
-    private final CourseCategoryConvertor convertor;
+    private final CategoryDao categoryDao;
+    private final CategoryConvertor convertor;
 
 
     /**
@@ -31,18 +29,18 @@ public class CourseCategoryImpl implements CourseCategoryService {
      * @return  目录以及它的子目录
      */
     @Override
-    public CourseCategoryVO getById(String id) {
-        CourseCategory category = courseCategoryDao.get(id);
-        List<CourseCategoryVO> children;
+    public CategoryVO getById(String id) {
+        Category category = categoryDao.get(id);
+        List<CategoryVO> children;
         if (category == null){
             throw new BusinessException(4001,"目录不存在");
         }
 
-        CourseCategoryVO parent = convertor.toVO(category);
+        CategoryVO parent = convertor.toVO(category);
         children = parent.getChildren();
 
         if (children != null && !children.isEmpty()) {
-            for (CourseCategoryVO node : children){
+            for (CategoryVO node : children){
                 if (!node.getChildren().isEmpty()){
                     getById(node.getId());
                 }
@@ -56,33 +54,33 @@ public class CourseCategoryImpl implements CourseCategoryService {
      * @return 所有顶级目录
      */
     @Override
-    public List<CourseCategoryVO> getRootNodes() {
-        return convertor.toVOList(courseCategoryDao.getRootNodes());
+    public List<CategoryVO> getRootNodes() {
+        return convertor.toVOList(categoryDao.getRootNodes());
     }
     /**
      * @param categoryId 父目录Id
      * @return 父目录的子目录
      * */
     @Override
-    public List<CourseCategoryVO> getChildren(String categoryId) {
-        return convertor.toVOList(courseCategoryDao.getChildren(categoryId));
+    public List<CategoryVO> getChildren(String categoryId) {
+        return convertor.toVOList(categoryDao.getChildren(categoryId));
     }
     /**
      * @param dto 前端传入的目录
      * @return 添加结果
      */
     @Override
-    public Boolean add(CourseCategoryDto dto) {
+    public Boolean add(CategoryDto dto) {
         if (dto == null) {
             throw new BusinessException(4001,"参数错误");
         };
 
-        CourseCategory category = convertor.toEntity(dto);
+        Category category = convertor.toEntity(dto);
         category.setLevel(0);
         category.setParentId(null);
-        courseCategoryDao.insert(category);
+        categoryDao.insert(category);
 
-        List<CourseCategoryDto> childrenNode = dto.getChildrenNode();
+        List<CategoryDto> childrenNode = dto.getChildrenNode();
         if (childrenNode == null || childrenNode.isEmpty()) {
             throw new BusinessException(4001, "参数错误");
         }
@@ -95,27 +93,27 @@ public class CourseCategoryImpl implements CourseCategoryService {
      * @return 添加结构
      * */
     @Override
-    public Boolean addChildren(List<CourseCategoryDto> children, String parentId) {
-        CourseCategory parent = courseCategoryDao.get(parentId);
+    public Boolean addChildren(List<CategoryDto> children, String parentId) {
+        Category parent = categoryDao.get(parentId);
         if (parent == null || children == null) {
             throw new BusinessException(4001, "目录或子目录不存在");
         }
-        if (parent.getLevel() >= CourseCategoryService.MAX_LEVEL) {
+        if (parent.getLevel() >= CategoryService.MAX_LEVEL) {
             throw new BusinessException(4001, "目录层级不能超过3级");
         }
 
-        for (CourseCategoryDto dto : children){
-            CourseCategory node = convertor.toEntity(dto);
+        for (CategoryDto dto : children){
+            Category node = convertor.toEntity(dto);
             node.setLevel(parent.getLevel() + 1);
             node.setParentId(parent.getId());
 
-            if (node.getLevel() < CourseCategoryService.MAX_LEVEL){
-                courseCategoryDao.insert(node);
+            if (node.getLevel() < CategoryService.MAX_LEVEL){
+                categoryDao.insert(node);
             }else {
                 throw new BusinessException(4001,"目录层级不能超过3级");
             }
 
-            List<CourseCategoryDto> nodeChildren = dto.getChildrenNode();
+            List<CategoryDto> nodeChildren = dto.getChildrenNode();
             if (!nodeChildren.isEmpty()){
                 addChildren(nodeChildren, node.getId());
             }
@@ -128,10 +126,10 @@ public class CourseCategoryImpl implements CourseCategoryService {
      */
     @Override
     public Boolean delete(String categoryId) {
-        if (!courseCategoryDao.getChildren(categoryId).isEmpty()) {
+        if (!categoryDao.getChildren(categoryId).isEmpty()) {
             throw new BusinessException(4001, "该目录有子目录，请先删除子目录");
         }
-        return courseCategoryDao.delete(categoryId);
+        return categoryDao.delete(categoryId);
     }
 
     /**
@@ -140,13 +138,13 @@ public class CourseCategoryImpl implements CourseCategoryService {
      * */
     @Override
     public Boolean deleteAll(String categoryId){
-        CourseCategory category = courseCategoryDao.get(categoryId);
+        Category category = categoryDao.get(categoryId);
         if (category == null) {
             throw new BusinessException(4001, "目录不存在");
         }
 
-        if (courseCategoryDao.getChildren(categoryId).isEmpty() || courseCategoryDao.getChildren(categoryId) == null) {
-            return courseCategoryDao.delete(categoryId);
+        if (categoryDao.getChildren(categoryId).isEmpty() || categoryDao.getChildren(categoryId) == null) {
+            return categoryDao.delete(categoryId);
         }else{
             return deleteAll(categoryId);
         }
@@ -156,11 +154,11 @@ public class CourseCategoryImpl implements CourseCategoryService {
      * @return 修改结果
      */
     @Override
-    public Boolean update(CourseCategoryDto dto, String id) {
+    public Boolean update(CategoryDto dto, String id) {
         if (dto == null) {
             throw new BusinessException(4001,"参数错误");
         };
-        CourseCategory course = convertor.toEntity(dto);
-        return courseCategoryDao.update(course);
+        Category course = convertor.toEntity(dto);
+        return categoryDao.update(course);
     }
 }

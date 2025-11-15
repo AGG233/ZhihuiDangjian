@@ -2,10 +2,10 @@ package com.rauio.ZhihuiDangjian.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rauio.ZhihuiDangjian.pojo.dto.CourseCategoryDto;
+import com.rauio.ZhihuiDangjian.pojo.dto.CategoryDto;
 import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
-import com.rauio.ZhihuiDangjian.pojo.vo.CourseCategoryVO;
-import com.rauio.ZhihuiDangjian.service.CourseCategoryService;
+import com.rauio.ZhihuiDangjian.pojo.vo.CategoryVO;
+import com.rauio.ZhihuiDangjian.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,7 @@ import java.util.List;
 @RequestMapping("/category")
 @RequiredArgsConstructor
 public class CategoryController {
-    private final CourseCategoryService courseCategoryService;
+    private final CategoryService categoryService;
     private final ObjectMapper objectMapper;
 
 
@@ -27,7 +27,7 @@ public class CategoryController {
     )
     @GetMapping("/{id}")
     public ResponseEntity<String> get(@PathVariable String id) throws JsonProcessingException {
-        CourseCategoryVO result = courseCategoryService.getById(id);
+        CategoryVO result = categoryService.getById(id);
         String json = objectMapper.writeValueAsString(ApiResponse.builder()
                 .data(result)
                 .build());
@@ -40,7 +40,7 @@ public class CategoryController {
     )
     @GetMapping("/all")
     public ResponseEntity<String> getAll() throws JsonProcessingException {
-        List<CourseCategoryVO> result = courseCategoryService.getRootNodes();
+        List<CategoryVO> result = categoryService.getRootNodes();
         String json = objectMapper.writeValueAsString(ApiResponse.builder()
                 .data(result)
                 .build());
@@ -53,7 +53,7 @@ public class CategoryController {
     )
     @GetMapping("/{id}/children")
     public ResponseEntity<String> getChildren(@PathVariable String id) throws JsonProcessingException {
-        List<CourseCategoryVO> result = courseCategoryService.getChildren(id);
+        List<CategoryVO> result = categoryService.getChildren(id);
         String json = objectMapper.writeValueAsString(ApiResponse.builder()
                 .data(result)
                 .build());
@@ -66,7 +66,7 @@ public class CategoryController {
     )
     @GetMapping("/rootNodes")
     public ResponseEntity<String> getRootNodes() throws JsonProcessingException {
-        List<CourseCategoryVO> result = courseCategoryService.getRootNodes();
+        List<CategoryVO> result = categoryService.getRootNodes();
         String json = objectMapper.writeValueAsString(ApiResponse.builder()
                 .data(result)
                 .build());
@@ -77,8 +77,8 @@ public class CategoryController {
             description = "添加根目录"
     )
     @PostMapping("/rootNode")
-    public ResponseEntity<String> add(CourseCategoryDto dto) throws JsonProcessingException {
-        Boolean result = courseCategoryService.add(dto);
+    public ResponseEntity<String> add(CategoryDto dto) throws JsonProcessingException {
+        Boolean result = categoryService.add(dto);
         String json = objectMapper.writeValueAsString(ApiResponse.builder()
                 .data(result)
                 .build());
@@ -89,8 +89,8 @@ public class CategoryController {
             description = "向根目录id为路径参数的id添加子目录"
     )
     @PostMapping("/{id}/addChildren")
-    public ResponseEntity<String> addChildren(List<CourseCategoryDto> children,@PathVariable String id) throws JsonProcessingException {
-        Boolean result = courseCategoryService.addChildren(children,id);
+    public ResponseEntity<String> addChildren(List<CategoryDto> children, @PathVariable String id) throws JsonProcessingException {
+        Boolean result = categoryService.addChildren(children,id);
         String json = objectMapper.writeValueAsString(ApiResponse.builder()
                 .data(result)
                 .build());
@@ -101,8 +101,8 @@ public class CategoryController {
             description = "修改目录"
     )
     @PostMapping("/{id}")
-    public ResponseEntity<String> update(CourseCategoryDto dto,@PathVariable String id) throws JsonProcessingException {
-        Boolean result = courseCategoryService.update(dto,id);
+    public ResponseEntity<String> update(CategoryDto dto, @PathVariable String id) throws JsonProcessingException {
+        Boolean result = categoryService.update(dto,id);
         String json = objectMapper.writeValueAsString(ApiResponse.builder()
                 .data(result)
                 .build());
@@ -114,7 +114,7 @@ public class CategoryController {
     )
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable String id) throws JsonProcessingException {
-        Boolean result = courseCategoryService.delete(id);
+        Boolean result = categoryService.delete(id);
         String json = objectMapper.writeValueAsString(ApiResponse.builder()
                 .data(result)
                 .build());
@@ -126,7 +126,7 @@ public class CategoryController {
     )
     @DeleteMapping("/{id}/all")
     public ResponseEntity<String> deleteAll(@PathVariable String id) throws JsonProcessingException {
-        Boolean result = courseCategoryService.deleteAll(id);
+        Boolean result = categoryService.deleteAll(id);
         String json = objectMapper.writeValueAsString(ApiResponse.builder()
                 .data(result)
                 .build());
