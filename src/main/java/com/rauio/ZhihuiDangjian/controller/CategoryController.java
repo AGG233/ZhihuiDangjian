@@ -34,10 +34,7 @@ public class CategoryController {
     @GetMapping("/{id}")
     public ResponseEntity<String> get(@PathVariable String id) throws JsonProcessingException {
         CategoryVO result = categoryService.getById(id);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
 
     @Operation(
@@ -47,10 +44,7 @@ public class CategoryController {
     @GetMapping("/all")
     public ResponseEntity<String> getAll() throws JsonProcessingException {
         List<CategoryVO> result = categoryService.getRootNodes();
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
 
     @Operation(
@@ -60,10 +54,7 @@ public class CategoryController {
     @GetMapping("/{id}/children")
     public ResponseEntity<String> getChildren(@PathVariable String id) throws JsonProcessingException {
         List<CategoryVO> result = categoryService.getChildren(id);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
 
     @Operation(
@@ -73,10 +64,7 @@ public class CategoryController {
     @GetMapping("/rootNodes")
     public ResponseEntity<String> getRootNodes() throws JsonProcessingException {
         List<CategoryVO> result = categoryService.getRootNodes();
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
     @Operation(
             summary = "添加根目录",
@@ -85,10 +73,7 @@ public class CategoryController {
     @PostMapping("/rootNode")
     public ResponseEntity<String> add(CategoryDto dto) throws JsonProcessingException {
         Boolean result = categoryService.add(dto);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
     @Operation(
             summary = "添加子目录",
@@ -97,10 +82,7 @@ public class CategoryController {
     @PostMapping("/{id}/addChildren")
     public ResponseEntity<String> addChildren(List<CategoryDto> children, @PathVariable String id) throws JsonProcessingException {
         Boolean result = categoryService.addChildren(children,id);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
     @Operation(
             summary = "修改目录",
@@ -109,10 +91,7 @@ public class CategoryController {
     @PostMapping("/{id}")
     public ResponseEntity<String> update(CategoryDto dto, @PathVariable String id) throws JsonProcessingException {
         Boolean result = categoryService.update(dto,id);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
     @Operation(
             summary = "删除目录",
@@ -121,10 +100,7 @@ public class CategoryController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable String id) throws JsonProcessingException {
         Boolean result = categoryService.delete(id);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
     @Operation(
             summary = "删除目录和它的子目录",
@@ -133,10 +109,7 @@ public class CategoryController {
     @DeleteMapping("/{id}/all")
     public ResponseEntity<String> deleteAll(@PathVariable String id) throws JsonProcessingException {
         Boolean result = categoryService.deleteAll(id);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
 
     @Operation(
@@ -146,10 +119,7 @@ public class CategoryController {
     @GetMapping("/{categoryId}/courses")
     public ResponseEntity<String> getAllCoursesOfCategory(@PathVariable String categoryId) throws JsonProcessingException {
         List<CategoryCourse> result = courseService.getAllCoursesOfCategory(categoryId);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
     @Operation(
             summary = "获取目录下的所有文章ID",
@@ -158,9 +128,6 @@ public class CategoryController {
     @GetMapping("/{categoryId}/articles")
     public ResponseEntity<String> getAllArticlesOfCategory(@PathVariable String categoryId) throws JsonProcessingException {
         List<CategoryArticle> result = articleService.getAllArticlesOfCategory(categoryId);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
 }

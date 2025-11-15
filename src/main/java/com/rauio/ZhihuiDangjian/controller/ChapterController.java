@@ -28,10 +28,7 @@ public class ChapterController {
     @GetMapping("/{id}")
     public ResponseEntity<String> get(@PathVariable String id) throws JsonProcessingException {
         ChapterVO result = chapterService.get(id);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
 
 //    @Operation(summary = "获取分类下的所有课程", description = "根据分类ID获取该分类下的所有课程")
@@ -48,19 +45,13 @@ public class ChapterController {
     @GetMapping("/{courseId}")
     public ResponseEntity<String> getAllChaptersOfCourse(@PathVariable String courseId) throws JsonProcessingException {
         List<ChapterVO> result = chapterService.getAllChaptersOfCourse(courseId);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
 
     @Operation(summary = "创建章节", description = "创建一个新的章节")
     @PostMapping("/")
     public ResponseEntity<String> create(@RequestBody ChapterDto chapter) throws JsonProcessingException {
         Boolean result = chapterService.create(chapter);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
 }

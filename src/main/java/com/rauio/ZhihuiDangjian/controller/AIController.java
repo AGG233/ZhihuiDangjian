@@ -35,6 +35,6 @@ public class AIController {
         StringBuilder sb = new StringBuilder();
         flux.subscribe(sb::append);
         String result = sb.toString();
-        return ResponseEntity.ok(objectMapper.writeValueAsString(ApiResponse.builder().data(result).build()));
+        return ApiResponse.buildResponse(result);
     }
 }

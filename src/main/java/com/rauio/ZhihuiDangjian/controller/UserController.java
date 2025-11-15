@@ -37,10 +37,7 @@ public class UserController {
             @Parameter(description = "用户ID") @PathVariable String id
     ) throws JsonProcessingException {
         UserVO user = userService.getUserByID(id);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(user)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(user);
     }
 
     @Operation(
@@ -54,10 +51,7 @@ public class UserController {
             @RequestBody User user
     ) throws JsonProcessingException {
         Boolean result = userService.update(id,user);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
 
     @Operation(
@@ -68,18 +62,12 @@ public class UserController {
     @ResourceAccess(id = "#id")
     public ResponseEntity<String> delete(@Parameter(description = "用户ID") @PathVariable String id) throws JsonProcessingException {
         Boolean result = userService.delete(id);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
 
     @GetMapping("/course/{id}")
     public ResponseEntity<String> getAllCoursesOfUser(@PathVariable String id) throws JsonProcessingException {
         List<Course> result = courseService.getAllCoursesOfUser(id);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
 }

@@ -34,10 +34,7 @@ public class AuthController {
     @GetMapping("/captcha")
     public ResponseEntity<String> getCaptcha() throws JsonProcessingException {
         Captcha captcha = captchaService.get();
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(captcha)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(captcha);
     }
 
     @Operation(
@@ -47,10 +44,7 @@ public class AuthController {
     @PostMapping("/captcha")
     public ResponseEntity<String> isValid(@RequestParam String uuid, @RequestParam String code) throws JsonProcessingException {
         Boolean result = captchaService.validate(uuid,code);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
 
     @Operation(
@@ -72,12 +66,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest request) throws JsonProcessingException {
         LoginResponse loginResponse = authService.login(request);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .code("200")
-                .message("登录成功")
-                .data(loginResponse)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(loginResponse);
     }
 
     @Operation(

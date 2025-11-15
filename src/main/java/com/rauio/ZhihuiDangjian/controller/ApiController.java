@@ -31,11 +31,6 @@ public class ApiController {
     @GetMapping("/school/all")
     public ResponseEntity<String> school() throws JsonProcessingException {
         List<Universities> universities = universitiesService.getAll();
-        String json = objectMapper.writeValueAsString(
-                ApiResponse.builder()
-                        .data(universities)
-                        .build()
-        );
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(universities);
     }
 }

@@ -43,53 +43,34 @@ public class ResourceController {
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadBatch(@RequestParam("files") List<MultipartFile> files) throws IOException, NoSuchAlgorithmException, JsonProcessingException {
         Map<String, String> result = resourceService.saveFileBatch(files);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .code("200")
-                .message("上传成功")
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse("200", "上传成功", result);
     }
 
     @Operation(summary = "获取文件访问链接", description = "根据文件哈希值获取文件的访问URL")
     @GetMapping("/{hash}")
     public ResponseEntity<String> get(@PathVariable String hash) throws JsonProcessingException {
         URL url = resourceService.get(hash);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .code("200")
-                .data(url)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse("200", null, url);
     }
 
     @Operation(summary = "批量获取文件访问链接", description = "根据多个文件哈希值批量获取文件访问URL")
     @GetMapping("/batch")
     public ResponseEntity<String> getBatch(@RequestBody List<String> objectKeys) throws JsonProcessingException {
         List<String> urls = resourceService.getBatch(objectKeys);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .code("200")
-                .data(urls)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse("200", null, urls);
     }
 
     @Operation(summary = "删除单个文件", description = "根据文件key删除指定文件")
     @DeleteMapping("/{key}")
     public ResponseEntity<String> delete(@PathVariable String key) throws JsonProcessingException {
         boolean result = resourceService.delete(key);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
     
     @Operation(summary = "批量删除文件", description = "根据多个文件key批量删除文件")
     @DeleteMapping("/")
     public ResponseEntity<String> delete(@RequestParam String[] keys) throws JsonProcessingException {
         boolean result = resourceService.delete(keys);
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
+        return ApiResponse.buildResponse(result);
     }
 }
