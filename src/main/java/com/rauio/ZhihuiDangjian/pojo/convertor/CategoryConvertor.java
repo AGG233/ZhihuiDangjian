@@ -4,10 +4,11 @@ import com.rauio.ZhihuiDangjian.pojo.Category;
 import com.rauio.ZhihuiDangjian.pojo.dto.CategoryDto;
 import com.rauio.ZhihuiDangjian.pojo.vo.CategoryVO;
 import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring",unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CategoryConvertor {
     Category toEntity(CategoryDto categoryDto);
     CategoryDto toCourseCategoryDto(Category category);
