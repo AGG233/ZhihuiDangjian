@@ -3,7 +3,6 @@ package com.rauio.ZhihuiDangjian.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rauio.ZhihuiDangjian.pojo.Course;
 import com.rauio.ZhihuiDangjian.pojo.dto.CourseDto;
 import com.rauio.ZhihuiDangjian.pojo.request.PageRequest;
 import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
@@ -15,8 +14,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "课程管理接口", description = "提供课程的增删改查功能")
 @RestController
@@ -68,15 +65,15 @@ public class CourseController {
         return ResponseEntity.ok(json);
     }
 
-    @Operation(summary = "获取所有课程", description = "获取系统中所有的课程列表")
-    @GetMapping("/all")
-    public ResponseEntity<String> getAll() throws JsonProcessingException {
-        List<Course> result = courseService.getAll();
-        String json = objectMapper.writeValueAsString(ApiResponse.builder()
-                .data(result)
-                .build());
-        return ResponseEntity.ok(json);
-    }
+//    @Operation(summary = "获取所有课程", description = "获取系统中所有的课程列表")
+//    @GetMapping("/all")
+//    public ResponseEntity<String> getAll() throws JsonProcessingException {
+//        List<Course> result = courseService.getAll();
+//        String json = objectMapper.writeValueAsString(ApiResponse.builder()
+//                .data(result)
+//                .build());
+//        return ResponseEntity.ok(json);
+//    }
     
     @Operation(summary = "分页获取课程", description = "根据分页参数获取课程列表")
     @GetMapping("/page/{pageNum}/{pageSize}")
