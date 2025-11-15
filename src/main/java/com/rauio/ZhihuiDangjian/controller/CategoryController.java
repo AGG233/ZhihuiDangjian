@@ -1,4 +1,4 @@
-package com.rauio.ZhihuiDangjian.controller.learn;
+package com.rauio.ZhihuiDangjian.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/learning/category")
+@RequestMapping("/category")
 @RequiredArgsConstructor
 public class CategoryController {
     private final CourseCategoryService courseCategoryService;

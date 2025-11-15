@@ -1,4 +1,4 @@
-package com.rauio.ZhihuiDangjian.controller.learn;
+package com.rauio.ZhihuiDangjian.controller;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,7 +20,7 @@ import java.util.List;
 
 @Tag(name = "课程管理接口", description = "提供课程的增删改查功能")
 @RestController
-@RequestMapping("/learning/course")
+@RequestMapping("/course")
 @RequiredArgsConstructor
 public class CourseController {
 

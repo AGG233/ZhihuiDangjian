@@ -1,8 +1,7 @@
-package com.rauio.ZhihuiDangjian.controller.learn;
+package com.rauio.ZhihuiDangjian.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rauio.ZhihuiDangjian.pojo.Course;
 import com.rauio.ZhihuiDangjian.pojo.dto.ChapterDto;
 import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
 import com.rauio.ZhihuiDangjian.pojo.vo.ChapterVO;
@@ -12,14 +11,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Tag(name = "章节管理接口", description = "提供课程章节的增删改查功能")
 @RestController
-@RequestMapping("/learning/chapter")
+@RequestMapping("/course/chapter")
 @RequiredArgsConstructor
 public class ChapterController {
     private final ChapterService chapterService;
