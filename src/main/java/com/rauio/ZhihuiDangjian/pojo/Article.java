@@ -11,7 +11,7 @@ import lombok.ToString;
 @Builder
 @ToString
 @TableName("article")
-public class article {
+public class Article {
     private String id;
     private String author_id;
     private String title;

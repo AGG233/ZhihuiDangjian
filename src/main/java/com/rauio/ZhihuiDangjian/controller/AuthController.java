@@ -9,12 +9,9 @@ import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
 import com.rauio.ZhihuiDangjian.pojo.response.LoginResponse;
 import com.rauio.ZhihuiDangjian.service.AuthService;
 import com.rauio.ZhihuiDangjian.service.CaptchaService;
-import com.rauio.ZhihuiDangjian.service.UserService;
-import com.rauio.ZhihuiDangjian.utils.CosUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,12 +25,7 @@ public class AuthController {
 
     private final AuthService   authService;
     private final CaptchaService captchaService;
-    private final UserService   userService;
     private final ObjectMapper  objectMapper;
-    private final CosUtils      cosUtils;
-
-    @Value("${tencent.cloud.cos.secret-key}")
-    private String secretKey;
 
     @Operation(
             summary = "行为验证码图片",
