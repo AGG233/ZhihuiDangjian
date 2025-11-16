@@ -1,7 +1,6 @@
 package com.rauio.ZhihuiDangjian.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rauio.ZhihuiDangjian.aop.annotation.ResourceAccess;
 import com.rauio.ZhihuiDangjian.pojo.Course;
 import com.rauio.ZhihuiDangjian.pojo.User;
@@ -26,8 +25,6 @@ public class UserController {
 
     private final UserService userService;
     private final CourseService courseService;
-    private final ObjectMapper objectMapper;
-
 
     @Operation(
             summary = "获取用户信息",
