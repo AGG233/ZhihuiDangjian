@@ -44,28 +44,30 @@ public class ChapterServiceImpl implements ChapterService {
         return chapterConvertor.toVO(chapter);
     }
     /**
-     * @param chapter 创建的新章节
+     * @param dto 创建的新章节
      * @return 创建结果
      */
     @Override
-    public Boolean create(ChapterDto chapter) {
-        if (chapterDao.getByCourseAndTitle(chapter.getCourseId(), chapter.getTitle()) != null) {
+    public Boolean create(ChapterDto dto) {
+        if (chapterDao.getByCourseAndTitle(dto.getCourseId(), dto.getTitle()) != null) {
             throw new BusinessException(4000, "章节已存在");
         }
 
-        chapterDao.insert(chapterConvertor.toEntity(chapter));
-        Chapter chapterEntity = chapterDao.getByCourseAndTitle(chapter.getCourseId(), chapter.getTitle());
+        Chapter chapter = chapterConvertor.toEntity(dto);
 
+        if (!chapterDao.insert(chapter)){
+            throw new BusinessException(4000, "章节无法创建");
+        }
 
-        if (chapter.getContent() != null) {
-            chapter.getContent().forEach(blockDto -> {
+        if (dto.getContent() != null) {
+            dto.getContent().forEach(blockDto -> {
                 ContentBlock block = contentBlockConvertor.toEntity(blockDto);
-                block.setParentId(chapterEntity.getId());
+                block.setParentId(chapter.getId());
                 block.setParentType(ParentType.chapter);
                 contentService.save(block);
             });
         } else {
-            throw new BusinessException(4000, "课程至少需要一个章节");
+            throw new BusinessException(4000, "章节至少需要一个内容块");
         }
         return true;
     }
