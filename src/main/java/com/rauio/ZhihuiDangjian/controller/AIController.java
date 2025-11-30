@@ -21,7 +21,7 @@ public class AIController {
 
     private final AIServiceImpl aiServiceImpl;
 
-    @Operation(summary = "AI聊天接口", description = "与AI进行对话交互")
+    @Operation(summary = "AI聊天接口", description = "message为聊天内容（提示词）")
     @GetMapping(value= "/chat")
     public ResponseEntity<String> chat(@RequestParam String message) throws JsonProcessingException {
         Flux<String> flux = aiServiceImpl.chat(message);
