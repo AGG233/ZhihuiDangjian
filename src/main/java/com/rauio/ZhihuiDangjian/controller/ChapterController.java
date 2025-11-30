@@ -1,12 +1,13 @@
 package com.rauio.ZhihuiDangjian.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rauio.ZhihuiDangjian.aop.annotation.PermissionAccess;
 import com.rauio.ZhihuiDangjian.pojo.dto.ChapterDto;
 import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
 import com.rauio.ZhihuiDangjian.pojo.vo.ChapterVO;
 import com.rauio.ZhihuiDangjian.service.ChapterService;
 import com.rauio.ZhihuiDangjian.service.CourseService;
+import com.rauio.ZhihuiDangjian.utils.Spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -19,14 +20,15 @@ import java.util.List;
 @RestController
 @RequestMapping("/course/chapter")
 @RequiredArgsConstructor
+@PermissionAccess(UserType.TEACHER)
 public class ChapterController {
     private final ChapterService chapterService;
     private final CourseService courseService;
     private final ObjectMapper objectMapper;
 
-    @Operation(summary = "获取章节详情", description = "根据章节ID获取章节详细信息")
+    @Operation(summary = "获取章节详情", description = "通过章节ID获取章节信息")
     @GetMapping("/{id}")
-    public ResponseEntity<String> get(@PathVariable String id) throws JsonProcessingException {
+    public ResponseEntity<String> get(@PathVariable String id){
         ChapterVO result = chapterService.get(id);
         return ApiResponse.buildResponse(result);
     }
@@ -43,15 +45,29 @@ public class ChapterController {
     
     @Operation(summary = "获取课程的所有章节", description = "根据课程ID获取该课程下的所有章节")
     @GetMapping("/{courseId}")
-    public ResponseEntity<String> getAllChaptersOfCourse(@PathVariable String courseId) throws JsonProcessingException {
+    public ResponseEntity<String> getAllChaptersOfCourse(@PathVariable String courseId){
         List<ChapterVO> result = chapterService.getAllChaptersOfCourse(courseId);
         return ApiResponse.buildResponse(result);
     }
 
-    @Operation(summary = "创建章节", description = "创建一个新的章节")
+    @Operation(summary = "创建章节", description = "具体在Schema看每个字段的作用")
     @PostMapping("/")
-    public ResponseEntity<String> create(@RequestBody ChapterDto chapter) throws JsonProcessingException {
+    public ResponseEntity<String> create(@RequestBody ChapterDto chapter){
         Boolean result = chapterService.create(chapter);
+        return ApiResponse.buildResponse(result);
+    }
+
+    @Operation(summary = "更新章节", description = "")
+    @PutMapping("/")
+    public ResponseEntity<String> update(@RequestBody ChapterDto chapter){
+        Boolean result = chapterService.update(chapter);
+        return ApiResponse.buildResponse(result);
+    }
+
+    @Operation(summary = "删除章节", description = "根据章节ID删除章节")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> delete(@PathVariable String id){
+        Boolean result = chapterService.delete(id);
         return ApiResponse.buildResponse(result);
     }
 }
