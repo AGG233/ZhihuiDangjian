@@ -6,12 +6,11 @@ import com.rauio.ZhihuiDangjian.service.JwtService;
 import com.rauio.ZhihuiDangjian.utils.SecurityUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.expression.MethodBasedEvaluationContext;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.expression.Expression;
@@ -27,10 +26,10 @@ import java.util.Objects;
 @Aspect
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ResourceAccessAspect {
 
 
-    private static final Logger logger = LoggerFactory.getLogger(ResourceAccessAspect.class);
     private final JwtService jwtService;
     private final SpelExpressionParser parser = new SpelExpressionParser();
     private final DefaultParameterNameDiscoverer paramDiscoverer = new DefaultParameterNameDiscoverer();
@@ -56,7 +55,7 @@ public class ResourceAccessAspect {
         // todo 对其他资源进行鉴权，增加教师权限
         //放行
         if (accessUserRole.equals("管理员")) {
-            logger.warn("管理员 {} 访问资源", jwtService.getIdFromToken(jwt));
+            log.warn("管理员 {} 访问资源", jwtService.getIdFromToken(jwt));
             return joinPoint.proceed();
         }
         if (targetUser.equals(currentUser)) {
@@ -82,7 +81,7 @@ public class ResourceAccessAspect {
             }
             return null;
         } catch (Exception e) {
-            logger.error("解析SpEL表达式 '{}' 失败", spelExpression, e);
+            log.error("解析SpEL表达式 '{}' 失败", spelExpression, e);
             return null;
         }
     }
