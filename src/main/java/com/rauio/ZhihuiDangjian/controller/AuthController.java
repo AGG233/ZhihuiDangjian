@@ -9,6 +9,7 @@ import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
 import com.rauio.ZhihuiDangjian.pojo.response.LoginResponse;
 import com.rauio.ZhihuiDangjian.service.AuthService;
 import com.rauio.ZhihuiDangjian.service.CaptchaService;
+import com.rauio.ZhihuiDangjian.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class AuthController {
     private final AuthService   authService;
     private final CaptchaService captchaService;
     private final ObjectMapper  objectMapper;
+    private final UserService userService;
 
     @Operation(
             summary = "行为验证码图片",
@@ -48,10 +50,11 @@ public class AuthController {
     }
 
     @Operation(
-            summary = "用户注册接口",
+            summary = "用户注册接口（已经弃用）",
             description = "username为用户昵称，password为密码，type为用户类型，" +
                     "type是admin则创建的用户为管理员，teacher则创建的是老师，如果是学生请留空不填"
     )
+    @Deprecated
     @PostMapping("/register")
     public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) throws JsonProcessingException {
         ApiResponse response = authService.register(request);
@@ -60,8 +63,8 @@ public class AuthController {
     }
 
     @Operation(
-            summary = "用户登录",
-            description = "passport为用户名、手机号码、邮箱或者是身份证号码，登录成功后将返回jwt令牌和用户"
+            summary = "统一用户登录",
+            description = "需要人机验证（获取验证码以及校验验证码是否有误），登录成功后将返回jwt令牌，大部分接口访问都需要在请求头的Authorization字段添加如下格式：'Bearer <替换为jwt令牌>'"
     )
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest request) throws JsonProcessingException {
@@ -75,11 +78,16 @@ public class AuthController {
     )
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestParam String refreshToken) throws JsonProcessingException {
+
         ApiResponse response = authService.logout(refreshToken);
         String json = objectMapper.writeValueAsString(response);
         return ResponseEntity.ok(json);
     }
-
+    @PostMapping("/changePassword")
+    public ResponseEntity<String> changePassword(@RequestParam String oldPassword, @RequestParam String newPassword){
+        Boolean result = userService.changePassword(oldPassword,newPassword);
+        return ApiResponse.buildResponse(result);
+    }
     @Operation(
             summary = "用户刷新令牌",
             description = "刷新令牌成功后将返回新的jwt令牌"
@@ -90,20 +98,4 @@ public class AuthController {
         String json = objectMapper.writeValueAsString(response);
         return ResponseEntity.ok(json);
     }
-
-    /*
-    * 腾讯云COS临时密钥获取
-    * */
-//    @GetMapping("/resKey")
-//    public ApiResponse getResKey(){
-//        Credentials  credentials = cosUtils.testGetCredential(secretKey).credentials;
-//        return ApiResponse.builder()
-//                .data(CosStsDto.builder()
-//                        .sessionToken(credentials.sessionToken)
-//                        .tmpSecretKey(credentials.tmpSecretKey)
-//                        .tmpSecretId(credentials.tmpSecretId)
-//                        .token(credentials.token)
-//                        .build()
-//                ).build();
-//    }
 }
