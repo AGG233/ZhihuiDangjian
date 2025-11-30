@@ -5,10 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Objects;
 
+@Slf4j
 @Data
 @Builder
 @AllArgsConstructor
@@ -36,21 +38,33 @@ public class ApiResponse {
         }
     }
     
-    public static ResponseEntity<String> buildResponse(Object data) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        ApiResponse apiResponse = new ApiResponse(data);
-        String json = objectMapper.writeValueAsString(apiResponse);
-        return ResponseEntity.ok(json);
+    public static ResponseEntity<String> buildResponse(Object data){
+
+        try{
+            ObjectMapper objectMapper = new ObjectMapper();
+            ApiResponse apiResponse = new ApiResponse(data);
+            String json = objectMapper.writeValueAsString(apiResponse);
+            return ResponseEntity.ok(json);
+        }catch (JsonProcessingException e){
+            log.error(e.getMessage());
+            return  ResponseEntity.internalServerError().build();
+        }
+
     }
     
-    public static ResponseEntity<String> buildResponse(String code, String message, Object data) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        ApiResponse apiResponse = ApiResponse.builder()
-                .code(code)
-                .message(message)
-                .data(data)
-                .build();
-        String json = objectMapper.writeValueAsString(apiResponse);
-        return ResponseEntity.ok(json);
+    public static ResponseEntity<String> buildResponse(String code, String message, Object data){
+        try{
+            ObjectMapper objectMapper = new ObjectMapper();
+            ApiResponse apiResponse = ApiResponse.builder()
+                    .code(code)
+                    .message(message)
+                    .data(data)
+                    .build();
+            String json = objectMapper.writeValueAsString(apiResponse);
+            return ResponseEntity.ok(json);
+        }catch (JsonProcessingException e){
+            log.error(e.getMessage());
+            return  ResponseEntity.internalServerError().build();
+        }
     }
 }
