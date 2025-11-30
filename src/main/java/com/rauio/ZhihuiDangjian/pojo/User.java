@@ -29,18 +29,19 @@ public class User implements UserDetails {
 
     @TableId
     private String id;
+    private String universityId;
     private String username;
     private String password;
     private String realName;
     private String idCard;
     private String partyMemberId;
+    private Date   joinPartyDate;
     private UserStatus partyStatus;
     private String branchName;
     private UserType userType;
     private String status;
     private String email;
     private String phone;
-    private String universityId;
     @TableField(fill = FieldFill.INSERT)
     private Date createdAt;
     @TableField(fill = FieldFill.INSERT_UPDATE)
