@@ -6,6 +6,8 @@ import com.rauio.ZhihuiDangjian.pojo.CategoryArticle;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 @RequiredArgsConstructor
 public class CategoryArticleDao {
@@ -22,5 +24,9 @@ public class CategoryArticleDao {
     }
     public CategoryArticle get(String categoryArticle) {
         return categoryArticleMapper.selectById(categoryArticle);
+    }
+    public List<CategoryArticle> getAllArticlesOfCategory(String categoryId) {
+        LambdaQueryWrapper<CategoryArticle> queryWrapper = new LambdaQueryWrapper<>();
+        return categoryArticleMapper.selectList(queryWrapper.eq(CategoryArticle::getCategoryId,categoryId));
     }
 }
