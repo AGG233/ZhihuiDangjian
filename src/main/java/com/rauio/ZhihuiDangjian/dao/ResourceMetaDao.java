@@ -3,18 +3,14 @@ package com.rauio.ZhihuiDangjian.dao;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.rauio.ZhihuiDangjian.mapper.ResourceMetaMapper;
 import com.rauio.ZhihuiDangjian.pojo.ResourceMeta;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@RequiredArgsConstructor
 public class ResourceMetaDao {
 
     private final ResourceMetaMapper resourceMetaMapper;
-
-    @Autowired
-    public ResourceMetaDao(ResourceMetaMapper resourceMetaMapper) {
-        this.resourceMetaMapper = resourceMetaMapper;
-    }
 
     public ResourceMeta findByHash(String hash) {
         QueryWrapper<ResourceMeta> queryWrapper = new QueryWrapper<>();
@@ -22,6 +18,13 @@ public class ResourceMetaDao {
 
         return resourceMetaMapper.selectOne(queryWrapper);
     }
+
+    public ResourceMeta findByResourceId(String resourceId) {
+        QueryWrapper<ResourceMeta> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("resource_id", resourceId);
+        return resourceMetaMapper.selectOne(queryWrapper);
+    }
+
     public Boolean update(ResourceMeta resourceMeta) {
         return resourceMetaMapper.updateById(resourceMeta) > 0;
     }

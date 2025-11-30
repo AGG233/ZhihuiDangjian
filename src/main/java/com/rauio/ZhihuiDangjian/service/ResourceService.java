@@ -14,13 +14,16 @@ import java.util.concurrent.CompletableFuture;
 public interface ResourceService {
 
     CompletableFuture<Map<String, String>> saveFile(MultipartFile file, User user) throws IOException, NoSuchAlgorithmException;
-
     Map<String, String> saveFileBatch(List<MultipartFile> files) throws IOException, NoSuchAlgorithmException;
 
     Boolean saveBlock(ContentBlockDto block);
 
-    URL get(String key);
-    List<String> getBatch(List<String> objectKeys);
-    boolean delete(String key);
-    boolean delete(String[] keys);
+    URL getByHash(String Hash);
+    URL getById(String id);
+    List<String> getBatchWithId(List<String> idList);
+    List<String> getBatchWithHash(List<String> hashList);
+
+
+    boolean delete(String hash);
+    boolean delete(String[] hashList);
 }

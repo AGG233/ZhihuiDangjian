@@ -144,8 +144,8 @@ public class ResourceServiceImpl implements ResourceService {
 
 
     @Override
-    public URL get(String hash) {
-        String path = metaDao.findByHash(hash).getHash();
+    public URL getByHash(String Hash) {
+        String path = metaDao.findByHash(Hash).getHash();
         try{
             Date expiration = new Date(new Date().getTime() + expireTimeInSeconds * 1000);
             return cosClient.generatePresignedUrl(bucketName, path, expiration, HttpMethodName.GET);
@@ -156,10 +156,31 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public List<String> getBatch(List<String> objectKeys) {
-       return objectKeys.stream()
+    public URL getById(String id) {
+        String path = metaDao.findByResourceId(id).getHash();
+        try{
+            Date expiration = new Date(new Date().getTime() + expireTimeInSeconds * 1000);
+            return cosClient.generatePresignedUrl(bucketName, path, expiration, HttpMethodName.GET);
+        }catch (Exception e){
+            log.error("文件获取失败",e);
+            throw new BusinessException(4001,"文件获取失败");
+        }
+    }
+
+    @Override
+    public List<String> getBatchWithId(List<String> idList) {
+        return idList.stream()
+                .map(key ->{
+                    URL url = getById(key);
+                    return url.toString();
+                }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getBatchWithHash(List<String> hashList) {
+       return hashList.stream()
                .map(key ->{
-                   URL url = get(key);
+                   URL url = getByHash(key);
                    return url.toString();
                }).collect(Collectors.toList());
     }
