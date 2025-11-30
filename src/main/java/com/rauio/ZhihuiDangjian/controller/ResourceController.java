@@ -61,14 +61,14 @@ public class ResourceController {
     }
 
     @Operation(summary = "批量获取文件访问链接", description = "上传一个列表，列表元素为文件的hash值，根据hash值获取相应的文件访问URL")
-    @GetMapping("/batch")
+    @GetMapping("/batch/hash")
     public ResponseEntity<String> getBatchByHash(@RequestBody List<String> hashList) throws JsonProcessingException {
         List<String> urls = resourceService.getBatchWithHash(hashList);
         return ApiResponse.buildResponse("200", null, urls);
     }
 
     @Operation(summary = "批量获取文件访问链接", description = "上传一个列表，列表元素为资源的ID，根据资源ID获取相应的文件访问URL")
-    @GetMapping("/batch")
+    @GetMapping("/batch/id")
     public ResponseEntity<String> getBatchById(@RequestBody List<String> idList) throws JsonProcessingException {
         List<String> urls = resourceService.getBatchWithHash(idList);
         return ApiResponse.buildResponse("200", null, urls);
