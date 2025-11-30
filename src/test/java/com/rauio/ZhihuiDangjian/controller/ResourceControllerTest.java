@@ -43,7 +43,7 @@ public class ResourceControllerTest {
         // Given
         String hash = "abc123";
         URL expectedUrl = new URL("http://example.com/resource/" + hash);
-        when(resourceService.get(hash)).thenReturn(expectedUrl);
+        when(resourceService.getByHash(hash)).thenReturn(expectedUrl);
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .code("200")
@@ -57,7 +57,7 @@ public class ResourceControllerTest {
         // Then
         assertNotNull(result);
         assertEquals(HttpStatus.OK, result.getStatusCode());
-        verify(resourceService, times(1)).get(hash);
+        verify(resourceService, times(1)).getByHash(hash);
         verify(objectMapper, times(1)).writeValueAsString(any(ApiResponse.class));
     }
 
@@ -69,7 +69,7 @@ public class ResourceControllerTest {
                 "http://example.com/resource/hash1",
                 "http://example.com/resource/hash2"
         );
-        when(resourceService.getBatch(hashes)).thenReturn(expectedUrls);
+        when(resourceService.getBatchWithHash(hashes)).thenReturn(expectedUrls);
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .code("200")
@@ -83,7 +83,7 @@ public class ResourceControllerTest {
         // Then
         assertNotNull(result);
         assertEquals(HttpStatus.OK, result.getStatusCode());
-        verify(resourceService, times(1)).getBatch(hashes);
+        verify(resourceService, times(1)).getBatchWithHash(hashes);
         verify(objectMapper, times(1)).writeValueAsString(any(ApiResponse.class));
     }
 
