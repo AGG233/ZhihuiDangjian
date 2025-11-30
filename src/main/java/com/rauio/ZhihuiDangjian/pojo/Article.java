@@ -13,7 +13,7 @@ import lombok.ToString;
 @TableName("article")
 public class Article {
     private String id;
-    private String author_id;
+    private String authorId;
     private String title;
     private String summary;
     @EnumValue
