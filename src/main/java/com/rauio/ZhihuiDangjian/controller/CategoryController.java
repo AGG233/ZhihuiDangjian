@@ -2,6 +2,7 @@ package com.rauio.ZhihuiDangjian.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rauio.ZhihuiDangjian.aop.annotation.PermissionAccess;
 import com.rauio.ZhihuiDangjian.pojo.CategoryArticle;
 import com.rauio.ZhihuiDangjian.pojo.CategoryCourse;
 import com.rauio.ZhihuiDangjian.pojo.dto.CategoryDto;
@@ -10,6 +11,7 @@ import com.rauio.ZhihuiDangjian.pojo.vo.CategoryVO;
 import com.rauio.ZhihuiDangjian.service.ArticleService;
 import com.rauio.ZhihuiDangjian.service.CategoryService;
 import com.rauio.ZhihuiDangjian.service.CourseService;
+import com.rauio.ZhihuiDangjian.utils.Spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/category")
 @RequiredArgsConstructor
+@PermissionAccess(UserType.TEACHER)
 public class CategoryController {
     private final CategoryService categoryService;
     private final ObjectMapper objectMapper;
