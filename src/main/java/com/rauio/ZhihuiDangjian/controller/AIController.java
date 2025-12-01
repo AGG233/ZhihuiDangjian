@@ -6,7 +6,6 @@ import com.rauio.ZhihuiDangjian.service.impl.AIServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,11 +22,11 @@ public class AIController {
 
     @Operation(summary = "AI聊天接口", description = "message为聊天内容（提示词）")
     @GetMapping(value= "/chat")
-    public ResponseEntity<String> chat(@RequestParam String message) throws JsonProcessingException {
+    public ApiResponse<String> chat(@RequestParam String message) throws JsonProcessingException {
         Flux<String> flux = aiServiceImpl.chat(message);
         StringBuilder sb = new StringBuilder();
         flux.subscribe(sb::append);
         String result = sb.toString();
-        return ApiResponse.buildResponse(result);
+        return ApiResponse.ok(result);
     }
 }

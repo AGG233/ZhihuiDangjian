@@ -7,7 +7,6 @@ import com.rauio.ZhihuiDangjian.service.UniversitiesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,8 +23,8 @@ public class ApiController {
 
     @Operation(summary = "获取所有学校列表", description = "返回系统中所有学校的列表信息")
     @GetMapping("/school/all")
-    public ResponseEntity<String> school() throws JsonProcessingException {
+    public ApiResponse<List<Universities>> school() throws JsonProcessingException {
         List<Universities> universities = universitiesService.getAll();
-        return ApiResponse.buildResponse(universities);
+        return ApiResponse.ok(universities);
     }
 }

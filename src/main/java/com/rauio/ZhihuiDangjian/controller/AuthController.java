@@ -34,9 +34,9 @@ public class AuthController {
             description = "uuid为验证码的唯一标识码，base64为图片的base64形式，需要转换为图片"
     )
     @GetMapping("/captcha")
-    public ResponseEntity<String> getCaptcha() throws JsonProcessingException {
+    public ApiResponse<Captcha> getCaptcha() throws JsonProcessingException {
         Captcha captcha = captchaService.get();
-        return ApiResponse.buildResponse(captcha);
+        return ApiResponse.ok(captcha);
     }
 
     @Operation(
@@ -44,9 +44,9 @@ public class AuthController {
             description = "uuid为验证码的唯一标识码，code为用户输入的验证码，验证成功返回true，验证失败返回false"
     )
     @PostMapping("/captcha")
-    public ResponseEntity<String> isValid(@RequestParam String uuid, @RequestParam String code) throws JsonProcessingException {
+    public ApiResponse<Boolean> isValid(@RequestParam String uuid, @RequestParam String code) throws JsonProcessingException {
         Boolean result = captchaService.validate(uuid,code);
-        return ApiResponse.buildResponse(result);
+        return ApiResponse.ok(result);
     }
 
     @Operation(
@@ -67,9 +67,9 @@ public class AuthController {
             description = "需要人机验证（获取验证码以及校验验证码是否有误），登录成功后将返回jwt令牌，大部分接口访问都需要在请求头的Authorization字段添加如下格式：'Bearer <替换为jwt令牌>'"
     )
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) throws JsonProcessingException {
+    public ApiResponse<LoginResponse> login(@RequestBody LoginRequest request) throws JsonProcessingException {
         LoginResponse loginResponse = authService.login(request);
-        return ApiResponse.buildResponse(loginResponse);
+        return ApiResponse.ok(loginResponse);
     }
 
     @Operation(
@@ -84,9 +84,9 @@ public class AuthController {
         return ResponseEntity.ok(json);
     }
     @PostMapping("/changePassword")
-    public ResponseEntity<String> changePassword(@RequestParam String oldPassword, @RequestParam String newPassword){
+    public ApiResponse<Boolean> changePassword(@RequestParam String oldPassword, @RequestParam String newPassword){
         Boolean result = userService.changePassword(oldPassword,newPassword);
-        return ApiResponse.buildResponse(result);
+        return ApiResponse.ok(result);
     }
     @Operation(
             summary = "用户刷新令牌",

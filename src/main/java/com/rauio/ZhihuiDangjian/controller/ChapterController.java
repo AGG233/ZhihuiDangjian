@@ -11,7 +11,6 @@ import com.rauio.ZhihuiDangjian.utils.Spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,9 +27,9 @@ public class ChapterController {
 
     @Operation(summary = "获取章节详情", description = "通过章节ID获取章节信息")
     @GetMapping("/{id}")
-    public ResponseEntity<String> get(@PathVariable String id){
+    public ApiResponse<ChapterVO> get(@PathVariable String id){
         ChapterVO result = chapterService.get(id);
-        return ApiResponse.buildResponse(result);
+        return ApiResponse.ok(result);
     }
 
 //    @Operation(summary = "获取分类下的所有课程", description = "根据分类ID获取该分类下的所有课程")
@@ -45,29 +44,29 @@ public class ChapterController {
     
     @Operation(summary = "获取课程的所有章节", description = "根据课程ID获取该课程下的所有章节")
     @GetMapping("/{courseId}")
-    public ResponseEntity<String> getAllChaptersOfCourse(@PathVariable String courseId){
+    public ApiResponse<List<ChapterVO>> getAllChaptersOfCourse(@PathVariable String courseId){
         List<ChapterVO> result = chapterService.getAllChaptersOfCourse(courseId);
-        return ApiResponse.buildResponse(result);
+        return ApiResponse.ok(result);
     }
 
     @Operation(summary = "创建章节", description = "具体在Schema看每个字段的作用")
     @PostMapping("/")
-    public ResponseEntity<String> create(@RequestBody ChapterDto chapter){
+    public ApiResponse<Boolean> create(@RequestBody ChapterDto chapter){
         Boolean result = chapterService.create(chapter);
-        return ApiResponse.buildResponse(result);
+        return ApiResponse.ok(result);
     }
 
     @Operation(summary = "更新章节", description = "")
     @PutMapping("/")
-    public ResponseEntity<String> update(@RequestBody ChapterDto chapter){
+    public ApiResponse<Boolean> update(@RequestBody ChapterDto chapter){
         Boolean result = chapterService.update(chapter);
-        return ApiResponse.buildResponse(result);
+        return ApiResponse.ok(result);
     }
 
     @Operation(summary = "删除章节", description = "根据章节ID删除章节")
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable String id){
+    public ApiResponse<Boolean> delete(@PathVariable String id){
         Boolean result = chapterService.delete(id);
-        return ApiResponse.buildResponse(result);
+        return ApiResponse.ok(result);
     }
 }

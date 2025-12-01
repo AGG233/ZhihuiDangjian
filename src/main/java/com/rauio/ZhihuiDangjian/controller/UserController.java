@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,9 +27,9 @@ public class UserController {
             summary = "获取用户信息",
             description = "通过ID获取用户信息")
     @GetMapping("/{id}")
-    public ResponseEntity<String> get(@Parameter(description = "用户ID") @PathVariable String id){
+    public ApiResponse<UserVO> get(@Parameter(description = "用户ID") @PathVariable String id){
         UserVO user = userService.getUserByID(id);
-        return ApiResponse.buildResponse(user);
+        return ApiResponse.ok(user);
     }
 
     @Operation(
@@ -38,12 +37,12 @@ public class UserController {
             description = "通过ID更新用户信息"
     )
     @PutMapping("/{id}")
-    public ResponseEntity<String> update(
+    public ApiResponse<Boolean> update(
             @PathVariable String id,
             @RequestBody User user
     ){
         Boolean result = userService.update(id,user);
-        return ApiResponse.buildResponse(result);
+        return ApiResponse.ok(result);
     }
 
     @Operation(
@@ -52,14 +51,14 @@ public class UserController {
     )
     @DeleteMapping("/{id}")
     @Deprecated
-    public ResponseEntity<String> delete(@Parameter(description = "用户ID") @PathVariable String id){
+    public ApiResponse<Object> delete(@Parameter(description = "用户ID") @PathVariable String id){
 //        Boolean result = userService.delete(id);
-        return ApiResponse.buildResponse("404","接口已经弃用",null);
+        return ApiResponse.ok("404","接口已经弃用",null);
     }
 
     @GetMapping("/course/{id}")
-    public ResponseEntity<String> getAllCoursesOfUser(@PathVariable String id){
+    public ApiResponse<List<Course>> getAllCoursesOfUser(@PathVariable String id){
         List<Course> result = courseService.getAllCoursesOfUser(id);
-        return ApiResponse.buildResponse(result);
+        return ApiResponse.ok(result);
     }
 }

@@ -1,7 +1,6 @@
 package com.rauio.ZhihuiDangjian.pojo.response;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,19 +13,27 @@ import java.util.Objects;
 @Data
 @Builder
 @AllArgsConstructor
-public class ApiResponse {
+@Schema(description = "API的返回结果")
+public class ApiResponse<T> {
     @Builder.Default
-    String code = "200";
+    @Schema(description = "响应码")
+    private String code = "200";
     @Builder.Default
-    String message = "OK";
-    Object data;
+    @Schema(description = "响应信息，如果没有特殊信息一般为空或者OK")
+    private String message = "OK";
+
+    private T data;
+    
+    @Schema(hidden = true)
+    private ResponseEntity<ApiResponse<T>> responseEntity;
 
     public ApiResponse() {
         this.code   = "200";
         this.message = "OK";
+        this.responseEntity = ResponseEntity.ok(this);
     }
     
-    public ApiResponse(Object data) {
+    public ApiResponse(T data) {
         this.code = "200";
         this.message = "OK";
         if ((data instanceof Boolean && !(Boolean) data) || Objects.isNull(data)) {
@@ -36,35 +43,31 @@ public class ApiResponse {
         } else {
             this.data = data;
         }
+        this.responseEntity = ResponseEntity.ok(this);
     }
     
-    public static ResponseEntity<String> buildResponse(Object data){
-
-        try{
-            ObjectMapper objectMapper = new ObjectMapper();
-            ApiResponse apiResponse = new ApiResponse(data);
-            String json = objectMapper.writeValueAsString(apiResponse);
-            return ResponseEntity.ok(json);
-        }catch (JsonProcessingException e){
-            log.error(e.getMessage());
-            return  ResponseEntity.internalServerError().build();
-        }
-
+    public static <T> ApiResponse<T> ok(T data) {
+        ApiResponse<T> response = new ApiResponse<T>(data);
+        response.responseEntity = ResponseEntity.ok(response);
+        return response;
     }
     
-    public static ResponseEntity<String> buildResponse(String code, String message, Object data){
-        try{
-            ObjectMapper objectMapper = new ObjectMapper();
-            ApiResponse apiResponse = ApiResponse.builder()
-                    .code(code)
-                    .message(message)
-                    .data(data)
-                    .build();
-            String json = objectMapper.writeValueAsString(apiResponse);
-            return ResponseEntity.ok(json);
-        }catch (JsonProcessingException e){
-            log.error(e.getMessage());
-            return  ResponseEntity.internalServerError().build();
-        }
+    public static <T> ApiResponse<T> ok(String code, String message, T data) {
+        ApiResponse<T> response = ApiResponse.<T>builder()
+                .code(code)
+                .message(message)
+                .data(data)
+                .build();
+        response.responseEntity = ResponseEntity.ok(response);
+        return response;
+    }
+    
+    public static <T> ApiResponse<T> error(String code, String message) {
+        ApiResponse<T> response = ApiResponse.<T>builder()
+                .code(code)
+                .message(message)
+                .build();
+        response.responseEntity = ResponseEntity.ok(response);
+        return response;
     }
 }
