@@ -91,50 +91,54 @@ public class AuthServiceImpl extends HttpServlet implements AuthService {
         }
 
         userService.register(user);
-        return new ApiResponse();
+        return new ApiResponse<Object>();
     }
 
     /**
      * @return 新的刷新令牌和访问令牌
      */
     @Override
-    public ApiResponse refresh(String refreshToken, String accessToken) {
+    public ApiResponse<Map<String,String>> refresh(String refreshToken, String accessToken) {
         try {
             String userId = jwtService.getDecodedJWT(accessToken).getSubject();
 
             String redisKey = SecurityConstants.REFRESH_TOKEN_PREFIX + userId;
             String refreshKey = stringRedisTemplate.opsForValue().get(redisKey);
             if (refreshKey == null) {
-                return new ApiResponse("非法请求");
+                new ApiResponse<>();
+                return ApiResponse.error("非法请求","400");
             }
 
             Map<String, String> result = jwtService.refreshAccessToken(refreshToken);
 
-            return new ApiResponse(result);
+            return new ApiResponse<Map<String,String>>(result);
         } catch (JWTVerificationException e) {
             // JWT验证失败，返回非法请求
-            return new ApiResponse("非法请求");
+            new ApiResponse<>();
+            return ApiResponse.error("非法请求","400");
         } catch (Exception e) {
             // 其他异常，也返回非法请求
             log.error("JWT验证失败", e);
-            return new ApiResponse("非法请求");
+            new ApiResponse<>();
+            return ApiResponse.error("非法请求","400");
         }
     }
 
     @Override
-    public ApiResponse logout(String refreshToken) {
+    public ApiResponse<Object> logout(String refreshToken) {
         String id = SecurityContextHolder.getContext().getAuthentication().getName();
         String redisKey = SecurityConstants.REFRESH_TOKEN_PREFIX + id;
         Object refreshKey = redisTemplate.opsForValue().get(redisKey);
 
         if (refreshKey == null) {
-            return new ApiResponse("非法请求");
+            new ApiResponse<>();
+            return ApiResponse.error("非法请求","400");
         }
 
         redisTemplate.delete(SecurityConstants.ACCESS_TOKEN_PREFIX + id + ":*");
         redisTemplate.delete(SecurityConstants.REFRESH_TOKEN_PREFIX + id + ":*");
 
-        return new ApiResponse();
+        return new ApiResponse<>();
     }
 
 }
