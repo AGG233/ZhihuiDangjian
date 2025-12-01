@@ -1,7 +1,6 @@
 package com.rauio.ZhihuiDangjian.service.impl;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rauio.ZhihuiDangjian.constants.SecurityConstants;
 import com.rauio.ZhihuiDangjian.exception.BusinessException;
 import com.rauio.ZhihuiDangjian.pojo.User;
@@ -77,7 +76,7 @@ public class AuthServiceImpl extends HttpServlet implements AuthService {
                 .branchName(registerRequest.getBranch_name())
                 .email(registerRequest.getEmail())
                 .phone(registerRequest.getPhone())
-                .universityId(universitiesService.getIdByName(registerRequest.getUniversityName()))
+                .universityId(universitiesService.getIdByName(registerRequest.getUniversityId()))
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .build();
