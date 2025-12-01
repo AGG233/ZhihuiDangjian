@@ -31,9 +31,9 @@ public class SchoolAdminServiceImpl implements SchoolAdminService {
     private final PasswordEncoder passwordEncoder;
 
 
-    private final String universityId = userService.getUserFromAuthentication().getUniversityId();
     @Override
     public int addUser(List<UserDto> userDtoList) {
+        String universityId = userService.getUserFromAuthentication().getUniversityId();
 
         List<User> userList = userConvertor.toEntityList(userDtoList);
         for (User user : userList) {
@@ -48,6 +48,7 @@ public class SchoolAdminServiceImpl implements SchoolAdminService {
 
     @Override
     public int updateUser(List<UserDto> userDto) {
+        String universityId = userService.getUserFromAuthentication().getUniversityId();
 
         List<User> userList = userConvertor.toEntityList(userDto);
         for (User user : userList) {
@@ -72,6 +73,8 @@ public class SchoolAdminServiceImpl implements SchoolAdminService {
 
     @Override
     public UserVO getUser(UserDto userDto) {
+        String universityId = userService.getUserFromAuthentication().getUniversityId();
+
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
 
         wrapper.eq(User::getUniversityId,universityId)
