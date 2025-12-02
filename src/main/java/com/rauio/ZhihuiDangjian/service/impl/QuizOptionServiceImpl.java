@@ -1,8 +1,6 @@
 package com.rauio.ZhihuiDangjian.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.rauio.ZhihuiDangjian.constants.ErrorConstants;
-import com.rauio.ZhihuiDangjian.exception.BusinessException;
 import com.rauio.ZhihuiDangjian.mapper.QuizOptionMapper;
 import com.rauio.ZhihuiDangjian.pojo.QuizOption;
 import com.rauio.ZhihuiDangjian.pojo.User;
@@ -52,7 +50,7 @@ public class QuizOptionServiceImpl implements QuizOptionService {
 
         if (user.getUserType() == UserType.STUDENT &&
                 userQuizAnswerService.selectByUserIdAndQuizId(user.getId(), quizOption.getQuizId()) == null) {
-            throw new BusinessException(ErrorConstants.RESOURCE_NOT_AUTHORIZED, "用户无权限");
+            quizOption.setIsCorrect(null);
         }
         return quizOption;
     }
