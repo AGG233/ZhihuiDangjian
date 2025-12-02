@@ -34,6 +34,7 @@ public class CategoryController {
             description = "根据目录id获取目录"
     )
     @GetMapping("/{id}")
+    @PermissionAccess(UserType.STUDENT)
     public ApiResponse<CategoryVO> get(@PathVariable String id) throws JsonProcessingException {
         CategoryVO result = categoryService.getById(id);
         return ApiResponse.ok(result);
@@ -44,6 +45,7 @@ public class CategoryController {
             description = "获取所有目录"
     )
     @GetMapping("/all")
+    @PermissionAccess(UserType.STUDENT)
     public ApiResponse<List<CategoryVO>> getAll() throws JsonProcessingException {
         List<CategoryVO> result = categoryService.getRootNodes();
         return ApiResponse.ok(result);
@@ -54,6 +56,7 @@ public class CategoryController {
             description = "根据目录id获取这个目录的子目录"
     )
     @GetMapping("/{id}/children")
+    @PermissionAccess(UserType.STUDENT)
     public ApiResponse<List<CategoryVO>> getChildren(@PathVariable String id) throws JsonProcessingException {
         List<CategoryVO> result = categoryService.getChildren(id);
         return ApiResponse.ok(result);
@@ -64,6 +67,7 @@ public class CategoryController {
             description = "获取所有根目录"
     )
     @GetMapping("/rootNodes")
+    @PermissionAccess(UserType.STUDENT)
     public ApiResponse<List<CategoryVO>> getRootNodes() throws JsonProcessingException {
         List<CategoryVO> result = categoryService.getRootNodes();
         return ApiResponse.ok(result);
