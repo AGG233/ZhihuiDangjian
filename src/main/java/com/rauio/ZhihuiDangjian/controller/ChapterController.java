@@ -44,6 +44,7 @@ public class ChapterController {
     
     @Operation(summary = "获取课程的所有章节", description = "根据课程ID获取该课程下的所有章节")
     @GetMapping("/{courseId}")
+    @PermissionAccess(UserType.STUDENT)
     public ApiResponse<List<ChapterVO>> getAllChaptersOfCourse(@PathVariable String courseId){
         List<ChapterVO> result = chapterService.getAllChaptersOfCourse(courseId);
         return ApiResponse.ok(result);

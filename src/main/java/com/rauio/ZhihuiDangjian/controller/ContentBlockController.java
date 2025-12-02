@@ -1,9 +1,11 @@
 package com.rauio.ZhihuiDangjian.controller;
 
+import com.rauio.ZhihuiDangjian.aop.annotation.PermissionAccess;
 import com.rauio.ZhihuiDangjian.pojo.ContentBlock;
 import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
 import com.rauio.ZhihuiDangjian.pojo.vo.ContentBlockVO;
 import com.rauio.ZhihuiDangjian.service.ContentBlockService;
+import com.rauio.ZhihuiDangjian.utils.Spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import java.util.List;
 @RestController("/content")
 @RequiredArgsConstructor
 @Tag(name = "内容接口", description = "ID字段无需填写，会自动生成一个ID")
+@PermissionAccess(UserType.MANAGER)
 public class ContentBlockController {
 
     private final ContentBlockService contentBlockService;

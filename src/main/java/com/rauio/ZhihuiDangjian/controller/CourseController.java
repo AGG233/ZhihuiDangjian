@@ -3,12 +3,14 @@ package com.rauio.ZhihuiDangjian.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rauio.ZhihuiDangjian.aop.annotation.PermissionAccess;
 import com.rauio.ZhihuiDangjian.pojo.dto.CourseDto;
 import com.rauio.ZhihuiDangjian.pojo.request.PageRequest;
 import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
 import com.rauio.ZhihuiDangjian.pojo.vo.CourseVO;
 import com.rauio.ZhihuiDangjian.pojo.vo.PageVO;
 import com.rauio.ZhihuiDangjian.service.CourseService;
+import com.rauio.ZhihuiDangjian.utils.Spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/course")
 @RequiredArgsConstructor
+@PermissionAccess(UserType.TEACHER)
 public class CourseController {
 
     private final CourseService     courseService;
@@ -26,6 +29,7 @@ public class CourseController {
     //todo api文档
     @Operation(summary = "获取课程详情", description = "根据课程ID获取课程详细信息")
     @GetMapping("/{id}")
+    @PermissionAccess(UserType.STUDENT)
     public ApiResponse<CourseVO> get(@PathVariable String id) throws JsonProcessingException {
         CourseVO result = courseService.get(id);
         return ApiResponse.ok(result);
@@ -63,6 +67,7 @@ public class CourseController {
 //    }
     @Operation(summary = "分页获取课程", description = "根据分页参数获取课程列表")
     @GetMapping("/page/{pageNum}/{pageSize}")
+    @PermissionAccess(UserType.STUDENT)
     public ApiResponse<PageVO<Object>> getPage(@RequestBody PageRequest pageRequest) throws JsonProcessingException {
         PageVO<Object> result = courseService.getPage(pageRequest.getPageNum(),pageRequest.getPageSize());
         return ApiResponse.ok(result);
