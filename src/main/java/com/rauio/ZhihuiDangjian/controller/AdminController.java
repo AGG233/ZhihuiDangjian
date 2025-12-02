@@ -2,6 +2,7 @@ package com.rauio.ZhihuiDangjian.controller;
 
 
 import com.rauio.ZhihuiDangjian.aop.annotation.PermissionAccess;
+import com.rauio.ZhihuiDangjian.pojo.User;
 import com.rauio.ZhihuiDangjian.pojo.dto.UserDto;
 import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
 import com.rauio.ZhihuiDangjian.service.AdminService;
@@ -14,13 +15,27 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Tag(name= "系统管理员接口")
-@RestController("/api/admin")
+@RestController
+@RequestMapping("/api/admin")
 @RequiredArgsConstructor
 @PermissionAccess(UserType.MANAGER)
 public class AdminController {
 
     private final AdminService adminService;
 
+    @GetMapping("/user")
+    @Operation(description = "获取普通用户和高校管理员信息，请求体为用户请求体")
+    public ApiResponse<List<User>> getUser(@RequestParam UserDto userDto) {
+        List<User>  result = adminService.getUser(userDto);
+        return ApiResponse.ok(result);
+    }
+
+    @PutMapping("/user")
+    @Operation(description = "更新普通用户和高校管理员信息，请求体为一个列表，列表元素为用户请求体")
+    public ApiResponse<String> updateUser(@RequestBody List<UserDto> user) {
+        String  result = adminService.updateUser(user);
+        return ApiResponse.ok(result);
+    }
 
     @PostMapping("/user")
     @Operation(description = "添加用户，请求体为一个列表，列表元素为用户请求体")
@@ -35,14 +50,6 @@ public class AdminController {
         String result = adminService.deleteUser(idList);
         return ApiResponse.ok(result);
     }
-
-    @PutMapping("/user")
-    @Operation(description = "更新用户信息，请求体为一个列表，列表元素为用户请求体")
-    public ApiResponse<String> updateUser(@RequestBody List<UserDto> user) {
-        String  result = adminService.updateUser(user);
-        return ApiResponse.ok(result);
-    }
-
 
     @PostMapping("/school")
     @Operation(description = "添加高校管理员账号")

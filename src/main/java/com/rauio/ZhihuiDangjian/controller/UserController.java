@@ -52,7 +52,7 @@ public class UserController {
     @DeleteMapping("/{id}")
     @Deprecated
     public ApiResponse<Object> delete(@Parameter(description = "用户ID") @PathVariable String id){
-//        Boolean result = userService.delete(id);
+        Boolean result = userService.delete(id);
         return ApiResponse.ok("404","接口已经弃用",null);
     }
 
