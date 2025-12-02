@@ -1,0 +1,52 @@
+package com.rauio.ZhihuiDangjian.controller;
+
+import com.rauio.ZhihuiDangjian.pojo.ContentBlock;
+import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
+import com.rauio.ZhihuiDangjian.pojo.vo.ContentBlockVO;
+import com.rauio.ZhihuiDangjian.service.ContentBlockService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController("/content")
+@RequiredArgsConstructor
+@Tag(name = "内容接口", description = "ID字段无需填写，会自动生成一个ID")
+public class ContentBlockController {
+
+    private final ContentBlockService contentBlockService;
+
+    @GetMapping("/carousel")
+    @Operation(summary = "获取轮播图列表")
+    public ApiResponse<List<ContentBlockVO>> getCarousel() {
+        List<ContentBlockVO> carousel = contentBlockService.getAllByParentId("1145141919810");
+        return ApiResponse.ok(carousel);
+    }
+
+    @PutMapping("/carousel")
+    @Operation(summary = "更新轮播图")
+    public ApiResponse<Boolean> updateCarousel(@RequestBody ContentBlock contentBlock) {
+        Boolean result = contentBlockService.update(contentBlock);
+        return ApiResponse.ok(result);
+    }
+
+    @PostMapping("/carousel")
+    @Operation(summary = "添加轮播图",description = "不用填写ID字段，即便是填写了也不会有任何效果")
+    public ApiResponse<Boolean> addCarousel(List<ContentBlock> contentBlocks) {
+        for (ContentBlock contentBlock : contentBlocks){
+            contentBlock.setParentId("1145141919810");
+        }
+        Boolean result = contentBlockService.saveBatch(contentBlocks);
+        return ApiResponse.ok(result);
+    }
+
+    @DeleteMapping("/carousel")
+    @Operation(summary = "删除轮播图")
+    public ApiResponse<Boolean> deleteCarousel(String id) {
+        Boolean result = contentBlockService.delete(id);
+        return  ApiResponse.ok(result);
+    }
+
+}
