@@ -13,9 +13,9 @@ import java.util.Date;
 public class Quiz {
 
     @TableId
-    private Long id;
+    private String id;
 
-    private Long chapterId;
+    private String chapterId;
 
     private String question;
 

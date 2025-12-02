@@ -13,13 +13,13 @@ import java.util.Date;
 public class UserQuizAnswer {
 
     @TableId
-    private Long id;
+    private String id;
 
-    private Long userId;
+    private String userId;
 
-    private Long quizId;
+    private String optionId;
 
-    private Long chapterId;
+    private String quizId;
 
     private String userAnswer;
 

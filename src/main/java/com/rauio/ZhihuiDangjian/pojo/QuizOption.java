@@ -11,9 +11,9 @@ import lombok.Data;
 public class QuizOption {
 
     @TableId
-    private Long id;
+    private String id;
 
-    private Long quizId;
+    private String quizId;
 
     private String optionText;
 
