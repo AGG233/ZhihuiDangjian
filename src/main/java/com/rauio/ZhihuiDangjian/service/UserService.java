@@ -5,7 +5,7 @@ import com.rauio.ZhihuiDangjian.pojo.vo.UserVO;
 
 public interface UserService {
 
-    UserVO getUserByID(String ID);
+    UserVO      getUserByID(String ID);
     User        getUserByName(String username);
     User        getUserByEmail(String email);
     User        getUserByPhone(String phone);
@@ -18,4 +18,6 @@ public interface UserService {
     Boolean     register(User user);
     Boolean     changePassword(String id, String password);
     Boolean     isUserBelongsToTheSchool(String id, String schoolId);
+
+
 }

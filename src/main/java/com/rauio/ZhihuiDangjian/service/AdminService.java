@@ -1,5 +1,6 @@
 package com.rauio.ZhihuiDangjian.service;
 
+import com.rauio.ZhihuiDangjian.pojo.User;
 import com.rauio.ZhihuiDangjian.pojo.dto.UserDto;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -14,4 +15,6 @@ public interface AdminService {
     public String addSchoolAdmin(@RequestBody List<UserDto> user);
     public String updateSchoolAdmin(@RequestBody List<UserDto> user);
     public String deleteSchoolAdmin(@RequestBody List<String> idList);
+
+    List<User> getUser(UserDto userDto);
 }
