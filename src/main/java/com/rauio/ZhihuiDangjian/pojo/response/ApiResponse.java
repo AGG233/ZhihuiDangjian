@@ -32,7 +32,7 @@ public class ApiResponse<T> {
         this.message = "OK";
         this.responseEntity = ResponseEntity.ok(this);
     }
-    
+
     public ApiResponse(T data) {
         this.code = "200";
         this.message = "OK";
@@ -45,13 +45,15 @@ public class ApiResponse<T> {
         }
         this.responseEntity = ResponseEntity.ok(this);
     }
-    
+
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "操作成功")
     public static <T> ApiResponse<T> ok(T data) {
         ApiResponse<T> response = new ApiResponse<T>(data);
         response.responseEntity = ResponseEntity.ok(response);
         return response;
     }
-    
+
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "操作成功")
     public static <T> ApiResponse<T> ok(String code, String message, T data) {
         ApiResponse<T> response = ApiResponse.<T>builder()
                 .code(code)
@@ -61,7 +63,8 @@ public class ApiResponse<T> {
         response.responseEntity = ResponseEntity.ok(response);
         return response;
     }
-    
+
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "操作失败，详情看信息")
     public static <T> ApiResponse<T> error(String code, String message) {
         ApiResponse<T> response = ApiResponse.<T>builder()
                 .code(code)
@@ -69,5 +72,10 @@ public class ApiResponse<T> {
                 .build();
         response.responseEntity = ResponseEntity.ok(response);
         return response;
+    }
+
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "服务器内部错误，请联系开发")
+    public static <T> ApiResponse<T> internalError(String code, String message) {
+        return error(code, message);
     }
 }
