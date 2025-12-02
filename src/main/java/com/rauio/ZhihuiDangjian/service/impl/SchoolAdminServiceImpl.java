@@ -6,7 +6,6 @@ import com.rauio.ZhihuiDangjian.mapper.UserMapper;
 import com.rauio.ZhihuiDangjian.pojo.User;
 import com.rauio.ZhihuiDangjian.pojo.convertor.UserConvertor;
 import com.rauio.ZhihuiDangjian.pojo.dto.UserDto;
-import com.rauio.ZhihuiDangjian.pojo.vo.UserVO;
 import com.rauio.ZhihuiDangjian.service.SchoolAdminService;
 import com.rauio.ZhihuiDangjian.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +36,9 @@ public class SchoolAdminServiceImpl implements SchoolAdminService {
 
         List<User> userList = userConvertor.toEntityList(userDtoList);
         for (User user : userList) {
+
+            if (!user.getUniversityId().equals(universityId)) return -1;
+
             user.setUniversityId(universityId);
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
@@ -65,16 +67,20 @@ public class SchoolAdminServiceImpl implements SchoolAdminService {
     }
 
     @Override
-    public int deleteUser(List<String> userIdList) {
-        MybatisBatch<String> batch = new MybatisBatch<>(sqlSessionFactory,userIdList);
+    public int deleteUser(List<UserDto> userIdList) {
+        MybatisBatch<User> batch = new MybatisBatch<>(sqlSessionFactory,userConvertor.toEntityList(userIdList));
         MybatisBatch.Method<User> method = new  MybatisBatch.Method<>(User.class);
         return batch.execute(method.deleteById()).size();
     }
 
     @Override
-    public UserVO getUser(UserDto userDto) {
-        String universityId = userService.getUserFromAuthentication().getUniversityId();
+    public User getUser(String id) {
+        return userMapper.selectById(id);
+    }
 
+    @Override
+    public List<User> getUser(UserDto userDto) {
+        String universityId = userService.getUserFromAuthentication().getUniversityId();
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
 
         wrapper.eq(User::getUniversityId,universityId)
@@ -85,7 +91,6 @@ public class SchoolAdminServiceImpl implements SchoolAdminService {
                 .like(User::getBranchName,userDto.getBranch_name())
                 .like(User::getEmail,userDto.getEmail())
                 .like(User::getUserType,userDto.getUser_type());
-
-        return userConvertor.toVO(userMapper.selectOne(wrapper));
+        return userMapper.selectList(wrapper);
     }
 }
