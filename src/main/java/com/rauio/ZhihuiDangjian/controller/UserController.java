@@ -77,12 +77,6 @@ public class UserController {
     }
 
     @GetMapping("/{id}/quiz/{quizId}")
-    public ApiResponse<List<UserQuizAnswer>> getQuizAnswerOfUser(@PathVariable String id, @PathVariable String quizId){
-        List<UserQuizAnswer> result = userQuizAnswerService.selectByUserIdAndQuizId(id,quizId);
-        return ApiResponse.ok(result);
-    }
-
-    @GetMapping("/{id}/quiz/{quizId}")
     public ApiResponse<List<UserQuizAnswer>> getQuizAnswerOfQuiz(@PathVariable String quizId){
         List<UserQuizAnswer> result = userQuizAnswerService.selectByQuizId(quizId);
         return ApiResponse.ok(result);
