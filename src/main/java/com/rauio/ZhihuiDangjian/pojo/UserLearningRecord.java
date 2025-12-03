@@ -13,11 +13,11 @@ import java.util.Date;
 public class UserLearningRecord {
 
     @TableId
-    private Long id;
+    private String id;
 
-    private Long userId;
+    private String userId;
 
-    private Long chapterId;
+    private String chapterId;
 
     private Date startTime;
 
