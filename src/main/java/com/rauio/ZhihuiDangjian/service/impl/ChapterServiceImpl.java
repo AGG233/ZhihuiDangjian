@@ -59,7 +59,7 @@ public class ChapterServiceImpl implements ChapterService {
             throw new BusinessException(4000, "章节无法创建");
         }
 
-        if (dto.getContent() != null) {
+        if (dto.getContent() != null && !dto.getContent().isEmpty()) {
             dto.getContent().forEach(blockDto -> {
                 ContentBlock block = contentBlockConvertor.toEntity(blockDto);
                 block.setParentId(chapter.getId());
@@ -67,7 +67,7 @@ public class ChapterServiceImpl implements ChapterService {
                 contentService.save(block);
             });
         } else {
-            throw new BusinessException(4000, "章节至少需要一个内容块");
+            throw new BusinessException(4000, "课程至少需要一个章节");
         }
         return true;
     }
