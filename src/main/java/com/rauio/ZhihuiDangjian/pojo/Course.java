@@ -5,9 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Builder;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * (Course)实体类
@@ -18,7 +17,7 @@ import java.util.Date;
 @Data
 @Builder
 @TableName("course")
-public class Course implements Serializable {
+public class Course{
 
     @TableId
     private String id;
@@ -32,7 +31,7 @@ public class Course implements Serializable {
     private Integer enrollmentCount;
     private BigDecimal averageRating;
     private Boolean isPublished;
-    private Date publishedAt;
-    private Date createdAt;
-    private Date updatedAt;
+    private LocalDateTime publishedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

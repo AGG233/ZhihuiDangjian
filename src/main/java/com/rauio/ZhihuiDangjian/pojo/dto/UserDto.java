@@ -6,7 +6,7 @@ import com.rauio.ZhihuiDangjian.utils.Spec.UserType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 public class UserDto {
@@ -39,7 +39,7 @@ public class UserDto {
     private String  university_id;
 
     @Schema(description = "入党时间")
-    private Date    joinPartyDate;
+    private LocalDateTime    joinPartyDate;
 
     @Sensitive(type = Sensitive.SensitiveType.EMAIL)
     @Schema(description = "邮箱")

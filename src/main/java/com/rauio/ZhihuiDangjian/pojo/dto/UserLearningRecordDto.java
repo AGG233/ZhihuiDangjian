@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -21,10 +21,10 @@ public class UserLearningRecordDto {
     private Long chapterId;
 
     @Schema(description = "开始学习时间")
-    private Date startTime;
+    private LocalDateTime startTime;
 
     @Schema(description = "结束学习时间")
-    private Date endTime;
+    private LocalDateTime endTime;
 
     @Schema(description = "学习时长（秒）", example = "1800")
     private Integer duration;
@@ -33,5 +33,5 @@ public class UserLearningRecordDto {
     private String deviceType;
 
     @Schema(description = "创建时间")
-    private Date createdAt;
+    private LocalDateTime createdAt;
 }

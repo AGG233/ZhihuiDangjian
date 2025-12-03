@@ -5,8 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Builder;
 import lombok.Data;
 
-import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -14,13 +13,13 @@ import java.util.Date;
 public class UserSimilarity {
 
     @TableId
-    private Integer id;
+    private String id;
 
-    private Integer userId1;
+    private String userId1;
 
-    private Integer userId2;
+    private String userId2;
 
-    private BigDecimal similarityScore;
+    private double similarityScore;
 
     private String similarityType;
 
@@ -28,10 +27,16 @@ public class UserSimilarity {
 
     private String dataVersion;
 
-    private Date calculatedAt;
+    private LocalDateTime calculatedAt;
 
     private Boolean isValid;
 
-    private Date expiresAt;
+    private LocalDateTime expiresAt;
 
+
+    public UserSimilarity(String userId1,String userId2,double similarityScore) {
+        this.userId1=userId1;
+        this.userId2=userId2;
+        this.similarityScore=similarityScore;
+    }
 }

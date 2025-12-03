@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -19,14 +19,14 @@ public class UserLearningRecord {
 
     private String chapterId;
 
-    private Date startTime;
+    private LocalDateTime startTime;
 
-    private Date endTime;
+    private LocalDateTime endTime;
 
     private Integer duration;
 
     private String deviceType;
 
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
 }

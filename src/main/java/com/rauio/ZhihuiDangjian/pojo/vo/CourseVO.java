@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -18,6 +18,6 @@ public class CourseVO {
     private Integer estimatedDuration;
     private Integer enrollmentCount;
     private BigDecimal averageRating;
-    private Date publishedAt;
+    private LocalDateTime publishedAt;
     private String creatorId;
 }

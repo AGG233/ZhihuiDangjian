@@ -9,7 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -39,8 +39,8 @@ public class ContentBlock {
     private String      caption;
 
     @Schema(description = "内容块的创建时间")
-    private Date        createdAt;
+    private LocalDateTime        createdAt;
 
     @Schema(description = "内容块的更新时间")
-    private Date        updatedAt;
+    private LocalDateTime        updatedAt;
 }

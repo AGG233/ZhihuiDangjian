@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -31,6 +31,6 @@ public class UserQuizAnswer {
 
     private String sessionId;
 
-    private Date answerTime;
+    private LocalDateTime answerTime;
 
 }

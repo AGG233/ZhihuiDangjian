@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -13,20 +13,20 @@ import java.util.Date;
 public class UserChapterProgress {
 
     @TableId
-    private Long id;
+    private String id;
 
-    private Long userId;
+    private String userId;
 
-    private Long chapterId;
+    private String chapterId;
 
     private Integer progress;
 
     private String status;
 
-    private Date firstViewedAt;
+    private LocalDateTime firstViewedAt;
 
-    private Date completedAt;
+    private LocalDateTime completedAt;
 
-    private Date updatedAt;
+    private LocalDateTime updatedAt;
 
 }

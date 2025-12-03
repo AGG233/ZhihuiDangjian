@@ -12,9 +12,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 
 /**
  * (User)实体类
@@ -35,7 +35,7 @@ public class User implements UserDetails {
     private String realName;
     private String idCard;
     private String partyMemberId;
-    private Date   joinPartyDate;
+    private LocalDateTime   joinPartyDate;
     private UserStatus partyStatus;
     private String branchName;
     private UserType userType;
@@ -43,9 +43,9 @@ public class User implements UserDetails {
     private String email;
     private String phone;
     @TableField(fill = FieldFill.INSERT)
-    private Date createdAt;
+    private LocalDateTime createdAt;
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date updatedAt;
+    private LocalDateTime updatedAt;
 
     /**
      * Returns the authorities granted to the user. Cannot return <code>null</code>.

@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -27,11 +27,11 @@ public class UserChapterProgressDto {
     private String status;
 
     @Schema(description = "首次观看时间")
-    private Date firstViewedAt;
+    private LocalDateTime firstViewedAt;
 
     @Schema(description = "完成时间")
-    private Date completedAt;
+    private LocalDateTime completedAt;
 
     @Schema(description = "更新时间")
-    private Date updatedAt;
+    private LocalDateTime updatedAt;
 }
