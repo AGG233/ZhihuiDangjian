@@ -29,7 +29,7 @@ public class CourseServiceImpl implements CourseService {
 
 
     @Override
-    public CourseVO get(String courseId) {
+    public CourseVO get(Long courseId) {
         Course entity = courseDao.get(courseId);
         return courseConvertor.CourseToCourseVO(entity);
     }
@@ -51,8 +51,8 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Boolean update(CourseDto courseDto,String id) {
-        if (id == null || id.isEmpty()){
+    public Boolean update(CourseDto courseDto,Long id) {
+        if (id == null){
             return false;
         }
 
@@ -66,7 +66,7 @@ public class CourseServiceImpl implements CourseService {
 
 
     @Override
-    public Boolean delete(String courseId) {
+    public Boolean delete(Long courseId) {
         return courseDao.delete(courseId);
     }
 

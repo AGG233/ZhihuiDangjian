@@ -23,7 +23,7 @@ public class CategoryArticleDao {
     public int update(CategoryArticle categoryArticle){
         return categoryArticleMapper.updateById(categoryArticle);
     }
-    public CategoryArticle get(String categoryArticle) {
+    public CategoryArticle get(Long categoryArticle) {
         return categoryArticleMapper.selectById(categoryArticle);
     }
     public List<CategoryArticle> getAllArticlesOfCategory(String categoryId) {

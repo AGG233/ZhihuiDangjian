@@ -10,11 +10,11 @@ public interface ContentBlockService {
 
     Boolean saveBatch(List<ContentBlock> dtos);
 
-    Boolean delete(String id);
+    Boolean delete(Long id);
 
     Boolean update(ContentBlock dto);
 
-    ContentBlockVO get(String id);
+    ContentBlockVO get(Long id);
 
     List<ContentBlockVO> getAllByParentId(String parentId);
 

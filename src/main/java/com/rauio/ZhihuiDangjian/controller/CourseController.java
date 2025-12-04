@@ -30,14 +30,14 @@ public class CourseController {
     @Operation(summary = "获取课程详情", description = "根据课程ID获取课程详细信息")
     @GetMapping("/{id}")
     @PermissionAccess(UserType.STUDENT)
-    public ApiResponse<CourseVO> get(@PathVariable String id) throws JsonProcessingException {
+    public ApiResponse<CourseVO> get(@PathVariable Long id) throws JsonProcessingException {
         CourseVO result = courseService.get(id);
         return ApiResponse.ok(result);
     }
 
     @Operation(summary = "更新课程信息", description = "根据课程ID更新课程信息")
     @PutMapping("/{id}")
-    public ApiResponse<Boolean> update(@RequestBody CourseDto course, @PathVariable String id) throws JsonProcessingException {
+    public ApiResponse<Boolean> update(@RequestBody CourseDto course, @PathVariable Long id) throws JsonProcessingException {
         Boolean result = courseService.update(course,id);
         return ApiResponse.ok(result);
     }
@@ -51,7 +51,7 @@ public class CourseController {
 
     @Operation(summary = "删除课程", description = "根据课程ID删除指定课程")
     @DeleteMapping("/{id}")
-    public ApiResponse<Boolean> delete(@PathVariable String id) throws JsonProcessingException {
+    public ApiResponse<Boolean> delete(@PathVariable Long id) throws JsonProcessingException {
         Boolean result = courseService.delete(id);
         return ApiResponse.ok(result);
     }

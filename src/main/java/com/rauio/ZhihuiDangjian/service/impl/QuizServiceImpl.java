@@ -16,7 +16,7 @@ public class QuizServiceImpl implements QuizService {
     private final QuizMapper quizMapper;
 
     @Override
-    public Quiz get(String quizId) {
+    public Quiz get(Long quizId) {
         return quizMapper.selectById(quizId);
     }
 
@@ -40,7 +40,7 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
-    public Boolean delete(String quizId) {
+    public Boolean delete(Long quizId) {
         return quizMapper.deleteById(quizId) > 0;
     }
 }

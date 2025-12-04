@@ -22,7 +22,7 @@ public class ArticleServiceImpl implements ArticleService {
     private final ArticleConvertor convertor;
 
     @Override
-    public Article get(String id) {
+    public Article get(Long id) {
         return articleDao.get(id);
     }
 
@@ -55,7 +55,7 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public Boolean delete(String id) {
+    public Boolean delete(Long id) {
         return articleDao.delete(id);
     }
 }

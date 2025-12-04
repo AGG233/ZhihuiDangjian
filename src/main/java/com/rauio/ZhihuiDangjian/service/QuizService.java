@@ -8,14 +8,14 @@ public interface QuizService {
 
 
 
-    Quiz        get(String quizId);
+    Quiz        get(Long quizId);
     List<Quiz>  getByChapterId(String chapterId);
 
 
 
     Boolean update(Quiz quiz);
     Boolean insert(Quiz quiz);
-    Boolean delete(String quizId);
+    Boolean delete(Long quizId);
 
 
 }

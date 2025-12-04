@@ -14,7 +14,7 @@ public class CategoryDao {
 
     private final CategoryMapper categoryMapper;
 
-    public Category get(String categoryId) {
+    public Category get(Long categoryId) {
         return categoryMapper.selectById(categoryId);
     }
 
@@ -38,7 +38,7 @@ public class CategoryDao {
     public Boolean insert(Category category) {
         return categoryMapper.insert(category) > 0;
     }
-    public Boolean delete(String categoryId) {
+    public Boolean delete(Long categoryId) {
         return categoryMapper.deleteById(categoryId) > 0;
     }
     public Boolean deleteAll(String categoryId){

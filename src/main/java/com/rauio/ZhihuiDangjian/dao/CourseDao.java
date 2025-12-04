@@ -22,7 +22,7 @@ public class CourseDao {
         this.courseMapper = courseMapper;
     }
 
-    public Course get(String courseId) {
+    public Course get(Long courseId) {
         return courseMapper.selectById(courseId);
     }
 
@@ -34,7 +34,7 @@ public class CourseDao {
         return courseMapper.insert(course) > 0;
     }
 
-    public Boolean delete(String courseId) {
+    public Boolean delete(Long courseId) {
         return courseMapper.deleteById(courseId) > 0;
     }
 

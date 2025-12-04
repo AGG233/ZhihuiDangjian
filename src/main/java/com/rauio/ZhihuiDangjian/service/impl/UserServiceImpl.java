@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
     private final UserDao userDao;
     private final UserConvertor convertor;
 
-    public UserVO getUserByID(String ID) {
+    public UserVO getUserByID(Long ID) {
         return convertor.toVO(userDao.get(ID));
     }
     
@@ -74,11 +74,11 @@ public class UserServiceImpl implements UserService {
         return userDao.getUserByPartyMemberId(partyMemberId);
     }
 
-    public Boolean update(String id,User user) {
+    public Boolean update(Long id,User user) {
         return userDao.update(user);
     }
 
-    public Boolean delete(String ID) {
+    public Boolean delete(Long ID) {
         return userDao.delete(ID);
     }
 
@@ -97,11 +97,11 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    public Boolean isUserBelongsToTheSchool(String id, String schoolId) {
+    public Boolean isUserBelongsToTheSchool(Long id, String schoolId) {
         return null;
     }
 
-    public Boolean changePassword(String id, String password) {
+    public Boolean changePassword(Long id, String password) {
         return userDao.changePassword(id,password);
     }
     

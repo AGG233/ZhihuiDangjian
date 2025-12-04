@@ -32,7 +32,7 @@ public class UserController {
             summary = "获取用户信息",
             description = "通过ID获取用户信息")
     @GetMapping("/{id}")
-    public ApiResponse<UserVO> get(@Parameter(description = "用户ID") @PathVariable String id){
+    public ApiResponse<UserVO> get(@Parameter(description = "用户ID") @PathVariable Long id){
         UserVO user = userService.getUserByID(id);
         return ApiResponse.ok(user);
     }
@@ -43,7 +43,7 @@ public class UserController {
     )
     @PutMapping("/{id}")
     public ApiResponse<Boolean> update(
-            @PathVariable String id,
+            @PathVariable Long id,
             @RequestBody User user
     ){
         Boolean result = userService.update(id,user);
@@ -56,7 +56,7 @@ public class UserController {
     )
     @DeleteMapping("/{id}")
     @Deprecated
-    public ApiResponse<Object> delete(@Parameter(description = "用户ID") @PathVariable String id){
+    public ApiResponse<Object> delete(@Parameter(description = "用户ID") @PathVariable Long id){
         Boolean result = userService.delete(id);
         return ApiResponse.ok("404","接口已经弃用",null);
     }

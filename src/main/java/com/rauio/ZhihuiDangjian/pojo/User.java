@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.rauio.ZhihuiDangjian.utils.Spec.UserStatus;
 import com.rauio.ZhihuiDangjian.utils.Spec.UserType;
 import lombok.Builder;
@@ -28,7 +30,8 @@ import java.util.Collections;
 public class User implements UserDetails {
 
     @TableId
-    private String id;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long id;
     private String universityId;
     private String username;
     private String password;

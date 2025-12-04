@@ -9,13 +9,13 @@ public interface CategoryService {
     public static final int MAX_LEVEL = 3;
     Boolean add(CategoryDto dto);
 
-    Boolean addChildren(List<CategoryDto> list, String parentId);
-    Boolean delete(String categoryId);
+    Boolean addChildren(List<CategoryDto> list, Long parentId);
+    Boolean delete(Long categoryId);
     Boolean deleteAll(String categoryId);
 
-    Boolean update(CategoryDto dto, String id);
+    Boolean update(CategoryDto dto, Long id);
 
-    CategoryVO getById(String id);
+    CategoryVO getById(Long id);
     List<CategoryVO>    getRootNodes();
     List<CategoryVO>    getChildren(String categoryId);
 }

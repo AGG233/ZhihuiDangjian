@@ -26,7 +26,7 @@ public class QuizController {
 
     @GetMapping("/{id}")
     @PermissionAccess(UserType.STUDENT)
-    public ApiResponse<Quiz> getQuiz(@PathVariable String id) {
+    public ApiResponse<Quiz> getQuiz(@PathVariable Long id) {
         Quiz quiz = quizService.get(id);
         return ApiResponse.ok(quiz);
     }
@@ -68,7 +68,7 @@ public class QuizController {
     }
 
     @GetMapping("/{id}/option/{optionId}")
-    public ApiResponse<QuizOption> getByOptionId(@PathVariable String optionId) {
+    public ApiResponse<QuizOption> getByOptionId(@PathVariable Long optionId) {
         QuizOption quizOption = quizOptionService.get(optionId);
         return ApiResponse.ok(quizOption);
     }
@@ -86,7 +86,7 @@ public class QuizController {
     }
 
     @DeleteMapping("/{id}/option/{optionId}")
-    public ApiResponse<Boolean> deleteQuizOption(@PathVariable String optionId, @PathVariable String id) {
+    public ApiResponse<Boolean> deleteQuizOption(@PathVariable Long optionId, @PathVariable String id) {
         Boolean deletedQuizOption = quizOptionService.delete(optionId);
         return ApiResponse.ok(deletedQuizOption);
     }

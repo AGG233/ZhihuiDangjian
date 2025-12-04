@@ -9,10 +9,10 @@ import com.rauio.ZhihuiDangjian.pojo.vo.PageVO;
 import java.util.List;
 
 public interface CourseService {
-    CourseVO        get(String courseId);
+    CourseVO        get(Long courseId);
     Boolean             create(CourseDto course);
-    Boolean         update(CourseDto course,String id);
-    Boolean         delete(String courseId);
+    Boolean         update(CourseDto course,Long id);
+    Boolean         delete(Long courseId);
 
     List<Course>    getAll();
     List<CategoryCourse>    getAllCoursesOfCategory(String categoryId);

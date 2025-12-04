@@ -6,7 +6,7 @@ import com.rauio.ZhihuiDangjian.pojo.vo.ChapterVO;
 import java.util.List;
 
 public interface ChapterService {
-    ChapterVO get(String chapterId);
+    ChapterVO get(Long chapterId);
 
     List<ChapterVO> getAllChaptersOfCourse(String CourseId);
 
@@ -14,5 +14,5 @@ public interface ChapterService {
 
     Boolean update(ChapterDto chapter);
 
-    Boolean delete(String chapterId);
+    Boolean delete(Long chapterId);
 }

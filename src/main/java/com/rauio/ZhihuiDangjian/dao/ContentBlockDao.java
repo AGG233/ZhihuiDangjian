@@ -14,7 +14,7 @@ public class ContentBlockDao {
 
     private final ContentBlockMapper contentBlockMapper;
 
-    public ContentBlock get(String id) {
+    public ContentBlock get(Long id) {
         return contentBlockMapper.selectById(id);
     }
 
@@ -38,7 +38,7 @@ public class ContentBlockDao {
         return contentBlockMapper.insert(contentBlock) > 0;
     }
 
-    public Boolean delete(String id) {
+    public Boolean delete(Long id) {
         return contentBlockMapper.deleteById(id) > 0;
     }
 }

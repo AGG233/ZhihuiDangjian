@@ -46,7 +46,7 @@ public class ContentBlockServiceImpl implements ContentBlockService {
      * @return 删除结果
      */
     @Override
-    public Boolean delete(String id) {
+    public Boolean delete(Long id) {
         return dao.delete(id);
     }
 
@@ -64,7 +64,7 @@ public class ContentBlockServiceImpl implements ContentBlockService {
      * @return 内容块
      */
     @Override
-    public ContentBlockVO get(String id) {
+    public ContentBlockVO get(Long id) {
         return convertor.toVO(dao.get(id));
     }
 

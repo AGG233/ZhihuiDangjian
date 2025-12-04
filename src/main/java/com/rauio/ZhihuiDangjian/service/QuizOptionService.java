@@ -6,11 +6,11 @@ import java.util.List;
 
 public interface QuizOptionService {
 
-    Boolean update(String id, QuizOption quizOption);
+    Boolean update(Long id, QuizOption quizOption);
     Boolean insert(String quizId, QuizOption option);
 
     List<QuizOption> getByQuizId(String quizId);
-    QuizOption get(String id);
+    QuizOption get(Long id);
 
-    Boolean delete(String optionId);
+    Boolean delete(Long optionId);
 }

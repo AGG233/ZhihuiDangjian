@@ -34,7 +34,7 @@ public class ChapterServiceImpl implements ChapterService {
      * @return 章节
      */
     @Override
-    public ChapterVO get(String chapterId) {
+    public ChapterVO get(Long chapterId) {
         Chapter chapter = chapterDao.getById(chapterId);
         if (chapter == null) {
             throw new BusinessException(4000, "章节不存在");
@@ -92,7 +92,7 @@ public class ChapterServiceImpl implements ChapterService {
      * @return 删除结果
      */
     @Override
-    public Boolean delete(String chapterId) {
+    public Boolean delete(Long chapterId) {
         return chapterDao.delete(chapterId);
     }
 }

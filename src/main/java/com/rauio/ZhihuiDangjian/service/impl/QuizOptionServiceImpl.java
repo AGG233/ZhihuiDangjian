@@ -44,7 +44,7 @@ public class QuizOptionServiceImpl implements QuizOptionService {
     }
 
     @Override
-    public QuizOption get(String id) {
+    public QuizOption get(Long id) {
         User user = userService.getUserFromAuthentication();
         QuizOption quizOption = quizOptionMapper.selectById(id);
 
@@ -56,7 +56,7 @@ public class QuizOptionServiceImpl implements QuizOptionService {
     }
 
     @Override
-    public Boolean delete(String optionId) {
+    public Boolean delete(Long optionId) {
         return quizOptionMapper.deleteById(optionId) > 0;
     }
 

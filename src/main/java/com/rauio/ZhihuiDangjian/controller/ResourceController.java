@@ -54,7 +54,7 @@ public class ResourceController {
 
     @Operation(summary = "获取文件链接", description = "通过资源的ID获取文件链接")
     @GetMapping("/{id}")
-    public ApiResponse<URL> getById(@PathVariable String id) throws JsonProcessingException {
+    public ApiResponse<URL> getById(@PathVariable Long id) throws JsonProcessingException {
         URL url = resourceService.getById(id);
         return ApiResponse.ok("200", null, url);
     }

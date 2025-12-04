@@ -81,7 +81,6 @@ public class RecommendService {
                                 Collectors.toSet()
                         )
                 ));
-
         //合并数据
         learningRecordsMap.forEach((key, value) -> {
             chapterProgressMap.merge(key, value, (set1, set2) -> {

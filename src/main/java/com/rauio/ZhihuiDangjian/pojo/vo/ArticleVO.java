@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class ArticleVO {
-    private String id;
+    private Long id;
     private String author_id;
     private String title;
     private String summary;

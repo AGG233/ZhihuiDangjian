@@ -29,7 +29,7 @@ public class CategoryImpl implements CategoryService {
      * @return  目录以及它的子目录
      */
     @Override
-    public CategoryVO getById(String id) {
+    public CategoryVO getById(Long id) {
         Category category = categoryDao.get(id);
         List<CategoryVO> children;
         if (category == null){
@@ -93,7 +93,7 @@ public class CategoryImpl implements CategoryService {
      * @return 添加结构
      * */
     @Override
-    public Boolean addChildren(List<CategoryDto> children, String parentId) {
+    public Boolean addChildren(List<CategoryDto> children, Long parentId) {
         Category parent = categoryDao.get(parentId);
         if (parent == null || children == null) {
             throw new BusinessException(4001, "目录或子目录不存在");
@@ -125,7 +125,7 @@ public class CategoryImpl implements CategoryService {
      * @return 删除结果
      */
     @Override
-    public Boolean delete(String categoryId) {
+    public Boolean delete(Long categoryId) {
         if (!categoryDao.getChildren(categoryId).isEmpty()) {
             throw new BusinessException(4001, "该目录有子目录，请先删除子目录");
         }
@@ -154,7 +154,7 @@ public class CategoryImpl implements CategoryService {
      * @return 修改结果
      */
     @Override
-    public Boolean update(CategoryDto dto, String id) {
+    public Boolean update(CategoryDto dto, Long id) {
         if (dto == null) {
             throw new BusinessException(4001,"参数错误");
         };

@@ -35,7 +35,7 @@ public class CategoryController {
     )
     @GetMapping("/{id}")
     @PermissionAccess(UserType.STUDENT)
-    public ApiResponse<CategoryVO> get(@PathVariable String id) throws JsonProcessingException {
+    public ApiResponse<CategoryVO> get(@PathVariable Long id) throws JsonProcessingException {
         CategoryVO result = categoryService.getById(id);
         return ApiResponse.ok(result);
     }
@@ -95,7 +95,7 @@ public class CategoryController {
             description = "修改目录"
     )
     @PostMapping("/{id}")
-    public ApiResponse<Boolean> update(CategoryDto dto, @PathVariable String id){
+    public ApiResponse<Boolean> update(CategoryDto dto, @PathVariable Long id){
         Boolean result = categoryService.update(dto, id);
         return ApiResponse.ok(result);
     }
@@ -104,7 +104,7 @@ public class CategoryController {
             description = "如果删除的目录没有子目录，则删除成功，有子目录则无法删除"
     )
     @DeleteMapping("/{id}")
-    public ApiResponse<Boolean> delete(@PathVariable String id){
+    public ApiResponse<Boolean> delete(@PathVariable Long id){
             Boolean result = categoryService.delete(id);
             return ApiResponse.ok(result);
     }
