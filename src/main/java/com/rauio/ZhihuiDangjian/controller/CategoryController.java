@@ -57,7 +57,7 @@ public class CategoryController {
     )
     @GetMapping("/{id}/children")
     @PermissionAccess(UserType.STUDENT)
-    public ApiResponse<List<CategoryVO>> getChildren(@PathVariable String id) throws JsonProcessingException {
+    public ApiResponse<List<CategoryVO>> getChildren(@PathVariable Long id) throws JsonProcessingException {
         List<CategoryVO> result = categoryService.getChildren(id);
         return ApiResponse.ok(result);
     }
@@ -113,7 +113,7 @@ public class CategoryController {
             description = "删除目录的同时也将删除它的子目录"
     )
     @DeleteMapping("/{id}/all")
-    public ApiResponse<Boolean> deleteAll(@PathVariable String id){
+    public ApiResponse<Boolean> deleteAll(@PathVariable Long id){
         Boolean result = categoryService.deleteAll(id);
         return ApiResponse.ok(result);
     }

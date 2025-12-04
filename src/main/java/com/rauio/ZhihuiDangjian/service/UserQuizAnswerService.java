@@ -8,10 +8,10 @@ public interface UserQuizAnswerService {
 
     Boolean insert(UserQuizAnswer userQuizAnswer);
     Boolean update(UserQuizAnswer userQuizAnswer);
-    Boolean delete(String quizId);
+    Boolean delete(Long quizId);
 
-    UserQuizAnswer          selectByOptionId(String optionId);
-    List<UserQuizAnswer>    selectByQuizId(String quizId);
-    List<UserQuizAnswer>    selectByUserId(String userId);
-    List<UserQuizAnswer>    selectByUserIdAndQuizId(String userId, String quizId);
+    UserQuizAnswer          selectByOptionId(Long optionId);
+    List<UserQuizAnswer>    selectByQuizId(Long quizId);
+    List<UserQuizAnswer>    selectByUserId(Long userId);
+    List<UserQuizAnswer>    selectByUserIdAndQuizId(Long userId, Long quizId);
 }

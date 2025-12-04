@@ -26,18 +26,18 @@ public class QuizOptionServiceImpl implements QuizOptionService {
 
 
     @Override
-    public Boolean update(String id, QuizOption quizOption) {
+    public Boolean update(Long id, QuizOption quizOption) {
         return quizOptionMapper.updateById(quizOption) > 0;
     }
 
     @Override
-    public Boolean insert(String quizId, QuizOption option) {
+    public Boolean insert(Long quizId, QuizOption option) {
         option.setQuizId(quizId);
         return quizOptionMapper.insert(option) > 0;
     }
 
     @Override
-    public List<QuizOption> getByQuizId(String quizId) {
+    public List<QuizOption> getByQuizId(Long quizId) {
         LambdaQueryWrapper<QuizOption> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(QuizOption::getQuizId, quizId);
         return quizOptionMapper.selectList(wrapper);

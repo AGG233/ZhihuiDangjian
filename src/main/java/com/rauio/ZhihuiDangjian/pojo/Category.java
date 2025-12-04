@@ -26,7 +26,7 @@ public class Category implements Serializable {
     private String name;
     private Integer level;
     private String description;
-    private String parentId;
+    private Long parentId;
     private String sortOrder;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

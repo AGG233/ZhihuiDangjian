@@ -22,7 +22,7 @@ public class CategoryDao {
     * @param categoryId 父目录Id
     * @return 父目录下的子目录
     * */
-    public List<Category> getChildren(String categoryId){
+    public List<Category> getChildren(Long categoryId){
         QueryWrapper<Category> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("parent_id", categoryId);
         return categoryMapper.selectList(queryWrapper);

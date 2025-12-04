@@ -7,9 +7,9 @@ import java.util.List;
 public interface QuizOptionService {
 
     Boolean update(Long id, QuizOption quizOption);
-    Boolean insert(String quizId, QuizOption option);
+    Boolean insert(Long quizId, QuizOption option);
 
-    List<QuizOption> getByQuizId(String quizId);
+    List<QuizOption> getByQuizId(Long quizId);
     QuizOption get(Long id);
 
     Boolean delete(Long optionId);

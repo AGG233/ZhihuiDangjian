@@ -28,8 +28,8 @@ public class ContentBlockServiceImpl implements ContentBlockService {
     }
 
     /**
-     * @param blocks
-     * @return
+     * @param blocks 内容块
+     * @return 保存结果
      */
     @Override
     public Boolean saveBatch(List<ContentBlock> blocks) {
@@ -73,7 +73,7 @@ public class ContentBlockServiceImpl implements ContentBlockService {
      * @return 该章节或文章的所有内容块
      */
     @Override
-    public List<ContentBlockVO> getAllByParentId(String parentId) {
+    public List<ContentBlockVO> getAllByParentId(Long parentId) {
         return convertor.toVOList(dao.getAllByParentId(parentId));
     }
 
@@ -82,7 +82,7 @@ public class ContentBlockServiceImpl implements ContentBlockService {
      * @return 所有内容块
      */
     @Override
-    public List<ContentBlockVO> getByResourceId(List<String> Ids) {
+    public List<ContentBlockVO> getByResourceId(List<Long> Ids) {
         return convertor.toVOList(Ids.stream()
                 .toList()
                 .stream()

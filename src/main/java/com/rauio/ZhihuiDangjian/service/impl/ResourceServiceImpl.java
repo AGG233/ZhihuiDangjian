@@ -106,7 +106,7 @@ public class ResourceServiceImpl implements ResourceService {
 
             Map<String, String> result = new HashMap<>();
             ResourceMeta meta = metaDao.findByHash(hash);
-            result.put("resource_id", meta.getId());
+            result.put("resource_id", meta.getId().toString());
             result.put("resource_hash", meta.getHash());
             result.put("resource_original_name", meta.getOriginalName());
 
@@ -156,7 +156,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public URL getById(String id) {
+    public URL getById(Long id) {
         String path = metaDao.findByResourceId(id).getHash();
         try{
             Date expiration = new Date(new Date().getTime() + expireTimeInSeconds * 1000);
@@ -168,7 +168,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public List<String> getBatchWithId(List<String> idList) {
+    public List<String> getBatchWithId(List<Long> idList) {
         return idList.stream()
                 .map(key ->{
                     URL url = getById(key);
@@ -187,7 +187,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public boolean delete(String hash) {
-        String id = metaDao.findByHash(hash).getId();
+        Long id = metaDao.findByHash(hash).getId();
         metaDao.delete(id);
         blockDao.delete(blockDao.getByResourceId(id).getId());
         return true;

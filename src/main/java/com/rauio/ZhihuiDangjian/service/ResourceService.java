@@ -19,8 +19,8 @@ public interface ResourceService {
     Boolean saveBlock(ContentBlockDto block);
 
     URL getByHash(String Hash);
-    URL getById(String id);
-    List<String> getBatchWithId(List<String> idList);
+    URL getById(Long id);
+    List<String> getBatchWithId(List<Long> idList);
     List<String> getBatchWithHash(List<String> hashList);
 
 

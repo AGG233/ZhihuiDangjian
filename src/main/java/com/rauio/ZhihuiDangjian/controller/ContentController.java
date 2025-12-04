@@ -26,7 +26,7 @@ public class ContentController {
     @GetMapping("/carousel")
     @Operation(summary = "获取轮播图列表")
     public ApiResponse<List<ContentBlockVO>> getCarousel() {
-        List<ContentBlockVO> carousel = contentBlockService.getAllByParentId("1145141919810");
+        List<ContentBlockVO> carousel = contentBlockService.getAllByParentId(1145141919810L);
         return ApiResponse.ok(carousel);
     }
 
@@ -43,7 +43,7 @@ public class ContentController {
     @Operation(summary = "添加轮播图",description = "不用填写ID字段，即便是填写了也不会有任何效果")
     public ApiResponse<Boolean> addCarousel(List<ContentBlock> contentBlocks) {
         for (ContentBlock contentBlock : contentBlocks){
-            contentBlock.setParentId("1145141919810");
+            contentBlock.setParentId(1145141919810L);
         }
         Boolean result = contentBlockService.saveBatch(contentBlocks);
         return ApiResponse.ok(result);
@@ -59,8 +59,8 @@ public class ContentController {
 
     @GetMapping("/search")
     @Operation(summary = "搜索")
-    public ApiResponse<List<ContentBlockVO>> search(@RequestParam("search") String search) {
-        return ApiResponse.ok(searchService.toString(search));
+    public ApiResponse<String> search(@RequestParam("keyword") String keyword) {
+        return ApiResponse.ok("null");
     }
 
 }

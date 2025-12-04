@@ -15,7 +15,7 @@ public class ResourceMeta {
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
-    private String uploaderId;
+    private Long uploaderId;
     private String originalName;
     private String hash;
 }

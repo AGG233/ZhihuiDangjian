@@ -62,7 +62,7 @@ public class CategoryImpl implements CategoryService {
      * @return 父目录的子目录
      * */
     @Override
-    public List<CategoryVO> getChildren(String categoryId) {
+    public List<CategoryVO> getChildren(Long categoryId) {
         return convertor.toVOList(categoryDao.getChildren(categoryId));
     }
     /**
@@ -73,7 +73,7 @@ public class CategoryImpl implements CategoryService {
     public Boolean add(CategoryDto dto) {
         if (dto == null) {
             throw new BusinessException(4001,"参数错误");
-        };
+        }
 
         Category category = convertor.toEntity(dto);
         category.setLevel(0);
@@ -137,7 +137,7 @@ public class CategoryImpl implements CategoryService {
      * @return 删除结果
      * */
     @Override
-    public Boolean deleteAll(String categoryId){
+    public Boolean deleteAll(Long categoryId){
         Category category = categoryDao.get(categoryId);
         if (category == null) {
             throw new BusinessException(4001, "目录不存在");
@@ -157,7 +157,7 @@ public class CategoryImpl implements CategoryService {
     public Boolean update(CategoryDto dto, Long id) {
         if (dto == null) {
             throw new BusinessException(4001,"参数错误");
-        };
+        }
         Category course = convertor.toEntity(dto);
         return categoryDao.update(course);
     }

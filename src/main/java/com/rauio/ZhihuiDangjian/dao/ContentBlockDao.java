@@ -18,13 +18,13 @@ public class ContentBlockDao {
         return contentBlockMapper.selectById(id);
     }
 
-    public ContentBlock getByResourceId(String resourceId) {
+    public ContentBlock getByResourceId(Long resourceId) {
         QueryWrapper<ContentBlock> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("resource_id", resourceId);
         return contentBlockMapper.selectOne(queryWrapper);
     }
 
-    public List<ContentBlock> getAllByParentId(String parentId) {
+    public List<ContentBlock> getAllByParentId(Long parentId) {
         QueryWrapper<ContentBlock> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("parent_id", parentId);
         return contentBlockMapper.selectList(queryWrapper);

@@ -30,7 +30,7 @@ public class Course{
     private String categoryId;
     private String difficulty;
     private Integer estimatedDuration;
-    private String creatorId;
+    private Long creatorId;
     private Integer enrollmentCount;
     private BigDecimal averageRating;
     private Boolean isPublished;

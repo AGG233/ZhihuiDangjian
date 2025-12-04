@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * @return
+     * @return 当前调用接口的用户
      */
     @Override
     public User getUserFromAuthentication() {
@@ -92,9 +92,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * @param id
-     * @param schoolId
-     * @return
+     * @param id 用户ID
+     * @param schoolId 学校id
+     * @return 是否属于该学校
      */
     @Override
     public Boolean isUserBelongsToTheSchool(Long id, String schoolId) {

@@ -2,6 +2,8 @@ package com.rauio.ZhihuiDangjian.pojo;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.rauio.ZhihuiDangjian.utils.Spec.BlockType;
 import com.rauio.ZhihuiDangjian.utils.Spec.ParentType;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,10 +21,11 @@ import java.time.LocalDateTime;
 public class ContentBlock {
 
     @Schema(description = "内容块ID")
-    private String      id;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long      id;
 
     @Schema(description = "父级内容块ID")
-    private String      parentId;
+    private Long      parentId;
     @EnumValue
     @Schema(description = "父级内容块类型")
     private ParentType parentType;

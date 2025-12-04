@@ -57,7 +57,7 @@ public class ChapterController {
         return ApiResponse.ok(result);
     }
 
-    @Operation(summary = "更新章节", description = "")
+    @Operation(summary = "更新章节")
     @PutMapping("/")
     public ApiResponse<Boolean> update(@RequestBody ChapterDto chapter){
         Boolean result = chapterService.update(chapter);

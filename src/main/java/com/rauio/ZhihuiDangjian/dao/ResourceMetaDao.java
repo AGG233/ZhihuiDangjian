@@ -19,7 +19,7 @@ public class ResourceMetaDao {
         return resourceMetaMapper.selectOne(queryWrapper);
     }
 
-    public ResourceMeta findByResourceId(String resourceId) {
+    public ResourceMeta findByResourceId(Long resourceId) {
         QueryWrapper<ResourceMeta> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("resource_id", resourceId);
         return resourceMetaMapper.selectOne(queryWrapper);
@@ -38,7 +38,7 @@ public class ResourceMetaDao {
         return resourceMetaMapper.insert(resourceMeta) > 0;
     }
 
-    public Boolean delete(String resourceId) {
+    public Boolean delete(Long resourceId) {
         return resourceMetaMapper.deleteById(resourceId) > 0;
     }
 }

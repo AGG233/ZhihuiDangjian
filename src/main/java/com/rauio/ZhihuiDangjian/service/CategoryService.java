@@ -11,11 +11,11 @@ public interface CategoryService {
 
     Boolean addChildren(List<CategoryDto> list, Long parentId);
     Boolean delete(Long categoryId);
-    Boolean deleteAll(String categoryId);
+    Boolean deleteAll(Long categoryId);
 
     Boolean update(CategoryDto dto, Long id);
 
     CategoryVO getById(Long id);
     List<CategoryVO>    getRootNodes();
-    List<CategoryVO>    getChildren(String categoryId);
+    List<CategoryVO>    getChildren(Long categoryId);
 }

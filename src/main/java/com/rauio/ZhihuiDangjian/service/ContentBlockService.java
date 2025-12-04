@@ -16,7 +16,7 @@ public interface ContentBlockService {
 
     ContentBlockVO get(Long id);
 
-    List<ContentBlockVO> getAllByParentId(String parentId);
+    List<ContentBlockVO> getAllByParentId(Long parentId);
 
-    List<ContentBlockVO> getByResourceId(List<String> resourceId);
+    List<ContentBlockVO> getByResourceId(List<Long> resourceId);
 }

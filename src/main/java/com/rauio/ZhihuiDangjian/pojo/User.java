@@ -32,7 +32,7 @@ public class User implements UserDetails {
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
-    private String universityId;
+    private Long universityId;
     private String username;
     private String password;
     private String realName;

@@ -16,7 +16,7 @@ public class QuizOption {
     @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 
-    private String quizId;
+    private Long quizId;
 
     private String optionText;
 

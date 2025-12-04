@@ -62,7 +62,7 @@ public class QuizController {
 
     @GetMapping("/{id}/option")
     @PermissionAccess(UserType.STUDENT)
-    public ApiResponse<List<QuizOption>> getQuizOption(@PathVariable String id) {
+    public ApiResponse<List<QuizOption>> getQuizOption(@PathVariable Long id) {
         List<QuizOption> quizOptionList = quizOptionService.getByQuizId(id);
         return ApiResponse.ok(quizOptionList);
     }
