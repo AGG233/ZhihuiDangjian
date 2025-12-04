@@ -52,7 +52,7 @@ public class ContentController {
     @DeleteMapping("/carousel")
     @PermissionAccess(UserType.MANAGER)
     @Operation(summary = "删除轮播图")
-    public ApiResponse<Boolean> deleteCarousel(String id) {
+    public ApiResponse<Boolean> deleteCarousel(Long id) {
         Boolean result = contentBlockService.delete(id);
         return  ApiResponse.ok(result);
     }
