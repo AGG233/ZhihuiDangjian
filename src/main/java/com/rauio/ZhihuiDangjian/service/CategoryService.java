@@ -6,7 +6,7 @@ import com.rauio.ZhihuiDangjian.pojo.vo.CategoryVO;
 import java.util.List;
 
 public interface CategoryService {
-    public static final int MAX_LEVEL = 3;
+    int MAX_LEVEL = 3;
     Boolean add(CategoryDto dto);
 
     Boolean addChildren(List<CategoryDto> list, Long parentId);
