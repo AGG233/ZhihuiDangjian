@@ -33,7 +33,7 @@ public class ChapterDao {
         return chapterMapper.insert(chapter) > 0;
     }
 
-    public Boolean delete(String chapterId) {
+    public Boolean delete(Long chapterId) {
         return chapterMapper.deleteById(chapterId) > 0;
     }
 

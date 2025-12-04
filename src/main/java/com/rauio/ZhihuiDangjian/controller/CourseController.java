@@ -68,7 +68,7 @@ public class CourseController {
     @Operation(summary = "分页获取课程", description = "根据分页参数获取课程列表")
     @GetMapping("/page/{pageNum}/{pageSize}")
     @PermissionAccess(UserType.STUDENT)
-    public ApiResponse<PageVO<Object>> getPage(@RequestBody PageRequest pageRequest) throws JsonProcessingException {
+    public ApiResponse<PageVO<Object>> getPage(@RequestBody PageRequest pageRequest) {
         PageVO<Object> result = courseService.getPage(pageRequest.getPageNum(),pageRequest.getPageSize());
         return ApiResponse.ok(result);
     }

@@ -86,7 +86,7 @@ public class CategoryController {
             description = "向根目录id为路径参数的id添加子目录"
     )
     @PostMapping("/{id}/addChildren")
-    public ApiResponse<Boolean> addChildren(List<CategoryDto> children, @PathVariable String id) throws JsonProcessingException {
+    public ApiResponse<Boolean> addChildren(List<CategoryDto> children, @PathVariable Long id) throws JsonProcessingException {
         Boolean result = categoryService.addChildren(children, id);
         return ApiResponse.ok(result);
     }

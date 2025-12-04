@@ -71,19 +71,19 @@ public class UserController {
     * 用户考试信息
     * */
     @GetMapping("/{id}/quiz")
-    public ApiResponse<List<UserQuizAnswer>> getAllQuizAnswerOfUser(@PathVariable String id){
+    public ApiResponse<List<UserQuizAnswer>> getAllQuizAnswerOfUser(@PathVariable Long id){
         List<UserQuizAnswer> result = userQuizAnswerService.selectByUserId(id);
         return ApiResponse.ok(result);
     }
 
     @GetMapping("/{id}/quiz/{quizId}")
-    public ApiResponse<List<UserQuizAnswer>> getQuizAnswerOfQuiz(@PathVariable String quizId){
+    public ApiResponse<List<UserQuizAnswer>> getQuizAnswerOfQuiz(@PathVariable Long quizId){
         List<UserQuizAnswer> result = userQuizAnswerService.selectByQuizId(quizId);
         return ApiResponse.ok(result);
     }
 
     @GetMapping("/{id}/quiz/{quizId}/{optionId}")
-    public ApiResponse<UserQuizAnswer> getQuizAnswerOfOption(@PathVariable String optionId){
+    public ApiResponse<UserQuizAnswer> getQuizAnswerOfOption(@PathVariable Long optionId){
         UserQuizAnswer result = userQuizAnswerService.selectByOptionId(optionId);
         return ApiResponse.ok(result);
     }
@@ -111,7 +111,7 @@ public class UserController {
 
     @DeleteMapping("/{id}/quiz/{quizId}/{optionId}")
     @PermissionAccess(UserType.MANAGER)
-    public ApiResponse<Boolean> deleteQuizAnswer(@PathVariable String id, @PathVariable String quizId, @PathVariable String optionId){
+    public ApiResponse<Boolean> deleteQuizAnswer(@PathVariable Long id, @PathVariable Long quizId, @PathVariable String optionId){
         Boolean result = userQuizAnswerService.delete(quizId);
         return ApiResponse.ok(result);
     }

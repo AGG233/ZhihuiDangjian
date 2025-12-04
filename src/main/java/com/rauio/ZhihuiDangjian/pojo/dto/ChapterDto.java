@@ -12,7 +12,7 @@ import java.util.List;
 public class ChapterDto {
 
     @Schema(description = "章节所属的课程ID")
-    private String  courseId;
+    private Long  courseId;
 
     @Schema(description = "章节的标题",example = "党的第十九次全国代表大会讲解")
     private String  title;
