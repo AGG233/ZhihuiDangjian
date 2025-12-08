@@ -24,22 +24,22 @@ public class UserDto {
     private String  password;
 
     @Schema(description = "党员ID")
-    private String  party_member_id;
+    private String partyMemberId;
 
     @Schema(description = "党员状态")
-    private UserStatus party_status;
+    private UserStatus partyStatus;
 
     @Schema(description = "党支部名称")
     private String  branch_name;
 
     @Schema(description = "用户类型")
-    private UserType user_type;
+    private UserType userType;
 
     @Schema(description = "学校ID")
-    private String  university_id;
+    private String universityId;
 
     @Schema(description = "入党时间")
-    private LocalDateTime    joinPartyDate;
+    private LocalDateTime  joinPartyDate;
 
     @Sensitive(type = Sensitive.SensitiveType.EMAIL)
     @Schema(description = "邮箱")
