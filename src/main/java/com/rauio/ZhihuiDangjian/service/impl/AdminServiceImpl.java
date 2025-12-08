@@ -2,6 +2,7 @@ package com.rauio.ZhihuiDangjian.service.impl;
 
 import com.baomidou.mybatisplus.core.batch.MybatisBatch;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.ZhihuiDangjian.mapper.UserMapper;
 import com.rauio.ZhihuiDangjian.pojo.User;
 import com.rauio.ZhihuiDangjian.pojo.convertor.UserConvertor;
@@ -31,7 +32,7 @@ public class AdminServiceImpl implements AdminService {
     public String addUser(List<UserDto> user) {
         List<User> list = new ArrayList<>();
         for (UserDto dto : user) {
-            dto.setUser_type(UserType.STUDENT);
+            dto.setUserType(UserType.STUDENT);
             dto.setPassword(passwordEncoder.encode(dto.getPassword()));
             list.add(userConvertor.toEntity(dto));
         }
@@ -54,7 +55,7 @@ public class AdminServiceImpl implements AdminService {
 
         List<User> list = new ArrayList<>();
         for (UserDto dto : user) {
-            dto.setUser_type(UserType.STUDENT);
+            dto.setUserType(UserType.STUDENT);
             dto.setPassword(passwordEncoder.encode(dto.getPassword()));
             list.add(userConvertor.toEntity(dto));
         }
@@ -68,7 +69,7 @@ public class AdminServiceImpl implements AdminService {
     public String addSchoolAdmin(List<UserDto> user) {
         List<User> list = new ArrayList<>();
         for (UserDto dto : user) {
-            dto.setUser_type(UserType.TEACHER);
+            dto.setUserType(UserType.TEACHER);
             dto.setPassword(passwordEncoder.encode(dto.getPassword()));
             list.add(userConvertor.toEntity(dto));
         }
@@ -101,19 +102,22 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public List<User> getUser(UserDto userDto) {
-        String universityId = userService.getUserFromAuthentication().getUniversityId();
+    public Page<User> getUser(UserDto userDto, int pageNum, int pageSize) {
+        Long universityId = userService.getUserFromAuthentication().getUniversityId();
+        Page<User> pageInfo = new Page<>(pageNum, pageSize);
+        
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-
-        wrapper.eq(User::getUniversityId,universityId)
-                .like(User::getUsername,userDto.getUsername())
-                .like(User::getPartyMemberId,userDto.getParty_member_id())
+        
+        wrapper.eq(User::getUniversityId, universityId)
+                .like(User::getUsername, userDto.getUsername())
+                .like(User::getPartyMemberId, userDto.getPartyMemberId())
                 .like(User::getRealName, userDto.getRealName())
                 .like(User::getPhone, userDto.getPhone())
-                .like(User::getBranchName,userDto.getBranch_name())
-                .like(User::getEmail,userDto.getEmail())
-                .like(User::getUserType,userDto.getUser_type());
-
-        return userMapper.selectList(wrapper);
+                .like(User::getBranchName, userDto.getBranchName())
+                .like(User::getEmail, userDto.getEmail())
+                .like(User::getUserType, userDto.getUserType());
+        
+        userMapper.selectPage(pageInfo, wrapper);
+        return pageInfo;
     }
 }
