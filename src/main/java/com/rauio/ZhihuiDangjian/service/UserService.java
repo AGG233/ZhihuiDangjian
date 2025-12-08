@@ -20,4 +20,5 @@ public interface UserService {
     Boolean     isUserBelongsToTheSchool(Long id, String schoolId);
 
 
+    Page<User> getUser(UserDto userDto, int pageNum, int pageSize);
 }
