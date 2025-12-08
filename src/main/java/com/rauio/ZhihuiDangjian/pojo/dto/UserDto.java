@@ -30,7 +30,7 @@ public class UserDto {
     private UserStatus partyStatus;
 
     @Schema(description = "党支部名称")
-    private String  branch_name;
+    private String branchName;
 
     @Schema(description = "用户类型")
     private UserType userType;
