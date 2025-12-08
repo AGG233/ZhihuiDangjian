@@ -1,5 +1,6 @@
 package com.rauio.ZhihuiDangjian.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.ZhihuiDangjian.pojo.User;
 import com.rauio.ZhihuiDangjian.pojo.dto.UserDto;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +14,6 @@ public interface SchoolAdminService {
     int             updateUser(@RequestBody List<UserDto> userDto);
     int             deleteUser(@RequestBody List<UserDto> userIdList);
     User            getUser(@RequestParam String id);
-    List<User>      getUser(@RequestBody UserDto userDto);
+    Page<User>      getUser(UserDto userDto, int pageNum, int pageSize);
 
 }
