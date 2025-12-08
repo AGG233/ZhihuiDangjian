@@ -13,7 +13,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.ToString;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @ToString
@@ -74,8 +74,8 @@ public class RegisterRequest {
 
     @NotBlank(message = "学校ID不能为空")
     @Schema(description = "学校ID")
-    private String universityId;
+    private Long universityId;
 
     @Schema(description = "入党时间")
-    private Date joinPartyDate;
+    private LocalDateTime joinPartyDate;
 }
