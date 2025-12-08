@@ -1,9 +1,11 @@
 package com.rauio.ZhihuiDangjian.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.ZhihuiDangjian.aop.annotation.PermissionAccess;
 import com.rauio.ZhihuiDangjian.pojo.Course;
 import com.rauio.ZhihuiDangjian.pojo.User;
 import com.rauio.ZhihuiDangjian.pojo.UserQuizAnswer;
+import com.rauio.ZhihuiDangjian.pojo.dto.UserDto;
 import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
 import com.rauio.ZhihuiDangjian.pojo.vo.UserVO;
 import com.rauio.ZhihuiDangjian.service.CourseService;
@@ -38,6 +40,16 @@ public class UserController {
     }
 
     @Operation(
+            summary = "获取用户信息",
+            description = "通过用户请求体的信息模糊查询条件匹配的用户"
+    )
+    @GetMapping("/{pageNum}/{pageSize}")
+    public ApiResponse<Page<User>> getByDto(@RequestBody UserDto  userDto,@PathVariable int pageNum, @PathVariable int pageSize){
+        Page<User> user = userService.getUser(userDto,pageNum,pageSize);
+        return ApiResponse.ok(user);
+    }
+
+    @Operation(
             summary = "更新用户信息",
             description = "通过ID更新用户信息"
     )
@@ -55,7 +67,6 @@ public class UserController {
             description = "通过ID删除用户"
     )
     @DeleteMapping("/{id}")
-    @Deprecated
     public ApiResponse<Object> delete(@Parameter(description = "用户ID") @PathVariable Long id){
         Boolean result = userService.delete(id);
         return ApiResponse.ok("404","接口已经弃用",null);

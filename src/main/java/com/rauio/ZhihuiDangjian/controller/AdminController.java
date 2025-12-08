@@ -1,6 +1,7 @@
 package com.rauio.ZhihuiDangjian.controller;
 
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.ZhihuiDangjian.aop.annotation.PermissionAccess;
 import com.rauio.ZhihuiDangjian.pojo.User;
 import com.rauio.ZhihuiDangjian.pojo.dto.UserDto;
@@ -23,10 +24,10 @@ public class AdminController {
 
     private final AdminService adminService;
 
-    @GetMapping("/user")
+    @GetMapping("/user/{pageNum}/{pageSize}")
     @Operation(description = "获取普通用户和高校管理员信息，请求体为用户请求体")
-    public ApiResponse<List<User>> getUser(@RequestParam UserDto userDto) {
-        List<User>  result = adminService.getUser(userDto);
+    public ApiResponse<Page<User>> getUser(@RequestParam UserDto userDto, @PathVariable int pageNum, @PathVariable int pageSize) {
+        Page<User> result = adminService.getUser(userDto, pageNum, pageSize);
         return ApiResponse.ok(result);
     }
 

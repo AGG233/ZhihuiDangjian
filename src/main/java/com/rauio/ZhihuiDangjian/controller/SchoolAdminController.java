@@ -1,6 +1,7 @@
 package com.rauio.ZhihuiDangjian.controller;
 
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.ZhihuiDangjian.aop.annotation.PermissionAccess;
 import com.rauio.ZhihuiDangjian.pojo.User;
 import com.rauio.ZhihuiDangjian.pojo.dto.UserDto;
@@ -53,10 +54,10 @@ public class SchoolAdminController {
         return ApiResponse.ok(user);
     }
 
-    @GetMapping("/user")
+    @GetMapping("/user/{pageNum}/{pageSize}")
     @Operation(summary = "通过条件获取符合条件的用户",description = "比如要搜索姓名含有陈，且手机号码含有133，邮箱含有qaq在相应字段填写即可")
-    public ApiResponse<List<User>> getUser(@RequestBody UserDto userDto) {
-        List<User> user = schoolAdminService.getUser(userDto);
+    public ApiResponse<Page<User>> getUser(@RequestBody UserDto userDto, @PathVariable int pageNum, @PathVariable int pageSize) {
+        Page<User> user = schoolAdminService.getUser(userDto, pageNum, pageSize);
         return ApiResponse.ok(user);
     }
 }
