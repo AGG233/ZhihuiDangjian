@@ -22,7 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
 
@@ -61,7 +61,7 @@ public class AuthServiceImpl extends HttpServlet implements AuthService {
     }
 
     @Override
-    public ApiResponse register(RegisterRequest registerRequest) {
+    public ApiResponse<Object> register(RegisterRequest registerRequest) {
         if (!captchaService.validate(registerRequest.getCaptchaUUID(), registerRequest.getCaptchaCode())) {
             throw new BusinessException(ARGS_ERROR,"验证码错误");
         }
@@ -76,9 +76,9 @@ public class AuthServiceImpl extends HttpServlet implements AuthService {
                 .branchName(registerRequest.getBranch_name())
                 .email(registerRequest.getEmail())
                 .phone(registerRequest.getPhone())
-                .universityId(universitiesService.getIdByName(registerRequest.getUniversityId()))
-                .createdAt(new Date())
-                .updatedAt(new Date())
+                .universityId(registerRequest.getUniversityId())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
 
         // todo 创建用户时传入类型可以创建指定的用户类型
