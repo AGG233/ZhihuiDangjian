@@ -27,44 +27,44 @@ public class UserQuizAnswerServiceImpl implements UserQuizAnswerService {
     }
 
     @Override
-    @PermissionAccess(UserType.TEACHER)
+    @PermissionAccess(UserType.SCHOOL)
     public Boolean update(UserQuizAnswer userQuizAnswer) {
         return userQuizAnswerMapper.updateById(userQuizAnswer) > 0;
     }
 
     @Override
     @PermissionAccess(UserType.MANAGER)
-    public Boolean delete(String quizId) {
+    public Boolean delete(Long quizId) {
         return userQuizAnswerMapper.deleteById(quizId) > 0;
     }
 
     @Override
-    public List<UserQuizAnswer> selectByQuizId(String quizId) {
+    public List<UserQuizAnswer> selectByQuizId(Long quizId) {
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
-        wrapper.eq(UserQuizAnswer::getOptionId, quizId);
+        wrapper.eq(UserQuizAnswer::getId, quizId);
         return userQuizAnswerMapper.selectList(wrapper);
     }
 
     @Override
-    public UserQuizAnswer selectByOptionId(String optionId) {
+    public UserQuizAnswer selectByOptionId(Long optionId) {
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
-        wrapper.eq(UserQuizAnswer::getOptionId, optionId);
+        wrapper.eq(UserQuizAnswer::getId, optionId);
         return userQuizAnswerMapper.selectOne(wrapper);
     }
 
 
     @Override
-    public List<UserQuizAnswer> selectByUserId(String userId) {
+    public List<UserQuizAnswer> selectByUserId(Long userId) {
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
-        wrapper.eq(UserQuizAnswer::getUserId, userId);
+        wrapper.eq(UserQuizAnswer::getId, userId);
         return userQuizAnswerMapper.selectList(wrapper);
     }
 
     @Override
-    public List<UserQuizAnswer> selectByUserIdAndQuizId(String userId, String quizId) {
+    public List<UserQuizAnswer> selectByUserIdAndQuizId(Long userId, Long quizId) {
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
-        wrapper.eq(UserQuizAnswer::getUserId, userId);
-        wrapper.eq(UserQuizAnswer::getQuizId, quizId);
+        wrapper.eq(UserQuizAnswer::getId, userId);
+        wrapper.eq(UserQuizAnswer::getId, quizId);
         return userQuizAnswerMapper.selectList(wrapper);
     }
 }
