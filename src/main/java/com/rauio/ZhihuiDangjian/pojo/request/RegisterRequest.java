@@ -36,25 +36,25 @@ public class RegisterRequest {
     @NotBlank(message = "真实姓名不能为空")
     @Size(min = 2, max = 16, message = "真实姓名长度必须在2-50个字符之间")
     @Schema(description = "真实姓名")
-    private String real_name;
+    private String realName;
 
     @NotBlank(message = "身份证号码不能为空")
     @Size(min = 10,max = 18, message = "身份证不合法")
     @IsIdCard
     @Schema(description = "身份证号码")
-    private String id_card;
+    private String idCard;
 
     @Size(min = 20, max = 20, message = "党员编号长度必须为20")
     @Schema(description = "党员编号，如果没有请留空")
-    private String party_member_id;
+    private Long partyMemberId;
 
     @NotNull(message = "党员状态不能为空")
     @Schema(description = "党员状态")
-    private UserStatus party_status;
+    private UserStatus partyStatus;
 
     @Size(min = 2, max = 100, message = "分支名称长度必须在2-100个字符之间")
     @Schema(description = "所属党支部名称")
-    private String branch_name;
+    private String branchName;
 
     @Email
     @Schema(description = "邮箱")
@@ -78,4 +78,10 @@ public class RegisterRequest {
 
     @Schema(description = "入党时间")
     private LocalDateTime joinPartyDate;
+
+    @Schema(hidden = true)
+    private LocalDateTime createdAt;
+
+    @Schema(hidden = true)
+    private LocalDateTime updatedAt;
 }
