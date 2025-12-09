@@ -21,7 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/category")
 @RequiredArgsConstructor
-@PermissionAccess(UserType.TEACHER)
+@PermissionAccess(UserType.SCHOOL)
 public class CategoryController {
     private final CategoryService categoryService;
     private final ObjectMapper objectMapper;
