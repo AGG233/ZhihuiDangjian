@@ -102,7 +102,7 @@ public class JwtServiceImpl implements JwtService {
         String actualSecretKey = getHmacSecretKey();
 
         return JWT.create()
-                .withSubject(user.getId())
+                .withSubject(String.valueOf(user.getId()))
                 .withClaim("role", user.getUserType().toString())
                 .withIssuedAt(now)
                 .withExpiresAt(expiryDate)
@@ -132,7 +132,7 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public Boolean validateToken(String token, User user) {
         String id = getIdFromToken(token);
-        if (id == null || !id.equals(user.getId())) {
+        if (!id.equals(String.valueOf(user.getId()))) {
             return false;
         }
 
