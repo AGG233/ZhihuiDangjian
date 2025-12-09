@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -74,10 +74,10 @@ public class UserChapterProgressServiceImpl implements UserChapterProgressServic
         }
 
         UserChapterProgress progress = convertor.toEntity(dto);
-        progress.setUpdatedAt(new Date());
+        progress.setUpdatedAt(LocalDateTime.now());
         
         if (progress.getFirstViewedAt() == null) {
-            progress.setFirstViewedAt(new Date());
+            progress.setFirstViewedAt(LocalDateTime.now());
         }
 
         Boolean result = userChapterProgressDao.insert(progress);
@@ -99,11 +99,11 @@ public class UserChapterProgressServiceImpl implements UserChapterProgressServic
         }
 
         UserChapterProgress progress = convertor.toEntity(dto);
-        progress.setUpdatedAt(new Date());
+        progress.setUpdatedAt(LocalDateTime.now());
         
         // 如果进度达到100%，自动设置完成时间
         if (progress.getProgress() != null && progress.getProgress() >= 100 && existing.getCompletedAt() == null) {
-            progress.setCompletedAt(new Date());
+            progress.setCompletedAt(LocalDateTime.now());
             progress.setStatus("completed");
         }
 
