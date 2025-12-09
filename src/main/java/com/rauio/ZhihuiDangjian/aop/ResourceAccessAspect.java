@@ -47,7 +47,7 @@ public class ResourceAccessAspect {
 
         HttpServletRequest request = attributes.getRequest();
         String jwt = request.getHeader("Authorization").substring(7);
-        String currentUser = SecurityUtils.getCurrentUserId();
+        String currentUser = String.valueOf(SecurityUtils.getCurrentUserId());
         String targetUser = Objects.requireNonNull(getTargetUserId(joinPoint, resourceAccess.id())).toString();
         String accessUserRole = jwtService.getDecodedJWT(jwt).getClaim("role").asString();
 
