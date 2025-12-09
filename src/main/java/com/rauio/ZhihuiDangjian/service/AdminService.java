@@ -14,4 +14,11 @@ public interface AdminService {
     Boolean updateUser(List<UserDto> user);
 
     Page<User> getUser(UserDto userDto, int pageNum, int pageSize);
+
+    // 学校管理员功能
+    Boolean addSchoolUser(List<UserDto> userDtoList);
+    Boolean updateSchoolUser(List<UserDto> userDto);
+    Boolean deleteSchoolUser(List<String> userIdList);
+    User getSchoolUser(String id);
+    Page<User> getSchoolUser(UserDto userDto, int pageNum, int pageSize);
 }
