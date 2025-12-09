@@ -14,7 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Service
@@ -64,12 +65,11 @@ public class UserLearningRecordServiceImpl implements UserLearningRecordService 
         UserLearningRecord record = convertor.toEntity(dto);
         
         if (record.getCreatedAt() == null) {
-            record.setCreatedAt(new Date());
+            record.setCreatedAt(LocalDateTime.now());
         }
-        
-        // 自动计算学习时长（如果提供了开始和结束时间）
-        if (record.getStartTime() != null && record.getEndTime() != null && record.getDuration() == null) {
-            long durationMillis = record.getEndTime().getTime() - record.getStartTime().getTime();
+
+        if (record.getStartTime() != null && record.getEndTime() != null) {
+            long durationMillis = record.getEndTime().toInstant(ZoneOffset.UTC).toEpochMilli() - record.getStartTime().toInstant(ZoneOffset.UTC).toEpochMilli();
             record.setDuration((int) (durationMillis / 1000)); // 转换为秒
         }
 
@@ -95,7 +95,7 @@ public class UserLearningRecordServiceImpl implements UserLearningRecordService 
         
         // 自动计算学习时长（如果提供了开始和结束时间）
         if (record.getStartTime() != null && record.getEndTime() != null) {
-            long durationMillis = record.getEndTime().getTime() - record.getStartTime().getTime();
+            long durationMillis = record.getEndTime().toInstant(ZoneOffset.UTC).toEpochMilli() - record.getStartTime().toInstant(ZoneOffset.UTC).toEpochMilli();
             record.setDuration((int) (durationMillis / 1000)); // 转换为秒
         }
 
