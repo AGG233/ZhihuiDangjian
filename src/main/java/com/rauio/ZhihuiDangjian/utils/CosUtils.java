@@ -64,7 +64,7 @@ public class CosUtils {
     public static ObjectMetadata setObjectMetadata(User user, MultipartFile file) {
         ObjectMetadata metadata = new ObjectMetadata();
         Map<String, String> userMeta = new HashMap<>();
-        userMeta.put("user", user.getId());
+        userMeta.put("user", String.valueOf(user.getId()));
         metadata.setContentLength(file.getSize());
         metadata.setContentType(file.getContentType());
         metadata.setUserMetadata(userMeta);
