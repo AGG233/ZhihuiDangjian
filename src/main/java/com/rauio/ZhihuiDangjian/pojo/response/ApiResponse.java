@@ -1,5 +1,6 @@
 package com.rauio.ZhihuiDangjian.pojo.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +26,7 @@ public class ApiResponse<T> {
     private T data;
     
     @Schema(hidden = true)
+    @JsonIgnore
     private ResponseEntity<ApiResponse<T>> responseEntity;
 
     public ApiResponse() {
