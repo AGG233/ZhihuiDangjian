@@ -69,11 +69,11 @@ public class AuthServiceImpl extends HttpServlet implements AuthService {
         User user = User.builder()
                 .username(registerRequest.getUsername())
                 .password(registerRequest.getPassword())
-                .realName(registerRequest.getReal_name())
-                .idCard(registerRequest.getId_card())
-                .partyMemberId(registerRequest.getParty_member_id())
-                .partyStatus(registerRequest.getParty_status())
-                .branchName(registerRequest.getBranch_name())
+                .realName(registerRequest.getRealName())
+                .idCard(registerRequest.getIdCard())
+                .partyMemberId(registerRequest.getPartyMemberId())
+                .partyStatus(registerRequest.getPartyStatus())
+                .branchName(registerRequest.getBranchName())
                 .email(registerRequest.getEmail())
                 .phone(registerRequest.getPhone())
                 .universityId(registerRequest.getUniversityId())
@@ -85,7 +85,7 @@ public class AuthServiceImpl extends HttpServlet implements AuthService {
         if(Objects.equals(registerRequest.getType(), "admin")){
             user.setUserType(UserType.MANAGER);
         } else if (Objects.equals(registerRequest.getType(), "teacher")) {
-            user.setUserType(UserType.TEACHER);
+            user.setUserType(UserType.SCHOOL);
         }else{
             user.setUserType(UserType.STUDENT);
         }
