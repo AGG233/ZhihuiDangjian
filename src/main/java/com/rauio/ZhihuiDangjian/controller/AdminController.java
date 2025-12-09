@@ -9,8 +9,10 @@ import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
 import com.rauio.ZhihuiDangjian.service.AdminService;
 import com.rauio.ZhihuiDangjian.utils.Spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +22,8 @@ import java.util.List;
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
 @PermissionAccess(UserType.MANAGER)
+@Slf4j
+@Tag(name = "统一管理员接口")
 public class AdminController {
 
     private final AdminService adminService;
