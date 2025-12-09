@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum UserType {
     STUDENT("学生"),
-    TEACHER("教师"),
+    SCHOOL("学校"),
     MANAGER("管理员");
 
     @EnumValue
