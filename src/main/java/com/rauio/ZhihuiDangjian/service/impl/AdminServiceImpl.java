@@ -63,70 +63,68 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper,User> implements Ad
     }
 
     @Override
-    public String deleteUser(List<String> idList) {
-        MybatisBatch<String> batch = new MybatisBatch<>(sqlSessionFactory,idList);
-        MybatisBatch.Method<User> method = new  MybatisBatch.Method<>(User.class);
-        return batch.execute(method.deleteById()).toString();
-    }
-
-    @Override
-    public String updateUser(List<UserDto> user) {
-
-        List<User> list = new ArrayList<>();
-        for (UserDto dto : user) {
-            dto.setUserType(UserType.STUDENT);
-            dto.setPassword(passwordEncoder.encode(dto.getPassword()));
-            list.add(userConvertor.toEntity(dto));
-        }
-        MybatisBatch<User> batch = new MybatisBatch<>(sqlSessionFactory,list);
-        MybatisBatch.Method<User> method = new  MybatisBatch.Method<>(User.class);
-
-        return batch.execute(method.updateById()).toString();
-    }
-
-    @Override
-    public String addSchoolAdmin(List<UserDto> user) {
-        List<User> list = new ArrayList<>();
-        for (UserDto dto : user) {
-            dto.setUserType(UserType.TEACHER);
-            dto.setPassword(passwordEncoder.encode(dto.getPassword()));
-            list.add(userConvertor.toEntity(dto));
-        }
-        MybatisBatch<User> batch = new MybatisBatch<>(sqlSessionFactory,list);
-        MybatisBatch.Method<User> method = new  MybatisBatch.Method<>(User.class);
-
-        return batch.execute(method.insert()).toString();
-    }
-
-    @Override
-    public String updateSchoolAdmin(List<UserDto> user) {
-        List<User> list = new ArrayList<>();
-        for (UserDto dto : user) {
-            dto.setPassword(passwordEncoder.encode(dto.getPassword()));
-            list.add(userConvertor.toEntity(dto));
-        }
-        MybatisBatch<User> batch = new MybatisBatch<>(sqlSessionFactory,list);
-        MybatisBatch.Method<User> method = new  MybatisBatch.Method<>(User.class);
-
-        return batch.execute(method.updateById()).toString();
-    }
-
-    @Override
-    public String deleteSchoolAdmin(List<String> idList) {
-
-        MybatisBatch<String> batch = new MybatisBatch<>(sqlSessionFactory,idList);
-        MybatisBatch.Method<User> method = new  MybatisBatch.Method<>(User.class);
-
-        return batch.execute(method.deleteById()).toString();
-    }
-
-    @Override
     public Page<User> getUser(UserDto userDto, int pageNum, int pageSize) {
+        Page<User> pageInfo = new Page<>(pageNum, pageSize);
+
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+
+        wrapper.like(User::getUsername, userDto.getUsername())
+                .like(User::getPartyMemberId, userDto.getPartyMemberId())
+                .like(User::getRealName, userDto.getRealName())
+                .like(User::getPhone, userDto.getPhone())
+                .like(User::getBranchName, userDto.getBranchName())
+                .like(User::getEmail, userDto.getEmail())
+                .like(User::getUserType, userDto.getUserType());
+
+        userMapper.selectPage(pageInfo, wrapper);
+        return pageInfo;
+    }
+
+    // 学校管理员功能实现
+    @Override
+    public Boolean addSchoolUser(List<UserDto> userDtoList) {
+        Long universityId = userService.getUserFromAuthentication().getUniversityId();
+
+        for (UserDto user : userDtoList) {
+            user.setUniversityId(universityId);
+        }
+        return this.addUser(userDtoList);
+    }
+
+    @Override
+    public Boolean updateSchoolUser(List<UserDto> userDto) {
+        Long universityId = userService.getUserFromAuthentication().getUniversityId();
+
+        for (UserDto user : userDto) {
+            if (!user.getUniversityId().equals(universityId)) throw new RuntimeException("用户：" +user.getUserId() +"与学校ID不匹配");
+            if (user.getUserType() != UserType.STUDENT) throw new RuntimeException("用户：" +user.getUserId() +"不是学生");
+        }
+
+        return this.addUser(userDto);
+    }
+
+    @Override
+    public Boolean deleteSchoolUser(List<String> userIdList) {
+        Long universityId = userService.getUserFromAuthentication().getUniversityId();
+
+        for (String id : userIdList) {
+            if (!id.equals(String.valueOf(universityId))) throw new RuntimeException("用户：" + id +"与学校ID不匹配");
+        }
+        return this.removeByIds(userIdList);
+    }
+
+    @Override
+    public User getSchoolUser(String id) {
+        return userMapper.selectById(id);
+    }
+
+    @Override
+    public Page<User> getSchoolUser(UserDto userDto, int pageNum, int pageSize) {
         Long universityId = userService.getUserFromAuthentication().getUniversityId();
         Page<User> pageInfo = new Page<>(pageNum, pageSize);
-        
+
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        
+
         wrapper.eq(User::getUniversityId, universityId)
                 .like(User::getUsername, userDto.getUsername())
                 .like(User::getPartyMemberId, userDto.getPartyMemberId())
@@ -135,7 +133,7 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper,User> implements Ad
                 .like(User::getBranchName, userDto.getBranchName())
                 .like(User::getEmail, userDto.getEmail())
                 .like(User::getUserType, userDto.getUserType());
-        
+
         userMapper.selectPage(pageInfo, wrapper);
         return pageInfo;
     }
