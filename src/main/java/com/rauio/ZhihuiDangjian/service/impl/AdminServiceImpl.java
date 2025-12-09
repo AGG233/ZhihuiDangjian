@@ -25,25 +25,41 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminServiceImpl extends ServiceImpl<UserMapper,User> implements AdminService{
 
-    private final UserConvertor  userConvertor;
+    private final UserConvertor userConvertor;
     private final PasswordEncoder passwordEncoder;
     private final SqlSessionFactory sqlSessionFactory;
     private final UserMapper userMapper;
     private final UserService userService;
 
+    // 系统管理员功能实现
     @Override
-    public String addUser(List<UserDto> user) {
-        List<User> list = new ArrayList<>();
-        for (UserDto dto : user) {
-            dto.setUserType(UserType.STUDENT);
-            dto.setPassword(passwordEncoder.encode(dto.getPassword()));
-            list.add(userConvertor.toEntity(dto));
+    public Boolean addUser(List<UserDto> dto) {
+        LocalDateTime now = LocalDateTime.now();
+
+        List<User> list = userConvertor.toEntityList(dto);
+        for (User user : list) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.setCreatedAt(now);
+            user.setUpdatedAt(now);
         }
+        return this.saveBatch(list);
+    }
 
-        MybatisBatch<User> batch = new MybatisBatch<>(sqlSessionFactory,list);
-        MybatisBatch.Method<User> method = new  MybatisBatch.Method<>(User.class);
+    @Override
+    public Boolean deleteUser(List<String> idList) {
+        return this.removeByIds(idList);
+    }
 
-        return batch.execute(method.insert()).toString();
+    @Override
+    public Boolean updateUser(List<UserDto> dto) {
+        LocalDateTime now = LocalDateTime.now();
+
+        List<User> list = userConvertor.toEntityList(dto);
+        for (User user : list) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.setUpdatedAt(now);
+        }
+        return this.saveOrUpdateBatch(list);
     }
 
     @Override
