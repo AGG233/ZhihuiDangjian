@@ -37,7 +37,7 @@ public class User implements UserDetails {
     private String password;
     private String realName;
     private String idCard;
-    private String partyMemberId;
+    private Long partyMemberId;
     private LocalDateTime   joinPartyDate;
     private UserStatus partyStatus;
     private String branchName;
@@ -45,6 +45,7 @@ public class User implements UserDetails {
     private String status;
     private String email;
     private String phone;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
     @TableField(fill = FieldFill.INSERT_UPDATE)
