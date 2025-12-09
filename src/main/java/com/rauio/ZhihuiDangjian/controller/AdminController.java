@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name= "系统管理员接口")
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
