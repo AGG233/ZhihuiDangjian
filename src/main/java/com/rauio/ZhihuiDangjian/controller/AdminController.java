@@ -28,51 +28,75 @@ public class AdminController {
 
     private final AdminService adminService;
 
-    @GetMapping("/user/{pageNum}/{pageSize}")
-    @Operation(description = "获取普通用户和高校管理员信息，请求体为用户请求体")
-    public ApiResponse<Page<User>> getUser(@RequestParam UserDto userDto, @PathVariable int pageNum, @PathVariable int pageSize) {
+    // 系统管理员接口功能
+    
+    @GetMapping("/users")
+    @Operation(description = "获取用户信息")
+    public ApiResponse<Page<User>> getUser(
+            @Parameter(description = "搜索条件")    @ModelAttribute UserDto userDto,
+            @Parameter(description = "页码")      @RequestParam(defaultValue = "1") int pageNum,
+            @Parameter(description = "页的大小")    @RequestParam(defaultValue = "10") int pageSize) {
         Page<User> result = adminService.getUser(userDto, pageNum, pageSize);
         return ApiResponse.ok(result);
     }
 
     @PutMapping("/user")
     @Operation(description = "更新普通用户和高校管理员信息，请求体为一个列表，列表元素为用户请求体")
-    public ApiResponse<String> updateUser(@RequestBody List<UserDto> user) {
-        String  result = adminService.updateUser(user);
+    public ApiResponse<Boolean> updateUser(@RequestBody List<UserDto> user) {
+        Boolean result = adminService.updateUser(user);
         return ApiResponse.ok(result);
     }
 
     @PostMapping("/user")
     @Operation(description = "添加用户，请求体为一个列表，列表元素为用户请求体")
-    public ApiResponse<String> addUser(@RequestBody List<UserDto> user){
-        String result = adminService.addUser(user);
+    public ApiResponse<Boolean> addUser(@RequestBody List<UserDto> user){
+        Boolean result = adminService.addUser(user);
         return ApiResponse.ok(result);
     }
 
     @DeleteMapping("/user")
     @Operation(description = "删除用户，请求体为一个用户ID列表")
-    public ApiResponse<String> deleteUser(@RequestBody List<String> idList) {
-        String result = adminService.deleteUser(idList);
+    public ApiResponse<Boolean> deleteUser(@RequestBody List<String> idList) {
+        Boolean result = adminService.deleteUser(idList);
         return ApiResponse.ok(result);
     }
 
-    @PostMapping("/school")
-    @Operation(description = "添加高校管理员账号")
-    public ApiResponse<String> addSchoolAdmin(@RequestBody List<UserDto> user) {
-        String  result = adminService.addSchoolAdmin(user);
-        return ApiResponse.ok(result);
-    }
-    @PutMapping("/school")
-    @Operation(description = "修改高校管理员账号")
-    public ApiResponse<String> updateSchoolAdmin(@RequestBody List<UserDto> user) {
-        String  result = adminService.updateSchoolAdmin(user);
-        return ApiResponse.ok(result);
-    }
-    @DeleteMapping("/school")
-    @Operation(description = "添加高校管理员账号")
-    public ApiResponse<String> deleteSchoolAdmin(@RequestBody List<String> idList) {
-        String  result = adminService.deleteSchoolAdmin(idList);
+    // 学校管理员接口功能
+    @PostMapping("/school/user")
+    @Operation(summary = "添加用户", description = "添加用户")
+    public ApiResponse<Boolean> addSchoolUser(@RequestBody List<UserDto> userDtoList) {
+        Boolean result = adminService.addSchoolUser(userDtoList);
         return ApiResponse.ok(result);
     }
 
+    @PutMapping("/school/user")
+    @Operation(summary = "更新用户", description = "更新用户")
+    public ApiResponse<Boolean> updateSchoolUser(@RequestBody List<UserDto> userDto) {
+        Boolean result = adminService.updateSchoolUser(userDto);
+        return ApiResponse.ok(result);
+    }
+
+    @DeleteMapping("/school/user")
+    @Operation(summary = "删除用户", description = "删除用户")
+    public ApiResponse<Boolean> deleteSchoolUser(@RequestBody List<String> userIdList) {
+        Boolean result = adminService.deleteSchoolUser(userIdList);
+        return ApiResponse.ok(result);
+    }
+
+    @GetMapping("/school/user/{id}")
+    @Operation(summary = "通过ID获取用户", description = "通过ID获取用户")
+    public ApiResponse<User> getSchoolUser(@PathVariable String id) {
+        User user = adminService.getSchoolUser(id);
+        return ApiResponse.ok(user);
+    }
+
+    @GetMapping("/school/users")
+    @Operation(summary = "通过条件获取符合条件的用户", description = "比如要搜索姓名含有陈，且手机号码含有133，邮箱含有qaq的用户，在姓名、手机号码，邮箱字段填写陈、133、qaq即可")
+    public ApiResponse<Page<User>> getSchoolUser(
+            @ModelAttribute UserDto userDto,
+            @Parameter(description = "页码") @RequestParam(defaultValue = "1") int pageNum,
+            @Parameter(description = "页的大小") @RequestParam(defaultValue = "10") int pageSize) {
+        Page<User> user = adminService.getSchoolUser(userDto, pageNum, pageSize);
+        return ApiResponse.ok(user);
+    }
 }
