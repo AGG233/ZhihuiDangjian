@@ -1,8 +1,8 @@
 package com.rauio.ZhihuiDangjian.service.impl;
 
-import com.baomidou.mybatisplus.core.batch.MybatisBatch;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.ZhihuiDangjian.mapper.UserMapper;
 import com.rauio.ZhihuiDangjian.pojo.User;
 import com.rauio.ZhihuiDangjian.pojo.convertor.UserConvertor;
@@ -14,13 +14,16 @@ import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
 @RequiredArgsConstructor
-public class AdminServiceImpl implements AdminService {
+public class AdminServiceImpl extends ServiceImpl<UserMapper,User> implements AdminService{
 
     private final UserConvertor  userConvertor;
     private final PasswordEncoder passwordEncoder;
