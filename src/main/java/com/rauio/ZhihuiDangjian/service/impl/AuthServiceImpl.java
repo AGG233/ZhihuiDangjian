@@ -109,7 +109,8 @@ public class AuthServiceImpl extends HttpServlet implements AuthService {
 
             Map<String, String> result = jwtService.refreshAccessToken(refreshToken);
 
-            return new Result<Map<String,String>>(result);
+
+            return new Result<>(result);
         } catch (JWTVerificationException e) {
             // JWT验证失败，返回非法请求
             new Result<>();
