@@ -4,7 +4,7 @@ package com.rauio.ZhihuiDangjian.controller;
 import com.rauio.ZhihuiDangjian.aop.annotation.PermissionAccess;
 import com.rauio.ZhihuiDangjian.pojo.Quiz;
 import com.rauio.ZhihuiDangjian.pojo.QuizOption;
-import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
+import com.rauio.ZhihuiDangjian.pojo.response.Result;
 import com.rauio.ZhihuiDangjian.service.QuizOptionService;
 import com.rauio.ZhihuiDangjian.service.QuizService;
 import com.rauio.ZhihuiDangjian.utils.Spec.UserType;
@@ -18,7 +18,7 @@ import java.util.List;
 @RequestMapping("/quiz")
 @RequiredArgsConstructor
 @Tag(name = "试题接口")
-@PermissionAccess(UserType.TEACHER)
+@PermissionAccess(UserType.SCHOOL)
 public class QuizController {
 
     private final QuizService quizService;
@@ -26,34 +26,34 @@ public class QuizController {
 
     @GetMapping("/{id}")
     @PermissionAccess(UserType.STUDENT)
-    public ApiResponse<Quiz> getQuiz(@PathVariable Long id) {
+    public Result<Quiz> getQuiz(@PathVariable Long id) {
         Quiz quiz = quizService.get(id);
-        return ApiResponse.ok(quiz);
+        return Result.ok(quiz);
     }
 
     @GetMapping("/{chapterId}")
     @PermissionAccess(UserType.STUDENT)
-    public ApiResponse<List<Quiz>> getQuizOfChapter(@PathVariable String chapterId) {
+    public Result<List<Quiz>> getQuizOfChapter(@PathVariable String chapterId) {
         List<Quiz> quizList = quizService.getByChapterId(chapterId);
-        return ApiResponse.ok(quizList);
+        return Result.ok(quizList);
     }
 
     @PostMapping("/")
-    public ApiResponse<Boolean> createQuiz(@RequestBody Quiz quiz) {
+    public Result<Boolean> createQuiz(@RequestBody Quiz quiz) {
         Boolean createdQuiz = quizService.insert(quiz);
-        return ApiResponse.ok(createdQuiz);
+        return Result.ok(createdQuiz);
     }
 
     @PutMapping("/")
-    public ApiResponse<Boolean> updateQuiz(@RequestBody Quiz quiz) {
+    public Result<Boolean> updateQuiz(@RequestBody Quiz quiz) {
         Boolean updatedQuiz = quizService.update(quiz);
-        return ApiResponse.ok(updatedQuiz);
+        return Result.ok(updatedQuiz);
     }
 
     @DeleteMapping("/")
-    public ApiResponse<Boolean> deleteQuiz(@RequestBody Quiz quiz) {
+    public Result<Boolean> deleteQuiz(@RequestBody Quiz quiz) {
         Boolean deletedQuiz = quizService.delete(quiz.getId());
-        return ApiResponse.ok(deletedQuiz);
+        return Result.ok(deletedQuiz);
     }
 
     /*
@@ -62,32 +62,32 @@ public class QuizController {
 
     @GetMapping("/{id}/option")
     @PermissionAccess(UserType.STUDENT)
-    public ApiResponse<List<QuizOption>> getQuizOption(@PathVariable Long id) {
+    public Result<List<QuizOption>> getQuizOption(@PathVariable Long id) {
         List<QuizOption> quizOptionList = quizOptionService.getByQuizId(id);
-        return ApiResponse.ok(quizOptionList);
+        return Result.ok(quizOptionList);
     }
 
     @GetMapping("/{id}/option/{optionId}")
-    public ApiResponse<QuizOption> getByOptionId(@PathVariable Long optionId) {
+    public Result<QuizOption> getByOptionId(@PathVariable Long optionId) {
         QuizOption quizOption = quizOptionService.get(optionId);
-        return ApiResponse.ok(quizOption);
+        return Result.ok(quizOption);
     }
 
     @PostMapping("/{id}/option")
-    public ApiResponse<Boolean> createQuizOption(@RequestBody QuizOption quizOption) {
+    public Result<Boolean> createQuizOption(@RequestBody QuizOption quizOption) {
         Boolean createdQuizOption = quizOptionService.insert(quizOption.getQuizId(), quizOption);
-        return ApiResponse.ok(createdQuizOption);
+        return Result.ok(createdQuizOption);
     }
 
     @PutMapping("/{id}/option")
-    public ApiResponse<Boolean> updateQuizOption(@RequestBody QuizOption quizOption) {
+    public Result<Boolean> updateQuizOption(@RequestBody QuizOption quizOption) {
         Boolean updatedQuizOption = quizOptionService.update(quizOption.getQuizId(), quizOption);
-        return ApiResponse.ok(updatedQuizOption);
+        return Result.ok(updatedQuizOption);
     }
 
     @DeleteMapping("/{id}/option/{optionId}")
-    public ApiResponse<Boolean> deleteQuizOption(@PathVariable Long optionId, @PathVariable String id) {
+    public Result<Boolean> deleteQuizOption(@PathVariable Long optionId, @PathVariable String id) {
         Boolean deletedQuizOption = quizOptionService.delete(optionId);
-        return ApiResponse.ok(deletedQuizOption);
+        return Result.ok(deletedQuizOption);
     }
 }

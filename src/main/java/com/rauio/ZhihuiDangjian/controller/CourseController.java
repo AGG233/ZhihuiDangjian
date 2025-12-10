@@ -6,12 +6,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rauio.ZhihuiDangjian.aop.annotation.PermissionAccess;
 import com.rauio.ZhihuiDangjian.pojo.dto.CourseDto;
 import com.rauio.ZhihuiDangjian.pojo.request.PageRequest;
-import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
+import com.rauio.ZhihuiDangjian.pojo.response.Result;
 import com.rauio.ZhihuiDangjian.pojo.vo.CourseVO;
 import com.rauio.ZhihuiDangjian.pojo.vo.PageVO;
 import com.rauio.ZhihuiDangjian.service.CourseService;
 import com.rauio.ZhihuiDangjian.utils.Spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/course")
 @RequiredArgsConstructor
-@PermissionAccess(UserType.TEACHER)
+@PermissionAccess(UserType.SCHOOL)
 public class CourseController {
 
     private final CourseService     courseService;
@@ -30,32 +31,31 @@ public class CourseController {
     @Operation(summary = "获取课程详情", description = "根据课程ID获取课程详细信息")
     @GetMapping("/{id}")
     @PermissionAccess(UserType.STUDENT)
-    public ApiResponse<CourseVO> get(@PathVariable Long id) throws JsonProcessingException {
+    public Result<CourseVO> get(@PathVariable Long id) throws JsonProcessingException {
         CourseVO result = courseService.get(id);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 
     @Operation(summary = "更新课程信息", description = "根据课程ID更新课程信息")
     @PutMapping("/{id}")
-    public ApiResponse<Boolean> update(@RequestBody CourseDto course, @PathVariable Long id) throws JsonProcessingException {
+    public Result<Boolean> update(@RequestBody CourseDto course, @PathVariable Long id) throws JsonProcessingException {
         Boolean result = courseService.update(course,id);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 
     @Operation(summary = "创建课程", description = "创建一个新的课程")
     @PostMapping("/")
-    public ApiResponse<Boolean> insert(@RequestBody CourseDto course) throws JsonProcessingException {
+    public Result<Boolean> insert(@RequestBody CourseDto course) throws JsonProcessingException {
         Boolean result = courseService.create(course);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 
     @Operation(summary = "删除课程", description = "根据课程ID删除指定课程")
     @DeleteMapping("/{id}")
-    public ApiResponse<Boolean> delete(@PathVariable Long id) throws JsonProcessingException {
+    public Result<Boolean> delete(@PathVariable Long id) throws JsonProcessingException {
         Boolean result = courseService.delete(id);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
-
 //    @Operation(summary = "获取所有课程", description = "获取系统中所有的课程列表")
 //    @GetMapping("/all")
 //    public ResponseEntity<String> getAll() throws JsonProcessingException {
@@ -66,10 +66,13 @@ public class CourseController {
 //        return ResponseEntity.ok(json);
 //    }
     @Operation(summary = "分页获取课程", description = "根据分页参数获取课程列表")
-    @GetMapping("/page/{pageNum}/{pageSize}")
+    @GetMapping("/page")
     @PermissionAccess(UserType.STUDENT)
-    public ApiResponse<PageVO<Object>> getPage(@RequestBody PageRequest pageRequest) {
-        PageVO<Object> result = courseService.getPage(pageRequest.getPageNum(),pageRequest.getPageSize());
-        return ApiResponse.ok(result);
+    public Result<PageVO<Object>> getPage(
+            @ModelAttribute PageRequest pageRequest,
+            @Parameter(description = "页码") @RequestParam(defaultValue = "1") int pageNum,
+            @Parameter(description = "页的大小") @RequestParam(defaultValue = "10") int pageSize) {
+        PageVO<Object> result = courseService.getPage(pageNum, pageSize);
+        return Result.ok(result);
     }
 }

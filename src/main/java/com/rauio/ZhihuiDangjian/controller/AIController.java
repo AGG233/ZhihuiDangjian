@@ -1,7 +1,7 @@
 package com.rauio.ZhihuiDangjian.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
+import com.rauio.ZhihuiDangjian.pojo.response.Result;
 import com.rauio.ZhihuiDangjian.service.impl.AIServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,11 +22,11 @@ public class AIController {
 
     @Operation(summary = "AI聊天接口", description = "message为聊天内容（提示词）")
     @GetMapping(value= "/chat")
-    public ApiResponse<String> chat(@RequestParam String message) throws JsonProcessingException {
+    public Result<String> chat(@RequestParam String message) throws JsonProcessingException {
         Flux<String> flux = aiServiceImpl.chat(message);
         StringBuilder sb = new StringBuilder();
         flux.subscribe(sb::append);
         String result = sb.toString();
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 }

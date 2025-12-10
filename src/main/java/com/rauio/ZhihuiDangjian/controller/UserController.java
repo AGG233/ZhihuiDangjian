@@ -6,7 +6,7 @@ import com.rauio.ZhihuiDangjian.pojo.Course;
 import com.rauio.ZhihuiDangjian.pojo.User;
 import com.rauio.ZhihuiDangjian.pojo.UserQuizAnswer;
 import com.rauio.ZhihuiDangjian.pojo.dto.UserDto;
-import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
+import com.rauio.ZhihuiDangjian.pojo.response.Result;
 import com.rauio.ZhihuiDangjian.pojo.vo.UserVO;
 import com.rauio.ZhihuiDangjian.service.CourseService;
 import com.rauio.ZhihuiDangjian.service.UserQuizAnswerService;
@@ -34,19 +34,19 @@ public class UserController {
             summary = "获取用户信息",
             description = "通过ID获取用户信息")
     @GetMapping("/{id}")
-    public ApiResponse<UserVO> get(@Parameter(description = "用户ID") @PathVariable Long id){
+    public Result<UserVO> get(@Parameter(description = "用户ID") @PathVariable Long id){
         UserVO user = userService.getUserByID(id);
-        return ApiResponse.ok(user);
+        return Result.ok(user);
     }
 
     @Operation(
             summary = "获取用户信息",
             description = "通过用户请求体的信息模糊查询条件匹配的用户"
     )
-    @GetMapping("/{pageNum}/{pageSize}")
-    public ApiResponse<Page<User>> getByDto(@RequestBody UserDto  userDto,@PathVariable int pageNum, @PathVariable int pageSize){
+    @PostMapping("/search/{pageNum}/{pageSize}")
+    public Result<Page<User>> getByDto(@RequestBody UserDto  userDto, @PathVariable int pageNum, @PathVariable int pageSize){
         Page<User> user = userService.getUser(userDto,pageNum,pageSize);
-        return ApiResponse.ok(user);
+        return Result.ok(user);
     }
 
     @Operation(
@@ -54,12 +54,12 @@ public class UserController {
             description = "通过ID更新用户信息"
     )
     @PutMapping("/{id}")
-    public ApiResponse<Boolean> update(
+    public Result<Boolean> update(
             @PathVariable Long id,
             @RequestBody User user
     ){
         Boolean result = userService.update(id,user);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 
     @Operation(
@@ -67,63 +67,63 @@ public class UserController {
             description = "通过ID删除用户"
     )
     @DeleteMapping("/{id}")
-    public ApiResponse<Object> delete(@Parameter(description = "用户ID") @PathVariable Long id){
+    public Result<Object> delete(@Parameter(description = "用户ID") @PathVariable Long id){
         Boolean result = userService.delete(id);
-        return ApiResponse.ok("404","接口已经弃用",null);
+        return Result.ok("404","接口已经弃用",null);
     }
 
     @GetMapping("/course/{id}")
-    public ApiResponse<List<Course>> getAllCoursesOfUser(@PathVariable String id){
+    public Result<List<Course>> getAllCoursesOfUser(@PathVariable String id){
         List<Course> result = courseService.getAllCoursesOfUser(id);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 
     /*
     * 用户考试信息
     * */
     @GetMapping("/{id}/quiz")
-    public ApiResponse<List<UserQuizAnswer>> getAllQuizAnswerOfUser(@PathVariable Long id){
+    public Result<List<UserQuizAnswer>> getAllQuizAnswerOfUser(@PathVariable Long id){
         List<UserQuizAnswer> result = userQuizAnswerService.selectByUserId(id);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 
     @GetMapping("/{id}/quiz/{quizId}")
-    public ApiResponse<List<UserQuizAnswer>> getQuizAnswerOfQuiz(@PathVariable Long quizId){
+    public Result<List<UserQuizAnswer>> getQuizAnswerOfQuiz(@PathVariable Long quizId){
         List<UserQuizAnswer> result = userQuizAnswerService.selectByQuizId(quizId);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 
     @GetMapping("/{id}/quiz/{quizId}/{optionId}")
-    public ApiResponse<UserQuizAnswer> getQuizAnswerOfOption(@PathVariable Long optionId){
+    public Result<UserQuizAnswer> getQuizAnswerOfOption(@PathVariable Long optionId){
         UserQuizAnswer result = userQuizAnswerService.selectByOptionId(optionId);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 
     @PostMapping("/{id}/quiz/{quizId}/{optionId}")
-    public ApiResponse<Boolean> createQuizAnswer(@PathVariable String id, @PathVariable String quizId, @PathVariable String optionId){
+    public Result<Boolean> createQuizAnswer(@PathVariable String id, @PathVariable String quizId, @PathVariable String optionId){
         UserQuizAnswer userQuizAnswer = UserQuizAnswer.builder().build();
         userQuizAnswer.setUserId(id);
         userQuizAnswer.setQuizId(quizId);
         userQuizAnswer.setOptionId(optionId);
         Boolean result = userQuizAnswerService.insert(userQuizAnswer);
 
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 
     @PutMapping("/{id}/quiz/{quizId}/{optionId}")
-    public ApiResponse<Boolean> updateQuizAnswer(@PathVariable String id, @PathVariable String quizId, @PathVariable String optionId){
+    public Result<Boolean> updateQuizAnswer(@PathVariable String id, @PathVariable String quizId, @PathVariable String optionId){
         UserQuizAnswer userQuizAnswer = UserQuizAnswer.builder().build();
         userQuizAnswer.setUserId(id);
         userQuizAnswer.setQuizId(quizId);
         userQuizAnswer.setOptionId(optionId);
         Boolean result = userQuizAnswerService.update(userQuizAnswer);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 
     @DeleteMapping("/{id}/quiz/{quizId}/{optionId}")
     @PermissionAccess(UserType.MANAGER)
-    public ApiResponse<Boolean> deleteQuizAnswer(@PathVariable Long id, @PathVariable Long quizId, @PathVariable String optionId){
+    public Result<Boolean> deleteQuizAnswer(@PathVariable Long id, @PathVariable Long quizId, @PathVariable String optionId){
         Boolean result = userQuizAnswerService.delete(quizId);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 }

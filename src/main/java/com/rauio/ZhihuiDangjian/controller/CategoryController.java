@@ -6,7 +6,7 @@ import com.rauio.ZhihuiDangjian.aop.annotation.PermissionAccess;
 import com.rauio.ZhihuiDangjian.pojo.CategoryArticle;
 import com.rauio.ZhihuiDangjian.pojo.CategoryCourse;
 import com.rauio.ZhihuiDangjian.pojo.dto.CategoryDto;
-import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
+import com.rauio.ZhihuiDangjian.pojo.response.Result;
 import com.rauio.ZhihuiDangjian.pojo.vo.CategoryVO;
 import com.rauio.ZhihuiDangjian.service.ArticleService;
 import com.rauio.ZhihuiDangjian.service.CategoryService;
@@ -35,9 +35,9 @@ public class CategoryController {
     )
     @GetMapping("/{id}")
     @PermissionAccess(UserType.STUDENT)
-    public ApiResponse<CategoryVO> get(@PathVariable Long id) throws JsonProcessingException {
+    public Result<CategoryVO> get(@PathVariable Long id) throws JsonProcessingException {
         CategoryVO result = categoryService.getById(id);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 
     @Operation(
@@ -46,9 +46,9 @@ public class CategoryController {
     )
     @GetMapping("/all")
     @PermissionAccess(UserType.STUDENT)
-    public ApiResponse<List<CategoryVO>> getAll() throws JsonProcessingException {
+    public Result<List<CategoryVO>> getAll() throws JsonProcessingException {
         List<CategoryVO> result = categoryService.getRootNodes();
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 
     @Operation(
@@ -57,9 +57,9 @@ public class CategoryController {
     )
     @GetMapping("/{id}/children")
     @PermissionAccess(UserType.STUDENT)
-    public ApiResponse<List<CategoryVO>> getChildren(@PathVariable Long id) throws JsonProcessingException {
+    public Result<List<CategoryVO>> getChildren(@PathVariable Long id) throws JsonProcessingException {
         List<CategoryVO> result = categoryService.getChildren(id);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 
     @Operation(
@@ -68,54 +68,54 @@ public class CategoryController {
     )
     @GetMapping("/rootNodes")
     @PermissionAccess(UserType.STUDENT)
-    public ApiResponse<List<CategoryVO>> getRootNodes() throws JsonProcessingException {
+    public Result<List<CategoryVO>> getRootNodes() throws JsonProcessingException {
         List<CategoryVO> result = categoryService.getRootNodes();
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
     @Operation(
             summary = "添加根目录",
             description = "添加根目录"
     )
     @PostMapping("/rootNode")
-    public ApiResponse<Boolean> add(CategoryDto dto) throws JsonProcessingException {
+    public Result<Boolean> add(CategoryDto dto) throws JsonProcessingException {
         Boolean result = categoryService.add(dto);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
     @Operation(
             summary = "添加子目录",
             description = "向根目录id为路径参数的id添加子目录"
     )
     @PostMapping("/{id}/addChildren")
-    public ApiResponse<Boolean> addChildren(List<CategoryDto> children, @PathVariable Long id) throws JsonProcessingException {
+    public Result<Boolean> addChildren(List<CategoryDto> children, @PathVariable Long id) throws JsonProcessingException {
         Boolean result = categoryService.addChildren(children, id);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
     @Operation(
             summary = "修改目录",
             description = "修改目录"
     )
     @PostMapping("/{id}")
-    public ApiResponse<Boolean> update(CategoryDto dto, @PathVariable Long id){
+    public Result<Boolean> update(CategoryDto dto, @PathVariable Long id){
         Boolean result = categoryService.update(dto, id);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
     @Operation(
             summary = "删除目录",
             description = "如果删除的目录没有子目录，则删除成功，有子目录则无法删除"
     )
     @DeleteMapping("/{id}")
-    public ApiResponse<Boolean> delete(@PathVariable Long id){
+    public Result<Boolean> delete(@PathVariable Long id){
             Boolean result = categoryService.delete(id);
-            return ApiResponse.ok(result);
+            return Result.ok(result);
     }
     @Operation(
             summary = "删除目录和它的子目录",
             description = "删除目录的同时也将删除它的子目录"
     )
     @DeleteMapping("/{id}/all")
-    public ApiResponse<Boolean> deleteAll(@PathVariable Long id){
+    public Result<Boolean> deleteAll(@PathVariable Long id){
         Boolean result = categoryService.deleteAll(id);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 
     @Operation(
@@ -123,17 +123,17 @@ public class CategoryController {
             description = "获取目录下的所有课程ID"
     )
     @GetMapping("/{categoryId}/courses")
-    public ApiResponse<List<CategoryCourse>> getAllCoursesOfCategory(@PathVariable String categoryId){
+    public Result<List<CategoryCourse>> getAllCoursesOfCategory(@PathVariable String categoryId){
         List<CategoryCourse> result = courseService.getAllCoursesOfCategory(categoryId);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
     @Operation(
             summary = "获取目录下的所有文章ID",
             description = "获取目录下的所有文章ID"
     )
     @GetMapping("/{categoryId}/articles")
-    public ApiResponse<List<CategoryArticle>> getAllArticlesOfCategory(@PathVariable String categoryId) {
+    public Result<List<CategoryArticle>> getAllArticlesOfCategory(@PathVariable String categoryId) {
         List<CategoryArticle> result = articleService.getAllArticlesOfCategory(categoryId);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 }

@@ -2,7 +2,7 @@ package com.rauio.ZhihuiDangjian.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rauio.ZhihuiDangjian.pojo.Universities;
-import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
+import com.rauio.ZhihuiDangjian.pojo.response.Result;
 import com.rauio.ZhihuiDangjian.service.UniversitiesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,8 +23,8 @@ public class ApiController {
 
     @Operation(summary = "获取所有学校列表", description = "返回系统中所有学校的列表信息")
     @GetMapping("/school/all")
-    public ApiResponse<List<Universities>> school() throws JsonProcessingException {
+    public Result<List<Universities>> school() throws JsonProcessingException {
         List<Universities> universities = universitiesService.getAll();
-        return ApiResponse.ok(universities);
+        return Result.ok(universities);
     }
 }

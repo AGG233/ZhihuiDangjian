@@ -3,7 +3,7 @@ package com.rauio.ZhihuiDangjian.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rauio.ZhihuiDangjian.aop.annotation.PermissionAccess;
 import com.rauio.ZhihuiDangjian.pojo.dto.ChapterDto;
-import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
+import com.rauio.ZhihuiDangjian.pojo.response.Result;
 import com.rauio.ZhihuiDangjian.pojo.vo.ChapterVO;
 import com.rauio.ZhihuiDangjian.service.ChapterService;
 import com.rauio.ZhihuiDangjian.service.CourseService;
@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/course/chapter")
 @RequiredArgsConstructor
-@PermissionAccess(UserType.TEACHER)
+@PermissionAccess(UserType.SCHOOL)
 public class ChapterController {
     private final ChapterService chapterService;
     private final CourseService courseService;
@@ -27,9 +27,9 @@ public class ChapterController {
 
     @Operation(summary = "获取章节详情", description = "通过章节ID获取章节信息")
     @GetMapping("/{id}")
-    public ApiResponse<ChapterVO> get(@PathVariable Long id){
+    public Result<ChapterVO> get(@PathVariable Long id){
         ChapterVO result = chapterService.get(id);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 
 //    @Operation(summary = "获取分类下的所有课程", description = "根据分类ID获取该分类下的所有课程")
@@ -45,29 +45,29 @@ public class ChapterController {
     @Operation(summary = "获取课程的所有章节", description = "根据课程ID获取该课程下的所有章节")
     @GetMapping("/{courseId}")
     @PermissionAccess(UserType.STUDENT)
-    public ApiResponse<List<ChapterVO>> getAllChaptersOfCourse(@PathVariable String courseId){
+    public Result<List<ChapterVO>> getAllChaptersOfCourse(@PathVariable String courseId){
         List<ChapterVO> result = chapterService.getAllChaptersOfCourse(courseId);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 
     @Operation(summary = "创建章节", description = "具体在Schema看每个字段的作用")
     @PostMapping("/")
-    public ApiResponse<Boolean> create(@RequestBody ChapterDto chapter){
+    public Result<Boolean> create(@RequestBody ChapterDto chapter){
         Boolean result = chapterService.create(chapter);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 
     @Operation(summary = "更新章节")
     @PutMapping("/")
-    public ApiResponse<Boolean> update(@RequestBody ChapterDto chapter){
+    public Result<Boolean> update(@RequestBody ChapterDto chapter){
         Boolean result = chapterService.update(chapter);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 
     @Operation(summary = "删除章节", description = "根据章节ID删除章节")
     @DeleteMapping("/{id}")
-    public ApiResponse<Boolean> delete(@PathVariable Long id){
+    public Result<Boolean> delete(@PathVariable Long id){
         Boolean result = chapterService.delete(id);
-        return ApiResponse.ok(result);
+        return Result.ok(result);
     }
 }
