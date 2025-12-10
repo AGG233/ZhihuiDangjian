@@ -10,6 +10,7 @@ import com.rauio.ZhihuiDangjian.utils.Spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -40,21 +41,21 @@ public class AdminController {
 
     @PutMapping("/user")
     @Operation(description = "更新普通用户和高校管理员信息，请求体为一个列表，列表元素为用户请求体")
-    public Result<Boolean> updateUser(@RequestBody List<UserDto> user) {
+    public Result<Boolean> updateUser(@RequestBody @Valid List<UserDto> user) {
         Boolean result = adminService.updateUser(user);
         return Result.ok(result);
     }
 
     @PostMapping("/user")
     @Operation(description = "添加用户，请求体为一个列表，列表元素为用户请求体")
-    public Result<Boolean> addUser(@RequestBody List<UserDto> user){
+    public Result<Boolean> addUser(@RequestBody @Valid List<UserDto> user){
         Boolean result = adminService.addUser(user);
         return Result.ok(result);
     }
 
     @DeleteMapping("/user")
     @Operation(description = "删除用户，请求体为一个用户ID列表")
-    public Result<Boolean> deleteUser(@RequestBody List<String> idList) {
+    public Result<Boolean> deleteUser(@RequestBody @Valid List<String> idList) {
         Boolean result = adminService.deleteUser(idList);
         return Result.ok(result);
     }
@@ -62,21 +63,21 @@ public class AdminController {
     // 学校管理员接口功能
     @PostMapping("/school/user")
     @Operation(summary = "添加用户", description = "添加用户")
-    public Result<Boolean> addSchoolUser(@RequestBody List<UserDto> userDtoList) {
+    public Result<Boolean> addSchoolUser(@RequestBody @Valid List<UserDto> userDtoList) {
         Boolean result = adminService.addSchoolUser(userDtoList);
         return Result.ok(result);
     }
 
     @PutMapping("/school/user")
     @Operation(summary = "更新用户", description = "更新用户")
-    public Result<Boolean> updateSchoolUser(@RequestBody List<UserDto> userDto) {
+    public Result<Boolean> updateSchoolUser(@RequestBody @Valid List<UserDto> userDto) {
         Boolean result = adminService.updateSchoolUser(userDto);
         return Result.ok(result);
     }
 
     @DeleteMapping("/school/user")
     @Operation(summary = "删除用户", description = "删除用户")
-    public Result<Boolean> deleteSchoolUser(@RequestBody List<String> userIdList) {
+    public Result<Boolean> deleteSchoolUser(@RequestBody @Valid List<String> userIdList) {
         Boolean result = adminService.deleteSchoolUser(userIdList);
         return Result.ok(result);
     }
@@ -91,7 +92,7 @@ public class AdminController {
     @GetMapping("/school/users")
     @Operation(summary = "通过条件获取符合条件的用户", description = "比如要搜索姓名含有陈，且手机号码含有133，邮箱含有qaq的用户，在姓名、手机号码，邮箱字段填写陈、133、qaq即可")
     public Result<Page<User>> getSchoolUser(
-            @ModelAttribute UserDto userDto,
+            @ModelAttribute @Valid UserDto userDto,
             @Parameter(description = "页码") @RequestParam(defaultValue = "1") int pageNum,
             @Parameter(description = "页的大小") @RequestParam(defaultValue = "10") int pageSize) {
         Page<User> user = adminService.getSchoolUser(userDto, pageNum, pageSize);
