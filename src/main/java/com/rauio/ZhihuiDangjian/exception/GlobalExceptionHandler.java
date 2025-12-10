@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
                 e.getMessage());
         writeResponse(response, responseEntity);
     }
-    
+
     @ExceptionHandler(value = RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public void handleRuntimeExceptions(RuntimeException e, HttpServletResponse response) throws IOException {
