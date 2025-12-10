@@ -31,13 +31,13 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public CourseVO get(Long courseId) {
         Course entity = courseDao.get(courseId);
-        return courseConvertor.CourseToCourseVO(entity);
+        return courseConvertor.toVO(entity);
     }
 
     @Override
     public Boolean create(CourseDto courseDto) {
         User    user        = userService.getUserFromAuthentication();
-        Course  course      = courseConvertor.CourseDtoToCourse(courseDto);
+        Course  course      = courseConvertor.toCourse(courseDto);
 
         course.setCreatorId(user.getId());
 
@@ -56,7 +56,7 @@ public class CourseServiceImpl implements CourseService {
             return false;
         }
 
-        Course  course = courseConvertor.CourseDtoToCourse(courseDto);
+        Course  course = courseConvertor.toCourse(courseDto);
         Course  target = courseDao.get(id);
         if(target == null && course.getId().equals(id)){
             return false;
