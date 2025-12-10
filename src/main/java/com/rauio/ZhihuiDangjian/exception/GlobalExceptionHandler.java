@@ -94,6 +94,7 @@ public class GlobalExceptionHandler {
         );
         writeResponse(response, responseEntity);
     }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public void handleExceptions(Exception e, HttpServletResponse response) throws IOException {
@@ -105,8 +106,19 @@ public class GlobalExceptionHandler {
         );
         writeResponse(response, responseEntity);
     }
+
+    @ExceptionHandler(DuplicateKeyException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public void handleDuplicateKeyException(DuplicateKeyException e, HttpServletResponse response) throws IOException {
+        ResponseEntity<Result> responseEntity = buildResponse(
+                HttpStatus.CONFLICT,
+                HttpStatus.CONFLICT.toString(),
+                "已存在相同数据"+e.getMessage()
+        );
+        writeResponse(response, responseEntity);
+    }
     
-    private void writeResponse(HttpServletResponse response, ResponseEntity<ApiResponse> responseEntity) throws IOException {
+    private void writeResponse(HttpServletResponse response, ResponseEntity<Result> responseEntity) throws IOException {
         response.setStatus(responseEntity.getStatusCode().value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
