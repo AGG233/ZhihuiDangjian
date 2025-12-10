@@ -1,7 +1,7 @@
 package com.rauio.ZhihuiDangjian.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
+import com.rauio.ZhihuiDangjian.pojo.response.Result;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,10 +25,10 @@ public class LoginEntryPoint implements AuthenticationEntryPoint {
         response.setCharacterEncoding("UTF-8");
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        ApiResponse apiResponse = ApiResponse.builder()
+        Result result = Result.builder()
                 .code(String.valueOf(HttpServletResponse.SC_UNAUTHORIZED))
                 .message("Unauthorized")
                 .build();
-        response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
+        response.getWriter().write(objectMapper.writeValueAsString(result));
     }
 }
