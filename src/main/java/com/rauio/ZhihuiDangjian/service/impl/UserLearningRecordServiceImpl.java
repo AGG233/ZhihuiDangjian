@@ -1,9 +1,12 @@
 package com.rauio.ZhihuiDangjian.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.rauio.ZhihuiDangjian.dao.UserLearningRecordDao;
 import com.rauio.ZhihuiDangjian.exception.BusinessException;
+import com.rauio.ZhihuiDangjian.mapper.ChapterMapper;
 import com.rauio.ZhihuiDangjian.mapper.UserLearningRecordMapper;
+import com.rauio.ZhihuiDangjian.pojo.Chapter;
 import com.rauio.ZhihuiDangjian.pojo.UserLearningRecord;
 import com.rauio.ZhihuiDangjian.pojo.convertor.UserLearningRecordConvertor;
 import com.rauio.ZhihuiDangjian.pojo.dto.UserLearningRecordDto;
@@ -16,7 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +31,7 @@ public class UserLearningRecordServiceImpl implements UserLearningRecordService 
     private final UserLearningRecordDao userLearningRecordDao;
     private final UserLearningRecordMapper userLearningRecordMapper;
     private final UserLearningRecordConvertor convertor;
+    private final ChapterMapper chapterMapper;
 
     @Override
     public UserLearningRecordVO get(Long id) {
@@ -58,6 +64,26 @@ public class UserLearningRecordServiceImpl implements UserLearningRecordService 
         wrapper.eq("user_id", userId).eq("chapter_id", chapterId).orderByDesc("created_at");
         List<UserLearningRecord> list = userLearningRecordMapper.selectList(wrapper);
         return convertor.toVOList(list);
+    }
+
+    /**
+     * 通过用户id获取学过的课程
+     *
+     * @param userId 用户id
+     * @return 用户学过的课程列表
+     *
+     */
+    @Override
+    public List<Long> selectLearnedCoursesByUserId(Long userId) {
+        LambdaQueryWrapper<UserLearningRecord> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserLearningRecord::getUserId, userId).select(UserLearningRecord::getChapterId);
+        Set<UserLearningRecord> chapterIds = new HashSet<>(userLearningRecordMapper.selectList(wrapper));
+        return chapterMapper.selectList(new LambdaQueryWrapper<Chapter>()
+                .in(Chapter::getId, chapterIds)
+                .select(Chapter::getCourseId))
+                .stream()
+                .map(Chapter::getCourseId)
+                .toList();
     }
 
     @Override
