@@ -35,6 +35,14 @@ public interface UserLearningRecordService {
      * @return 学习记录列表
      */
     List<UserLearningRecordVO> getByUserAndChapter(Long userId, Long chapterId);
+
+
+    /**
+     * 通过用户id获取学过的课程
+     * @param userId 用户id
+     * @return 用户学过的课程列表
+     * */
+    List<Long> selectLearnedCoursesByUserId(Long userId);
     
     /**
      * 创建学习记录
