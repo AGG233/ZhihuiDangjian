@@ -6,10 +6,9 @@ import com.rauio.ZhihuiDangjian.exception.BusinessException;
 import com.rauio.ZhihuiDangjian.pojo.User;
 import com.rauio.ZhihuiDangjian.pojo.request.LoginRequest;
 import com.rauio.ZhihuiDangjian.pojo.request.RegisterRequest;
-import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
 import com.rauio.ZhihuiDangjian.pojo.response.LoginResponse;
+import com.rauio.ZhihuiDangjian.pojo.response.Result;
 import com.rauio.ZhihuiDangjian.service.*;
-import com.rauio.ZhihuiDangjian.utils.Spec.UserType;
 import jakarta.servlet.http.HttpServlet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Objects;
 
 import static com.rauio.ZhihuiDangjian.constants.ErrorConstants.ARGS_ERROR;
 
@@ -61,7 +59,7 @@ public class AuthServiceImpl extends HttpServlet implements AuthService {
     }
 
     @Override
-    public ApiResponse<Object> register(RegisterRequest registerRequest) {
+    public Result<Object> register(RegisterRequest registerRequest) {
         if (!captchaService.validate(registerRequest.getCaptchaUUID(), registerRequest.getCaptchaCode())) {
             throw new BusinessException(ARGS_ERROR,"验证码错误");
         }
@@ -82,63 +80,63 @@ public class AuthServiceImpl extends HttpServlet implements AuthService {
                 .build();
 
         // todo 创建用户时传入类型可以创建指定的用户类型
-        if(Objects.equals(registerRequest.getType(), "admin")){
-            user.setUserType(UserType.MANAGER);
-        } else if (Objects.equals(registerRequest.getType(), "teacher")) {
-            user.setUserType(UserType.SCHOOL);
-        }else{
-            user.setUserType(UserType.STUDENT);
-        }
+//        if(Objects.equals(registerRequest.getType(), "admin")){
+//            user.setUserType(UserType.MANAGER);
+//        } else if (Objects.equals(registerRequest.getType(), "teacher")) {
+//            user.setUserType(UserType.SCHOOL);
+//        }else{
+//            user.setUserType(UserType.STUDENT);
+//        }
 
         userService.register(user);
-        return new ApiResponse<Object>();
+        return new Result<Object>();
     }
 
     /**
      * @return 新的刷新令牌和访问令牌
      */
     @Override
-    public ApiResponse<Map<String,String>> refresh(String refreshToken, String accessToken) {
+    public Result<Map<String,String>> refresh(String refreshToken) {
         try {
-            String userId = jwtService.getDecodedJWT(accessToken).getSubject();
+            String userId = jwtService.getDecodedJWT(refreshToken).getSubject();
 
             String redisKey = SecurityConstants.REFRESH_TOKEN_PREFIX + userId;
             String refreshKey = stringRedisTemplate.opsForValue().get(redisKey);
             if (refreshKey == null) {
-                new ApiResponse<>();
-                return ApiResponse.error("非法请求","400");
+                new Result<>();
+                return Result.error("非法请求","400");
             }
 
             Map<String, String> result = jwtService.refreshAccessToken(refreshToken);
 
-            return new ApiResponse<Map<String,String>>(result);
+            return new Result<Map<String,String>>(result);
         } catch (JWTVerificationException e) {
             // JWT验证失败，返回非法请求
-            new ApiResponse<>();
-            return ApiResponse.error("非法请求","400");
+            new Result<>();
+            return Result.error("非法请求","400");
         } catch (Exception e) {
             // 其他异常，也返回非法请求
             log.error("JWT验证失败", e);
-            new ApiResponse<>();
-            return ApiResponse.error("非法请求","400");
+            new Result<>();
+            return Result.error("非法请求","400");
         }
     }
 
     @Override
-    public ApiResponse<Object> logout(String refreshToken) {
+    public Result<Object> logout(String refreshToken) {
         String id = SecurityContextHolder.getContext().getAuthentication().getName();
         String redisKey = SecurityConstants.REFRESH_TOKEN_PREFIX + id;
         Object refreshKey = redisTemplate.opsForValue().get(redisKey);
 
         if (refreshKey == null) {
-            new ApiResponse<>();
-            return ApiResponse.error("非法请求","400");
+            new Result<>();
+            return Result.error("非法请求","400");
         }
 
         redisTemplate.delete(SecurityConstants.ACCESS_TOKEN_PREFIX + id + ":*");
         redisTemplate.delete(SecurityConstants.REFRESH_TOKEN_PREFIX + id + ":*");
 
-        return new ApiResponse<>();
+        return new Result<>();
     }
 
 }
