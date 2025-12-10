@@ -20,11 +20,11 @@ public class LoginRequest {
     @NotBlank(message = "密码不能为空")
     private String  password;
 
-    @Schema(description = "验证码的uuid")
-    @NotBlank(message = "请填写验证码uuid，前往/auth/captcha获取")
+    @Schema(description = "验证码的uuid,在/auth/captcha获取")
+    @NotBlank(message = "请填写验证码uuid")
     private String  captchaUUID;
 
-    @Schema(description = "验证码")
-    @NotBlank(message = "请填写验证码，前往/auth/captcha获取")
+    @Schema(description = "验证码，前往/auth/captcha获取")
+    @NotBlank(message = "请填写验证码")
     private String  captchaCode;
 }
