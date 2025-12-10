@@ -1,11 +1,12 @@
 package com.rauio.ZhihuiDangjian.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rauio.ZhihuiDangjian.pojo.response.ApiResponse;
+import com.rauio.ZhihuiDangjian.pojo.response.Result;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.bind.BindException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,7 +31,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public void handleBusinessExceptions(BusinessException e, HttpServletResponse response) throws IOException {
-        ResponseEntity<ApiResponse> responseEntity = buildResponse(
+        ResponseEntity<Result> responseEntity = buildResponse(
                 HttpStatus.BAD_REQUEST,
                 String.valueOf(e.getCode()),
                 e.getMessage());
@@ -41,7 +42,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public void handleRuntimeExceptions(RuntimeException e, HttpServletResponse response) throws IOException {
         log.error("[ERROR]", e);
-        ResponseEntity<ApiResponse> responseEntity = buildResponse(
+        ResponseEntity<Result> responseEntity = buildResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 HttpStatus.INTERNAL_SERVER_ERROR.toString(),
                 "服务器内部出现异常，请重试"
@@ -52,7 +53,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public void handleArgumentNotValidExceptions(MethodArgumentNotValidException e, HttpServletResponse response) throws IOException {
-        ResponseEntity<ApiResponse> responseEntity = buildResponse(
+        ResponseEntity<Result> responseEntity = buildResponse(
                 HttpStatus.BAD_REQUEST,
                 HttpStatus.BAD_REQUEST.toString(),
                 e.getBindingResult().getFieldErrors().getFirst().getDefaultMessage()
@@ -63,7 +64,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BindException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public void handleBindException(BindException e, HttpServletResponse response) throws IOException {
-        ResponseEntity<ApiResponse> responseEntity = buildResponse(
+        ResponseEntity<Result> responseEntity = buildResponse(
                 HttpStatus.BAD_REQUEST,
                 HttpStatus.BAD_REQUEST.toString(),
                 e.getMessage()
@@ -76,7 +77,7 @@ public class GlobalExceptionHandler {
     public void handleMissingServletRequestParameterException(MissingServletRequestParameterException e, HttpServletResponse response) throws IOException {
         String parameterName = e.getParameterName();
 
-        ResponseEntity<ApiResponse> responseEntity = buildResponse(
+        ResponseEntity<Result> responseEntity = buildResponse(
                 HttpStatus.BAD_REQUEST,
                 HttpStatus.BAD_REQUEST.toString(),
                 "参数：" + parameterName + "不存在"
@@ -87,7 +88,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public void handleExceptions(Exception e, HttpServletResponse response) throws IOException {
         log.error("[ERROR]", e);
-        ResponseEntity<ApiResponse> responseEntity = buildResponse(
+        ResponseEntity<Result> responseEntity = buildResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 HttpStatus.INTERNAL_SERVER_ERROR.toString(),
                 "服务器内部出现异常，请重试"
@@ -100,15 +101,5 @@ public class GlobalExceptionHandler {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(objectMapper.writeValueAsString(responseEntity.getBody()));
-    }
-    
-    public static ResponseEntity<ApiResponse> buildResponse(HttpStatus status, String code,String message) {
-        ApiResponse errorBody = ApiResponse.builder()
-                .code(code)
-                .message(message)
-                .build();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        return new ResponseEntity<>(errorBody, headers, status);
     }
 }
