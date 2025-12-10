@@ -15,7 +15,7 @@ import java.util.Objects;
 @Builder
 @AllArgsConstructor
 @Schema(description = "API的返回结果")
-public class ApiResponse<T> {
+public class Result<T> {
     @Builder.Default
     @Schema(description = "响应码")
     private String code = "200";
@@ -27,15 +27,15 @@ public class ApiResponse<T> {
     
     @Schema(hidden = true)
     @JsonIgnore
-    private ResponseEntity<ApiResponse<T>> responseEntity;
+    private ResponseEntity<Result<T>> responseEntity;
 
-    public ApiResponse() {
+    public Result() {
         this.code   = "200";
         this.message = "OK";
         this.responseEntity = ResponseEntity.ok(this);
     }
 
-    public ApiResponse(T data) {
+    public Result(T data) {
         this.code = "200";
         this.message = "OK";
         if ((data instanceof Boolean && !(Boolean) data) || Objects.isNull(data)) {
@@ -49,15 +49,15 @@ public class ApiResponse<T> {
     }
 
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "操作成功")
-    public static <T> ApiResponse<T> ok(T data) {
-        ApiResponse<T> response = new ApiResponse<T>(data);
+    public static <T> Result<T> ok(T data) {
+        Result<T> response = new Result<T>(data);
         response.responseEntity = ResponseEntity.ok(response);
         return response;
     }
 
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "操作成功")
-    public static <T> ApiResponse<T> ok(String code, String message, T data) {
-        ApiResponse<T> response = ApiResponse.<T>builder()
+    public static <T> Result<T> ok(String code, String message, T data) {
+        Result<T> response = Result.<T>builder()
                 .code(code)
                 .message(message)
                 .data(data)
@@ -67,8 +67,8 @@ public class ApiResponse<T> {
     }
 
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "操作失败，详情看信息")
-    public static <T> ApiResponse<T> error(String code, String message) {
-        ApiResponse<T> response = ApiResponse.<T>builder()
+    public static <T> Result<T> error(String code, String message) {
+        Result<T> response = Result.<T>builder()
                 .code(code)
                 .message(message)
                 .build();
@@ -77,7 +77,7 @@ public class ApiResponse<T> {
     }
 
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "服务器内部错误，请联系开发")
-    public static <T> ApiResponse<T> internalError(String code, String message) {
+    public static <T> Result<T> internalError(String code, String message) {
         return error(code, message);
     }
 }
