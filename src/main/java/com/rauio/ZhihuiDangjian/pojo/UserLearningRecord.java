@@ -18,9 +18,9 @@ public class UserLearningRecord {
     @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 
-    private String userId;
+    private Long userId;
 
-    private String chapterId;
+    private Long chapterId;
 
     private LocalDateTime startTime;
 

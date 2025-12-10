@@ -18,9 +18,9 @@ public class UserSimilarity {
     @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 
-    private String userId1;
+    private Long userId1;
 
-    private String userId2;
+    private Long userId2;
 
     private double similarityScore;
 
@@ -35,11 +35,4 @@ public class UserSimilarity {
     private Boolean isValid;
 
     private LocalDateTime expiresAt;
-
-
-    public UserSimilarity(String userId1,String userId2,double similarityScore) {
-        this.userId1=userId1;
-        this.userId2=userId2;
-        this.similarityScore=similarityScore;
-    }
 }
