@@ -10,6 +10,7 @@ import com.rauio.ZhihuiDangjian.service.CourseService;
 import com.rauio.ZhihuiDangjian.utils.Spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,7 +53,7 @@ public class ChapterController {
 
     @Operation(summary = "创建章节", description = "具体在Schema看每个字段的作用")
     @PostMapping("/")
-    public Result<Boolean> create(@RequestBody ChapterDto chapter){
+    public Result<Boolean> create(@RequestBody @Valid ChapterDto chapter){
         Boolean result = chapterService.create(chapter);
         return Result.ok(result);
     }

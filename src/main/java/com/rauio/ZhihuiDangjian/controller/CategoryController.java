@@ -1,6 +1,5 @@
 package com.rauio.ZhihuiDangjian.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rauio.ZhihuiDangjian.aop.annotation.PermissionAccess;
 import com.rauio.ZhihuiDangjian.pojo.CategoryArticle;
@@ -35,7 +34,7 @@ public class CategoryController {
     )
     @GetMapping("/{id}")
     @PermissionAccess(UserType.STUDENT)
-    public Result<CategoryVO> get(@PathVariable Long id) throws JsonProcessingException {
+    public Result<CategoryVO> get(@PathVariable Long id){
         CategoryVO result = categoryService.getById(id);
         return Result.ok(result);
     }
@@ -46,7 +45,7 @@ public class CategoryController {
     )
     @GetMapping("/all")
     @PermissionAccess(UserType.STUDENT)
-    public Result<List<CategoryVO>> getAll() throws JsonProcessingException {
+    public Result<List<CategoryVO>> getAll(){
         List<CategoryVO> result = categoryService.getRootNodes();
         return Result.ok(result);
     }
@@ -57,7 +56,7 @@ public class CategoryController {
     )
     @GetMapping("/{id}/children")
     @PermissionAccess(UserType.STUDENT)
-    public Result<List<CategoryVO>> getChildren(@PathVariable Long id) throws JsonProcessingException {
+    public Result<List<CategoryVO>> getChildren(@PathVariable Long id){
         List<CategoryVO> result = categoryService.getChildren(id);
         return Result.ok(result);
     }
@@ -68,7 +67,7 @@ public class CategoryController {
     )
     @GetMapping("/rootNodes")
     @PermissionAccess(UserType.STUDENT)
-    public Result<List<CategoryVO>> getRootNodes() throws JsonProcessingException {
+    public Result<List<CategoryVO>> getRootNodes(){
         List<CategoryVO> result = categoryService.getRootNodes();
         return Result.ok(result);
     }
@@ -77,7 +76,7 @@ public class CategoryController {
             description = "添加根目录"
     )
     @PostMapping("/rootNode")
-    public Result<Boolean> add(CategoryDto dto) throws JsonProcessingException {
+    public Result<Boolean> add(CategoryDto dto){
         Boolean result = categoryService.add(dto);
         return Result.ok(result);
     }
@@ -86,7 +85,7 @@ public class CategoryController {
             description = "向根目录id为路径参数的id添加子目录"
     )
     @PostMapping("/{id}/addChildren")
-    public Result<Boolean> addChildren(List<CategoryDto> children, @PathVariable Long id) throws JsonProcessingException {
+    public Result<Boolean> addChildren(List<CategoryDto> children, @PathVariable Long id){
         Boolean result = categoryService.addChildren(children, id);
         return Result.ok(result);
     }
