@@ -28,6 +28,16 @@ public class GlobalExceptionHandler {
     @Autowired
     private ObjectMapper objectMapper;
 
+    public static ResponseEntity<Result> buildResponse(HttpStatus status, String code, String message) {
+        Result errorBody = Result.builder()
+                .code(code)
+                .message(message)
+                .build();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return new ResponseEntity<>(errorBody, headers, status);
+    }
+    
     @ExceptionHandler(BusinessException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public void handleBusinessExceptions(BusinessException e, HttpServletResponse response) throws IOException {
