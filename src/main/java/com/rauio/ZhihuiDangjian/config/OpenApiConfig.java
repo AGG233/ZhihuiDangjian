@@ -1,7 +1,10 @@
 package com.rauio.ZhihuiDangjian.config;
 
 
+import com.rauio.ZhihuiDangjian.pojo.response.Result;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import jakarta.annotation.PostConstruct;
+import org.springdoc.core.utils.SpringDocUtils;
 import org.springframework.boot.SpringBootConfiguration;
 
 @SpringBootConfiguration
@@ -12,5 +15,9 @@ import org.springframework.boot.SpringBootConfiguration;
                 version = "1.0.0"
         )
 )
-public class SwaggerOpenApiConfig {
+public class OpenApiConfig {
+    @PostConstruct
+    public void init() {
+        SpringDocUtils.getConfig().addResponseTypeToIgnore(Result.class);
+    }
 }
