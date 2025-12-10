@@ -65,16 +65,18 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper,User> implements Ad
     @Override
     public Page<User> getUser(UserDto userDto, int pageNum, int pageSize) {
         Page<User> pageInfo = new Page<>(pageNum, pageSize);
-
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
 
-        wrapper.like(User::getUsername, userDto.getUsername())
-                .like(User::getPartyMemberId, userDto.getPartyMemberId())
-                .like(User::getRealName, userDto.getRealName())
-                .like(User::getPhone, userDto.getPhone())
-                .like(User::getBranchName, userDto.getBranchName())
-                .like(User::getEmail, userDto.getEmail())
-                .like(User::getUserType, userDto.getUserType());
+        if (userDto != null) {
+            wrapper.like(User::getUsername, userDto.getUsername())
+                    .like(User::getPartyMemberId, userDto.getPartyMemberId())
+                    .like(User::getRealName, userDto.getRealName())
+                    .like(User::getPhone, userDto.getPhone())
+                    .like(User::getBranchName, userDto.getBranchName())
+                    .like(User::getEmail, userDto.getEmail())
+                    .like(User::getUserType, userDto.getUserType());
+        }
+
 
         userMapper.selectPage(pageInfo, wrapper);
         return pageInfo;
