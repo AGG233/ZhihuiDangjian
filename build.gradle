@@ -18,7 +18,7 @@ bootJar {
     archiveFileName = "app.jar"
 }
 group = 'com.rauio'
-version = '0.3.2'
+version = '0.4.0'
 description = 'Zhihuidangjiang Demo project for Spring Boot'
 
 java {
@@ -57,7 +57,13 @@ dependencies {
 //	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
     // Spring AI
-    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+//    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+//	implementation 'org.springframework.ai:spring-ai-starter-mcp-server'
+//	implementation 'org.springframework.ai:spring-ai-starter-mcp-client'
+//	implementation 'org.springframework.ai:spring-ai-advisors-vector-store'
+//	implementation 'org.springframework.ai:spring-ai-starter-vector-store-redis'
+	implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+	implementation 'com.alibaba.cloud.ai:spring-ai-alibaba-agent-framework:1.1.2.0'
 
 	// Security
 	implementation 'org.springframework.security:spring-security-oauth2-jose:6.5.1'
@@ -68,6 +74,7 @@ dependencies {
 	implementation 'com.baomidou:mybatis-plus-generator:3.5.14'
     implementation "com.baomidou:mybatis-plus-jsqlparser:3.5.14"
     implementation 'com.github.yulichang:mybatis-plus-join-boot-starter:1.5.4'
+	implementation 'org.springframework.boot:spring-boot-starter-data-neo4j'
 	implementation 'org.mybatis:mybatis:3.5.19'
 	implementation 'com.zaxxer:HikariCP:7.0.2'
 
@@ -77,7 +84,7 @@ dependencies {
     implementation "com.qcloud:cos_api:5.6.251"
     implementation "com.qcloud:cos-sts_api:3.1.0"
     implementation "org.mapstruct:mapstruct:1.6.3"
-    implementation "org.apache.tika:tika-core:3.1.0"
+    implementation 'org.apache.tika:tika-core:3.2.2'
 	implementation 'cn.hutool:hutool-all:5.8.40'
 	implementation 'com.auth0:java-jwt:4.5.0'
 
@@ -104,6 +111,7 @@ dependencies {
 dependencyManagement {
     imports {
         mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+		mavenBom "org.springframework.ai:spring-ai-starter-model-openai:${springAiVersion}"
 //        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
     }
 }
