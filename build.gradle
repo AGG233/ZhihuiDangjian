@@ -18,13 +18,17 @@ bootJar {
     archiveFileName = "app.jar"
 }
 group = 'com.rauio'
-version = '0.4.0'
+version = '0.4.1'
 description = 'Zhihuidangjiang Demo project for Spring Boot'
 
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(21)
 	}
+}
+
+test {
+	useJUnitPlatform()
 }
 
 configurations {
