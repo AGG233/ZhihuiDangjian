@@ -16,12 +16,9 @@ import reactor.core.publisher.Flux;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 
 import com.rauio.smartdangjian.pojo.response.AiChatStreamResponse;
 import com.rauio.smartdangjian.pojo.response.Result;
-
-import java.time.LocalDateTime;
 
 
 @Service
@@ -74,7 +71,6 @@ public class LLMService {
             String sessionId) {
 
         UserVO user = userConvertor.toVO(userService.getUserFromAuthentication());
-        String finalSessionId = resolveSessionId(sessionId);
 
         return chatClient.prompt()
                 .system(systemPrompt)
@@ -86,19 +82,15 @@ public class LLMService {
                 .filter(Objects::nonNull)
                 .index()
                 .map(tuple -> {
-                    AiChatStreamResponse resp = new AiChatStreamResponse(finalSessionId, tuple.getT2(), LocalDateTime.now());
+                    AiChatStreamResponse resp = new AiChatStreamResponse(tuple.getT2());
+                    if (!sessionId.isEmpty()){
+                        resp.setSessionId(sessionId);
+                    }
                     return ServerSentEvent.builder(Result.ok(resp))
                             .id(String.valueOf(tuple.getT1()))
                             .event("message")
                             .build();
                 });
-    }
-
-    private String resolveSessionId(String sessionId) {
-        if (sessionId == null || sessionId.isBlank()) {
-            return UUID.randomUUID().toString().replace("-", "");
-        }
-        return sessionId;
     }
 
     private String joinPrompts(List<String> systemPrompts) {

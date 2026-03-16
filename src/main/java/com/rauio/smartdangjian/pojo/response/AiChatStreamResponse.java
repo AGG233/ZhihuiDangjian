@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.pojo.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -21,4 +22,8 @@ public class AiChatStreamResponse {
 
     @Schema(description = "内容生成时间")
     private LocalDateTime createdAt;
+
+    public AiChatStreamResponse(String content) {
+        this.content = content;
+    }
 }
