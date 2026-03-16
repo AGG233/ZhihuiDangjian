@@ -1,0 +1,56 @@
+package com.rauio.smartdangjian.pojo.dto;
+
+import com.rauio.smartdangjian.annotation.validation.Sensitive;
+import com.rauio.smartdangjian.utils.spec.UserStatus;
+import com.rauio.smartdangjian.utils.spec.UserType;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
+import java.time.LocalDateTime;
+
+@Data
+public class UserDto {
+
+    @Schema(description = "用户ID，留空即可")
+    private Long  userId;
+
+    @Schema(description = "用户名")
+    private String  username;
+
+    @Schema(description = "真实姓名")
+    private String  realName;
+
+    @Schema(description = "密码")
+    private String  password;
+
+    @Schema(description = "党员ID")
+    private String partyMemberId;
+
+    @Schema(description = "党员状态")
+    private UserStatus partyStatus;
+
+    @Schema(description = "党支部名称")
+    private String branchName;
+
+    @Schema(description = "用户类型")
+    private UserType userType;
+
+    @Schema(description = "学校ID")
+    private Long universityId;
+
+    @Schema(description = "入党时间")
+    private LocalDateTime  joinPartyDate;
+
+    @Sensitive(type = Sensitive.SensitiveType.EMAIL)
+    @Schema(description = "邮箱")
+    private String  email;
+
+
+    @Sensitive(type = Sensitive.SensitiveType.PHONE)
+    @Schema(description = "手机号")
+    private String  phone;
+
+    @Sensitive(type = Sensitive.SensitiveType.ID_CARD)
+    @Schema(description = "身份证号")
+    private String idCard;
+}

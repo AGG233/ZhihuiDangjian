@@ -1,0 +1,49 @@
+package com.rauio.smartdangjian.dao;
+
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.rauio.smartdangjian.mapper.ChapterMapper;
+import com.rauio.smartdangjian.pojo.Chapter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+@RequiredArgsConstructor
+public class ChapterDao {
+
+    private final ChapterMapper chapterMapper;
+
+
+    public Chapter getById(Long chapterId) {
+        return chapterMapper.selectById(chapterId);
+    }
+
+    public Chapter getByCourseAndTitle(Long courseId, String title) {
+        return chapterMapper.selectOne(new LambdaUpdateWrapper<Chapter>()
+                .eq(Chapter::getCourseId, courseId)
+                .eq(Chapter::getTitle, title));
+    }
+
+    public Boolean update(Chapter chapter) {
+        return chapterMapper.updateById(chapter) > 0;
+    }
+
+    public Boolean insert(Chapter chapter) {
+        return chapterMapper.insert(chapter) > 0;
+    }
+
+    public Boolean delete(Long chapterId) {
+        return chapterMapper.deleteById(chapterId) > 0;
+    }
+
+    public List<Chapter> getAll() {
+        return chapterMapper.selectList(null);
+    }
+
+    public List<Chapter> getAllChapterOfCourse(String courseId) {
+        LambdaUpdateWrapper<Chapter> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(Chapter::getCourseId, courseId);
+        return chapterMapper.selectList(wrapper);
+    }
+}

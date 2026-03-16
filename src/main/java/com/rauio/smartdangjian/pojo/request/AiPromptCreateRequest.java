@@ -1,0 +1,30 @@
+package com.rauio.smartdangjian.pojo.request;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Schema(description = "AI系统提示词创建请求")
+public class AiPromptCreateRequest {
+
+    @Schema(description = "提示词类型", example = "COMMON")
+    @NotBlank(message = "type不能为空")
+    @Pattern(regexp = "COMMON|EVALUATION|QUIZ", message = "type只支持COMMON、EVALUATION或QUIZ")
+    private String type;
+
+    @Schema(description = "提示词内容", example = "你是党务学习助手，回答需严谨、客观、简洁。")
+    @NotBlank(message = "content不能为空")
+    private String content;
+
+    @Schema(description = "是否启用", example = "true")
+    private Boolean enabled;
+
+    @Schema(description = "排序号(升序)", example = "10")
+    private Integer sort;
+}
