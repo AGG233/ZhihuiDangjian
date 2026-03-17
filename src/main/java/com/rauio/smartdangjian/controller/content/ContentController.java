@@ -24,7 +24,7 @@ import java.util.List;
 public class ContentController {
 
     private final ContentBlockService contentBlockService;
-    private final SearchService searchService;
+//    private final SearchService searchService;
 
     @GetMapping("/carousel")
     @Operation(summary = "获取轮播图列表")
@@ -60,15 +60,15 @@ public class ContentController {
         return  Result.ok(result);
     }
 
-    @GetMapping("/search/course/{keyword}")
-    @Operation(summary = "搜索")
-    public Result<Page<CourseVO>> search(
-            @PathVariable String keyword,
-            @Parameter(description = "页码")  @RequestParam(defaultValue = "1") int pageNum,
-            @Parameter(description = "页大小") @RequestParam(defaultValue = "10") int pageSize)
-    {
-        var result = searchService.getHybridSearchResult(keyword, pageNum, pageSize);
-        return Result.ok(result);
-    }
+//    @GetMapping("/search/course/{keyword}")
+//    @Operation(summary = "搜索")
+//    public Result<Page<CourseVO>> search(
+//            @PathVariable String keyword,
+//            @Parameter(description = "页码")  @RequestParam(defaultValue = "1") int pageNum,
+//            @Parameter(description = "页大小") @RequestParam(defaultValue = "10") int pageSize)
+//    {
+//        var result = searchService.getHybridSearchResult(keyword, pageNum, pageSize);
+//        return Result.ok(result);
+//    }
 
 }

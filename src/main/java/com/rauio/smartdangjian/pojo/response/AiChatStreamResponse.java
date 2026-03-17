@@ -14,10 +14,10 @@ import java.time.LocalDateTime;
 @Schema(description = "AI流式聊天响应")
 public class AiChatStreamResponse {
 
-    @Schema(description = "会话ID", example = "session-001")
+    @Schema(description = "会话ID")
     private String sessionId;
 
-    @Schema(description = "本次增量内容", example = "党的性质是")
+    @Schema(description = "用户的对话内容", example = "党的性质是")
     private String content;
 
     @Schema(description = "内容生成时间")

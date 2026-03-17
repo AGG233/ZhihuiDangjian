@@ -40,7 +40,6 @@ public class SecurityConfig {
 
     @PostConstruct
     public void enableStrategy() {
-        // 允许在线程间传递信息
         SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
     }
 

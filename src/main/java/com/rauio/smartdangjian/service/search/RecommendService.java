@@ -13,7 +13,6 @@ import com.rauio.smartdangjian.pojo.UserLearningRecord;
 import com.rauio.smartdangjian.pojo.UserSimilarity;
 import com.rauio.smartdangjian.pojo.dto.UserBehaviorDto;
 import com.rauio.smartdangjian.service.learning.UserLearningRecordService;
-import com.rauio.smartdangjian.service.user.UserService;
 import com.rauio.smartdangjian.service.user.UserSimilarityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,6 +25,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Deprecated
 public class RecommendService {
 
     private static final int TOP_N_NEIGHBORS = 20;
@@ -36,24 +36,7 @@ public class RecommendService {
     private final UserSimilarityMapper userSimilarityMapper;
     private final ChapterMapper chapterMapper;
     private final UserSimilarityService userSimilarityService;
-    private final UserService userService;
 
-    private static double calculateCosineSimilarity(Set<Long> items1, Set<Long> items2) {
-
-        if (items1.isEmpty() || items2.isEmpty()) {
-            return 0.0;
-        }
-
-        Set<Long> intersection = new HashSet<>(items1);
-        intersection.retainAll(items2);
-        int commonCount = intersection.size();
-
-        if (commonCount == 0) {
-            return 0.0;
-        }
-        double denominator = Math.sqrt(items1.size() * items2.size());
-        return (double) Math.round((commonCount / denominator) * 1000) / 1000;
-    }
     public Page<Long> recommendByCF(Long userId,int pageNum, int pageSize) {
 
         int neighborSize = 10;
@@ -68,25 +51,23 @@ public class RecommendService {
         if (similarityList.isEmpty()) {
             return new Page<>(pageNum, pageSize);
         }
-
         List<Long> similarUserIds = similarityList.stream()
                 .map(UserSimilarity::getUserId2)
                 .collect(Collectors.toList());
 
 
         Set<Long> userLearnedCourseIds = new HashSet<>(userLearningRecordService.selectLearnedCoursesByUserId(userId));
-
         List<UserLearningRecord> records = userLearningRecordMapper.selectList(
                 new LambdaQueryWrapper<UserLearningRecord>()
                         .in(UserLearningRecord::getUserId, similarUserIds)
                         .select(UserLearningRecord::getChapterId, UserLearningRecord::getUserId)
         );
-
         List<UserChapterProgress> progresses = userChapterProgressMapper.selectList(
                 new LambdaQueryWrapper<UserChapterProgress>()
                         .in(UserChapterProgress::getUserId, similarUserIds)
                         .select(UserChapterProgress::getChapterId, UserChapterProgress::getUserId)
         );
+
 
         Set<Long> allInvolvedChapterIds = new HashSet<>();
         allInvolvedChapterIds.addAll(records.stream().map(UserLearningRecord::getChapterId).toList());
@@ -136,7 +117,6 @@ public class RecommendService {
     @Scheduled(cron = "0 0 2 * * ?")
     @Transactional(rollbackFor = Exception.class)
     protected void calculateSimilarity(){
-        long start = System.currentTimeMillis();
 
         List<UserBehaviorDto> allBehaviors = userLearningRecordMapper.getAllUserBehaviors();
         if (allBehaviors.isEmpty()) return;

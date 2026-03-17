@@ -59,7 +59,7 @@ public class LLMService {
     }
 
     /**
-     * 核心业务方法：处理 SSE、流式、落库
+     * SSE、流式、落库
      *
      * @param systemPrompt 系统提示词
      * @param userPrompt   用户提示词

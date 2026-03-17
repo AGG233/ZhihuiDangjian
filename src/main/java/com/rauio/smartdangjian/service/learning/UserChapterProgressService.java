@@ -53,7 +53,7 @@ public class UserChapterProgressService {
         return convertor.toVO(progress);
     }
     public Boolean create(UserChapterProgressDto dto) {
-        // 检查是否已存在该用户的章节进度记录
+
         QueryWrapper<UserChapterProgress> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", dto.getUserId()).eq("chapter_id", dto.getChapterId());
         UserChapterProgress existing = userChapterProgressMapper.selectOne(wrapper);
@@ -87,8 +87,7 @@ public class UserChapterProgressService {
 
         UserChapterProgress progress = convertor.toEntity(dto);
         progress.setUpdatedAt(LocalDateTime.now());
-        
-        // 如果进度达到100%，自动设置完成时间
+
         if (progress.getProgress() != null && progress.getProgress() >= 100 && existing.getCompletedAt() == null) {
             progress.setCompletedAt(LocalDateTime.now());
             progress.setStatus("completed");

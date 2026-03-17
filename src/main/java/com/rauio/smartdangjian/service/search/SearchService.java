@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Deprecated
 public class SearchService {
 
     private final CourseMapper courseMapper;
@@ -73,6 +74,4 @@ public class SearchService {
         searchPage.setRecords(records);
         return searchPage;
     }
-
-
 }

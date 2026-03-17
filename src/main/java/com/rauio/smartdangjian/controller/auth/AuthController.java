@@ -91,6 +91,6 @@ public class AuthController {
     @Deprecated
     public Result<Map<String, String>> refresh(@RequestParam @Valid String refreshToken){
 //        return authService.refresh(refreshToken);
-        return Result.error("404","接口已启用");
+        return Result.error("404","接口已弃用");
     }
 }
