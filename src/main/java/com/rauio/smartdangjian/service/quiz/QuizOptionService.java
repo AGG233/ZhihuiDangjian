@@ -16,7 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(rollbackFor = Exception.class)
+@Transactional
 public class QuizOptionService {
 
     private final QuizOptionMapper quizOptionMapper;

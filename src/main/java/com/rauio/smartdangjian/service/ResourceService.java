@@ -43,7 +43,7 @@ import static com.rauio.smartdangjian.constants.ErrorConstants.ARGS_ERROR;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+@Transactional
 public class ResourceService {
 
     private static final Logger log = LoggerFactory.getLogger(ResourceService.class);

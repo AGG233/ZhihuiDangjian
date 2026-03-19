@@ -25,7 +25,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+@Transactional
 public class UserLearningRecordService {
 
     private final UserLearningRecordDao userLearningRecordDao;

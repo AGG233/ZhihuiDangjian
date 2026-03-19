@@ -15,7 +15,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+@Transactional
 public class UserQuizAnswerService {
 
     private final UserQuizAnswerMapper userQuizAnswerMapper;

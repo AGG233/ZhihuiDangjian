@@ -115,7 +115,7 @@ public class RecommendService {
     }
 
     @Scheduled(cron = "0 0 2 * * ?")
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     protected void calculateSimilarity(){
 
         List<UserBehaviorDto> allBehaviors = userLearningRecordMapper.getAllUserBehaviors();

@@ -28,7 +28,7 @@ public class UserAspect {
 
     @Before("@annotation(com.rauio.smartdangjian.aop.annotation.PermissionAccess) ||" +
     "@within(com.rauio.smartdangjian.aop.annotation.PermissionAccess)")
-    public void checkPermissionAccess(JoinPoint joinPoint) throws Throwable {
+    public void checkPermissionAccess(JoinPoint joinPoint) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
         Class<?> targetClass = joinPoint.getTarget().getClass();

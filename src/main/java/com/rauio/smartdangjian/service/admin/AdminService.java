@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+@Transactional
 @RequiredArgsConstructor
 public class AdminService extends ServiceImpl<UserMapper,User>{
 
