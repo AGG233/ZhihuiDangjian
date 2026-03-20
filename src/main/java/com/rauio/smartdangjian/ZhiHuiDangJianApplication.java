@@ -11,6 +11,6 @@ import org.springframework.cache.annotation.EnableCaching;
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class, FreeMarkerAutoConfiguration.class})
 public class ZhiHuiDangJianApplication {
 	public static void main(String[] args) {
-    SpringApplication.run(ZhiHuiDangJianApplication.class, args);
+        SpringApplication.run(ZhiHuiDangJianApplication.class, args);
     }
 }

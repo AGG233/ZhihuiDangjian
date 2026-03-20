@@ -23,7 +23,7 @@ public class CategoryCourseDao {
     public int update(CategoryCourse categoryCourse){
         return categoryCourseMapper.updateById(categoryCourse);
     }
-    public CategoryCourse get(Long courseId) {
+    public CategoryCourse get(String courseId) {
         return categoryCourseMapper.selectById(courseId);
     }
 

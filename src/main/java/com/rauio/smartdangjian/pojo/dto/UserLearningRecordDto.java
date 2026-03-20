@@ -12,13 +12,13 @@ import java.time.LocalDateTime;
 public class UserLearningRecordDto {
 
     @Schema(description = "记录ID，更新时需要")
-    private Long id;
+    private String id;
 
     @Schema(description = "用户ID")
-    private Long userId;
+    private String userId;
 
     @Schema(description = "章节ID")
-    private Long chapterId;
+    private String chapterId;
 
     @Schema(description = "开始学习时间")
     private LocalDateTime startTime;

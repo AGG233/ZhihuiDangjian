@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class UserBehaviorDto {
-    private Long userId;
-    private Long chapterId;
+    private String userId;
+    private String chapterId;
 }

@@ -27,7 +27,7 @@ public class UserService {
     private final UserDao userDao;
     private final UserConvertor convertor;
 
-    public UserVO getUserByID(Long ID) {
+    public UserVO getUserByID(String ID) {
         return convertor.toVO(userDao.get(ID));
     }
     
@@ -61,7 +61,7 @@ public class UserService {
         return null;
     }
     @RequireUser
-    public Long getUserIDFromAuthentication() {
+    public String getUserIDFromAuthentication() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated()) {
@@ -89,11 +89,11 @@ public class UserService {
         return userDao.getUserByPartyMemberId(partyMemberId);
     }
 
-    public Boolean update(Long id,User user) {
+    public Boolean update(String id,User user) {
         return userDao.update(user);
     }
 
-    public Boolean delete(Long ID) {
+    public Boolean delete(String ID) {
         return userDao.delete(ID);
     }
 
@@ -122,7 +122,7 @@ public class UserService {
      * @param schoolId 学校id
      * @return 是否属于该学校
      */
-    public Boolean isUserBelongsSchool(Long id, Long schoolId) {
+    public Boolean isUserBelongsSchool(String id, String schoolId) {
         User user = getUserFromAuthentication();
         
         if (schoolId == null || user == null) {
@@ -146,10 +146,6 @@ public class UserService {
 
         userMapper.selectPage(pageInfo,wrapper);
         return pageInfo;
-    }
-
-    public Boolean changePassword(Long id, String password) {
-        return userDao.changePassword(id,password);
     }
     
     private void checkEmailRegistered(String email) {

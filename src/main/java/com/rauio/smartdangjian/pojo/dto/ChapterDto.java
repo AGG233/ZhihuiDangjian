@@ -14,7 +14,7 @@ public class ChapterDto {
 
     @Schema(description = "章节所属的课程ID")
     @NotBlank(message = "课程ID不能为空")
-    private Long  courseId;
+    private String  courseId;
 
     @Schema(description = "章节的标题",example = "党的第十九次全国代表大会讲解")
     @NotBlank(message = "章节标题不能为空")

@@ -32,7 +32,7 @@ public class CategoryController {
     )
     @GetMapping("/{id}")
     @PermissionAccess(UserType.STUDENT)
-    public Result<CategoryVO> get(@PathVariable Long id){
+    public Result<CategoryVO> get(@PathVariable String id){
         CategoryVO result = categoryService.getById(id);
         return Result.ok(result);
     }
@@ -54,7 +54,7 @@ public class CategoryController {
     )
     @GetMapping("/{id}/children")
     @PermissionAccess(UserType.STUDENT)
-    public Result<List<CategoryVO>> getChildren(@PathVariable Long id){
+    public Result<List<CategoryVO>> getChildren(@PathVariable String id){
         List<CategoryVO> result = categoryService.getChildren(id);
         return Result.ok(result);
     }
@@ -83,7 +83,7 @@ public class CategoryController {
             description = "向根目录id为路径参数的id添加子目录"
     )
     @PostMapping("/{id}/addChildren")
-    public Result<Boolean> addChildren(List<CategoryDto> children, @PathVariable Long id){
+    public Result<Boolean> addChildren(List<CategoryDto> children, @PathVariable String id){
         Boolean result = categoryService.addChildren(children, id);
         return Result.ok(result);
     }
@@ -92,7 +92,7 @@ public class CategoryController {
             description = "修改目录"
     )
     @PostMapping("/{id}")
-    public Result<Boolean> update(CategoryDto dto, @PathVariable Long id){
+    public Result<Boolean> update(CategoryDto dto, @PathVariable String id){
         Boolean result = categoryService.update(dto, id);
         return Result.ok(result);
     }
@@ -101,7 +101,7 @@ public class CategoryController {
             description = "如果删除的目录没有子目录，则删除成功，有子目录则无法删除"
     )
     @DeleteMapping("/{id}")
-    public Result<Boolean> delete(@PathVariable Long id){
+    public Result<Boolean> delete(@PathVariable String id){
             Boolean result = categoryService.delete(id);
             return Result.ok(result);
     }
@@ -110,7 +110,7 @@ public class CategoryController {
             description = "删除目录的同时也将删除它的子目录"
     )
     @DeleteMapping("/{id}/all")
-    public Result<Boolean> deleteAll(@PathVariable Long id){
+    public Result<Boolean> deleteAll(@PathVariable String id){
         Boolean result = categoryService.deleteAll(id);
         return Result.ok(result);
     }

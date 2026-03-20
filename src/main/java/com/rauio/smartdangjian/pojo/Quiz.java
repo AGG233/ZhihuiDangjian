@@ -16,7 +16,7 @@ public class Quiz {
 
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
-    private Long id;
+    private String id;
 
     private String chapterId;
 

@@ -16,11 +16,11 @@ public class UserSimilarity {
 
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
-    private Long id;
+    private String id;
 
-    private Long userId1;
+    private String userId1;
 
-    private Long userId2;
+    private String userId2;
 
     private double similarityScore;
 

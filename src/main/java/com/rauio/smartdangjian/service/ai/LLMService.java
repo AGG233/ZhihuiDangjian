@@ -68,8 +68,8 @@ public class LLMService {
     private Flux<ServerSentEvent<Result<AiChatStreamResponse>>> internalCall(
             String systemPrompt,
             String userPrompt,
-            String sessionId) {
-
+            String sessionId
+    ) {
         UserVO user = userConvertor.toVO(userService.getUserFromAuthentication());
 
         return chatClient.prompt()

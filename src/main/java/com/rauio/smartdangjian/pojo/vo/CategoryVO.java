@@ -6,10 +6,10 @@ import java.util.List;
 
 @Data
 public class CategoryVO {
-    private Long      id;
+    private String      id;
     private String      name;
     private String      description;
-    private Long      parentId;
+    private String      parentId;
     private Integer     sortOrder;
     private List<CategoryVO> children;
 }

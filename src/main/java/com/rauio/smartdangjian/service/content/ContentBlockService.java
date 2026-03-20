@@ -42,7 +42,7 @@ public class ContentBlockService {
      * @param id 内容块的ID
      * @return 删除结果
      */
-    public Boolean delete(Long id) {
+    public Boolean delete(String id) {
         return dao.delete(id);
     }
 
@@ -58,7 +58,7 @@ public class ContentBlockService {
      * @param id 内容块ID
      * @return 内容块
      */
-    public ContentBlockVO get(Long id) {
+    public ContentBlockVO get(String id) {
         return convertor.toVO(dao.get(id));
     }
 
@@ -66,7 +66,7 @@ public class ContentBlockService {
      * @param parentId 章节或文章的ID
      * @return 该章节或文章的所有内容块
      */
-    public List<ContentBlockVO> getAllByParentId(Long parentId) {
+    public List<ContentBlockVO> getAllByParentId(String parentId) {
         return convertor.toVOList(dao.getAllByParentId(parentId));
     }
 
@@ -74,7 +74,7 @@ public class ContentBlockService {
      * @param Ids 内容块ID集合
      * @return 所有内容块
      */
-    public List<ContentBlockVO> getByResourceId(List<Long> Ids) {
+    public List<ContentBlockVO> getByResourceId(List<String> Ids) {
         return convertor.toVOList(Ids.stream()
                 .toList()
                 .stream()

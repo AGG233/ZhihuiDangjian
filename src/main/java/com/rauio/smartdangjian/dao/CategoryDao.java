@@ -14,7 +14,7 @@ public class CategoryDao {
 
     private final CategoryMapper categoryMapper;
 
-    public Category get(Long categoryId) {
+    public Category get(String categoryId) {
         return categoryMapper.selectById(categoryId);
     }
 
@@ -22,7 +22,7 @@ public class CategoryDao {
     * @param categoryId 父目录Id
     * @return 父目录下的子目录
     * */
-    public List<Category> getChildren(Long categoryId){
+    public List<Category> getChildren(String categoryId){
         QueryWrapper<Category> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("parent_id", categoryId);
         return categoryMapper.selectList(queryWrapper);
@@ -38,7 +38,7 @@ public class CategoryDao {
     public Boolean insert(Category category) {
         return categoryMapper.insert(category) > 0;
     }
-    public Boolean delete(Long categoryId) {
+    public Boolean delete(String categoryId) {
         return categoryMapper.deleteById(categoryId) > 0;
     }
     public Boolean deleteAll(String categoryId){

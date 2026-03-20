@@ -64,7 +64,7 @@ public class ResourceAccessAspect {
         throw new RuntimeException("权限不足");
     }
 
-    private Long getTargetUserId(ProceedingJoinPoint joinPoint, String spelExpression) {
+    private String getTargetUserId(ProceedingJoinPoint joinPoint, String spelExpression) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
         Object[] args = joinPoint.getArgs();
@@ -74,10 +74,10 @@ public class ResourceAccessAspect {
         try {
             Expression expression = parser.parseExpression(spelExpression);
             Object value = expression.getValue(context, Object.class);
-            if (value instanceof Long) {
-                return (Long) value;
+            if (value instanceof String) {
+                return (String) value;
             } else if (value instanceof Number) {
-                return ((Number) value).longValue();
+                return String.valueOf(((Number) value).longValue());
             }
             return null;
         } catch (Exception e) {

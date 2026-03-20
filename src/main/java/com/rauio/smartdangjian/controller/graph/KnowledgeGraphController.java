@@ -26,7 +26,7 @@ public class KnowledgeGraphController {
     @Operation(summary = "同步用户学习图谱", description = "将用户已学习内容同步到Neo4j图谱")
     @PostMapping("/user/{userId}/sync")
     @PermissionAccess(UserType.STUDENT)
-    public Result<Integer> syncUserGraph(@Parameter(description = "用户ID") @PathVariable Long userId) {
+    public Result<Integer> syncUserGraph(@Parameter(description = "用户ID") @PathVariable String userId) {
         int count = knowledgeGraphService.syncUserLearningGraph(userId);
         return Result.ok(count);
     }
@@ -34,14 +34,14 @@ public class KnowledgeGraphController {
     @Operation(summary = "获取用户学习图谱", description = "返回用户学习课程和章节的图谱结构")
     @GetMapping("/user/{userId}")
     @PermissionAccess(UserType.STUDENT)
-    public Result<KnowledgeGraphVO> getUserGraph(@Parameter(description = "用户ID") @PathVariable Long userId) {
+    public Result<KnowledgeGraphVO> getUserGraph(@Parameter(description = "用户ID") @PathVariable String userId) {
         return Result.ok(knowledgeGraphService.getUserGraph(userId));
     }
 
     @Operation(summary = "获取课程图谱", description = "返回课程关联的学习用户和章节结构")
     @GetMapping("/course/{courseId}")
     @PermissionAccess(UserType.STUDENT)
-    public Result<KnowledgeGraphVO> getCourseGraph(@Parameter(description = "课程ID") @PathVariable Long courseId) {
+    public Result<KnowledgeGraphVO> getCourseGraph(@Parameter(description = "课程ID") @PathVariable String courseId) {
         return Result.ok(knowledgeGraphService.getCourseGraph(courseId));
     }
 }

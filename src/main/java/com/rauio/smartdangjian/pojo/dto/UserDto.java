@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class UserDto {
 
     @Schema(description = "用户ID，留空即可")
-    private Long  userId;
+    private String  userId;
 
     @Schema(description = "用户名")
     private String  username;
@@ -36,7 +36,7 @@ public class UserDto {
     private UserType userType;
 
     @Schema(description = "学校ID")
-    private Long universityId;
+    private String universityId;
 
     @Schema(description = "入党时间")
     private LocalDateTime  joinPartyDate;

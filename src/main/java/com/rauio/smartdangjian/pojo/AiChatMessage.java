@@ -17,12 +17,12 @@ import java.util.Map;
 public class AiChatMessage {
 
     @TableId
-    private Long id;
+    private String id;
 
     @TableField(fill = FieldFill.INSERT)
     private String sessionId;
 
-    private Long userId;
+    private String userId;
 
     private String senderType;
 

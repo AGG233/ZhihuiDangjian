@@ -19,7 +19,7 @@ public class ArticleService {
     private final ArticleDao articleDao;
     private final UserService userService;
     private final ArticleConvertor convertor;
-    public Article get(Long id) {
+    public Article get(String id) {
         return articleDao.get(id);
     }
     public List<CategoryArticle> getAllArticlesOfCategory(String id) {
@@ -42,7 +42,7 @@ public class ArticleService {
     public Boolean update(ArticleDto dto) {
         return articleDao.update(convertor.toEntity(dto));
     }
-    public Boolean delete(Long id) {
+    public Boolean delete(String id) {
         return articleDao.delete(id);
     }
 }

@@ -46,7 +46,7 @@ public class AiChatMessageService {
         return true;
     }
 
-    public Boolean create(Long userId,String finalInput,String finalOutput) {
+    public Boolean create(String userId,String finalInput,String finalOutput) {
         HashMap<String, Object> metadata = new HashMap<>();
         metadata.put("finalInput", finalInput);
         metadata.put("finalOutput", finalOutput);

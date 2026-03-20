@@ -22,10 +22,10 @@ public class ContentBlock {
 
     @Schema(description = "内容块ID")
     @JsonSerialize(using = ToStringSerializer.class)
-    private Long      id;
+    private String      id;
 
     @Schema(description = "父级内容块ID")
-    private Long      parentId;
+    private String      parentId;
     @EnumValue
     @Schema(description = "父级内容块类型")
     private ParentType parentType;

@@ -15,7 +15,7 @@ public class UserChapterProgressDao {
         this.userChapterProgressMapper = userChapterProgressMapper;
     }
 
-    public UserChapterProgress get(Long progressId) {
+    public UserChapterProgress get(String progressId) {
         return userChapterProgressMapper.selectById(progressId);
     }
 
@@ -27,7 +27,7 @@ public class UserChapterProgressDao {
         return userChapterProgressMapper.insert(userChapterProgress) > 0;
     }
 
-    public Boolean delete(Long progressId) {
+    public Boolean delete(String progressId) {
         return userChapterProgressMapper.deleteById(progressId) > 0;
     }
 }

@@ -22,11 +22,11 @@ public class Category implements Serializable {
 
     @TableId(type = IdType.AUTO)
     @JsonSerialize(using = ToStringSerializer.class)
-    private Long id;
+    private String id;
     private String name;
     private Integer level;
     private String description;
-    private Long parentId;
+    private String parentId;
     private String sortOrder;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -27,25 +27,25 @@ public class UserQuizAnswerService {
         return userQuizAnswerMapper.updateById(userQuizAnswer) > 0;
     }
     @PermissionAccess(UserType.MANAGER)
-    public Boolean delete(Long quizId) {
+    public Boolean delete(String quizId) {
         return userQuizAnswerMapper.deleteById(quizId) > 0;
     }
-    public List<UserQuizAnswer> selectByQuizId(Long quizId) {
+    public List<UserQuizAnswer> selectByQuizId(String quizId) {
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
         wrapper.eq(UserQuizAnswer::getId, quizId);
         return userQuizAnswerMapper.selectList(wrapper);
     }
-    public UserQuizAnswer selectByOptionId(Long optionId) {
+    public UserQuizAnswer selectByOptionId(String optionId) {
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
         wrapper.eq(UserQuizAnswer::getId, optionId);
         return userQuizAnswerMapper.selectOne(wrapper);
     }
-    public List<UserQuizAnswer> selectByUserId(Long userId) {
+    public List<UserQuizAnswer> selectByUserId(String userId) {
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
         wrapper.eq(UserQuizAnswer::getId, userId);
         return userQuizAnswerMapper.selectList(wrapper);
     }
-    public List<UserQuizAnswer> selectByUserIdAndQuizId(Long userId, Long quizId) {
+    public List<UserQuizAnswer> selectByUserIdAndQuizId(String userId, String quizId) {
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
         wrapper.eq(UserQuizAnswer::getId, userId);
         wrapper.eq(UserQuizAnswer::getId, quizId);

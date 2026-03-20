@@ -23,14 +23,14 @@ public class Course{
 
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
-    private Long id;
+    private String id;
     private String title;
     private String description;
     private String coverImageHash;
     private String categoryId;
     private String difficulty;
     private Integer estimatedDuration;
-    private Long creatorId;
+    private String creatorId;
     private Integer enrollmentCount;
     private BigDecimal averageRating;
     private Boolean isPublished;

@@ -32,4 +32,10 @@ public class ChatController {
     public Flux<ServerSentEvent<Result<AiChatStreamResponse>>> evaluate() {
         return llmService.evaluate();
     }
+
+    @Operation(summary = "AI quiz接口", description = "SSE流式返回 quiz")
+    @GetMapping(value = "/quiz", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ServerSentEvent<Result<AiChatStreamResponse>>> quiz(String topic, String sessionId) {
+        return llmService.quiz(topic, sessionId);
+    }
 }

@@ -34,7 +34,7 @@ public class UserController {
             summary = "获取用户信息",
             description = "通过ID获取用户信息")
     @GetMapping("/{id}")
-    public Result<UserVO> get(@Parameter(description = "用户ID") @PathVariable Long id){
+    public Result<UserVO> get(@Parameter(description = "用户ID") @PathVariable String id){
         UserVO user = userService.getUserByID(id);
         return Result.ok(user);
     }
@@ -55,7 +55,7 @@ public class UserController {
     )
     @PutMapping("/{id}")
     public Result<Boolean> update(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestBody User user
     ){
         Boolean result = userService.update(id,user);
@@ -67,7 +67,7 @@ public class UserController {
             description = "通过ID删除用户"
     )
     @DeleteMapping("/{id}")
-    public Result<Object> delete(@Parameter(description = "用户ID") @PathVariable Long id){
+    public Result<Object> delete(@Parameter(description = "用户ID") @PathVariable String id){
         Boolean result = userService.delete(id);
         return Result.ok("404","接口已经弃用",null);
     }
@@ -82,19 +82,19 @@ public class UserController {
     * 用户考试信息
     * */
     @GetMapping("/{id}/quiz")
-    public Result<List<UserQuizAnswer>> getAllQuizAnswerOfUser(@PathVariable Long id){
+    public Result<List<UserQuizAnswer>> getAllQuizAnswerOfUser(@PathVariable String id){
         List<UserQuizAnswer> result = userQuizAnswerService.selectByUserId(id);
         return Result.ok(result);
     }
 
     @GetMapping("/{id}/quiz/{quizId}")
-    public Result<List<UserQuizAnswer>> getQuizAnswerOfQuiz(@PathVariable Long quizId){
+    public Result<List<UserQuizAnswer>> getQuizAnswerOfQuiz(@PathVariable String quizId){
         List<UserQuizAnswer> result = userQuizAnswerService.selectByQuizId(quizId);
         return Result.ok(result);
     }
 
     @GetMapping("/{id}/quiz/{quizId}/{optionId}")
-    public Result<UserQuizAnswer> getQuizAnswerOfOption(@PathVariable Long optionId){
+    public Result<UserQuizAnswer> getQuizAnswerOfOption(@PathVariable String optionId){
         UserQuizAnswer result = userQuizAnswerService.selectByOptionId(optionId);
         return Result.ok(result);
     }
@@ -122,7 +122,7 @@ public class UserController {
 
     @DeleteMapping("/{id}/quiz/{quizId}/{optionId}")
     @PermissionAccess(UserType.MANAGER)
-    public Result<Boolean> deleteQuizAnswer(@PathVariable Long id, @PathVariable Long quizId, @PathVariable String optionId){
+    public Result<Boolean> deleteQuizAnswer(@PathVariable String id, @PathVariable String quizId, @PathVariable String optionId){
         Boolean result = userQuizAnswerService.delete(quizId);
         return Result.ok(result);
     }

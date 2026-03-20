@@ -37,9 +37,9 @@ public class AuthService {
     private final CaptchaService                captchaService;
 
     public LoginResponse login(@RequestBody LoginRequest loginRequest) {
-//        if (!captchaService.validate(loginRequest.getCaptchaUUID(), loginRequest.getCaptchaCode())) {
-//            throw new BusinessException(ARGS_ERROR,"验证码错误");
-//        }
+        if (!captchaService.validate(loginRequest.getCaptchaUUID(), loginRequest.getCaptchaCode())) {
+            throw new BusinessException(ARGS_ERROR,"验证码错误");
+        }
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -47,6 +47,7 @@ public class AuthService {
                         loginRequest.getPassword()
                 )
         );
+
         User user = (User) authentication.getPrincipal();
         String accessToken  = jwtService.generateAccessToken(user,loginRequest.getPlatform());
 

@@ -25,7 +25,7 @@ public class CourseService {
     private final UserService       userService;
     private final CourseConvertor   courseConvertor;
     private final CategoryCourseDao categoryCourseDao;
-    public CourseVO get(Long courseId) {
+    public CourseVO get(String courseId) {
         Course entity = courseDao.get(courseId);
         return courseConvertor.toVO(entity);
     }
@@ -43,7 +43,7 @@ public class CourseService {
         ) > 0;
 
     }
-    public Boolean update(CourseDto courseDto,Long id) {
+    public Boolean update(CourseDto courseDto,String id) {
         if (id == null){
             return false;
         }
@@ -55,7 +55,7 @@ public class CourseService {
         }
         return courseDao.update(course);
     }
-    public Boolean delete(Long courseId) {
+    public Boolean delete(String courseId) {
         return courseDao.delete(courseId);
     }
     public List<Course> getAll() {

@@ -16,7 +16,7 @@ public class UserDao{
     public UserDao(UserMapper userMapper) {
         this.userMapper = userMapper;
     }
-    public User get(Long id) {
+    public User get(String id) {
         return userMapper.selectById(id);
     }
     public Boolean update(User user) {
@@ -25,11 +25,11 @@ public class UserDao{
     public Boolean insert(User user) {
         return userMapper.insert(user) > 0;
     }
-    public Boolean delete(Long user_id) {
+    public Boolean delete(String user_id) {
         return userMapper.deleteById(user_id) > 0;
     }
 
-    public Boolean changePassword(Long id,String password){
+    public Boolean changePassword(String id,String password){
         LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
         wrapper.set(User::getPassword, password).eq(User::getId, id);
         return userMapper.update(null, wrapper) > 0;

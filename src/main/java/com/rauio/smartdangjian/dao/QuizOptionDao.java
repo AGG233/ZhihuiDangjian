@@ -15,7 +15,7 @@ public class QuizOptionDao {
         this.quizOptionMapper = quizOptionMapper;
     }
 
-    public QuizOption get(Long optionId) {
+    public QuizOption get(String optionId) {
         return quizOptionMapper.selectById(optionId);
     }
 
@@ -27,7 +27,7 @@ public class QuizOptionDao {
         return quizOptionMapper.insert(quizOption) > 0;
     }
 
-    public Boolean delete(Long optionId) {
+    public Boolean delete(String optionId) {
         return quizOptionMapper.deleteById(optionId) > 0;
     }
 }

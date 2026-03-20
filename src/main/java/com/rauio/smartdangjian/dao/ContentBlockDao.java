@@ -14,17 +14,17 @@ public class ContentBlockDao {
 
     private final ContentBlockMapper contentBlockMapper;
 
-    public ContentBlock get(Long id) {
+    public ContentBlock get(String id) {
         return contentBlockMapper.selectById(id);
     }
 
-    public ContentBlock getByResourceId(Long resourceId) {
+    public ContentBlock getByResourceId(String resourceId) {
         QueryWrapper<ContentBlock> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("resource_id", resourceId);
         return contentBlockMapper.selectOne(queryWrapper);
     }
 
-    public List<ContentBlock> getAllByParentId(Long parentId) {
+    public List<ContentBlock> getAllByParentId(String parentId) {
         QueryWrapper<ContentBlock> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("parent_id", parentId);
         return contentBlockMapper.selectList(queryWrapper);
@@ -38,7 +38,7 @@ public class ContentBlockDao {
         return contentBlockMapper.insert(contentBlock) > 0;
     }
 
-    public Boolean delete(Long id) {
+    public Boolean delete(String id) {
         return contentBlockMapper.deleteById(id) > 0;
     }
 }

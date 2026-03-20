@@ -31,7 +31,7 @@ public class ChapterService {
      * @param chapterId 章节ID
      * @return 章节
      */
-    public ChapterVO get(Long chapterId) {
+    public ChapterVO get(String chapterId) {
         Chapter chapter = chapterDao.getById(chapterId);
         if (chapter == null) {
             throw new BusinessException(4000, "章节不存在");
@@ -85,7 +85,7 @@ public class ChapterService {
      * @param chapterId 章节ID
      * @return 删除结果
      */
-    public Boolean delete(Long chapterId) {
+    public Boolean delete(String chapterId) {
         return chapterDao.delete(chapterId);
     }
 }

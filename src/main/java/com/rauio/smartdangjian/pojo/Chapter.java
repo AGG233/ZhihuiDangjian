@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 @TableName("chapter")
 public class Chapter {
 
-    private Long  id;
-    private Long  courseId;
+    private String  id;
+    private String  courseId;
     private String  title;
     private String  description;
     private Integer duration;

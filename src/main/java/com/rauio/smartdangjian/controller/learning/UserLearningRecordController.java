@@ -25,7 +25,7 @@ public class UserLearningRecordController {
     @Operation(summary = "获取学习记录", description = "根据记录ID获取学习记录详情")
     @GetMapping("/{id}")
     @PermissionAccess(UserType.STUDENT)
-    public Result<UserLearningRecordVO> get(@Parameter(description = "记录ID") @PathVariable Long id) {
+    public Result<UserLearningRecordVO> get(@Parameter(description = "记录ID") @PathVariable String id) {
         UserLearningRecordVO result = recordService.get(id);
         return Result.ok(result);
     }
@@ -33,7 +33,7 @@ public class UserLearningRecordController {
     @Operation(summary = "获取用户所有学习记录", description = "根据用户ID获取该用户的所有学习记录")
     @GetMapping("/user/{userId}")
     @PermissionAccess(UserType.STUDENT)
-    public Result<List<UserLearningRecordVO>> getByUserId(@Parameter(description = "用户ID") @PathVariable Long userId) {
+    public Result<List<UserLearningRecordVO>> getByUserId(@Parameter(description = "用户ID") @PathVariable String userId) {
         List<UserLearningRecordVO> result = recordService.getByUserId(userId);
         return Result.ok(result);
     }
@@ -41,7 +41,7 @@ public class UserLearningRecordController {
     @Operation(summary = "获取章节所有学习记录", description = "根据章节ID获取该章节的所有学习记录")
     @GetMapping("/chapter/{chapterId}")
     @PermissionAccess(UserType.SCHOOL)
-    public Result<List<UserLearningRecordVO>> getByChapterId(@Parameter(description = "章节ID") @PathVariable Long chapterId) {
+    public Result<List<UserLearningRecordVO>> getByChapterId(@Parameter(description = "章节ID") @PathVariable String chapterId) {
         List<UserLearningRecordVO> result = recordService.getByChapterId(chapterId);
         return Result.ok(result);
     }
@@ -50,8 +50,8 @@ public class UserLearningRecordController {
     @GetMapping("/user/{userId}/chapter/{chapterId}")
     @PermissionAccess(UserType.STUDENT)
     public Result<List<UserLearningRecordVO>> getByUserAndChapter(
-            @Parameter(description = "用户ID") @PathVariable Long userId,
-            @Parameter(description = "章节ID") @PathVariable Long chapterId) {
+            @Parameter(description = "用户ID") @PathVariable String userId,
+            @Parameter(description = "章节ID") @PathVariable String chapterId) {
         List<UserLearningRecordVO> result = recordService.getByUserAndChapter(userId, chapterId);
         return Result.ok(result);
     }
@@ -75,7 +75,7 @@ public class UserLearningRecordController {
     @Operation(summary = "删除学习记录", description = "根据记录ID删除学习记录")
     @DeleteMapping("/{id}")
     @PermissionAccess(UserType.SCHOOL)
-    public Result<Boolean> delete(@Parameter(description = "记录ID") @PathVariable Long id) {
+    public Result<Boolean> delete(@Parameter(description = "记录ID") @PathVariable String id) {
         Boolean result = recordService.delete(id);
         return Result.ok(result);
     }

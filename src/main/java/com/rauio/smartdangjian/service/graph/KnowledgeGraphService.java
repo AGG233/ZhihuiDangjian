@@ -37,7 +37,7 @@ public class KnowledgeGraphService {
     private final ChapterDao chapterDao;
     private final UserLearningRecordMapper userLearningRecordMapper;
 
-    public void upsertLearningGraph(Long userId, Long chapterId) {
+    public void upsertLearningGraph(String userId, String chapterId) {
         User user = userDao.get(userId);
         if (user == null) {
             throw new BusinessException(4000, "用户不存在");
@@ -74,7 +74,7 @@ public class KnowledgeGraphService {
                 .run();
     }
 
-    public int syncUserLearningGraph(Long userId) {
+    public int syncUserLearningGraph(String userId) {
         QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId);
         List<UserLearningRecord> records = userLearningRecordMapper.selectList(wrapper);
@@ -86,7 +86,7 @@ public class KnowledgeGraphService {
         return records.size();
     }
 
-    public KnowledgeGraphVO getUserGraph(Long userId) {
+    public KnowledgeGraphVO getUserGraph(String userId) {
         String cypher = """
                 MATCH (u:User {id:$userId})
                 OPTIONAL MATCH (u)-[r1:LEARNED]->(c:Course)
@@ -103,7 +103,7 @@ public class KnowledgeGraphService {
         return buildGraph(rows);
     }
 
-    public KnowledgeGraphVO getCourseGraph(Long courseId) {
+    public KnowledgeGraphVO getCourseGraph(String courseId) {
         String cypher = """
                 MATCH (c:Course {id:$courseId})
                 OPTIONAL MATCH (c)<-[r1:LEARNED]-(u:User)

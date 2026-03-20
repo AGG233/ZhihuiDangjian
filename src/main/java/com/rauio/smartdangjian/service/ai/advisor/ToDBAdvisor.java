@@ -40,7 +40,7 @@ public class ToDBAdvisor implements Advisor,StreamAdvisor{
     public @NonNull Flux<ChatClientResponse> adviseStream(@NonNull ChatClientRequest request, @NonNull StreamAdvisorChain chain) {
         String finalInput = request.prompt().getContents();
         StringBuilder contentAggregator = new StringBuilder();
-        Long userId = userService.getUserIDFromAuthentication();
+        String userId = userService.getUserIDFromAuthentication();
 
         return chain.nextStream(request)
                 .doOnNext(response -> {

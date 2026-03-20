@@ -104,7 +104,7 @@ public class ResourceService {
 
             Map<String, String> result = new HashMap<>();
             ResourceMeta meta = metaDao.findByHash(hash);
-            result.put("resource_id", meta.getId().toString());
+            result.put("resource_id", meta.getId());
             result.put("resource_hash", meta.getHash());
             result.put("resource_original_name", meta.getOriginalName());
 
@@ -146,7 +146,7 @@ public class ResourceService {
             throw new BusinessException(4001,"文件获取失败");
         }
     }
-    public URL getById(Long id) {
+    public URL getById(String id) {
         String path = metaDao.findByResourceId(id).getHash();
         try{
             Date expiration = new Date(new Date().getTime() + expireTimeInSeconds * 1000);
@@ -156,7 +156,7 @@ public class ResourceService {
             throw new BusinessException(4001,"文件获取失败");
         }
     }
-    public List<String> getBatchWithId(List<Long> idList) {
+    public List<String> getBatchWithId(List<String> idList) {
         return idList.stream()
                 .map(key ->{
                     URL url = getById(key);
@@ -171,7 +171,7 @@ public class ResourceService {
                }).collect(Collectors.toList());
     }
     public boolean delete(String hash) {
-        Long id = metaDao.findByHash(hash).getId();
+        String id = metaDao.findByHash(hash).getId();
         metaDao.delete(id);
         blockDao.delete(blockDao.getByResourceId(id).getId());
         return true;

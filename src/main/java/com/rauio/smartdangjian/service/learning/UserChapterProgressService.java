@@ -24,26 +24,26 @@ public class UserChapterProgressService {
     private final UserChapterProgressDao userChapterProgressDao;
     private final UserChapterProgressMapper userChapterProgressMapper;
     private final UserChapterProgressConvertor convertor;
-    public UserChapterProgressVO get(Long id) {
+    public UserChapterProgressVO get(String id) {
         UserChapterProgress progress = userChapterProgressDao.get(id);
         if (progress == null) {
             throw new BusinessException(4000, "进度记录不存在");
         }
         return convertor.toVO(progress);
     }
-    public List<UserChapterProgressVO> getByUserId(Long userId) {
+    public List<UserChapterProgressVO> getByUserId(String userId) {
         QueryWrapper<UserChapterProgress> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId);
         List<UserChapterProgress> list = userChapterProgressMapper.selectList(wrapper);
         return convertor.toVOList(list);
     }
-    public List<UserChapterProgressVO> getByChapterId(Long chapterId) {
+    public List<UserChapterProgressVO> getByChapterId(String chapterId) {
         QueryWrapper<UserChapterProgress> wrapper = new QueryWrapper<>();
         wrapper.eq("chapter_id", chapterId);
         List<UserChapterProgress> list = userChapterProgressMapper.selectList(wrapper);
         return convertor.toVOList(list);
     }
-    public UserChapterProgressVO getByUserAndChapter(Long userId, Long chapterId) {
+    public UserChapterProgressVO getByUserAndChapter(String userId, String chapterId) {
         QueryWrapper<UserChapterProgress> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId).eq("chapter_id", chapterId);
         UserChapterProgress progress = userChapterProgressMapper.selectOne(wrapper);
@@ -99,7 +99,7 @@ public class UserChapterProgressService {
         }
         return result;
     }
-    public Boolean delete(Long id) {
+    public Boolean delete(String id) {
         UserChapterProgress existing = userChapterProgressDao.get(id);
         if (existing == null) {
             throw new BusinessException(4000, "进度记录不存在");

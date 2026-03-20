@@ -15,7 +15,7 @@ public class UserQuizAnswerDao {
         this.userQuizAnswerMapper = userQuizAnswerMapper;
     }
 
-    public UserQuizAnswer get(Long answerId) {
+    public UserQuizAnswer get(String answerId) {
         return userQuizAnswerMapper.selectById(answerId);
     }
 
@@ -27,7 +27,7 @@ public class UserQuizAnswerDao {
         return userQuizAnswerMapper.insert(userQuizAnswer) > 0;
     }
 
-    public Boolean delete(Long answerId) {
+    public Boolean delete(String answerId) {
         return userQuizAnswerMapper.deleteById(answerId) > 0;
     }
 }

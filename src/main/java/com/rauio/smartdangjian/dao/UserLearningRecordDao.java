@@ -15,7 +15,7 @@ public class UserLearningRecordDao {
         this.userLearningRecordMapper = userLearningRecordMapper;
     }
 
-    public UserLearningRecord get(Long recordId) {
+    public UserLearningRecord get(String recordId) {
         return userLearningRecordMapper.selectById(recordId);
     }
 
@@ -27,7 +27,7 @@ public class UserLearningRecordDao {
         return userLearningRecordMapper.insert(userLearningRecord) > 0;
     }
 
-    public Boolean delete(Long recordId) {
+    public Boolean delete(String recordId) {
         return userLearningRecordMapper.deleteById(recordId) > 0;
     }
 }

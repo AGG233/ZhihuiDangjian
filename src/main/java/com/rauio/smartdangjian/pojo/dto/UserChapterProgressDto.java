@@ -12,13 +12,13 @@ import java.time.LocalDateTime;
 public class UserChapterProgressDto {
 
     @Schema(description = "进度ID，更新时需要")
-    private Long id;
+    private String id;
 
     @Schema(description = "用户ID")
-    private Long userId;
+    private String userId;
 
     @Schema(description = "章节ID")
-    private Long chapterId;
+    private String chapterId;
 
     @Schema(description = "学习进度（0-100）", example = "75")
     private Integer progress;

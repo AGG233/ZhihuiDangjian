@@ -43,7 +43,7 @@ public class InfoTool {
     }
 
     @Tool(name = "getLearnedCourseIds", description = "获取当前登录用户已学习过的课程ID列表")
-    public List<Long> getLearnedCourseIds() {
+    public List<String> getLearnedCourseIds() {
         return userLearningRecordService.selectLearnedCoursesByUserId(userService.getUserIDFromAuthentication());
     }
 }

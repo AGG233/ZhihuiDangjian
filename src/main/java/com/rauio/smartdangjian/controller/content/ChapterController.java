@@ -24,7 +24,7 @@ public class ChapterController {
 
     @Operation(summary = "获取章节详情", description = "通过章节ID获取章节信息")
     @GetMapping("/{id}")
-    public Result<ChapterVO> get(@PathVariable Long id){
+    public Result<ChapterVO> get(@PathVariable String id){
         ChapterVO result = chapterService.get(id);
         return Result.ok(result);
     }
@@ -53,7 +53,7 @@ public class ChapterController {
 
     @Operation(summary = "删除章节", description = "根据章节ID删除章节")
     @DeleteMapping("/{id}")
-    public Result<Boolean> delete(@PathVariable Long id){
+    public Result<Boolean> delete(@PathVariable String id){
         Boolean result = chapterService.delete(id);
         return Result.ok(result);
     }

@@ -22,19 +22,19 @@ public class QuizOptionService {
     private final QuizOptionMapper quizOptionMapper;
     private final UserQuizAnswerService userQuizAnswerService;
     private final UserService userService;
-    public Boolean update(Long id, QuizOption quizOption) {
+    public Boolean update(String id, QuizOption quizOption) {
         return quizOptionMapper.updateById(quizOption) > 0;
     }
-    public Boolean insert(Long quizId, QuizOption option) {
+    public Boolean insert(String quizId, QuizOption option) {
         option.setQuizId(quizId);
         return quizOptionMapper.insert(option) > 0;
     }
-    public List<QuizOption> getByQuizId(Long quizId) {
+    public List<QuizOption> getByQuizId(String quizId) {
         LambdaQueryWrapper<QuizOption> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(QuizOption::getQuizId, quizId);
         return quizOptionMapper.selectList(wrapper);
     }
-    public QuizOption get(Long id) {
+    public QuizOption get(String id) {
         User user = userService.getUserFromAuthentication();
         QuizOption quizOption = quizOptionMapper.selectById(id);
 
@@ -44,7 +44,7 @@ public class QuizOptionService {
         }
         return quizOption;
     }
-    public Boolean delete(Long optionId) {
+    public Boolean delete(String optionId) {
         return quizOptionMapper.deleteById(optionId) > 0;
     }
 

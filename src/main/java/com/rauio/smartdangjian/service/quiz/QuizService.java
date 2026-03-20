@@ -13,7 +13,7 @@ import java.util.List;
 public class QuizService {
 
     private final QuizMapper quizMapper;
-    public Quiz get(Long quizId) {
+    public Quiz get(String quizId) {
         return quizMapper.selectById(quizId);
     }
     public List<Quiz> getByChapterId(String chapterId) {
@@ -29,7 +29,7 @@ public class QuizService {
     public Boolean insert(Quiz quiz) {
         return quizMapper.insert(quiz) > 0;
     }
-    public Boolean delete(Long quizId) {
+    public Boolean delete(String quizId) {
         return quizMapper.deleteById(quizId) > 0;
     }
 }

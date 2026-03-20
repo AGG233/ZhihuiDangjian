@@ -33,26 +33,26 @@ public class UserLearningRecordService {
     private final UserLearningRecordConvertor convertor;
     private final ChapterMapper chapterMapper;
     private final KnowledgeGraphService knowledgeGraphService;
-    public UserLearningRecordVO get(Long id) {
+    public UserLearningRecordVO get(String id) {
         UserLearningRecord record = userLearningRecordDao.get(id);
         if (record == null) {
             throw new BusinessException(4000, "学习记录不存在");
         }
         return convertor.toVO(record);
     }
-    public List<UserLearningRecordVO> getByUserId(Long userId) {
+    public List<UserLearningRecordVO> getByUserId(String userId) {
         QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId).orderByDesc("created_at");
         List<UserLearningRecord> list = userLearningRecordMapper.selectList(wrapper);
         return convertor.toVOList(list);
     }
-    public List<UserLearningRecordVO> getByChapterId(Long chapterId) {
+    public List<UserLearningRecordVO> getByChapterId(String chapterId) {
         QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
         wrapper.eq("chapter_id", chapterId).orderByDesc("created_at");
         List<UserLearningRecord> list = userLearningRecordMapper.selectList(wrapper);
         return convertor.toVOList(list);
     }
-    public List<UserLearningRecordVO> getByUserAndChapter(Long userId, Long chapterId) {
+    public List<UserLearningRecordVO> getByUserAndChapter(String userId, String chapterId) {
         QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId).eq("chapter_id", chapterId).orderByDesc("created_at");
         List<UserLearningRecord> list = userLearningRecordMapper.selectList(wrapper);
@@ -66,7 +66,7 @@ public class UserLearningRecordService {
      * @return 用户学过的课程列表
      *
      */
-    public List<Long> selectLearnedCoursesByUserId(Long userId) {
+    public List<String> selectLearnedCoursesByUserId(String userId) {
         LambdaQueryWrapper<UserLearningRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserLearningRecord::getUserId, userId).select(UserLearningRecord::getChapterId);
         Set<UserLearningRecord> chapterIds = new HashSet<>(userLearningRecordMapper.selectList(wrapper));
@@ -122,7 +122,7 @@ public class UserLearningRecordService {
         }
         return result;
     }
-    public Boolean delete(Long id) {
+    public Boolean delete(String id) {
         UserLearningRecord existing = userLearningRecordDao.get(id);
         if (existing == null) {
             throw new BusinessException(4000, "学习记录不存在");

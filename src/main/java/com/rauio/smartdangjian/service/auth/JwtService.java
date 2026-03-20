@@ -69,12 +69,10 @@ public class JwtService {
             JWTVerifier verifier = JWT.require(algorithm).build();
             DecodedJWT decodedJWT = verifier.verify(token);
 
-            String userIdStr = decodedJWT.getSubject();
-            if (!StringUtils.hasText(userIdStr)) {
+            String userId = decodedJWT.getSubject();
+            if (!StringUtils.hasText(userId)) {
                 throw new BusinessException(401, "令牌格式错误：Subject为空");
             }
-
-            Long userId = Long.valueOf(userIdStr);
 
             User user = getUserFromCacheOrDb(userId);
             if (user == null) {
@@ -88,8 +86,6 @@ public class JwtService {
         } catch (JWTVerificationException e) {
             log.error("JWT验证失败: {}", e.getMessage());
             throw new BusinessException(401, "身份验证失败，请重新登录");
-        } catch (NumberFormatException e) {
-            throw new BusinessException(401, "令牌负载数据异常");
         } catch (Exception e) {
             log.error("Token处理异常", e);
             throw new BusinessException(500, "服务器验证身份时出错");
@@ -99,7 +95,7 @@ public class JwtService {
     /**
      * 内部私有方法：处理缓存读取与回写逻辑
      */
-    private User getUserFromCacheOrDb(Long userId) throws JsonProcessingException {
+    private User getUserFromCacheOrDb(String userId) throws JsonProcessingException {
         String redisKey = USER_CACHE_PREFIX + userId;
 
         String userJson = stringRedisTemplate.opsForValue().get(redisKey);
@@ -124,7 +120,7 @@ public class JwtService {
     /**
      * 额外方法：当用户信息更新时，可以调用此方法清除缓存
      */
-    public void clearUserCache(Long userId) {
+    public void clearUserCache(String userId) {
         stringRedisTemplate.delete(USER_CACHE_PREFIX + userId);
     }
     
@@ -133,7 +129,7 @@ public class JwtService {
      * @param userId 用户 ID
      * @return 剩余毫秒数
      */
-    private long getRemainingTtlFromToken(Long userId) {
+    private long getRemainingTtlFromToken(String userId) {
         String cacheKey = SecurityConstants.ACCESS_TOKEN_PREFIX + userId;
         Long expire = stringRedisTemplate.getExpire(cacheKey, TimeUnit.MILLISECONDS);
         return expire > 0 ? expire : DEFAULT_ACCESS_EXPIRATION;

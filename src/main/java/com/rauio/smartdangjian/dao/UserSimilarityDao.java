@@ -15,7 +15,7 @@ public class UserSimilarityDao {
         this.userSimilarityMapper = userSimilarityMapper;
     }
 
-    public UserSimilarity get(Integer id) {
+    public UserSimilarity get(String id) {
         return userSimilarityMapper.selectById(id);
     }
 
@@ -27,7 +27,7 @@ public class UserSimilarityDao {
         return userSimilarityMapper.insert(userSimilarity) > 0;
     }
 
-    public Boolean delete(Integer id) {
+    public Boolean delete(String id) {
         return userSimilarityMapper.deleteById(id) > 0;
     }
 }

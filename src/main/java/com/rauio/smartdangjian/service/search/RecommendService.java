@@ -37,7 +37,7 @@ public class RecommendService {
     private final ChapterMapper chapterMapper;
     private final UserSimilarityService userSimilarityService;
 
-    public Page<Long> recommendByCF(Long userId,int pageNum, int pageSize) {
+    public Page<String> recommendByCF(String userId,int pageNum, int pageSize) {
 
         int neighborSize = 10;
         Page<UserSimilarity> similarityPage = userSimilarityMapper.selectPage(
@@ -51,12 +51,12 @@ public class RecommendService {
         if (similarityList.isEmpty()) {
             return new Page<>(pageNum, pageSize);
         }
-        List<Long> similarUserIds = similarityList.stream()
+        List<String> similarUserIds = similarityList.stream()
                 .map(UserSimilarity::getUserId2)
                 .collect(Collectors.toList());
 
 
-        Set<Long> userLearnedCourseIds = new HashSet<>(userLearningRecordService.selectLearnedCoursesByUserId(userId));
+        Set<String> userLearnedCourseIds = new HashSet<>(userLearningRecordService.selectLearnedCoursesByUserId(userId));
         List<UserLearningRecord> records = userLearningRecordMapper.selectList(
                 new LambdaQueryWrapper<UserLearningRecord>()
                         .in(UserLearningRecord::getUserId, similarUserIds)
@@ -69,7 +69,7 @@ public class RecommendService {
         );
 
 
-        Set<Long> allInvolvedChapterIds = new HashSet<>();
+        Set<String> allInvolvedChapterIds = new HashSet<>();
         allInvolvedChapterIds.addAll(records.stream().map(UserLearningRecord::getChapterId).toList());
         allInvolvedChapterIds.addAll(progresses.stream().map(UserChapterProgress::getChapterId).toList());
 
@@ -78,13 +78,13 @@ public class RecommendService {
         }
 
         List<Chapter> chapters = chapterMapper.selectByIds(allInvolvedChapterIds);
-        Map<Long, Long> chapterToCourseMap = chapters.stream()
+        Map<String, String> chapterToCourseMap = chapters.stream()
                 .collect(Collectors.toMap(Chapter::getId, Chapter::getCourseId));
 
-        Map<Long, Double> courseScoreMap = new HashMap<>();
+        Map<String, Double> courseScoreMap = new HashMap<>();
 
-        Consumer<Long> addScore = (chapterId) -> {
-            Long courseId = chapterToCourseMap.get(chapterId);
+        Consumer<String> addScore = (chapterId) -> {
+            String courseId = chapterToCourseMap.get(chapterId);
             if (courseId != null) {
                 if (!userLearnedCourseIds.contains(courseId)) {
                     courseScoreMap.merge(courseId, 1.0, Double::sum);
@@ -95,12 +95,12 @@ public class RecommendService {
         records.forEach(r -> addScore.accept(r.getChapterId()));
         progresses.forEach(p -> addScore.accept(p.getChapterId()));
 
-        List<Long> sortedCourseIds = courseScoreMap.entrySet().stream()
-                .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())
+        List<String> sortedCourseIds = courseScoreMap.entrySet().stream()
+                .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
 
-        Page<Long> resultPage = new Page<>(pageNum, pageSize);
+        Page<String> resultPage = new Page<>(pageNum, pageSize);
         resultPage.setTotal(sortedCourseIds.size());
 
         int fromIndex = (pageNum - 1) * pageSize;
@@ -121,31 +121,31 @@ public class RecommendService {
         List<UserBehaviorDto> allBehaviors = userLearningRecordMapper.getAllUserBehaviors();
         if (allBehaviors.isEmpty()) return;
 
-        Map<Long, Set<Long>> userItemMap = allBehaviors.stream()
+        Map<String, Set<String>> userItemMap = allBehaviors.stream()
                 .collect(Collectors.groupingBy(
                         UserBehaviorDto::getUserId,
                         Collectors.mapping(UserBehaviorDto::getChapterId, Collectors.toSet())
                 ));
 
-        Map<Long, List<Long>> itemUserMap = allBehaviors.stream()
+        Map<String, List<String>> itemUserMap = allBehaviors.stream()
                 .collect(Collectors.groupingBy(
                         UserBehaviorDto::getChapterId,
                         Collectors.mapping(UserBehaviorDto::getUserId, Collectors.toList())
                 ));
 
-        Map<Long, Map<Long, Integer>> coOccurrenceMap = new HashMap<>();
+        Map<String, Map<String, Integer>> coOccurrenceMap = new HashMap<>();
 
 
-        for (Map.Entry<Long, List<Long>> entry : itemUserMap.entrySet()) {
-            List<Long> userList = entry.getValue();
+        for (Map.Entry<String, List<String>> entry : itemUserMap.entrySet()) {
+            List<String> userList = entry.getValue();
 
             if (userList.size() < 2) continue;
 
 
             for (int i = 0; i < userList.size(); i++) {
-                Long u1 = userList.get(i);
+                String u1 = userList.get(i);
                 for (int j = i + 1; j < userList.size(); j++) {
-                    Long u2 = userList.get(j);
+                    String u2 = userList.get(j);
 
                     coOccurrenceMap.computeIfAbsent(u1, k -> new HashMap<>())
                             .merge(u2, 1, Integer::sum);
@@ -157,9 +157,9 @@ public class RecommendService {
 
         List<UserSimilarity> buffer = new ArrayList<>();
 
-        for (Map.Entry<Long, Map<Long, Integer>> entry : coOccurrenceMap.entrySet()) {
-            Long userId = entry.getKey();
-            Map<Long, Integer> relatedUsers = entry.getValue();
+        for (Map.Entry<String, Map<String, Integer>> entry : coOccurrenceMap.entrySet()) {
+            String userId = entry.getKey();
+            Map<String, Integer> relatedUsers = entry.getValue();
 
             double userVectorLen = Math.sqrt(userItemMap.get(userId).size());
 
@@ -167,8 +167,8 @@ public class RecommendService {
                     Comparator.comparingDouble(UserSimilarity::getSimilarityScore)
             );
 
-            for (Map.Entry<Long, Integer> relatedEntry : relatedUsers.entrySet()) {
-                Long relatedUserId = relatedEntry.getKey();
+            for (Map.Entry<String, Integer> relatedEntry : relatedUsers.entrySet()) {
+                String relatedUserId = relatedEntry.getKey();
                 Integer count = relatedEntry.getValue();
 
                 double relatedUserVectorLen = Math.sqrt(userItemMap.get(relatedUserId).size());

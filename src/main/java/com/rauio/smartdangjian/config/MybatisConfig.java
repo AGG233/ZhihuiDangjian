@@ -33,9 +33,8 @@ public class MybatisConfig implements MetaObjectHandler {
      */
     @Override
     public void insertFill(MetaObject metaObject) {
-        this.strictInsertFill(metaObject, "creatAt", LocalDateTime::now, LocalDateTime.class);
-        this.strictInsertFill(metaObject, "updateAt", LocalDateTime::now, LocalDateTime.class);
         this.strictInsertFill(metaObject, "createdAt", LocalDateTime::now, LocalDateTime.class);
+        this.strictInsertFill(metaObject, "updatedAt", LocalDateTime::now, LocalDateTime.class);
         this.strictInsertFill(metaObject, "sessionId", () -> UUID.randomUUID().toString().replace("-", ""), String.class);
     }
 
@@ -44,7 +43,7 @@ public class MybatisConfig implements MetaObjectHandler {
      */
     @Override
     public void updateFill(MetaObject metaObject) {
-        this.strictUpdateFill(metaObject, "update_at", LocalDateTime::now, LocalDateTime.class);
+        this.strictUpdateFill(metaObject, "updatedAt", LocalDateTime::now, LocalDateTime.class);
     }
 
 }

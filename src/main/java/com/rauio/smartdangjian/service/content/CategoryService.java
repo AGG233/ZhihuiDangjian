@@ -29,7 +29,7 @@ public class CategoryService {
      * @param id 目录id
      * @return  目录以及它的子目录
      */
-    public CategoryVO getById(Long id) {
+    public CategoryVO getById(String id) {
         Category category = categoryDao.get(id);
         List<CategoryVO> children;
         if (category == null){
@@ -60,7 +60,7 @@ public class CategoryService {
      * @param categoryId 父目录Id
      * @return 父目录的子目录
      * */
-    public List<CategoryVO> getChildren(Long categoryId) {
+    public List<CategoryVO> getChildren(String categoryId) {
         return convertor.toVOList(categoryDao.getChildren(categoryId));
     }
     /**
@@ -89,7 +89,7 @@ public class CategoryService {
      * @param parentId    子目录列表所属的父目录的ID
      * @return 添加结构
      * */
-    public Boolean addChildren(List<CategoryDto> children, Long parentId) {
+    public Boolean addChildren(List<CategoryDto> children, String parentId) {
         Category parent = categoryDao.get(parentId);
         if (parent == null || children == null) {
             throw new BusinessException(4001, "目录或子目录不存在");
@@ -120,7 +120,7 @@ public class CategoryService {
      * @param categoryId 目录id
      * @return 删除结果
      */
-    public Boolean delete(Long categoryId) {
+    public Boolean delete(String categoryId) {
         if (!categoryDao.getChildren(categoryId).isEmpty()) {
             throw new BusinessException(4001, "该目录有子目录，请先删除子目录");
         }
@@ -131,7 +131,7 @@ public class CategoryService {
      * @param categoryId 目录id
      * @return 删除结果
      * */
-    public Boolean deleteAll(Long categoryId){
+    public Boolean deleteAll(String categoryId){
         Category category = categoryDao.get(categoryId);
         if (category == null) {
             throw new BusinessException(4001, "目录不存在");
@@ -147,7 +147,7 @@ public class CategoryService {
      * @param dto 前端传入的目录
      * @return 修改结果
      */
-    public Boolean update(CategoryDto dto, Long id) {
+    public Boolean update(CategoryDto dto, String id) {
         if (dto == null) {
             throw new BusinessException(4001,"参数错误");
         }

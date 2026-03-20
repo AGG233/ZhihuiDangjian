@@ -8,9 +8,9 @@ import java.util.Date;
 @Data
 @Builder
 public class UserChapterProgressVO {
-    private Long id;
-    private Long userId;
-    private Long chapterId;
+    private String id;
+    private String userId;
+    private String chapterId;
     private Integer progress;
     private String status;
     private Date firstViewedAt;

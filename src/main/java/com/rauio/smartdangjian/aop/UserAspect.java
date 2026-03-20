@@ -3,8 +3,6 @@ package com.rauio.smartdangjian.aop;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.pojo.User;
-import com.rauio.smartdangjian.service.auth.JwtService;
 import com.rauio.smartdangjian.service.user.UserService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import lombok.RequiredArgsConstructor;
@@ -45,8 +43,16 @@ public class UserAspect {
         UserType permissionType = annotation.value();
         UserType userType = userService.getUserFromAuthentication().getUserType();
 
-        if ( !(userType == UserType.MANAGER || userType ==  permissionType)) {
+        if (getPermissionLevel(userType) < getPermissionLevel(permissionType)) {
             throw new BusinessException(ErrorConstants.RESOURCE_NOT_AUTHORIZED, "用户无权限");
         }
+    }
+
+    private int getPermissionLevel(UserType userType) {
+        return switch (userType) {
+            case STUDENT -> 1;
+            case SCHOOL -> 2;
+            case MANAGER -> 3;
+        };
     }
 }

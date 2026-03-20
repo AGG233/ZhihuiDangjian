@@ -15,7 +15,7 @@ public class ArticleDao {
     private final ArticleMapper articleMapper;
     private final CategoryArticleDao categoryArticleDao;
 
-    public Article get(Long id) {
+    public Article get(String id) {
         return articleMapper.selectById(id);
     }
 
@@ -31,7 +31,7 @@ public class ArticleDao {
     public Boolean update(Article article) {
         return articleMapper.updateById(article) > 0;
     }
-    public Boolean delete(Long id) {
+    public Boolean delete(String id) {
         return articleMapper.deleteById(id) > 0;
     }
 

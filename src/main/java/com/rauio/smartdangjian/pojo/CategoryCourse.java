@@ -14,5 +14,5 @@ public class CategoryCourse {
     private String categoryId;
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
-    private Long courseId;
+    private String courseId;
 }

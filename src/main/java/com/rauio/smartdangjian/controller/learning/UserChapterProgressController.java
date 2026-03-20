@@ -25,7 +25,7 @@ public class UserChapterProgressController {
     @Operation(summary = "获取进度记录", description = "根据进度ID获取用户章节进度记录")
     @GetMapping("/{id}")
     @PermissionAccess(UserType.STUDENT)
-    public Result<UserChapterProgressVO> get(@Parameter(description = "进度ID") @PathVariable Long id) {
+    public Result<UserChapterProgressVO> get(@Parameter(description = "进度ID") @PathVariable String id) {
         UserChapterProgressVO result = progressService.get(id);
         return Result.ok(result);
     }
@@ -33,7 +33,7 @@ public class UserChapterProgressController {
     @Operation(summary = "获取用户所有进度", description = "根据用户ID获取该用户的所有章节进度")
     @GetMapping("/user/{userId}")
     @PermissionAccess(UserType.STUDENT)
-    public Result<List<UserChapterProgressVO>> getByUserId(@Parameter(description = "用户ID") @PathVariable Long userId) {
+    public Result<List<UserChapterProgressVO>> getByUserId(@Parameter(description = "用户ID") @PathVariable String userId) {
         List<UserChapterProgressVO> result = progressService.getByUserId(userId);
         return Result.ok(result);
     }
@@ -41,7 +41,7 @@ public class UserChapterProgressController {
     @Operation(summary = "获取章节所有进度", description = "根据章节ID获取该章节的所有用户进度")
     @GetMapping("/chapter/{chapterId}")
     @PermissionAccess(UserType.SCHOOL)
-    public Result<List<UserChapterProgressVO>> getByChapterId(@Parameter(description = "章节ID") @PathVariable Long chapterId) {
+    public Result<List<UserChapterProgressVO>> getByChapterId(@Parameter(description = "章节ID") @PathVariable String chapterId) {
         List<UserChapterProgressVO> result = progressService.getByChapterId(chapterId);
         return Result.ok(result);
     }
@@ -50,8 +50,8 @@ public class UserChapterProgressController {
     @GetMapping("/user/{userId}/chapter/{chapterId}")
     @PermissionAccess(UserType.STUDENT)
     public Result<UserChapterProgressVO> getByUserAndChapter(
-            @Parameter(description = "用户ID") @PathVariable Long userId,
-            @Parameter(description = "章节ID") @PathVariable Long chapterId) {
+            @Parameter(description = "用户ID") @PathVariable String userId,
+            @Parameter(description = "章节ID") @PathVariable String chapterId) {
         UserChapterProgressVO result = progressService.getByUserAndChapter(userId, chapterId);
         return Result.ok(result);
     }
@@ -75,7 +75,7 @@ public class UserChapterProgressController {
     @Operation(summary = "删除进度记录", description = "根据进度ID删除用户章节进度记录")
     @DeleteMapping("/{id}")
     @PermissionAccess(UserType.SCHOOL)
-    public Result<Boolean> delete(@Parameter(description = "进度ID") @PathVariable Long id) {
+    public Result<Boolean> delete(@Parameter(description = "进度ID") @PathVariable String id) {
         Boolean result = progressService.delete(id);
         return Result.ok(result);
     }

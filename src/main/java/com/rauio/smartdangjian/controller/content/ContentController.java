@@ -29,7 +29,7 @@ public class ContentController {
     @GetMapping("/carousel")
     @Operation(summary = "获取轮播图列表")
     public Result<List<ContentBlockVO>> getCarousel() {
-        var carousel = contentBlockService.getAllByParentId(1145141919810L);
+        var carousel = contentBlockService.getAllByParentId("1145141919810");
         return Result.ok(carousel);
     }
 
@@ -46,7 +46,7 @@ public class ContentController {
     @Operation(summary = "添加轮播图",description = "不用填写ID字段，即便是填写了也不会有任何效果")
     public Result<Boolean> addCarousel(List<ContentBlock> contentBlocks) {
         for (ContentBlock contentBlock : contentBlocks){
-            contentBlock.setParentId(1145141919810L);
+            contentBlock.setParentId("1145141919810");
         }
         var result = contentBlockService.saveBatch(contentBlocks);
         return Result.ok(result);
@@ -55,7 +55,7 @@ public class ContentController {
     @DeleteMapping("/carousel")
     @PermissionAccess(UserType.MANAGER)
     @Operation(summary = "删除轮播图")
-    public Result<Boolean> deleteCarousel(Long id) {
+    public Result<Boolean> deleteCarousel(String id) {
         var result = contentBlockService.delete(id);
         return  Result.ok(result);
     }

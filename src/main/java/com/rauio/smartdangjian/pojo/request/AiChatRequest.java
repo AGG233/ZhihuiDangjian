@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class AiChatRequest {
 
     @Schema(description = "会话ID，可选", example = "session-001")
-    private String sessionId;
+    private String sessionId = "";
 
     @Schema(description = "聊天/提问内容", example = "请用一句话介绍党的性质")
     @NotBlank(message = "message不能为空")

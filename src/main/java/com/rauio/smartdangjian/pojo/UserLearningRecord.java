@@ -16,11 +16,11 @@ public class UserLearningRecord {
 
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
-    private Long id;
+    private String id;
 
-    private Long userId;
+    private String userId;
 
-    private Long chapterId;
+    private String chapterId;
 
     private LocalDateTime startTime;
 

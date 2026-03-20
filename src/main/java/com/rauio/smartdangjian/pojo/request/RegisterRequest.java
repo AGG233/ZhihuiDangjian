@@ -46,7 +46,7 @@ public class RegisterRequest {
 
     @Size(min = 20, max = 20, message = "党员编号长度必须为20")
     @Schema(description = "党员编号，如果没有请留空")
-    private Long partyMemberId;
+    private String partyMemberId;
 
     @NotNull(message = "党员状态不能为空")
     @Schema(description = "党员状态")
@@ -74,7 +74,7 @@ public class RegisterRequest {
 
     @NotBlank(message = "学校ID不能为空")
     @Schema(description = "学校ID")
-    private Long universityId;
+    private String universityId;
 
     @Schema(description = "入党时间")
     private LocalDateTime joinPartyDate;

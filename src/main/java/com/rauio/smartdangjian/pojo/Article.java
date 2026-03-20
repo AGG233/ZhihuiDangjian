@@ -12,8 +12,8 @@ import lombok.ToString;
 @ToString
 @TableName("article")
 public class Article {
-    private Long id;
-    private Long authorId;
+    private String id;
+    private String authorId;
     private String title;
     private String summary;
     @EnumValue

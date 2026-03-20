@@ -17,7 +17,7 @@ public class UniversitiesDao {
     public UniversitiesDao(UniversitiesMapper universitiesMapper) {
         this.universitiesMapper = universitiesMapper;
     }
-    public String getNameById(long id) {
+    public String getNameById(String id) {
         Universities university = universitiesMapper.selectById(id);
         return university != null ? university.getName() : null;
     }

@@ -15,11 +15,11 @@ public class ChapterDao {
     private final ChapterMapper chapterMapper;
 
 
-    public Chapter getById(Long chapterId) {
+    public Chapter getById(String chapterId) {
         return chapterMapper.selectById(chapterId);
     }
 
-    public Chapter getByCourseAndTitle(Long courseId, String title) {
+    public Chapter getByCourseAndTitle(String courseId, String title) {
         return chapterMapper.selectOne(new LambdaUpdateWrapper<Chapter>()
                 .eq(Chapter::getCourseId, courseId)
                 .eq(Chapter::getTitle, title));
@@ -33,7 +33,7 @@ public class ChapterDao {
         return chapterMapper.insert(chapter) > 0;
     }
 
-    public Boolean delete(Long chapterId) {
+    public Boolean delete(String chapterId) {
         return chapterMapper.deleteById(chapterId) > 0;
     }
 

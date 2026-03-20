@@ -16,7 +16,7 @@ public class UniversitiesService {
     /**
      * @return
      */
-    public String getNameById(Long id) {
+    public String getNameById(String id) {
         return universitiesDao.getNameById(id);
     }
 

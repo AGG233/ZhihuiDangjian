@@ -13,7 +13,7 @@ import lombok.Data;
 public class UserPermission {
 
     @TableId(type = IdType.AUTO)
-    private Integer userId;
+    private String userId;
     private UserType userType;
     private Integer level;
 

@@ -26,7 +26,7 @@ public class QuizController {
 
     @GetMapping("/{id}")
     @PermissionAccess(UserType.STUDENT)
-    public Result<Quiz> getQuiz(@PathVariable Long id) {
+    public Result<Quiz> getQuiz(@PathVariable String id) {
         Quiz quiz = quizService.get(id);
         return Result.ok(quiz);
     }
@@ -62,13 +62,13 @@ public class QuizController {
 
     @GetMapping("/{id}/option")
     @PermissionAccess(UserType.STUDENT)
-    public Result<List<QuizOption>> getQuizOption(@PathVariable Long id) {
+    public Result<List<QuizOption>> getQuizOption(@PathVariable String id) {
         List<QuizOption> quizOptionList = quizOptionService.getByQuizId(id);
         return Result.ok(quizOptionList);
     }
 
     @GetMapping("/{id}/option/{optionId}")
-    public Result<QuizOption> getByOptionId(@PathVariable Long optionId) {
+    public Result<QuizOption> getByOptionId(@PathVariable String optionId) {
         QuizOption quizOption = quizOptionService.get(optionId);
         return Result.ok(quizOption);
     }
@@ -86,7 +86,7 @@ public class QuizController {
     }
 
     @DeleteMapping("/{id}/option/{optionId}")
-    public Result<Boolean> deleteQuizOption(@PathVariable Long optionId, @PathVariable String id) {
+    public Result<Boolean> deleteQuizOption(@PathVariable String optionId, @PathVariable String id) {
         Boolean deletedQuizOption = quizOptionService.delete(optionId);
         return Result.ok(deletedQuizOption);
     }

@@ -51,7 +51,7 @@ public class ResourceController {
 
     @Operation(summary = "获取文件链接", description = "通过资源的ID获取文件链接")
     @GetMapping("/{id}")
-    public Result<URL> getById(@PathVariable Long id) {
+    public Result<URL> getById(@PathVariable String id) {
         URL url = resourceService.getById(id);
         return Result.ok("200", null, url);
     }
@@ -66,7 +66,7 @@ public class ResourceController {
     @Operation(summary = "批量获取文件访问链接", description = "上传一个列表，列表元素为资源的ID，根据资源ID获取相应的文件访问URL")
     @PostMapping("/batch/id")
     public Result<List<String>> getBatchById(@RequestBody List<String> idList) {
-        List<String> urls = resourceService.getBatchWithHash(idList);
+        List<String> urls = resourceService.getBatchWithId(idList);
         return Result.ok("200", null, urls);
     }
 

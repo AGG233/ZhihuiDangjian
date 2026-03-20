@@ -57,14 +57,14 @@ public class SearchService {
         if (records.size() < pageSize) {
             int needCount = pageSize - records.size();
 
-            Set<Long> existingIds = records.stream()
+            Set<String> existingIds = records.stream()
                     .map(CourseVO::getId)
                     .collect(Collectors.toSet());
 
-            Long userId = userService.getUserFromAuthentication().getId();
-            Page<Long> cfIds = recommendService.recommendByCF(userId,pageNum,pageSize);
+            String userId = userService.getUserFromAuthentication().getId();
+            Page<String> cfIds = recommendService.recommendByCF(userId,pageNum,pageSize);
 
-            Set<Long> idsToFetch = new HashSet<>(cfIds.getRecords());
+            Set<String> idsToFetch = new HashSet<>(cfIds.getRecords());
 
             if (!idsToFetch.isEmpty()) {
                 List<CourseVO> recommendCourses = courseConvertor.toVOList(courseMapper.selectByIds(idsToFetch));
