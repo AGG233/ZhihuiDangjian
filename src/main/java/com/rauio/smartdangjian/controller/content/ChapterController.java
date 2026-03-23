@@ -1,10 +1,10 @@
 package com.rauio.smartdangjian.controller.content;
 
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
-import com.rauio.smartdangjian.pojo.dto.ChapterDto;
+import com.rauio.smartdangjian.content.pojo.dto.ChapterDto;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.pojo.vo.ChapterVO;
-import com.rauio.smartdangjian.service.content.ChapterService;
+import com.rauio.smartdangjian.content.pojo.vo.ChapterVO;
+import com.rauio.smartdangjian.content.service.ChapterService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,8 +32,8 @@ public class ChapterController {
     @Operation(summary = "获取课程的所有章节", description = "根据课程ID获取该课程下的所有章节")
     @GetMapping("/list/{courseId}")
     @PermissionAccess(UserType.STUDENT)
-    public Result<List<ChapterVO>> getAllChaptersOfCourse(@PathVariable String courseId){
-        List<ChapterVO> result = chapterService.getAllChaptersOfCourse(courseId);
+    public Result<List<ChapterVO>> getByCourseId(@PathVariable String courseId){
+        List<ChapterVO> result = chapterService.getByCourseId(courseId);
         return Result.ok(result);
     }
 

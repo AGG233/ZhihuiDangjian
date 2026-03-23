@@ -2,8 +2,6 @@ package com.rauio.smartdangjian.controller.quiz;
 
 
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
-import com.rauio.smartdangjian.pojo.Quiz;
-import com.rauio.smartdangjian.pojo.QuizOption;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.service.quiz.QuizOptionService;
 import com.rauio.smartdangjian.service.quiz.QuizService;
@@ -40,7 +38,7 @@ public class QuizController {
 
     @PostMapping("/")
     public Result<Boolean> createQuiz(@RequestBody Quiz quiz) {
-        Boolean createdQuiz = quizService.insert(quiz);
+        Boolean createdQuiz = quizService.create(quiz);
         return Result.ok(createdQuiz);
     }
 
@@ -75,13 +73,13 @@ public class QuizController {
 
     @PostMapping("/{id}/option")
     public Result<Boolean> createQuizOption(@RequestBody QuizOption quizOption) {
-        Boolean createdQuizOption = quizOptionService.insert(quizOption.getQuizId(), quizOption);
+        Boolean createdQuizOption = quizOptionService.create(quizOption.getQuizId(), quizOption);
         return Result.ok(createdQuizOption);
     }
 
     @PutMapping("/{id}/option")
     public Result<Boolean> updateQuizOption(@RequestBody QuizOption quizOption) {
-        Boolean updatedQuizOption = quizOptionService.update(quizOption.getQuizId(), quizOption);
+        Boolean updatedQuizOption = quizOptionService.update(quizOption.getId(), quizOption);
         return Result.ok(updatedQuizOption);
     }
 

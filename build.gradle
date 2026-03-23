@@ -1,14 +1,17 @@
 plugins {
 	id 'java'
-    id 'org.springframework.boot' version '3.5.4'
-	id 'io.spring.dependency-management' version '1.1.7'
+    alias(libs.plugins.spring.boot)
+	alias(libs.plugins.spring.dependency.management)
 }
 
-ext {
-    set('springCloudVersion', "2025.0.0")
-    set('springAiVersion', "1.0.3")
-}
+def projectGroupValue = property('projectGroup')
+def projectVersionValue = property('projectVersion')
+def javaVersionValue = property('javaVersion') as Integer
+
 allprojects {
+    group = projectGroupValue
+    version = projectVersionValue
+
     repositories {
         maven { url 'https://maven.aliyun.com/repository/public' }
         mavenCentral()
@@ -17,20 +20,25 @@ allprojects {
 bootJar {
     archiveFileName = "app.jar"
 }
-group = 'com.rauio'
-version = '0.4.1'
-description = 'Zhihuidangjiang Demo project for Spring Boot'
+description = 'Zhihuidangjian Demo project for Spring Boot'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+		languageVersion = JavaLanguageVersion.of(javaVersionValue)
 	}
 }
 
 test {
 	useJUnitPlatform()
 }
-
+tasks.named("bootBuildImage") {
+	docker {
+		// 确保这里只写 unix:/// 协议
+		host = "unix:///var/run/docker.sock"
+		// 强制指定 API 版本，跳过自动协商
+		builder = "paketobuildpacks/builder-noble-java-tiny:latest"
+	}
+}
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
@@ -46,77 +54,64 @@ repositories {
 }
 
 dependencies {
-	// Spring Boot Starters
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-web-services'
-	implementation 'org.springframework.boot:spring-boot-starter-websocket'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-//	implementation 'org.springframework.boot:spring-boot-starter-data-neo4j'
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
-	implementation 'org.springframework.boot:spring-boot-starter-aop'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation project(":services:graph")
+	implementation project(":services:search")
+	implementation project(":services:learning")
+	implementation project(":services:resource")
+	implementation project(":services:user")
+	implementation project(":services:common")
+	implementation project(":server")
+	implementation project(":services:auth")
+	implementation project(":services:content")
 
-	// Spring Cloud
-//	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+	// Shared Spring Boot foundation
+	implementation libs.bundles.common
 
-    // Spring AI
-//    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
-//	implementation 'org.springframework.ai:spring-ai-starter-mcp-server'
-//	implementation 'org.springframework.ai:spring-ai-starter-mcp-client'
-//	implementation 'org.springframework.ai:spring-ai-advisors-vector-store'
-//	implementation 'org.springframework.ai:spring-ai-starter-vector-store-redis'
-	implementation 'org.springframework.ai:spring-ai-starter-model-openai'
-	implementation 'com.alibaba.cloud.ai:spring-ai-alibaba-agent-framework:1.1.2.0'
+	// Service discovery and external configuration
+	implementation libs.bundles.cloud
 
-	// Security
-	implementation 'org.springframework.security:spring-security-oauth2-jose:6.5.1'
-	implementation 'org.springframework.security:spring-security-test'
+	// Authentication and authorization
+	implementation libs.bundles.security
 
-	// Database related
-	implementation 'com.baomidou:mybatis-plus-spring-boot3-starter:3.5.14'
-	implementation 'com.baomidou:mybatis-plus-generator:3.5.14'
-    implementation "com.baomidou:mybatis-plus-jsqlparser:3.5.14"
-    implementation 'com.github.yulichang:mybatis-plus-join-boot-starter:1.5.4'
-	implementation 'org.springframework.boot:spring-boot-starter-data-neo4j'
-	implementation 'org.mybatis:mybatis:3.5.19'
-	implementation 'com.zaxxer:HikariCP:7.0.2'
+	// Storage and data access
+	implementation libs.bundles.datasource.core
+	implementation libs.bundles.datasource.mybatis
+	implementation libs.bundles.datasource.mybatis.plus.join
+	implementation libs.spring.boot.starter.data.redis
 
-	// Utility libraries
-	implementation 'org.apache.commons:commons-lang3:3.18.0'
-    implementation "commons-codec:commons-codec:1.15"
-    implementation "com.qcloud:cos_api:5.6.251"
-    implementation "com.qcloud:cos-sts_api:3.1.0"
-    implementation "org.mapstruct:mapstruct:1.6.3"
-    implementation 'org.apache.tika:tika-core:3.2.2'
-	implementation 'cn.hutool:hutool-all:5.8.40'
-	implementation 'com.auth0:java-jwt:4.5.0'
+	// Special-purpose integrations
+	implementation libs.spring.boot.starter.data.neo4j
+	implementation libs.bundles.object.storage
 
-	// Documentation
-    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13"
+	// Utility and support libraries
+	implementation libs.commons.lang3
+	implementation libs.commons.codec
+	implementation libs.mapstruct
+	implementation libs.tika.core
+	implementation libs.hutool.all
+	implementation libs.java.jwt
+
+	// API documentation
+    implementation libs.springdoc.openapi.starter.webmvc.ui
 
 	// Annotation processors
-	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-	annotationProcessor 'org.projectlombok:lombok'
-	annotationProcessor "org.mapstruct:mapstruct-processor:1.6.3"
+	annotationProcessor libs.spring.boot.configuration.processor
+	annotationProcessor libs.lombok
+	annotationProcessor libs.mapstruct.processor
 
 	// Testing
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-	// Runtime only
-	runtimeOnly 'com.mysql:mysql-connector-j'
+	testImplementation libs.bundles.test
 
 	// Compile only
-	compileOnly 'org.projectlombok:lombok'
-    compileOnly "org.apache.maven.plugins:maven-compiler-plugin:3.14.1"
+	compileOnly libs.lombok
+    compileOnly libs.maven.compiler.plugin
 }
 
 dependencyManagement {
     imports {
-        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
-		mavenBom "org.springframework.ai:spring-ai-starter-model-openai:${springAiVersion}"
-//        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+        mavenBom libs.spring.ai.bom.get().toString()
+        mavenBom libs.spring.cloud.bom.get().toString()
+        mavenBom libs.spring.cloud.alibaba.bom.get().toString()
     }
 }
 
@@ -127,7 +122,7 @@ tasks.named('test') {
 // 统一版本管理
 configurations.configureEach {
     resolutionStrategy {
-        force 'ch.qos.logback:logback-classic:1.5.8'
-        force 'ch.qos.logback:logback-core:1.5.8'
+        force libs.logback.classic.get().toString()
+        force libs.logback.core.get().toString()
     }
 }

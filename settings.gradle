@@ -1,1 +1,17 @@
-rootProject.name = 'ZhihuiDangjian'
+rootProject.name = 'zhihuidanjian'
+
+include 'server'
+include 'services'
+include 'services:ai'
+include 'services:auth'
+include 'services:common'
+include 'services:admin'
+include 'services:content'
+include 'services:graph'
+include 'services:learning'
+include 'services:quiz'
+include 'services:search'
+include 'services:user'
+include 'services:resource'
+
+include 'services:quiz'

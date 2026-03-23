@@ -2,8 +2,8 @@ package com.rauio.smartdangjian.aop;
 
 import com.rauio.smartdangjian.mapper.UserMapper;
 import com.rauio.smartdangjian.pojo.User;
-import com.rauio.smartdangjian.pojo.dto.UserDto;
-import com.rauio.smartdangjian.service.user.UserService;
+import com.rauio.smartdangjian.user.pojo.dto.UserDto;
+import com.rauio.smartdangjian.user.service.UserService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -87,7 +87,7 @@ public class AdminSchoolScopeAspect {
     }
 
     private String getCurrentUniversityId() {
-        return userService.getUserFromAuthentication().getUniversityId();
+        return userService.getCurrentUser().getUniversityId();
     }
 
     private void validateUserInSchool(String userId, String universityId) {

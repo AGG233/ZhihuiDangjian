@@ -3,12 +3,12 @@ package com.rauio.smartdangjian.controller.course;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
-import com.rauio.smartdangjian.pojo.dto.CourseDto;
+import com.rauio.smartdangjian.content.pojo.dto.CourseDto;
 import com.rauio.smartdangjian.pojo.request.PageRequest;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.pojo.vo.CourseVO;
-import com.rauio.smartdangjian.pojo.vo.PageVO;
-import com.rauio.smartdangjian.service.content.CourseService;
+import com.rauio.smartdangjian.content.pojo.vo.CourseVO;
+import com.rauio.smartdangjian.content.pojo.vo.PageVO;
+import com.rauio.smartdangjian.content.service.CourseService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -43,7 +43,7 @@ public class CourseController {
 
     @Operation(summary = "创建课程", description = "创建一个新的课程")
     @PostMapping("/")
-    public Result<Boolean> insert(@RequestBody CourseDto course) throws JsonProcessingException {
+    public Result<Boolean> create(@RequestBody CourseDto course) throws JsonProcessingException {
         Boolean result = courseService.create(course);
         return Result.ok(result);
     }

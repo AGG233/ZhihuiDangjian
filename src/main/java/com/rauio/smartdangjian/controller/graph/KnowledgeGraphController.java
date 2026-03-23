@@ -2,8 +2,9 @@ package com.rauio.smartdangjian.controller.graph;
 
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.pojo.vo.KnowledgeGraphVO;
-import com.rauio.smartdangjian.service.graph.KnowledgeGraphService;
+import com.rauio.smartdangjian.graph.pojo.vo.KnowledgeGraphVO;
+import com.rauio.smartdangjian.graph.service.KnowledgeGraphService;
+import com.rauio.smartdangjian.learning.service.UserLearningRecordService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,12 +23,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class KnowledgeGraphController {
 
     private final KnowledgeGraphService knowledgeGraphService;
+    private final UserLearningRecordService userLearningRecordService;
 
     @Operation(summary = "同步用户学习图谱", description = "将用户已学习内容同步到Neo4j图谱")
     @PostMapping("/user/{userId}/sync")
     @PermissionAccess(UserType.STUDENT)
     public Result<Integer> syncUserGraph(@Parameter(description = "用户ID") @PathVariable String userId) {
-        int count = knowledgeGraphService.syncUserLearningGraph(userId);
+        int count = userLearningRecordService.syncUserLearningGraph(userId);
         return Result.ok(count);
     }
 

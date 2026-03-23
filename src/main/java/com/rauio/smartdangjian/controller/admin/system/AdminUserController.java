@@ -3,7 +3,7 @@ package com.rauio.smartdangjian.controller.admin.system;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.pojo.User;
-import com.rauio.smartdangjian.pojo.dto.UserDto;
+import com.rauio.smartdangjian.user.pojo.dto.UserDto;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.service.admin.AdminUserManagementService;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -50,7 +50,7 @@ public class AdminUserController {
             @Parameter(description = "搜索条件") @ModelAttribute UserDto userDto,
             @Parameter(description = "页码") @RequestParam(defaultValue = "1") int pageNum,
             @Parameter(description = "页的大小") @RequestParam(defaultValue = "10") int pageSize) {
-        Page<User> result = adminUserManagementService.getUsers(userDto, pageNum, pageSize);
+        Page<User> result = adminUserManagementService.getPage(userDto, pageNum, pageSize);
         return Result.ok(result);
     }
 
@@ -63,7 +63,7 @@ public class AdminUserController {
     @PutMapping("/user")
     @Operation(description = "更新普通用户和高校管理员信息，请求体为一个列表，列表元素为用户请求体")
     public Result<Boolean> updateUser(@RequestBody @Valid List<UserDto> user) {
-        Boolean result = adminUserManagementService.updateUsers(user);
+        Boolean result = adminUserManagementService.update(user);
         return Result.ok(result);
     }
 
@@ -76,7 +76,7 @@ public class AdminUserController {
     @PostMapping("/user")
     @Operation(description = "添加用户，请求体为一个列表，列表元素为用户请求体")
     public Result<Boolean> addUser(@RequestBody @Valid List<UserDto> user) {
-        Boolean result = adminUserManagementService.addUsers(user);
+        Boolean result = adminUserManagementService.create(user);
         return Result.ok(result);
     }
 
@@ -89,7 +89,7 @@ public class AdminUserController {
     @DeleteMapping("/user")
     @Operation(description = "删除用户，请求体为一个用户ID列表")
     public Result<Boolean> deleteUser(@RequestBody @Valid List<String> idList) {
-        Boolean result = adminUserManagementService.deleteUsers(idList);
+        Boolean result = adminUserManagementService.delete(idList);
         return Result.ok(result);
     }
 }

@@ -6,9 +6,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @MapperScan("com.rauio.smartdangjian.mapper")
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class, FreeMarkerAutoConfiguration.class})
+@EnableDiscoveryClient
 public class ZhiHuiDangJianApplication {
 	public static void main(String[] args) {
         SpringApplication.run(ZhiHuiDangJianApplication.class, args);

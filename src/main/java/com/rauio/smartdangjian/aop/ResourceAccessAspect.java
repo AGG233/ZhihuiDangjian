@@ -2,7 +2,7 @@ package com.rauio.smartdangjian.aop;
 
 
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
-import com.rauio.smartdangjian.service.auth.JwtService;
+import com.rauio.smartdangjian.auth.service.JwtService;
 import com.rauio.smartdangjian.utils.SecurityUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

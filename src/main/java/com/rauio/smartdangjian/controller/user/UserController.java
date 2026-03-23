@@ -2,15 +2,14 @@ package com.rauio.smartdangjian.controller.user;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
-import com.rauio.smartdangjian.pojo.Course;
+import com.rauio.smartdangjian.content.pojo.Course;
 import com.rauio.smartdangjian.pojo.User;
-import com.rauio.smartdangjian.pojo.UserQuizAnswer;
-import com.rauio.smartdangjian.pojo.dto.UserDto;
+import com.rauio.smartdangjian.user.pojo.dto.UserDto;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.pojo.vo.UserVO;
-import com.rauio.smartdangjian.service.content.CourseService;
-import com.rauio.smartdangjian.service.user.UserQuizAnswerService;
-import com.rauio.smartdangjian.service.user.UserService;
+import com.rauio.smartdangjian.content.service.CourseService;
+import com.rauio.smartdangjian;
+import com.rauio.smartdangjian.user.service.UserService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,7 +34,7 @@ public class UserController {
             description = "通过ID获取用户信息")
     @GetMapping("/{id}")
     public Result<UserVO> get(@Parameter(description = "用户ID") @PathVariable String id){
-        UserVO user = userService.getUserByID(id);
+        UserVO user = userService.get(id);
         return Result.ok(user);
     }
 
@@ -44,8 +43,8 @@ public class UserController {
             description = "通过用户请求体的信息模糊查询条件匹配的用户"
     )
     @PostMapping("/search/{pageNum}/{pageSize}")
-    public Result<Page<User>> getByDto(@RequestBody UserDto  userDto, @PathVariable int pageNum, @PathVariable int pageSize){
-        Page<User> user = userService.getUser(userDto,pageNum,pageSize);
+    public Result<Page<User>> getPage(@RequestBody UserDto  userDto, @PathVariable int pageNum, @PathVariable int pageSize){
+        Page<User> user = userService.getPage(userDto,pageNum,pageSize);
         return Result.ok(user);
     }
 
@@ -73,8 +72,8 @@ public class UserController {
     }
 
     @GetMapping("/course/{id}")
-    public Result<List<Course>> getAllCoursesOfUser(@PathVariable String id){
-        List<Course> result = courseService.getAllCoursesOfUser(id);
+    public Result<List<Course>> getByUserIdCourses(@PathVariable String id){
+        List<Course> result = courseService.getByUserId(id);
         return Result.ok(result);
     }
 
@@ -82,20 +81,22 @@ public class UserController {
     * 用户考试信息
     * */
     @GetMapping("/{id}/quiz")
-    public Result<List<UserQuizAnswer>> getAllQuizAnswerOfUser(@PathVariable String id){
-        List<UserQuizAnswer> result = userQuizAnswerService.selectByUserId(id);
+    public Result<List<UserQuizAnswer>> getByUserIdQuizAnswers(@PathVariable String id){
+        List<UserQuizAnswer> result = userQuizAnswerService.getByUserId(id);
         return Result.ok(result);
     }
 
     @GetMapping("/{id}/quiz/{quizId}")
-    public Result<List<UserQuizAnswer>> getQuizAnswerOfQuiz(@PathVariable String quizId){
-        List<UserQuizAnswer> result = userQuizAnswerService.selectByQuizId(quizId);
+    public Result<List<UserQuizAnswer>> getByQuizIdQuizAnswers(@PathVariable String quizId){
+        List<UserQuizAnswer> result = userQuizAnswerService.getByQuizId(quizId);
         return Result.ok(result);
     }
 
     @GetMapping("/{id}/quiz/{quizId}/{optionId}")
-    public Result<UserQuizAnswer> getQuizAnswerOfOption(@PathVariable String optionId){
-        UserQuizAnswer result = userQuizAnswerService.selectByOptionId(optionId);
+    public Result<UserQuizAnswer> getByUserIdAndQuizIdAndOptionIdQuizAnswer(@PathVariable String id,
+                                                                             @PathVariable String quizId,
+                                                                             @PathVariable String optionId){
+        UserQuizAnswer result = userQuizAnswerService.getByUserIdAndQuizIdAndOptionId(id, quizId, optionId);
         return Result.ok(result);
     }
 
@@ -105,7 +106,7 @@ public class UserController {
         userQuizAnswer.setUserId(id);
         userQuizAnswer.setQuizId(quizId);
         userQuizAnswer.setOptionId(optionId);
-        Boolean result = userQuizAnswerService.insert(userQuizAnswer);
+        Boolean result = userQuizAnswerService.create(userQuizAnswer);
 
         return Result.ok(result);
     }
@@ -116,14 +117,14 @@ public class UserController {
         userQuizAnswer.setUserId(id);
         userQuizAnswer.setQuizId(quizId);
         userQuizAnswer.setOptionId(optionId);
-        Boolean result = userQuizAnswerService.update(userQuizAnswer);
+        Boolean result = userQuizAnswerService.updateByUserIdAndQuizIdAndOptionId(userQuizAnswer);
         return Result.ok(result);
     }
 
     @DeleteMapping("/{id}/quiz/{quizId}/{optionId}")
     @PermissionAccess(UserType.MANAGER)
     public Result<Boolean> deleteQuizAnswer(@PathVariable String id, @PathVariable String quizId, @PathVariable String optionId){
-        Boolean result = userQuizAnswerService.delete(quizId);
+        Boolean result = userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(id, quizId, optionId);
         return Result.ok(result);
     }
 }

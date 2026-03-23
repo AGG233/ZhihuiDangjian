@@ -5,8 +5,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.mapper.UserMapper;
 import com.rauio.smartdangjian.pojo.User;
-import com.rauio.smartdangjian.pojo.convertor.UserConvertor;
-import com.rauio.smartdangjian.pojo.dto.UserDto;
+import com.rauio.smartdangjian.user.pojo.convertor.UserConvertor;
+import com.rauio.smartdangjian.user.pojo.dto.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ public class AdminUserManagementService extends ServiceImpl<UserMapper, User> {
      * @param dtoList 用户请求体列表
      * @return 是否新增成功
      */
-    public Boolean addUsers(List<UserDto> dtoList) {
+    public Boolean create(List<UserDto> dtoList) {
         List<User> users = userConvertor.toEntityList(dtoList);
 
         for (int i = 0; i < users.size(); i++) {
@@ -52,7 +52,7 @@ public class AdminUserManagementService extends ServiceImpl<UserMapper, User> {
      * @param dtoList 用户请求体列表
      * @return 是否更新成功
      */
-    public Boolean updateUsers(List<UserDto> dtoList) {
+    public Boolean update(List<UserDto> dtoList) {
         List<User> users = userConvertor.toEntityList(dtoList);
 
         for (int i = 0; i < users.size(); i++) {
@@ -72,7 +72,7 @@ public class AdminUserManagementService extends ServiceImpl<UserMapper, User> {
      * @param idList 用户 ID 列表
      * @return 是否删除成功
      */
-    public Boolean deleteUsers(List<String> idList) {
+    public Boolean delete(List<String> idList) {
         return this.removeByIds(idList);
     }
 
@@ -82,7 +82,7 @@ public class AdminUserManagementService extends ServiceImpl<UserMapper, User> {
      * @param id 用户 ID
      * @return 用户信息
      */
-    public User getUser(String id) {
+    public User get(String id) {
         return this.getById(id);
     }
 
@@ -94,7 +94,7 @@ public class AdminUserManagementService extends ServiceImpl<UserMapper, User> {
      * @param pageSize 每页条数
      * @return 用户分页结果
      */
-    public Page<User> getUsers(UserDto userDto, int pageNum, int pageSize) {
+    public Page<User> getPage(UserDto userDto, int pageNum, int pageSize) {
         Page<User> pageInfo = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<User> wrapper = buildUserQueryWrapper(userDto);
         return this.page(pageInfo, wrapper);

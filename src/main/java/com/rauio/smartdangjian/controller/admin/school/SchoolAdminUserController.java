@@ -3,7 +3,7 @@ package com.rauio.smartdangjian.controller.admin.school;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.pojo.User;
-import com.rauio.smartdangjian.pojo.dto.UserDto;
+import com.rauio.smartdangjian.user.pojo.dto.UserDto;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.service.admin.AdminUserManagementService;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -46,7 +46,7 @@ public class SchoolAdminUserController {
     @PostMapping("/school/user")
     @Operation(summary = "添加用户", description = "添加用户")
     public Result<Boolean> addSchoolUser(@RequestBody @Valid List<UserDto> userDtoList) {
-        Boolean result = adminUserManagementService.addUsers(userDtoList);
+        Boolean result = adminUserManagementService.create(userDtoList);
         return Result.ok(result);
     }
 
@@ -59,7 +59,7 @@ public class SchoolAdminUserController {
     @PutMapping("/school/user")
     @Operation(summary = "更新用户", description = "更新用户")
     public Result<Boolean> updateSchoolUser(@RequestBody @Valid List<UserDto> userDto) {
-        Boolean result = adminUserManagementService.updateUsers(userDto);
+        Boolean result = adminUserManagementService.update(userDto);
         return Result.ok(result);
     }
 
@@ -72,7 +72,7 @@ public class SchoolAdminUserController {
     @DeleteMapping("/school/user")
     @Operation(summary = "删除用户", description = "删除用户")
     public Result<Boolean> deleteSchoolUser(@RequestBody @Valid List<String> userIdList) {
-        Boolean result = adminUserManagementService.deleteUsers(userIdList);
+        Boolean result = adminUserManagementService.delete(userIdList);
         return Result.ok(result);
     }
 
@@ -85,7 +85,7 @@ public class SchoolAdminUserController {
     @GetMapping("/school/user/{id}")
     @Operation(summary = "通过ID获取用户", description = "通过ID获取用户")
     public Result<User> getSchoolUser(@PathVariable String id) {
-        User user = adminUserManagementService.getUser(id);
+        User user = adminUserManagementService.get(id);
         return Result.ok(user);
     }
 
@@ -103,7 +103,7 @@ public class SchoolAdminUserController {
             @ModelAttribute @Valid UserDto userDto,
             @Parameter(description = "页码") @RequestParam(defaultValue = "1") int pageNum,
             @Parameter(description = "页的大小") @RequestParam(defaultValue = "10") int pageSize) {
-        Page<User> user = adminUserManagementService.getUsers(userDto, pageNum, pageSize);
+        Page<User> user = adminUserManagementService.getPage(userDto, pageNum, pageSize);
         return Result.ok(user);
     }
 }

@@ -1,7 +1,7 @@
 package com.rauio.smartdangjian.controller.resource;
 
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.service.ResourceService;
+import com.rauio.smartdangjian.resource.service.ResourceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +38,7 @@ public class ResourceController {
     @Operation(summary = "批量上传文件", description = "支持同时上传多个文件")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Result<Map<String, String>> uploadBatch(@RequestParam("files") List<MultipartFile> files) throws IOException, NoSuchAlgorithmException {
-        Map<String, String> result = resourceService.saveFileBatch(files);
+        Map<String, String> result = resourceService.createBatch(files);
         return Result.ok("200", "上传成功", result);
     }
 
@@ -59,14 +59,14 @@ public class ResourceController {
     @Operation(summary = "批量获取文件访问链接", description = "上传一个列表，列表元素为文件的hash值，根据hash值获取相应的文件访问URL")
     @PostMapping("/batch/hash")
     public Result<List<String>> getBatchByHash(@RequestBody List<String> hashList) {
-        List<String> urls = resourceService.getBatchWithHash(hashList);
+        List<String> urls = resourceService.getByHashes(hashList);
         return Result.ok("200", null, urls);
     }
 
     @Operation(summary = "批量获取文件访问链接", description = "上传一个列表，列表元素为资源的ID，根据资源ID获取相应的文件访问URL")
     @PostMapping("/batch/id")
     public Result<List<String>> getBatchById(@RequestBody List<String> idList) {
-        List<String> urls = resourceService.getBatchWithId(idList);
+        List<String> urls = resourceService.getByIds(idList);
         return Result.ok("200", null, urls);
     }
 

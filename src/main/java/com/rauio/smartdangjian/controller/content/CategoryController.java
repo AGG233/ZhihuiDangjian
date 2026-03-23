@@ -1,14 +1,14 @@
 package com.rauio.smartdangjian.controller.content;
 
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
-import com.rauio.smartdangjian.pojo.CategoryArticle;
-import com.rauio.smartdangjian.pojo.CategoryCourse;
-import com.rauio.smartdangjian.pojo.dto.CategoryDto;
+import com.rauio.smartdangjian.content.pojo.CategoryArticle;
+import com.rauio.smartdangjian.content.pojo.CategoryCourse;
+import com.rauio.smartdangjian.content.pojo.dto.CategoryDto;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.pojo.vo.CategoryVO;
-import com.rauio.smartdangjian.service.content.ArticleService;
-import com.rauio.smartdangjian.service.content.CategoryService;
-import com.rauio.smartdangjian.service.content.CourseService;
+import com.rauio.smartdangjian.content.pojo.vo.CategoryVO;
+import com.rauio.smartdangjian.content.service.ArticleService;
+import com.rauio.smartdangjian.content.service.CategoryService;
+import com.rauio.smartdangjian.content.service.CourseService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class CategoryController {
     @GetMapping("/{id}")
     @PermissionAccess(UserType.STUDENT)
     public Result<CategoryVO> get(@PathVariable String id){
-        CategoryVO result = categoryService.getById(id);
+        CategoryVO result = categoryService.get(id);
         return Result.ok(result);
     }
 
@@ -43,8 +43,8 @@ public class CategoryController {
     )
     @GetMapping("/all")
     @PermissionAccess(UserType.STUDENT)
-    public Result<List<CategoryVO>> getAll(){
-        List<CategoryVO> result = categoryService.getRootNodes();
+    public Result<List<CategoryVO>> getList(){
+        List<CategoryVO> result = categoryService.getRootList();
         return Result.ok(result);
     }
 
@@ -54,8 +54,8 @@ public class CategoryController {
     )
     @GetMapping("/{id}/children")
     @PermissionAccess(UserType.STUDENT)
-    public Result<List<CategoryVO>> getChildren(@PathVariable String id){
-        List<CategoryVO> result = categoryService.getChildren(id);
+    public Result<List<CategoryVO>> getByParentId(@PathVariable String id){
+        List<CategoryVO> result = categoryService.getByParentId(id);
         return Result.ok(result);
     }
 
@@ -65,8 +65,8 @@ public class CategoryController {
     )
     @GetMapping("/rootNodes")
     @PermissionAccess(UserType.STUDENT)
-    public Result<List<CategoryVO>> getRootNodes(){
-        List<CategoryVO> result = categoryService.getRootNodes();
+    public Result<List<CategoryVO>> getRootList(){
+        List<CategoryVO> result = categoryService.getRootList();
         return Result.ok(result);
     }
     @Operation(
@@ -74,8 +74,8 @@ public class CategoryController {
             description = "添加根目录"
     )
     @PostMapping("/rootNode")
-    public Result<Boolean> add(CategoryDto dto){
-        Boolean result = categoryService.add(dto);
+    public Result<Boolean> create(CategoryDto dto){
+        Boolean result = categoryService.create(dto);
         return Result.ok(result);
     }
     @Operation(
@@ -83,8 +83,8 @@ public class CategoryController {
             description = "向根目录id为路径参数的id添加子目录"
     )
     @PostMapping("/{id}/addChildren")
-    public Result<Boolean> addChildren(List<CategoryDto> children, @PathVariable String id){
-        Boolean result = categoryService.addChildren(children, id);
+    public Result<Boolean> createByParentId(List<CategoryDto> children, @PathVariable String id){
+        Boolean result = categoryService.createByParentId(children, id);
         return Result.ok(result);
     }
     @Operation(
@@ -110,8 +110,8 @@ public class CategoryController {
             description = "删除目录的同时也将删除它的子目录"
     )
     @DeleteMapping("/{id}/all")
-    public Result<Boolean> deleteAll(@PathVariable String id){
-        Boolean result = categoryService.deleteAll(id);
+    public Result<Boolean> deleteByIdWithChildren(@PathVariable String id){
+        Boolean result = categoryService.deleteByIdWithChildren(id);
         return Result.ok(result);
     }
 
@@ -120,8 +120,8 @@ public class CategoryController {
             description = "获取目录下的所有课程ID"
     )
     @GetMapping("/{categoryId}/courses")
-    public Result<List<CategoryCourse>> getAllCoursesOfCategory(@PathVariable String categoryId){
-        List<CategoryCourse> result = courseService.getAllCoursesOfCategory(categoryId);
+    public Result<List<CategoryCourse>> getByCategoryIdCourses(@PathVariable String categoryId){
+        List<CategoryCourse> result = courseService.getByCategoryId(categoryId);
         return Result.ok(result);
     }
     @Operation(
@@ -129,8 +129,8 @@ public class CategoryController {
             description = "获取目录下的所有文章ID"
     )
     @GetMapping("/{categoryId}/articles")
-    public Result<List<CategoryArticle>> getAllArticlesOfCategory(@PathVariable String categoryId) {
-        List<CategoryArticle> result = articleService.getAllArticlesOfCategory(categoryId);
+    public Result<List<CategoryArticle>> getByCategoryIdArticles(@PathVariable String categoryId) {
+        List<CategoryArticle> result = articleService.getByCategoryId(categoryId);
         return Result.ok(result);
     }
 }

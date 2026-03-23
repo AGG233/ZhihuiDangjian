@@ -2,12 +2,11 @@ package com.rauio.smartdangjian.controller.content;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
-import com.rauio.smartdangjian.pojo.ContentBlock;
+import com.rauio.smartdangjian.content.pojo.ContentBlock;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.pojo.vo.ContentBlockVO;
-import com.rauio.smartdangjian.pojo.vo.CourseVO;
-import com.rauio.smartdangjian.service.content.ContentBlockService;
-import com.rauio.smartdangjian.service.search.SearchService;
+import com.rauio.smartdangjian.content.pojo.vo.ContentBlockVO;
+import com.rauio.smartdangjian.content.service.ContentBlockService;
+import com.rauio.smartdangjian.search.service.SearchService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,7 +28,7 @@ public class ContentController {
     @GetMapping("/carousel")
     @Operation(summary = "获取轮播图列表")
     public Result<List<ContentBlockVO>> getCarousel() {
-        var carousel = contentBlockService.getAllByParentId("1145141919810");
+        var carousel = contentBlockService.getByParentId("1145141919810");
         return Result.ok(carousel);
     }
 

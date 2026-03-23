@@ -1,10 +1,10 @@
 package com.rauio.smartdangjian.controller.learning;
 
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
-import com.rauio.smartdangjian.pojo.dto.UserLearningRecordDto;
+import com.rauio.smartdangjian.learning.pojo.dto.UserLearningRecordDto;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.pojo.vo.UserLearningRecordVO;
-import com.rauio.smartdangjian.service.learning.UserLearningRecordService;
+import com.rauio.smartdangjian.learning.pojo.vo.UserLearningRecordVO;
+import com.rauio.smartdangjian.learning.service.UserLearningRecordService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -49,10 +49,10 @@ public class UserLearningRecordController {
     @Operation(summary = "获取用户章节学习记录", description = "获取指定用户在指定章节的所有学习记录")
     @GetMapping("/user/{userId}/chapter/{chapterId}")
     @PermissionAccess(UserType.STUDENT)
-    public Result<List<UserLearningRecordVO>> getByUserAndChapter(
+    public Result<List<UserLearningRecordVO>> getByUserIdAndChapterId(
             @Parameter(description = "用户ID") @PathVariable String userId,
             @Parameter(description = "章节ID") @PathVariable String chapterId) {
-        List<UserLearningRecordVO> result = recordService.getByUserAndChapter(userId, chapterId);
+        List<UserLearningRecordVO> result = recordService.getByUserIdAndChapterId(userId, chapterId);
         return Result.ok(result);
     }
 

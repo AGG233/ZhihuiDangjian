@@ -1,10 +1,10 @@
 package com.rauio.smartdangjian.controller.learning;
 
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
-import com.rauio.smartdangjian.pojo.dto.UserChapterProgressDto;
+import com.rauio.smartdangjian.learning.pojo.dto.UserChapterProgressDto;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.pojo.vo.UserChapterProgressVO;
-import com.rauio.smartdangjian.service.learning.UserChapterProgressService;
+import com.rauio.smartdangjian.learning.pojo.vo.UserChapterProgressVO;
+import com.rauio.smartdangjian.learning.service.UserChapterProgressService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -49,10 +49,10 @@ public class UserChapterProgressController {
     @Operation(summary = "获取用户章节进度", description = "获取指定用户在指定章节的学习进度")
     @GetMapping("/user/{userId}/chapter/{chapterId}")
     @PermissionAccess(UserType.STUDENT)
-    public Result<UserChapterProgressVO> getByUserAndChapter(
+    public Result<UserChapterProgressVO> getByUserIdAndChapterId(
             @Parameter(description = "用户ID") @PathVariable String userId,
             @Parameter(description = "章节ID") @PathVariable String chapterId) {
-        UserChapterProgressVO result = progressService.getByUserAndChapter(userId, chapterId);
+        UserChapterProgressVO result = progressService.getByUserIdAndChapterId(userId, chapterId);
         return Result.ok(result);
     }
 
