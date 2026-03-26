@@ -39,3 +39,7 @@ out/
 
 ### VS Code ###
 .vscode/
+/scripts/
+/codex-skills/
+/docs/
+/TODO.md

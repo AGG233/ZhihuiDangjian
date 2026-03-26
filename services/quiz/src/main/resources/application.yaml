@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: service-quiz
+  cloud:
+    nacos:
+      config:
+        server-addr: 127.0.0.1:8848
+
+  config:
+    import:
+      - nacos:common.yaml?refreshEnabled=true
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      connection-timeout: 2000
+      minimum-idle: 4
+      maximum-pool-size: 16
+      idle-timeout: 30000
+      username: ${DATABASE_USERNAME}
+      password: ${DATABASE_PASSWORD}
+    url: ${DATABASE_URL:jdbc:mysql://127.0.0.1:3306/zhihuidangjian?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      database: ${REDIS_DATABASE}
+  ai:
+    openai:
+      base-url: https://api.deepseek.com
+      api-key: ${AI_KEY}
+      chat:
+        options:
+          model: deepseek-chat

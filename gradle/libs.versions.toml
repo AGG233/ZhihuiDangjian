@@ -1,0 +1,148 @@
+[versions]
+spring-boot = "3.5.4"
+spring-cloud = "2025.0.0"
+spring-cloud-alibaba = "2025.0.0.0"
+spring-dependency-management = "1.1.7"
+spring-ai = "1.1.2"
+spring-ai-ali = "1.1.2.0"
+spring-security-oauth2-jose = "6.5.1"
+mybatis-plus = "3.5.14"
+mybatis-plus-join = "1.5.4"
+mybatis = "3.5.19"
+hikari-cp = "7.0.2"
+commons-lang3 = "3.18.0"
+commons-codec = "1.15"
+qcloud-cos = "5.6.251"
+qcloud-cos-sts = "3.1.0"
+mapstruct = "1.6.3"
+tika = "3.2.2"
+hutool = "5.8.40"
+java-jwt = "4.5.0"
+springdoc = "2.8.13"
+maven-compiler-plugin = "3.14.1"
+junit-bom = "5.10.0"
+logback = "1.5.8"
+lombok = "1.18.38"
+
+[libraries]
+# BOMs
+spring-cloud-bom = { module = "org.springframework.cloud:spring-cloud-dependencies", version.ref = "spring-cloud" }
+spring-cloud-alibaba-bom = { module = "com.alibaba.cloud:spring-cloud-alibaba-dependencies", version.ref = "spring-cloud-alibaba" }
+spring-ai-bom = { module = "org.springframework.ai:spring-ai-bom", version.ref = "spring-ai" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit-bom" }
+
+#Gradle
+spring-boot-gradle-plugin = { group = "org.springframework.boot", name = "spring-boot-gradle-plugin", version.ref = "spring-boot" }
+spring-dependency-management-gradle-plugin = { group = "io.spring", name = "dependency-management-gradle-plugin", version.ref = "spring-dependency-management" }
+
+# Common Spring Boot starters
+spring-boot-starter-aop = { module = "org.springframework.boot:spring-boot-starter-aop" }
+spring-boot-starter-data-neo4j = { module = "org.springframework.boot:spring-boot-starter-data-neo4j" }
+spring-boot-starter-data-redis = { module = "org.springframework.boot:spring-boot-starter-data-redis" }
+spring-boot-starter-jdbc = { module = "org.springframework.boot:spring-boot-starter-jdbc" }
+spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-starter-web-services = { module = "org.springframework.boot:spring-boot-starter-web-services" }
+spring-boot-starter-websocket = { module = "org.springframework.boot:spring-boot-starter-websocket" }
+spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
+
+# Cloud
+spring-cloud-alibaba-nacos-config = { module = "com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config" }
+spring-cloud-alibaba-nacos-discovery = { module = "com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery" }
+spring-cloud-alibaba-openfeign = { module = "org.springframework.cloud:spring-cloud-starter-openfeign" }
+
+# AI
+spring-ai-starter-model-openai = { module = "org.springframework.ai:spring-ai-starter-model-openai" }
+spring-ai-alibaba-agent-framework = { module = "com.alibaba.cloud.ai:spring-ai-alibaba-agent-framework", version.ref = "spring-ai-ali" }
+
+# Security
+spring-security-oauth2-jose = { module = "org.springframework.security:spring-security-oauth2-jose", version.ref = "spring-security-oauth2-jose" }
+spring-security-test = { module = "org.springframework.security:spring-security-test" }
+
+# Datasource
+hikari-cp = { module = "com.zaxxer:HikariCP", version.ref = "hikari-cp" }
+mysql-connector-j = { module = "com.mysql:mysql-connector-j" }
+mybatis = { module = "org.mybatis:mybatis", version.ref = "mybatis" }
+mybatis-plus-generator = { module = "com.baomidou:mybatis-plus-generator", version.ref = "mybatis-plus" }
+mybatis-plus-join-starter = { module = "com.github.yulichang:mybatis-plus-join-boot-starter", version.ref = "mybatis-plus-join" }
+mybatis-plus-jsqlparser = { module = "com.baomidou:mybatis-plus-jsqlparser", version.ref = "mybatis-plus" }
+mybatis-plus-starter = { module = "com.baomidou:mybatis-plus-spring-boot3-starter", version.ref = "mybatis-plus" }
+
+# Utilities
+commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }
+commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons-codec" }
+hutool-all = { module = "cn.hutool:hutool-all", version.ref = "hutool" }
+java-jwt = { module = "com.auth0:java-jwt", version.ref = "java-jwt" }
+mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
+mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
+tika-core = { module = "org.apache.tika:tika-core", version.ref = "tika" }
+
+# Object storage
+qcloud-cos = { module = "com.qcloud:cos_api", version.ref = "qcloud-cos" }
+qcloud-cos-sts = { module = "com.qcloud:cos-sts_api", version.ref = "qcloud-cos-sts" }
+
+# Documentation
+springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+
+# Build and tooling
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+logback-core = { module = "ch.qos.logback:logback-core", version.ref = "logback" }
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+maven-compiler-plugin = { module = "org.apache.maven.plugins:maven-compiler-plugin", version.ref = "maven-compiler-plugin" }
+
+[bundles]
+common = [
+  "spring-boot-starter-web",
+  "spring-boot-starter-validation",
+  "spring-boot-starter-aop",
+  "springdoc-openapi-starter-webmvc-ui"
+]
+cloud = [
+  "spring-cloud-alibaba-nacos-config",
+  "spring-cloud-alibaba-nacos-discovery",
+  "spring-cloud-alibaba-openfeign"
+]
+ai = [
+  "spring-ai-starter-model-openai",
+  "spring-ai-alibaba-agent-framework"
+]
+security = [
+  "spring-boot-starter-security",
+  "spring-security-oauth2-jose"
+]
+datasource-core = [
+  "spring-boot-starter-jdbc",
+  "hikari-cp",
+  "mysql-connector-j",
+  "mybatis-plus-starter",
+  "mybatis",
+  "mybatis-plus-jsqlparser"
+]
+datasource-mybatis-generator = [
+  "mybatis-plus-generator"
+]
+datasource-mybatis-plus-join = [
+  "mybatis-plus-join-starter"
+]
+object-storage = [
+  "qcloud-cos",
+  "qcloud-cos-sts"
+]
+unit-test = [
+  "junit-jupiter",
+  "junit-platform-launcher"
+]
+test = [
+  "spring-boot-starter-test",
+  "spring-security-test",
+  "junit-jupiter",
+  "junit-platform-launcher"
+]
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }

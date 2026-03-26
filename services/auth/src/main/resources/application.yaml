@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: service-auth
+  cloud:
+    nacos:
+      config:
+        server-addr: 127.0.0.1:8848
+  config:
+    import:
+      - nacos:common.yaml?refreshEnabled=true
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      connection-timeout: 2000
+      minimum-idle: 4
+      maximum-pool-size: 16
+      idle-timeout: 30000
+      username: ${DATABASE_USERNAME}
+      password: ${DATABASE_PASSWORD}
+    url: ${DATABASE_URL}

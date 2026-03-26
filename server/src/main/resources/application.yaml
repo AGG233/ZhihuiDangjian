@@ -1,0 +1,51 @@
+
+spring:
+  application:
+    name: server
+  profiles:
+    default: standalone
+  cloud:
+    discovery:
+      enabled: false
+    nacos:
+      discovery:
+        enabled: false
+      config:
+        enabled: false
+        server-addr: 127.0.0.1:8848
+
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      connection-timeout: 2000
+      minimum-idle: 4
+      maximum-pool-size: 16
+      idle-timeout: 30000
+      username: ${DATABASE_USERNAME}
+      password: ${DATABASE_PASSWORD}
+    url: ${DATABASE_URL:jdbc:mysql://127.0.0.1:3306/zhihuidangjian?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      database: ${REDIS_DATABASE}
+  ai:
+    openai:
+      base-url: https://api.deepseek.com
+      api-key: ${AI_KEY}
+      chat:
+        options:
+          model: deepseek-chat
+
+tencent:
+  cloud:
+    cos:
+      enabled: false
+      secret-id: ${COS_SECRET_ID}
+      secret-key: ${COS_SECRET_KEY}
+      region: ${COS_REGION}
+      bucket: ${COS_BUCKET}
+      presigned-url-expire-time: 3600
+      link: ${COS_LINK}
+server:
+  port: 9000
