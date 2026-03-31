@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.server.quiz.controller.user;
 
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
+import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
 import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
@@ -23,18 +24,21 @@ public class UserQuizAnswerController {
      * 用户考试信息
      * */
     @GetMapping("/users/{id}")
+    @ResourceAccess(id = "#id")
     public Result<List<UserQuizAnswer>> getByUserIdQuizAnswers(@PathVariable String id){
         List<UserQuizAnswer> result = userQuizAnswerService.getByUserId(id);
         return Result.ok(result);
     }
 
     @GetMapping("/users/{id}/quizzes/{quizId}")
+    @ResourceAccess(id = "#id")
     public Result<List<UserQuizAnswer>> getByQuizIdQuizAnswers(@PathVariable String id, @PathVariable String quizId){
         List<UserQuizAnswer> result = userQuizAnswerService.getByUserIdAndQuizId(id, quizId);
         return Result.ok(result);
     }
 
     @GetMapping("/users/{id}/quizzes/{quizId}/options/{optionId}")
+    @ResourceAccess(id = "#id")
     public Result<UserQuizAnswer> getByUserIdAndQuizIdAndOptionIdQuizAnswer(@PathVariable String id,
                                                                             @PathVariable String quizId,
                                                                             @PathVariable String optionId){
@@ -43,6 +47,7 @@ public class UserQuizAnswerController {
     }
 
     @PostMapping("/users/{id}/quizzes/{quizId}/options/{optionId}")
+    @ResourceAccess(id = "#id")
     public Result<Boolean> createQuizAnswer(@PathVariable String id, @PathVariable String quizId, @PathVariable String optionId){
         UserQuizAnswer userQuizAnswer = UserQuizAnswer.builder().build();
         userQuizAnswer.setUserId(id);
@@ -54,6 +59,7 @@ public class UserQuizAnswerController {
     }
 
     @PutMapping("/users/{id}/quizzes/{quizId}/options/{optionId}")
+    @ResourceAccess(id = "#id")
     public Result<Boolean> updateQuizAnswer(@PathVariable String id, @PathVariable String quizId, @PathVariable String optionId){
         UserQuizAnswer userQuizAnswer = UserQuizAnswer.builder().build();
         userQuizAnswer.setUserId(id);

@@ -6,4 +6,4 @@ com.rauio.smartdangjian.config.RedisConfig
 com.rauio.smartdangjian.config.SecurityCoreAutoConfiguration
 com.rauio.smartdangjian.config.SecuritySupportAutoConfiguration
 com.rauio.smartdangjian.config.TransactionConfig
-com.rauio.smartdangjian.config.WebSupportAutoConfiguration
+com.rauio.smartdangjian.config.WebConfig

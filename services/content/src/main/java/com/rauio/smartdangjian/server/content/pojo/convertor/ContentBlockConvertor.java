@@ -1,7 +1,7 @@
 package com.rauio.smartdangjian.server.content.pojo.convertor;
 
-import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
 import com.rauio.smartdangjian.server.content.pojo.dto.ContentBlockDto;
+import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
 import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;

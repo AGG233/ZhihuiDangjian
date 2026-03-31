@@ -1,8 +1,8 @@
 package com.rauio.smartdangjian.server.user.pojo.dto;
 
 import com.rauio.smartdangjian.annotation.validation.Sensitive;
-import com.rauio.smartdangjian.utils.spec.UserType;
 import com.rauio.smartdangjian.server.user.utils.spec.UserStatus;
+import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 

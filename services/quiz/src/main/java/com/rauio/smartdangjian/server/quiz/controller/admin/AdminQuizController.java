@@ -1,6 +1,9 @@
 package com.rauio.smartdangjian.server.quiz.controller.admin;
 
+import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
+import com.rauio.smartdangjian.aop.support.DataScopeAction;
+import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
@@ -28,6 +31,7 @@ public class AdminQuizController {
     }
 
     @PutMapping("/{id}")
+    @DataScopeAccess(resource = DataScopeResources.QUIZ_ADMIN, action = DataScopeAction.UPDATE, id = "#id", query = "'QUIZ'")
     public Result<Boolean> updateQuiz(@PathVariable String id, @RequestBody Quiz quiz) {
         quiz.setId(id);
         Boolean updatedQuiz = quizService.update(quiz);
@@ -35,6 +39,7 @@ public class AdminQuizController {
     }
 
     @DeleteMapping("/{id}")
+    @DataScopeAccess(resource = DataScopeResources.QUIZ_ADMIN, action = DataScopeAction.DELETE, id = "#id", query = "'QUIZ'")
     public Result<Boolean> deleteQuiz(@PathVariable String id) {
         Boolean deletedQuiz = quizService.delete(id);
         return Result.ok(deletedQuiz);
@@ -47,12 +52,14 @@ public class AdminQuizController {
     }
 
     @PutMapping("/{quizId}/options/{optionId}")
+    @DataScopeAccess(resource = DataScopeResources.QUIZ_ADMIN, action = DataScopeAction.UPDATE, id = "#optionId", query = "'OPTION'")
     public Result<Boolean> updateQuizOption(@PathVariable String optionId, @RequestBody QuizOption quizOption) {
         Boolean updatedQuizOption = quizOptionService.update(optionId, quizOption);
         return Result.ok(updatedQuizOption);
     }
 
     @DeleteMapping("/{quizId}/options/{optionId}")
+    @DataScopeAccess(resource = DataScopeResources.QUIZ_ADMIN, action = DataScopeAction.DELETE, id = "#optionId", query = "'OPTION'")
     public Result<Boolean> deleteQuizOption(@PathVariable String optionId) {
         Boolean deletedQuizOption = quizOptionService.delete(optionId);
         return Result.ok(deletedQuizOption);

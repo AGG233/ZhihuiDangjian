@@ -23,6 +23,7 @@ public class Category implements Serializable {
     @TableId(type = IdType.AUTO)
     @JsonSerialize(using = ToStringSerializer.class)
     private String id;
+    private String universityId;
     private String name;
     private Integer level;
     private String description;

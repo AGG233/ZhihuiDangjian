@@ -1,6 +1,5 @@
 package com.rauio.smartdangjian.exception;
 
-import com.rauio.smartdangjian.constants.ErrorConstants;
 import lombok.Getter;
 
 import static com.rauio.smartdangjian.constants.ErrorConstants.NOT_FOUND;

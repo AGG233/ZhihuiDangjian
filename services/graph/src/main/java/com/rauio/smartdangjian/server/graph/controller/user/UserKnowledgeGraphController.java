@@ -1,9 +1,9 @@
 package com.rauio.smartdangjian.server.graph.controller.user;
 
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
+import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.graph.pojo.vo.KnowledgeGraphVO;
 import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
-import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

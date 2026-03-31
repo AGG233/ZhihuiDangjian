@@ -1,7 +1,7 @@
 package com.rauio.smartdangjian.server.content.pojo.convertor;
 
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.content.pojo.dto.CourseDto;
+import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;

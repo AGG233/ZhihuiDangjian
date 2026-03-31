@@ -2,17 +2,16 @@ package com.rauio.smartdangjian.server.learning.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
-import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
 import com.rauio.smartdangjian.server.learning.pojo.convertor.UserLearningRecordConvertor;
 import com.rauio.smartdangjian.server.learning.pojo.dto.UserLearningRecordDto;
+import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
 import com.rauio.smartdangjian.server.learning.pojo.vo.UserLearningRecordVO;
-import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,6 +77,23 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
     }
 
     /**
+     * 查询用户最近 N 天的学习记录。
+     *
+     * @param userId 用户 ID
+     * @param recentDays 最近天数
+     * @return 学习记录列表
+     */
+    public List<UserLearningRecord> getRecentByUserId(String userId, Integer recentDays) {
+        int days = recentDays == null || recentDays <= 0 ? 7 : recentDays;
+        LocalDateTime threshold = LocalDateTime.now().minusDays(days);
+
+        return this.list(new LambdaQueryWrapper<UserLearningRecord>()
+                .eq(UserLearningRecord::getUserId, userId)
+                .ge(UserLearningRecord::getCreatedAt, threshold)
+                .orderByDesc(UserLearningRecord::getCreatedAt));
+    }
+
+    /**
      * 查询章节下的学习记录。
      *
      * @param chapterId 章节 ID
@@ -102,6 +118,48 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
         wrapper.eq("user_id", userId).eq("chapter_id", chapterId).orderByDesc("created_at");
         List<UserLearningRecord> list = this.list(wrapper);
         return convertor.toVOList(list);
+    }
+
+    /**
+     * 查询用户在指定课程下的学习记录。
+     *
+     * @param userId 用户 ID
+     * @param courseId 课程 ID
+     * @return 学习记录列表
+     */
+    public List<UserLearningRecord> getByUserIdAndCourseId(String userId, String courseId) {
+        if (org.apache.commons.lang3.StringUtils.isBlank(courseId)) {
+            return List.of();
+        }
+        String safeCourseId = courseId.replace("'", "''");
+
+        QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
+        wrapper.eq("user_id", userId)
+                .inSql("chapter_id", "select id from chapter where course_id = '" + safeCourseId + "'")
+                .orderByDesc("created_at");
+        return this.list(wrapper);
+    }
+
+    /**
+     * 查询用户在指定课程章节下的学习记录。
+     *
+     * @param userId 用户 ID
+     * @param courseId 课程 ID
+     * @param chapterId 章节 ID
+     * @return 学习记录列表
+     */
+    public List<UserLearningRecord> getByUserIdAndCourseIdAndChapterId(String userId, String courseId, String chapterId) {
+        if (org.apache.commons.lang3.StringUtils.isBlank(courseId) || org.apache.commons.lang3.StringUtils.isBlank(chapterId)) {
+            return List.of();
+        }
+        String safeCourseId = courseId.replace("'", "''");
+
+        QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
+        wrapper.eq("user_id", userId)
+                .eq("chapter_id", chapterId)
+                .inSql("chapter_id", "select id from chapter where course_id = '" + safeCourseId + "'")
+                .orderByDesc("created_at");
+        return this.list(wrapper);
     }
 
     public int syncUserLearningGraph(String userId) {

@@ -5,6 +5,8 @@ plugins {
 dependencies {
     api(project(":services:common"))
     implementation(project(":services:content"))
+    implementation(project(":services:course"))
+    implementation(project(":services:user"))
     implementation(libs.mapstruct)
     implementation(libs.mybatis.plus.join.starter)
 

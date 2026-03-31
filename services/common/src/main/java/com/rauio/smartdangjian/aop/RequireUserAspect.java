@@ -4,7 +4,6 @@ import com.rauio.smartdangjian.aop.annotation.RequireUser;
 import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
-import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.security.core.Authentication;

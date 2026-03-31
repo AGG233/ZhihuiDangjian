@@ -2,7 +2,6 @@ package com.rauio.smartdangjian.server.quiz.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.rauio.smartdangjian.server.quiz.client.dto.CurrentUserDto;
 import com.rauio.smartdangjian.server.quiz.mapper.QuizOptionMapper;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;

@@ -2,8 +2,8 @@ package com.rauio.smartdangjian.common.controller.publicapi;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rauio.smartdangjian.common.pojo.Universities;
-import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.common.service.UniversitiesService;
+import com.rauio.smartdangjian.pojo.response.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

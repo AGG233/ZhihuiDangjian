@@ -3,11 +3,7 @@ package com.rauio.smartdangjian.server.auth.pojo.request;
 import com.rauio.smartdangjian.server.user.utils.spec.UserStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;

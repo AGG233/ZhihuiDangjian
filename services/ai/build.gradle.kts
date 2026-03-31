@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":services:chapter"))
     implementation(project(":services:user"))
     implementation(project(":services:learning"))
+    implementation(project(":services:quiz"))
 
     implementation(libs.bundles.common)
     implementation(libs.bundles.cloud)

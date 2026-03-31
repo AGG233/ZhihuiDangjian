@@ -5,20 +5,28 @@ spring-cloud-alibaba = "2025.0.0.0"
 spring-dependency-management = "1.1.7"
 spring-ai = "1.1.2"
 spring-ai-ali = "1.1.2.0"
+spring-redisson = "4.3.0"
+
 spring-security-oauth2-jose = "6.5.1"
+
 mybatis-plus = "3.5.14"
 mybatis-plus-join = "1.5.4"
 mybatis = "3.5.19"
 hikari-cp = "7.0.2"
+
 commons-lang3 = "3.18.0"
 commons-codec = "1.15"
+
 qcloud-cos = "5.6.251"
 qcloud-cos-sts = "3.1.0"
 mapstruct = "1.6.3"
+
 tika = "3.2.2"
 hutool = "5.8.40"
 java-jwt = "4.5.0"
+
 springdoc = "2.8.13"
+knife4j = "4.4.0"
 maven-compiler-plugin = "3.14.1"
 junit-bom = "5.10.0"
 logback = "1.5.8"
@@ -55,6 +63,7 @@ spring-cloud-alibaba-openfeign = { module = "org.springframework.cloud:spring-cl
 
 # AI
 spring-ai-starter-model-openai = { module = "org.springframework.ai:spring-ai-starter-model-openai" }
+spring-ai-starter-mcp-client = { module = "org.springframework.ai:spring-ai-starter-mcp-client-webflux" }
 spring-ai-alibaba-agent-framework = { module = "com.alibaba.cloud.ai:spring-ai-alibaba-agent-framework", version.ref = "spring-ai-ali" }
 
 # Security
@@ -69,6 +78,7 @@ mybatis-plus-generator = { module = "com.baomidou:mybatis-plus-generator", versi
 mybatis-plus-join-starter = { module = "com.github.yulichang:mybatis-plus-join-boot-starter", version.ref = "mybatis-plus-join" }
 mybatis-plus-jsqlparser = { module = "com.baomidou:mybatis-plus-jsqlparser", version.ref = "mybatis-plus" }
 mybatis-plus-starter = { module = "com.baomidou:mybatis-plus-spring-boot3-starter", version.ref = "mybatis-plus" }
+redisson = { module = "org.redisson:redisson-spring-boot-starter", version.ref = "spring-redisson"}
 
 # Utilities
 commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }
@@ -85,6 +95,7 @@ qcloud-cos-sts = { module = "com.qcloud:cos-sts_api", version.ref = "qcloud-cos-
 
 # Documentation
 springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+knife4j = {module = "com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter",version.ref = "knife4j"}
 
 # Build and tooling
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
@@ -108,6 +119,7 @@ cloud = [
 ]
 ai = [
   "spring-ai-starter-model-openai",
+  "spring-ai-starter-mcp-client",
   "spring-ai-alibaba-agent-framework"
 ]
 security = [

@@ -7,4 +7,6 @@ public interface CurrentUserPrincipal {
     String getId();
 
     UserType getUserType();
+
+    String getUniversityId();
 }

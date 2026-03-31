@@ -1,8 +1,8 @@
 package com.rauio.smartdangjian.server.learning.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
 import com.rauio.smartdangjian.server.learning.pojo.dto.UserBehaviorDto;
+import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 

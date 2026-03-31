@@ -1,8 +1,14 @@
 package com.rauio.smartdangjian.config;
 
+import com.alibaba.druid.support.json.JSONUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.codec.JsonJacksonCodec;
+import org.redisson.config.Config;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +26,12 @@ import java.time.Duration;
 @EnableCaching
 public class RedisConfig {
 
+    @Value("${spring.data.redis.host}")
+    private String host;
+    @Value("${spring.data.redis.port}")
+    private int port;
+    @Value("${spring.data.redis.database}")
+    private int database;
 
     private ObjectMapper createObjectMapper() {
         ObjectMapper om = new ObjectMapper();

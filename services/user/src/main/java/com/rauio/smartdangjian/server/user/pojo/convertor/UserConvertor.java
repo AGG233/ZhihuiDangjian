@@ -1,8 +1,8 @@
 package com.rauio.smartdangjian.server.user.pojo.convertor;
 
+import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 

@@ -4,19 +4,23 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.rauio.smartdangjian.aop.annotation.RequireUser;
 import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
 import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
-import com.rauio.smartdangjian.aop.annotation.RequireUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import static com.rauio.smartdangjian.constants.RedisConstants.USER_VO_CACHE_PREFIX;
 
 
 @Service
@@ -27,21 +31,12 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     private final UserConvertor     convertor;
 
     /**
-     * 根据用户 ID 获取用户信息。
-     *
-     * @param id 用户 ID
-     * @return 用户视图对象
-     */
-    public UserVO get(String id) {
-        return convertor.toVO(this.getById(id));
-    }
-
-    /**
      * 根据通行凭证识别并查询用户。
      *
      * @param passport 用户名、邮箱或手机号
      * @return 用户实体
      */
+    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#passport")
     public User getByPassport(String passport){
         if (passport == null || passport.isEmpty()) {
             return null;
@@ -54,6 +49,17 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         }else{
             return getByUsername(passport);
         }
+    }
+
+    /**
+     * 根据用户 ID 获取用户信息。
+     *
+     * @param id 用户 ID
+     * @return 用户视图对象
+     */
+    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#id")
+    public UserVO get(String id) {
+        return convertor.toVO(this.getById(id));
     }
 
     /**
@@ -98,6 +104,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param username 用户名
      * @return 用户实体
      */
+    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#username")
     public User getByUsername(String username) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username));
     }
@@ -108,6 +115,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param email 邮箱
      * @return 用户实体
      */
+    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#email")
     public User getByEmail(String email) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getEmail, email));
     }
@@ -118,6 +126,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param phone 手机号
      * @return 用户实体
      */
+    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#phone")
     public User getByPhone(String phone) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone));
     }
@@ -128,6 +137,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param partyMemberId 党员编号
      * @return 用户实体
      */
+    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#partyMemberId")
     public User getByPartyMemberId(String partyMemberId) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getPartyMemberId, partyMemberId));
     }
@@ -139,8 +149,12 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param user 用户实体
      * @return 是否更新成功
      */
+    @CachePut(value = USER_VO_CACHE_PREFIX, key = "#id")
     public Boolean update(String id,User user) {
         user.setId(id);
+        if (StringUtils.isNotBlank(user.getPassword())) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
         return this.updateById(user);
     }
 
@@ -194,12 +208,13 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @return 是否属于该学校
      */
     public Boolean isUserBelongsSchool(String id, String schoolId) {
-        User user = getCurrentUser();
-        
-        if (schoolId == null || user == null) {
+        if (schoolId == null) {
             throw new BusinessException(ErrorConstants.ARGS_ERROR,"有空参数");
         }
-        return user.getUniversityId() != null && user.getUniversityId().equals(schoolId);
+        User targetUser = this.getById(id);
+        return targetUser != null
+                && targetUser.getUniversityId() != null
+                && targetUser.getUniversityId().equals(schoolId);
     }
 
     /**
@@ -211,11 +226,11 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @return 用户分页结果
      */
     public Page<User> getPage(UserDto dto, int pageNum, int pageSize) {
-
         Page<User> pageInfo = new Page<>(pageNum,pageSize);
 
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.like(StringUtils.isNotColumnName(dto.getUserId()),User::getId,dto.getUserId())
+        wrapper
+                .like(StringUtils.isNotColumnName(dto.getUserId()),User::getId,dto.getUserId())
                 .like(StringUtils.isNotColumnName(dto.getUsername()),User::getUsername,dto.getUsername())
                 .like(StringUtils.isNotColumnName(dto.getRealName()),User::getRealName,dto.getRealName())
                 .like(StringUtils.isNotColumnName(dto.getPartyMemberId()),User::getPartyMemberId,dto.getPartyMemberId())
@@ -223,6 +238,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
                 .like(StringUtils.isNotColumnName(dto.getPhone()),User::getPhone,dto.getPhone())
                 .eq(User::getUserType,dto.getUserType())
                 .eq(User::getPartyStatus,dto.getPartyStatus())
+                .eq(StringUtils.isNotBlank(dto.getUniversityId()), User::getUniversityId, dto.getUniversityId())
                 .like(StringUtils.isNotColumnName(dto.getBranchName()),User::getBranchName,dto.getBranchName());
 
         return this.page(pageInfo,wrapper);

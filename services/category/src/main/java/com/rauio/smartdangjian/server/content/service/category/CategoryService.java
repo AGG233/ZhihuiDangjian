@@ -3,11 +3,14 @@ package com.rauio.smartdangjian.server.content.service.category;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.content.mapper.CategoryMapper;
-import com.rauio.smartdangjian.server.content.pojo.entity.Category;
 import com.rauio.smartdangjian.server.content.pojo.convertor.CategoryConvertor;
 import com.rauio.smartdangjian.server.content.pojo.dto.CategoryDto;
+import com.rauio.smartdangjian.server.content.pojo.entity.Category;
 import com.rauio.smartdangjian.server.content.pojo.vo.CategoryVO;
+import com.rauio.smartdangjian.utils.SecurityUtils;
+import com.rauio.smartdangjian.utils.spec.UserType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,6 +89,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
         Category category = convertor.toEntity(dto);
         category.setLevel(0);
         category.setParentId(null);
+        category.setUniversityId(resolveRootCategoryUniversityId());
         this.save(category);
 
         List<CategoryDto> childrenNode = dto.getChildrenNode();
@@ -115,6 +119,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
             Category node = convertor.toEntity(dto);
             node.setLevel(parent.getLevel() + 1);
             node.setParentId(parent.getId());
+            node.setUniversityId(parent.getUniversityId());
 
             if (node.getLevel() < MAX_LEVEL){
                 this.save(node);
@@ -175,8 +180,27 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
         if (dto == null) {
             throw new BusinessException(4001,"参数错误");
         }
-        Category course = convertor.toEntity(dto);
-        course.setId(id);
-        return this.updateById(course);
+        Category existing = super.getById(id);
+        if (existing == null) {
+            throw new BusinessException(4001, "目录不存在");
+        }
+
+        Category category = convertor.toEntity(dto);
+        category.setId(id);
+        category.setUniversityId(existing.getUniversityId());
+        category.setLevel(existing.getLevel());
+        category.setParentId(existing.getParentId());
+        return this.updateById(category);
+    }
+
+    private String resolveRootCategoryUniversityId() {
+        CurrentUserPrincipal currentUser = SecurityUtils.getCurrentUser();
+        if (currentUser == null) {
+            throw new BusinessException(4001, "当前用户不存在");
+        }
+        if (currentUser.getUserType() == UserType.MANAGER) {
+            return null;
+        }
+        return currentUser.getUniversityId();
     }
 }

@@ -1,14 +1,14 @@
 package com.rauio.smartdangjian.server.auth.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
+import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.RegisterRequest;
 import com.rauio.smartdangjian.server.auth.pojo.response.LoginResponse;
-import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,11 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
-import static com.rauio.smartdangjian.constants.ErrorConstants.ARGS_ERROR;
-import static com.rauio.smartdangjian.constants.ErrorConstants.EMAIL_EXISTS;
-import static com.rauio.smartdangjian.constants.ErrorConstants.PARTY_MEMBER_ID_EXISTS;
-import static com.rauio.smartdangjian.constants.ErrorConstants.PHONE_EXISTS;
-import static com.rauio.smartdangjian.constants.ErrorConstants.USERNAME_EXISTS;
+import static com.rauio.smartdangjian.constants.ErrorConstants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -39,18 +35,24 @@ public class AuthService {
         if (!captchaService.validate(loginRequest.getCaptchaUUID(), loginRequest.getCaptchaCode())) {
             throw new BusinessException(ARGS_ERROR, "验证码错误");
         }
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getPassport(),
+                            loginRequest.getPassword()
+                    )
+            );
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getPassport(),
-                        loginRequest.getPassword()
-                )
-        );
+            User user = (User) authentication.getPrincipal();
+            String accessToken = jwtService.generateAccessToken(user, loginRequest.getPlatform());
 
-        User user = (User) authentication.getPrincipal();
-        String accessToken = jwtService.generateAccessToken(user, loginRequest.getPlatform());
+            return LoginResponse.builder().accessToken(accessToken).build();
+        }catch (Exception e){
+            throw new BusinessException("密码错误");
+        }
 
-        return LoginResponse.builder().accessToken(accessToken).build();
+
+
     }
 
     public void logout(String token) {

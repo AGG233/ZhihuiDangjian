@@ -49,3 +49,15 @@ tencent:
       link: ${COS_LINK}
 server:
   port: 9000
+
+knife4j:
+  enable: true
+  basic:
+    enable: true
+    username: smdj
+    password: testsmdj123
+  setting:
+    language: zh_cn
+logging:
+  level:
+    org.springframework.security: DEBUG

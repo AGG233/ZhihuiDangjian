@@ -5,6 +5,7 @@ plugins {
 dependencies {
     api(project(":services:common"))
     implementation(project(":services:graph"))
+    implementation(project(":services:user"))
 
     implementation(libs.mapstruct)
 

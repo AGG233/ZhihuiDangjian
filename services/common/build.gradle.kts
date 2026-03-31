@@ -18,6 +18,8 @@ dependencies {
     api(libs.tika.core)
     api(libs.java.jwt)
     api(libs.hutool.all)
+    api(libs.redisson)
+    api(libs.knife4j)
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)

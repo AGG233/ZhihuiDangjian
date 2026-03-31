@@ -3,13 +3,13 @@ package com.rauio.smartdangjian.server.graph.service;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
-import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.graph.pojo.vo.GraphEdgeVO;
 import com.rauio.smartdangjian.server.graph.pojo.vo.GraphNodeVO;
 import com.rauio.smartdangjian.server.graph.pojo.vo.KnowledgeGraphVO;
+import com.rauio.smartdangjian.server.user.mapper.UserMapper;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.neo4j.driver.Value;
 import org.neo4j.driver.types.Node;
@@ -17,12 +17,7 @@ import org.neo4j.driver.types.Relationship;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor

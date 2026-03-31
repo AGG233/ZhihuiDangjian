@@ -21,7 +21,7 @@ import org.springframework.util.StringUtils;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-import static com.rauio.smartdangjian.constants.RedisConstants.USER_CACHE_PREFIX;
+import static com.rauio.smartdangjian.constants.RedisConstants.USER_VO_CACHE_PREFIX;
 
 @Slf4j
 @Service
@@ -95,7 +95,7 @@ public class JwtService{
      * 内部私有方法：处理缓存读取与回写逻辑
      */
     private User getUserFromCacheOrDb(String userId) throws JsonProcessingException {
-        String redisKey = USER_CACHE_PREFIX + userId;
+        String redisKey = USER_VO_CACHE_PREFIX + userId;
 
         String userJson = stringRedisTemplate.opsForValue().get(redisKey);
         if (StringUtils.hasText(userJson)) {
@@ -120,7 +120,7 @@ public class JwtService{
      * 额外方法：当用户信息更新时，可以调用此方法清除缓存
      */
     public void clearUserCache(String userId) {
-        stringRedisTemplate.delete(USER_CACHE_PREFIX + userId);
+        stringRedisTemplate.delete(USER_VO_CACHE_PREFIX + userId);
     }
     
     /**

@@ -1,5 +1,6 @@
 package com.rauio.smartdangjian.server.auth.controller;
 
+import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.auth.pojo.Captcha;
 import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
@@ -7,7 +8,6 @@ import com.rauio.smartdangjian.server.auth.pojo.request.RegisterRequest;
 import com.rauio.smartdangjian.server.auth.pojo.response.LoginResponse;
 import com.rauio.smartdangjian.server.auth.service.AuthService;
 import com.rauio.smartdangjian.server.auth.service.CaptchaService;
-import com.rauio.smartdangjian.pojo.response.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

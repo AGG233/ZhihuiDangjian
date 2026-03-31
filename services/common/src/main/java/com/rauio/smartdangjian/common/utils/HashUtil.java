@@ -1,8 +1,8 @@
 package com.rauio.smartdangjian.common.utils;
 
-import java.security.MessageDigest;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public final class HashUtil {

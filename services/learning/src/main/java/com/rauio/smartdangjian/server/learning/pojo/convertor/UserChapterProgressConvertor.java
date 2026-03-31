@@ -1,7 +1,7 @@
 package com.rauio.smartdangjian.server.learning.pojo.convertor;
 
-import com.rauio.smartdangjian.server.learning.pojo.entity.UserChapterProgress;
 import com.rauio.smartdangjian.server.learning.pojo.dto.UserChapterProgressDto;
+import com.rauio.smartdangjian.server.learning.pojo.entity.UserChapterProgress;
 import com.rauio.smartdangjian.server.learning.pojo.vo.UserChapterProgressVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;

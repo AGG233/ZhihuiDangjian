@@ -2,12 +2,12 @@ package com.rauio.smartdangjian.server.content.controller.admin;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
-import com.rauio.smartdangjian.server.content.pojo.dto.CourseDto;
-import com.rauio.smartdangjian.server.content.pojo.request.PageRequest;
+import com.rauio.smartdangjian.aop.support.DataScopeAction;
+import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
-import com.rauio.smartdangjian.server.content.pojo.vo.PageVO;
+import com.rauio.smartdangjian.server.content.pojo.dto.CourseDto;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,6 +26,7 @@ public class AdminCourseController {
 
     @Operation(summary = "更新课程信息", description = "根据课程ID更新课程信息")
     @PutMapping("/{id}")
+    @DataScopeAccess(resource = DataScopeResources.COURSE_ADMIN, action = DataScopeAction.UPDATE, id = "#id", body = "#course")
     public Result<Boolean> update(@RequestBody CourseDto course, @PathVariable String id) throws JsonProcessingException {
         Boolean result = courseService.update(course,id);
         return Result.ok(result);
@@ -33,6 +34,7 @@ public class AdminCourseController {
 
     @Operation(summary = "创建课程", description = "创建一个新的课程")
     @PostMapping("/")
+    @DataScopeAccess(resource = DataScopeResources.COURSE_ADMIN, action = DataScopeAction.CREATE, body = "#course")
     public Result<Boolean> create(@RequestBody CourseDto course) throws JsonProcessingException {
         Boolean result = courseService.create(course);
         return Result.ok(result);
@@ -40,6 +42,7 @@ public class AdminCourseController {
 
     @Operation(summary = "删除课程", description = "根据课程ID删除指定课程")
     @DeleteMapping("/{id}")
+    @DataScopeAccess(resource = DataScopeResources.COURSE_ADMIN, action = DataScopeAction.DELETE, id = "#id")
     public Result<Boolean> delete(@PathVariable String id) throws JsonProcessingException {
         Boolean result = courseService.delete(id);
         return Result.ok(result);

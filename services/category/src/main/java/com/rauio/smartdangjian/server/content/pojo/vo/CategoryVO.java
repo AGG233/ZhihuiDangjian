@@ -7,6 +7,7 @@ import java.util.List;
 @Data
 public class CategoryVO {
     private String      id;
+    private String      universityId;
     private String      name;
     private String      description;
     private String      parentId;
