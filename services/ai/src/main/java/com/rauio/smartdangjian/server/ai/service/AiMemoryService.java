@@ -18,7 +18,7 @@ import static com.rauio.smartdangjian.server.ai.constants.AiConstants.SENDER_USE
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(transactionManager = "dataSourceTransactionManager")
 public class AiMemoryService {
 
     private final AiChatMessageService aiChatMessageService;

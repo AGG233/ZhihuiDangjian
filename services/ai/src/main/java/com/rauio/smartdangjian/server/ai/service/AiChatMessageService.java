@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(transactionManager = "dataSourceTransactionManager")
 public class AiChatMessageService extends ServiceImpl<AiChatMessageMapper, AiChatMessage> {
 
 }

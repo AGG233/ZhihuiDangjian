@@ -201,7 +201,7 @@ public class CosService {
 
     private List<MultipartUploadedPartResponse> listUploadedPartsInternal(CosUploadSession session) {
         Map<Object, Object> cachedParts = redisTemplate.opsForHash().entries(partsKey(session.getUploadId()));
-        if (cachedParts == null || cachedParts.isEmpty()) {
+        if (cachedParts.isEmpty()) {
             List<MultipartUploadedPartResponse> cosParts = listPartsFromCos(session);
             if (!cosParts.isEmpty()) {
                 for (MultipartUploadedPartResponse part : cosParts) {

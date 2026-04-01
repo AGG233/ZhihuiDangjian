@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(transactionManager = "dataSourceTransactionManager")
 public class SkillService extends ServiceImpl<AiSkillMapper, AiSkill> {
 
     public AiSkill create(AiSkillCreateRequest request) {

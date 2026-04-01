@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(transactionManager = "dataSourceTransactionManager")
 public class PromptService extends ServiceImpl<AiPromptsMapper, AiPrompts> {
 
     public AiPrompts create(AiPromptCreateRequest request) {

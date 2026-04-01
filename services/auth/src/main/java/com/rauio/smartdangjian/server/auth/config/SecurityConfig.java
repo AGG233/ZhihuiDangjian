@@ -1,5 +1,7 @@
 package com.rauio.smartdangjian.server.auth.config;
 
+import com.rauio.smartdangjian.server.auth.security.JwtAuthenticationFilter;
+import com.rauio.smartdangjian.server.auth.service.JwtService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -8,13 +10,27 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public JwtAuthenticationFilter jwtAuthenticationFilter(
+            HandlerExceptionResolver handlerExceptionResolver,
+            JwtService jwtService
+    ) {
+        return new JwtAuthenticationFilter(handlerExceptionResolver, jwtService);
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            JwtAuthenticationFilter jwtAuthenticationFilter
+    ) throws Exception {
         http
+                .cors(cors -> {})
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -25,7 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/resource/**","/api/cos/download/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .csrf(AbstractHttpConfigurer::disable)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .headers(headers ->
                         headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin
                         )
