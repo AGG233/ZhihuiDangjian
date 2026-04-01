@@ -89,7 +89,7 @@ public class LLMService {
         AtomicReference<String> finalOutput = new AtomicReference<>("");
 
         return aiAgentRegistry.get(context.agentType()).stream(context.input(), runnableConfig)
-                .handle((output, sink) -> sink.next(buildAiChatResponse(sessionId, context.agentType().agentName(), output, finalOutput)))
+                .<AiChatResponse>handle((output, sink) -> sink.next(buildAiChatResponse(sessionId, context.agentType().agentName(), output, finalOutput)))
                 .publishOn(Schedulers.boundedElastic())
                 .doOnComplete(() -> aiMemoryService.saveConversation(
                         context.userId(),
