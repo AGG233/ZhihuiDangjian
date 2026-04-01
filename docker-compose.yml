@@ -2,14 +2,13 @@ services:
   app:
     image: ghcr.io/agg233/zhihuidangjian:latest
     container_name: zhihuidangjian
-    restart: unless-stopped
-    ports:
-      - "9000:9000"
+    restart: no
+    network_mode: host
     environment:
       - DATABASE_URL=jdbc:mysql://172.17.0.1:3306/zhihuidangjian?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - DATABASE_USERNAME=root
       - DATABASE_PASSWORD=your_password
-      - REDIS_HOST=172.17.0.1
+      - REDIS_HOST=127.0.0.1
       - REDIS_PORT=6379
       - REDIS_DATABASE=0
       - AI_KEY=your_deepseek_api_key
@@ -20,3 +19,16 @@ services:
       - COS_LINK=https://your-bucket-name.cos.ap-guangzhou.myqcloud.com
     volumes:
       - ./logs:/app/logs
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 300 --cleanup --label-enable
+    # --interval 300: 每 5 分钟检查一次
+    # --cleanup: 更新后删除旧镜像
+    # --label-enable: 只监控带有 watchtower.enable=true 标签的容器
