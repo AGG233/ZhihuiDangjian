@@ -26,8 +26,8 @@ jobs:
           config: >-
             p/java
             p/owasp-top-ten
-            p/spring-boot
-          publishToken: ${{ secrets.SEMGREP_APP_TOKEN }}
+            p/spring
+            p/default
           generateSarif: "1"
 
       - name: Upload SARIF results
