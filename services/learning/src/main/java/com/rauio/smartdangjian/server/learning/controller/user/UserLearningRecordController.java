@@ -30,7 +30,7 @@ public class UserLearningRecordController {
     @GetMapping("/{id}")
     @PermissionAccess(UserType.STUDENT)
     @DataScopeAccess(resource = DataScopeResources.LEARNING_RECORD, action = DataScopeAction.READ, id = "#id")
-    public Result<UserLearningRecordVO> get(@Parameter(description = "记录ID") @PathVariable String id) {
+    public Result<UserLearningRecordVO> get(@Parameter(name = "id", description = "记录ID") @PathVariable String id) {
         UserLearningRecordVO result = recordService.get(id);
         return Result.ok(result);
     }
@@ -39,7 +39,7 @@ public class UserLearningRecordController {
     @GetMapping("/user/{userId}")
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#userId")
-    public Result<List<UserLearningRecordVO>> getByUserId(@Parameter(description = "用户ID") @PathVariable String userId) {
+    public Result<List<UserLearningRecordVO>> getByUserId(@Parameter(name = "userId", description = "用户ID") @PathVariable String userId) {
         List<UserLearningRecordVO> result = recordService.getByUserId(userId);
         return Result.ok(result);
     }
@@ -49,8 +49,8 @@ public class UserLearningRecordController {
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#userId")
     public Result<List<UserLearningRecordVO>> getByUserIdAndChapterId(
-            @Parameter(description = "用户ID") @PathVariable String userId,
-            @Parameter(description = "章节ID") @PathVariable String chapterId) {
+            @Parameter(name = "userId", description = "用户ID") @PathVariable String userId,
+            @Parameter(name = "chapterId", description = "章节ID") @PathVariable String chapterId) {
         List<UserLearningRecordVO> result = recordService.getByUserIdAndChapterId(userId, chapterId);
         return Result.ok(result);
     }

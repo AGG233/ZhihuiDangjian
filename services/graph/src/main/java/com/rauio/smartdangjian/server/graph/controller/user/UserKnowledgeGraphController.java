@@ -25,14 +25,14 @@ public class UserKnowledgeGraphController {
     @Operation(summary = "获取用户学习图谱", description = "返回用户学习课程和章节的图谱结构")
     @GetMapping("/users/{userId}")
     @PermissionAccess(UserType.STUDENT)
-    public Result<KnowledgeGraphVO> getUserGraph(@Parameter(description = "用户ID") @PathVariable String userId) {
+    public Result<KnowledgeGraphVO> getUserGraph(@Parameter(name = "userId", description = "用户ID") @PathVariable String userId) {
         return Result.ok(knowledgeGraphService.getUserGraph(userId));
     }
 
     @Operation(summary = "获取课程图谱", description = "返回课程关联的学习用户和章节结构")
     @GetMapping("/courses/{courseId}")
     @PermissionAccess(UserType.STUDENT)
-    public Result<KnowledgeGraphVO> getCourseGraph(@Parameter(description = "课程ID") @PathVariable String courseId) {
+    public Result<KnowledgeGraphVO> getCourseGraph(@Parameter(name = "courseId", description = "课程ID") @PathVariable String courseId) {
         return Result.ok(knowledgeGraphService.getCourseGraph(courseId));
     }
 }

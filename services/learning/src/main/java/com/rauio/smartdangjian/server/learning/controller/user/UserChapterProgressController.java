@@ -30,7 +30,7 @@ public class UserChapterProgressController {
     @GetMapping("/{id}")
     @PermissionAccess(UserType.STUDENT)
     @DataScopeAccess(resource = DataScopeResources.CHAPTER_PROGRESS, action = DataScopeAction.READ, id = "#id")
-    public Result<UserChapterProgressVO> get(@Parameter(description = "进度ID") @PathVariable String id) {
+    public Result<UserChapterProgressVO> get(@Parameter(name = "id", description = "进度ID") @PathVariable String id) {
         UserChapterProgressVO result = progressService.get(id);
         return Result.ok(result);
     }
@@ -39,7 +39,7 @@ public class UserChapterProgressController {
     @GetMapping("/user/{userId}")
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#userId")
-    public Result<List<UserChapterProgressVO>> getByUserId(@Parameter(description = "用户ID") @PathVariable String userId) {
+    public Result<List<UserChapterProgressVO>> getByUserId(@Parameter(name = "userId", description = "用户ID") @PathVariable String userId) {
         List<UserChapterProgressVO> result = progressService.getByUserId(userId);
         return Result.ok(result);
     }
@@ -49,8 +49,8 @@ public class UserChapterProgressController {
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#userId")
     public Result<UserChapterProgressVO> getByUserIdAndChapterId(
-            @Parameter(description = "用户ID") @PathVariable String userId,
-            @Parameter(description = "章节ID") @PathVariable String chapterId) {
+            @Parameter(name = "userId", description = "用户ID") @PathVariable String userId,
+            @Parameter(name = "chapterId", description = "章节ID") @PathVariable String chapterId) {
         UserChapterProgressVO result = progressService.getByUserIdAndChapterId(userId, chapterId);
         return Result.ok(result);
     }

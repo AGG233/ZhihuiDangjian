@@ -25,9 +25,9 @@ public class AdminQuizAnswerController {
     @Operation(summary = "删除答题记录", description = "根据用户ID、试题ID和选项ID删除指定答题记录")
     @DeleteMapping("/users/{id}/quizzes/{quizId}/options/{optionId}")
     public Result<Boolean> deleteQuizAnswer(
-            @Parameter(description = "用户ID") @PathVariable String id,
-            @Parameter(description = "试题ID") @PathVariable String quizId,
-            @Parameter(description = "选项ID") @PathVariable String optionId) {
+            @Parameter(name = "id", description = "用户ID") @PathVariable String id,
+            @Parameter(name = "quizId", description = "试题ID") @PathVariable String quizId,
+            @Parameter(name = "optionId", description = "选项ID") @PathVariable String optionId) {
         return Result.ok(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(id, quizId, optionId));
     }
 }

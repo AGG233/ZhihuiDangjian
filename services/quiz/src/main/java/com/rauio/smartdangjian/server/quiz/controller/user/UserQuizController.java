@@ -31,28 +31,28 @@ public class UserQuizController {
     @Operation(summary = "获取试题详情", description = "根据试题ID获取试题详情")
     @GetMapping("/{id}")
     public Result<Quiz> getQuiz(
-            @Parameter(description = "试题ID") @PathVariable String id) {
+            @Parameter(name = "id", description = "试题ID") @PathVariable String id) {
         return Result.ok(quizService.get(id));
     }
 
     @Operation(summary = "获取章节下所有试题", description = "根据章节ID获取该章节下的所有试题列表")
     @GetMapping("/by-chapter/{chapterId}")
     public Result<List<Quiz>> getQuizOfChapter(
-            @Parameter(description = "章节ID") @PathVariable String chapterId) {
+            @Parameter(name = "chapterId", description = "章节ID") @PathVariable String chapterId) {
         return Result.ok(quizService.getByChapterId(chapterId));
     }
 
     @Operation(summary = "获取试题选项列表", description = "根据试题ID获取该试题的所有选项")
     @GetMapping("/{id}/options")
     public Result<List<QuizOption>> getQuizOption(
-            @Parameter(description = "试题ID") @PathVariable String id) {
+            @Parameter(name = "id", description = "试题ID") @PathVariable String id) {
         return Result.ok(quizOptionService.getByQuizId(id));
     }
 
     @Operation(summary = "获取单个选项详情", description = "根据选项ID获取选项详情，学生未答题时隐藏正确答案")
     @GetMapping("/{id}/options/{optionId}")
     public Result<QuizOption> getByOptionId(
-            @Parameter(description = "选项ID") @PathVariable String optionId) {
+            @Parameter(name = "optionId", description = "选项ID") @PathVariable String optionId) {
         return Result.ok(quizOptionService.get(optionId));
     }
 }

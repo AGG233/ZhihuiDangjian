@@ -44,6 +44,10 @@ dependencies {
     testImplementation(platform(libs.findLibrary("junit-bom").get().get().toString()))
 }
 
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("-parameters")
+}
+
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }

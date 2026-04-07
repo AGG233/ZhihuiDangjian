@@ -46,11 +46,11 @@ public class AdminResourceMetaController {
     @GetMapping
     @DataScopeAccess(resource = DataScopeResources.RESOURCE_META_ADMIN, action = DataScopeAction.SEARCH)
     public Result<List<ResourceMeta>> list(
-            @Parameter(description = "上传人ID") @RequestParam(required = false) String uploaderId,
-            @Parameter(description = "原始文件名") @RequestParam(required = false) String originalName,
-            @Parameter(description = "文件哈希") @RequestParam(required = false) String hash,
-            @Parameter(description = "资源类型") @RequestParam(required = false) String resourceType,
-            @Parameter(description = "资源状态") @RequestParam(required = false) Integer status
+            @Parameter(name = "uploaderId", description = "上传人ID") @RequestParam(required = false) String uploaderId,
+            @Parameter(name = "originalName", description = "原始文件名") @RequestParam(required = false) String originalName,
+            @Parameter(name = "hash", description = "文件哈希") @RequestParam(required = false) String hash,
+            @Parameter(name = "resourceType", description = "资源类型") @RequestParam(required = false) String resourceType,
+            @Parameter(name = "status", description = "资源状态") @RequestParam(required = false) Integer status
     ) {
         return Result.ok(resourceMetaService.list(uploaderId, originalName, hash, resourceType, status));
     }

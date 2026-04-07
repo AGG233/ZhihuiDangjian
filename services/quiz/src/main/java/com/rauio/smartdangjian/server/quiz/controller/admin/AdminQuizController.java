@@ -36,7 +36,7 @@ public class AdminQuizController {
     @PutMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.QUIZ_ADMIN, action = DataScopeAction.UPDATE, id = "#id", query = "'QUIZ'")
     public Result<Boolean> updateQuiz(
-            @Parameter(description = "试题ID") @PathVariable String id,
+            @Parameter(name = "id", description = "试题ID") @PathVariable String id,
             @RequestBody Quiz quiz) {
         quiz.setId(id);
         return Result.ok(quizService.update(quiz));
@@ -46,14 +46,14 @@ public class AdminQuizController {
     @DeleteMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.QUIZ_ADMIN, action = DataScopeAction.DELETE, id = "#id", query = "'QUIZ'")
     public Result<Boolean> deleteQuiz(
-            @Parameter(description = "试题ID") @PathVariable String id) {
+            @Parameter(name = "id", description = "试题ID") @PathVariable String id) {
         return Result.ok(quizService.delete(id));
     }
 
     @Operation(summary = "创建选项", description = "为指定试题创建一个选项")
     @PostMapping("/{id}/options")
     public Result<Boolean> createQuizOption(
-            @Parameter(description = "试题ID") @PathVariable String id,
+            @Parameter(name = "id", description = "试题ID") @PathVariable String id,
             @RequestBody QuizOption quizOption) {
         return Result.ok(quizOptionService.create(id, quizOption));
     }
@@ -62,7 +62,7 @@ public class AdminQuizController {
     @PutMapping("/{quizId}/options/{optionId}")
     @DataScopeAccess(resource = DataScopeResources.QUIZ_ADMIN, action = DataScopeAction.UPDATE, id = "#optionId", query = "'OPTION'")
     public Result<Boolean> updateQuizOption(
-            @Parameter(description = "选项ID") @PathVariable String optionId,
+            @Parameter(name = "optionId", description = "选项ID") @PathVariable String optionId,
             @RequestBody QuizOption quizOption) {
         return Result.ok(quizOptionService.update(optionId, quizOption));
     }
@@ -71,7 +71,7 @@ public class AdminQuizController {
     @DeleteMapping("/{quizId}/options/{optionId}")
     @DataScopeAccess(resource = DataScopeResources.QUIZ_ADMIN, action = DataScopeAction.DELETE, id = "#optionId", query = "'OPTION'")
     public Result<Boolean> deleteQuizOption(
-            @Parameter(description = "选项ID") @PathVariable String optionId) {
+            @Parameter(name = "optionId", description = "选项ID") @PathVariable String optionId) {
         return Result.ok(quizOptionService.delete(optionId));
     }
 }

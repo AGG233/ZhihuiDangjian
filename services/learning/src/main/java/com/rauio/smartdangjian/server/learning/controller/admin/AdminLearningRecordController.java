@@ -28,14 +28,14 @@ public class AdminLearningRecordController {
     @Operation(summary = "获取章节所有学习记录")
     @GetMapping("/chapter/{chapterId}")
     @DataScopeAccess(resource = DataScopeResources.LEARNING_RECORD, action = DataScopeAction.FILTER, id = "#chapterId")
-    public Result<List<UserLearningRecordVO>> getByChapterId(@Parameter(description = "章节ID") @PathVariable String chapterId) {
+    public Result<List<UserLearningRecordVO>> getByChapterId(@Parameter(name = "chapterId", description = "章节ID") @PathVariable String chapterId) {
         return Result.ok(recordService.getByChapterId(chapterId));
     }
 
     @Operation(summary = "删除学习记录")
     @DeleteMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.LEARNING_RECORD, action = DataScopeAction.DELETE, id = "#id")
-    public Result<Boolean> delete(@Parameter(description = "记录ID") @PathVariable String id) {
+    public Result<Boolean> delete(@Parameter(name = "id", description = "记录ID") @PathVariable String id) {
         return Result.ok(recordService.delete(id));
     }
 }

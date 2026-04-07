@@ -24,7 +24,7 @@ public class UserLearningGraphSyncController {
     @Operation(summary = "同步用户学习图谱", description = "将用户已学习内容同步到Neo4j图谱")
     @PostMapping("/user/{userId}/sync")
     @PermissionAccess(UserType.STUDENT)
-    public Result<Integer> syncUserGraph(@Parameter(description = "用户ID") @PathVariable String userId) {
+    public Result<Integer> syncUserGraph(@Parameter(name = "userId", description = "用户ID") @PathVariable String userId) {
         return Result.ok(userLearningRecordService.syncUserLearningGraph(userId));
     }
 }

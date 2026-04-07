@@ -29,7 +29,7 @@ public class UserController {
     @Operation(summary = "获取用户信息", description = "通过ID获取用户信息")
     @GetMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.USER_MANAGEMENT, action = DataScopeAction.READ, id = "#id")
-    public Result<UserVO> get(@Parameter(description = "用户ID") @PathVariable String id) {
+    public Result<UserVO> get(@Parameter(name = "id", description = "用户ID") @PathVariable String id) {
         return Result.ok(userService.get(id));
     }
 
@@ -38,8 +38,8 @@ public class UserController {
     @DataScopeAccess(resource = DataScopeResources.USER_MANAGEMENT, action = DataScopeAction.SEARCH, query = "#userDto")
     public Result<Page<User>> getPage(
             @RequestBody UserDto userDto,
-            @Parameter(description = "页码") @RequestParam(defaultValue = "1") int pageNum,
-            @Parameter(description = "页大小") @RequestParam(defaultValue = "10") int pageSize
+            @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
+            @Parameter(name = "pageSize", description = "页大小") @RequestParam(defaultValue = "10") int pageSize
     ) {
         return Result.ok(userService.getPage(userDto, pageNum, pageSize));
     }
@@ -53,7 +53,7 @@ public class UserController {
 
     @Operation(summary = "删除用户（已经弃用）", description = "通过ID删除用户")
     @DeleteMapping("/{id}")
-    public Result<Object> delete(@Parameter(description = "用户ID") @PathVariable String id) {
+    public Result<Object> delete(@Parameter(name = "id", description = "用户ID") @PathVariable String id) {
         return Result.ok("404", "接口已经弃用", null);
     }
 }

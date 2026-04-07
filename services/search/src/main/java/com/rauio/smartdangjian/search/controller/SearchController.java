@@ -29,11 +29,11 @@ public class SearchController {
     @GetMapping("/courses")
     @PermissionAccess(UserType.STUDENT)
     public Result<Page<CourseVO>> searchCourses(
-            @Parameter(description = "搜索关键词") @RequestParam(required = false) String keyword,
-            @Parameter(description = "分类ID") @RequestParam(required = false) String categoryId,
-            @Parameter(description = "难度") @RequestParam(required = false) String difficulty,
-            @Parameter(description = "页码") @RequestParam(defaultValue = "1") int pageNum,
-            @Parameter(description = "每页条数") @RequestParam(defaultValue = "10") int pageSize) {
+            @Parameter(name = "keyword", description = "搜索关键词") @RequestParam(required = false) String keyword,
+            @Parameter(name = "categoryId", description = "分类ID") @RequestParam(required = false) String categoryId,
+            @Parameter(name = "difficulty", description = "难度") @RequestParam(required = false) String difficulty,
+            @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
+            @Parameter(name = "pageSize", description = "每页条数") @RequestParam(defaultValue = "10") int pageSize) {
         return Result.ok(searchService.searchCourses(keyword, categoryId, difficulty, pageNum, pageSize));
     }
 
@@ -41,9 +41,9 @@ public class SearchController {
     @GetMapping("/hybrid")
     @PermissionAccess(UserType.STUDENT)
     public Result<Page<CourseVO>> hybridSearch(
-            @Parameter(description = "搜索关键词") @RequestParam String keyword,
-            @Parameter(description = "页码") @RequestParam(defaultValue = "1") int pageNum,
-            @Parameter(description = "每页条数") @RequestParam(defaultValue = "10") int pageSize) {
+            @Parameter(name = "keyword", description = "搜索关键词") @RequestParam String keyword,
+            @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
+            @Parameter(name = "pageSize", description = "每页条数") @RequestParam(defaultValue = "10") int pageSize) {
         return Result.ok(searchService.hybridSearch(keyword, pageNum, pageSize));
     }
 
@@ -51,8 +51,8 @@ public class SearchController {
     @GetMapping("/recommend")
     @PermissionAccess(UserType.STUDENT)
     public Result<Page<String>> recommend(
-            @Parameter(description = "页码") @RequestParam(defaultValue = "1") int pageNum,
-            @Parameter(description = "每页条数") @RequestParam(defaultValue = "10") int pageSize) {
+            @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
+            @Parameter(name = "pageSize", description = "每页条数") @RequestParam(defaultValue = "10") int pageSize) {
         String userId = userProfileService.getCurrentUserProfile().getUserId();
         return Result.ok(recommendService.recommend(userId, pageNum, pageSize));
     }

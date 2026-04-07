@@ -29,7 +29,7 @@ public class AdminUserController {
     @Operation(summary = "获取用户详情", description = "根据用户ID获取用户详情")
     @GetMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.USER_MANAGEMENT, action = DataScopeAction.READ, id = "#id")
-    public Result<UserVO> get(@Parameter(description = "用户ID") @PathVariable String id) {
+    public Result<UserVO> get(@Parameter(name = "id", description = "用户ID") @PathVariable String id) {
         return Result.ok(userService.get(id));
     }
 
@@ -38,8 +38,8 @@ public class AdminUserController {
     @DataScopeAccess(resource = DataScopeResources.USER_MANAGEMENT, action = DataScopeAction.SEARCH, query = "#userDto")
     public Result<Page<User>> getPage(
             @RequestBody UserDto userDto,
-            @Parameter(description = "页码") @RequestParam(defaultValue = "1") int pageNum,
-            @Parameter(description = "页大小") @RequestParam(defaultValue = "10") int pageSize
+            @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
+            @Parameter(name = "pageSize", description = "页大小") @RequestParam(defaultValue = "10") int pageSize
     ) {
         return Result.ok(userService.getPage(userDto, pageNum, pageSize));
     }
