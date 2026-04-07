@@ -10,8 +10,10 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.user.utils.spec.UserStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,6 +25,8 @@ import java.util.Collections;
 @Data
 @Builder
 @TableName("user")
+@NoArgsConstructor
+@AllArgsConstructor
 public class User implements UserDetails, CurrentUserPrincipal {
 
     @TableId
