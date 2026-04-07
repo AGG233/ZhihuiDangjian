@@ -5,6 +5,7 @@ import com.rauio.smartdangjian.pojo.response.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -25,6 +26,12 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Result handleBusinessExceptions(BusinessException e) {
         return buildResult(String.valueOf(e.getCode()), e.getMessage());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        return buildResult("400", "请求体缺失或格式错误");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
