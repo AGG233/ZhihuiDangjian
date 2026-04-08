@@ -10,7 +10,6 @@ dependencies {
     implementation(libs.mapstruct)
     implementation(libs.mybatis.plus.join.starter)
     implementation(libs.bundles.common)
-    implementation(libs.bundles.cloud)
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)

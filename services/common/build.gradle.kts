@@ -4,7 +4,6 @@ plugins {
 
 dependencies {
     api(libs.bundles.common)
-    api(libs.bundles.cloud)
     api(libs.bundles.security)
     api(libs.spring.boot.starter.jdbc)
     api(libs.hikari.cp)

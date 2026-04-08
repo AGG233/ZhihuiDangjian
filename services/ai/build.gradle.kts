@@ -12,7 +12,6 @@ dependencies {
     implementation(project(":services:search"))
 
     implementation(libs.bundles.common)
-    implementation(libs.bundles.cloud)
     implementation(libs.bundles.ai)
     implementation(libs.bundles.security)
     implementation(libs.spring.boot.starter.data.redis)
