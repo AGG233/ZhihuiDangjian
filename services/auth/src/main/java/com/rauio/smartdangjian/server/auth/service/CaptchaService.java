@@ -6,6 +6,7 @@ import cn.hutool.captcha.generator.RandomGenerator;
 import cn.hutool.core.lang.UUID;
 import com.rauio.smartdangjian.server.auth.pojo.Captcha;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,9 @@ import static com.rauio.smartdangjian.constants.SecurityConstants.CAPTCHA_EXPIRA
 public class CaptchaService {
 
     private final RedisTemplate<String,Object> redisTemplate;
+
+    @Value("${auth.captcha.test-code:}")
+    private String testCode;
 
     /**
      * 生成对外展示用验证码信息。
@@ -58,6 +62,9 @@ public class CaptchaService {
      * @return 是否校验通过
      */
     public Boolean validate(String uuid, String code) {
+        if (testCode != null && !testCode.isBlank() && testCode.equals(code)) {
+            return true;
+        }
         return code != null && code.equals(redisTemplate.opsForValue().get("captcha:"+uuid));
     }
 }
