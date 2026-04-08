@@ -24,6 +24,4 @@ dependencies {
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
 
-    testImplementation(platform(libs.junit.bom))
-    testImplementation(libs.bundles.unit.test)
 }

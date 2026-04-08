@@ -36,20 +36,11 @@ dependencyManagement {
         mavenBom(getBom("spring-cloud-bom"))
         mavenBom(getBom("spring-cloud-alibaba-bom"))
         mavenBom(getBom("spring-ai-bom"))
-        mavenBom(getBom("junit-bom"))
     }
-}
-
-dependencies {
-    testImplementation(platform(libs.findLibrary("junit-bom").get().get().toString()))
 }
 
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-parameters")
-}
-
-tasks.withType<Test>().configureEach {
-    useJUnitPlatform()
 }
 
 configurations.configureEach {

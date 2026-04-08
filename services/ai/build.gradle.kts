@@ -25,6 +25,4 @@ dependencies {
     annotationProcessor(libs.spring.boot.configuration.processor)
     annotationProcessor(libs.mapstruct.processor)
 
-    testImplementation(platform(libs.junit.bom))
-    testImplementation(libs.bundles.test)
 }

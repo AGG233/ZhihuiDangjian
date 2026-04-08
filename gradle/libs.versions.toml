@@ -28,7 +28,6 @@ java-jwt = "4.5.0"
 springdoc = "2.8.13"
 knife4j = "4.4.0"
 maven-compiler-plugin = "3.14.1"
-junit-bom = "5.10.0"
 logback = "1.5.8"
 lombok = "1.18.38"
 
@@ -37,8 +36,6 @@ lombok = "1.18.38"
 spring-cloud-bom = { module = "org.springframework.cloud:spring-cloud-dependencies", version.ref = "spring-cloud" }
 spring-cloud-alibaba-bom = { module = "com.alibaba.cloud:spring-cloud-alibaba-dependencies", version.ref = "spring-cloud-alibaba" }
 spring-ai-bom = { module = "org.springframework.ai:spring-ai-bom", version.ref = "spring-ai" }
-junit-bom = { module = "org.junit:junit-bom", version.ref = "junit-bom" }
-
 #Gradle
 spring-boot-gradle-plugin = { group = "org.springframework.boot", name = "spring-boot-gradle-plugin", version.ref = "spring-boot" }
 spring-dependency-management-gradle-plugin = { group = "io.spring", name = "dependency-management-gradle-plugin", version.ref = "spring-dependency-management" }
@@ -49,7 +46,6 @@ spring-boot-starter-data-neo4j = { module = "org.springframework.boot:spring-boo
 spring-boot-starter-data-redis = { module = "org.springframework.boot:spring-boot-starter-data-redis" }
 spring-boot-starter-jdbc = { module = "org.springframework.boot:spring-boot-starter-jdbc" }
 spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
-spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
 spring-boot-starter-web-services = { module = "org.springframework.boot:spring-boot-starter-web-services" }
@@ -68,8 +64,6 @@ spring-ai-alibaba-agent-framework = { module = "com.alibaba.cloud.ai:spring-ai-a
 
 # Security
 spring-security-oauth2-jose = { module = "org.springframework.security:spring-security-oauth2-jose", version.ref = "spring-security-oauth2-jose" }
-spring-security-test = { module = "org.springframework.security:spring-security-test" }
-
 # Datasource
 hikari-cp = { module = "com.zaxxer:HikariCP", version.ref = "hikari-cp" }
 mysql-connector-j = { module = "com.mysql:mysql-connector-j" }
@@ -98,8 +92,6 @@ springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openap
 knife4j = {module = "com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter",version.ref = "knife4j"}
 
 # Build and tooling
-junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
-junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logback-core = { module = "ch.qos.logback:logback-core", version.ref = "logback" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
@@ -144,17 +136,6 @@ object-storage = [
   "qcloud-cos",
   "qcloud-cos-sts"
 ]
-unit-test = [
-  "junit-jupiter",
-  "junit-platform-launcher"
-]
-test = [
-  "spring-boot-starter-test",
-  "spring-security-test",
-  "junit-jupiter",
-  "junit-platform-launcher"
-]
-
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
