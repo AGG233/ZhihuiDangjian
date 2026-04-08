@@ -1,7 +1,5 @@
 [versions]
 spring-boot = "3.5.4"
-spring-cloud = "2025.0.0"
-spring-cloud-alibaba = "2025.0.0.0"
 spring-dependency-management = "1.1.7"
 spring-ai = "1.1.2"
 spring-ai-ali = "1.1.2.0"
@@ -33,8 +31,6 @@ lombok = "1.18.38"
 
 [libraries]
 # BOMs
-spring-cloud-bom = { module = "org.springframework.cloud:spring-cloud-dependencies", version.ref = "spring-cloud" }
-spring-cloud-alibaba-bom = { module = "com.alibaba.cloud:spring-cloud-alibaba-dependencies", version.ref = "spring-cloud-alibaba" }
 spring-ai-bom = { module = "org.springframework.ai:spring-ai-bom", version.ref = "spring-ai" }
 #Gradle
 spring-boot-gradle-plugin = { group = "org.springframework.boot", name = "spring-boot-gradle-plugin", version.ref = "spring-boot" }
@@ -51,11 +47,6 @@ spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-start
 spring-boot-starter-web-services = { module = "org.springframework.boot:spring-boot-starter-web-services" }
 spring-boot-starter-websocket = { module = "org.springframework.boot:spring-boot-starter-websocket" }
 spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
-
-# Cloud
-spring-cloud-alibaba-nacos-config = { module = "com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config" }
-spring-cloud-alibaba-nacos-discovery = { module = "com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery" }
-spring-cloud-alibaba-openfeign = { module = "org.springframework.cloud:spring-cloud-starter-openfeign" }
 
 # AI
 spring-ai-starter-model-openai = { module = "org.springframework.ai:spring-ai-starter-model-openai" }
@@ -103,11 +94,6 @@ common = [
   "spring-boot-starter-validation",
   "spring-boot-starter-aop",
   "springdoc-openapi-starter-webmvc-ui"
-]
-cloud = [
-  "spring-cloud-alibaba-nacos-config",
-  "spring-cloud-alibaba-nacos-discovery",
-  "spring-cloud-alibaba-openfeign"
 ]
 ai = [
   "spring-ai-starter-model-openai",
