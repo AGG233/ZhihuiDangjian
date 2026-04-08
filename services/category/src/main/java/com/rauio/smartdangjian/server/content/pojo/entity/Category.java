@@ -37,7 +37,10 @@ public class Category implements Serializable {
     private String parentId;
 
     @Schema(description = "排序序号")
-    private String sortOrder;
+    private Integer sortOrder;
+
+    @Schema(description = "分类状态，1表示正常，0表示禁用")
+    private Integer status;
 
     @Schema(description = "创建时间")
     private LocalDateTime createdAt;

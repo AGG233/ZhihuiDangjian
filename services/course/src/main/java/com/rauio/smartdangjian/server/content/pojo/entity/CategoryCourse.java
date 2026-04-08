@@ -10,7 +10,7 @@ import lombok.Data;
 
 @Data
 @Builder
-@TableName("category_course")
+@TableName("category_couse")
 @Schema(description = "分类-课程关联")
 public class CategoryCourse {
 

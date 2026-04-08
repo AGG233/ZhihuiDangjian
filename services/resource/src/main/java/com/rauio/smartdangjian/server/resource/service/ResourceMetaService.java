@@ -29,7 +29,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
                 .hash(request.getHash())
                 .objectKey(request.getObjectKey())
                 .resourceType(request.getResourceType())
-                .status(request.getStatus() != null ? request.getStatus() : ResourceStatusConstants.AVAILABLE)
+                .status(request.getStatus() != null ? request.getStatus() : ResourceStatusConstants.PUBLIC)
                 .build();
         if (!this.save(meta)) {
             throw new BusinessException(4000, "创建资源失败");
@@ -61,12 +61,12 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
                 .eq(ResourceMeta::getHash, hash));
     }
 
-    public List<ResourceMeta> list(String uploaderId, String originalName, String hash, String resourceType, Integer status) {
+    public List<ResourceMeta> list(String uploaderId, String originalName, String hash, Integer resourceType, Integer status) {
         LambdaQueryWrapper<ResourceMeta> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(StringUtils.isNotBlank(uploaderId), ResourceMeta::getUploaderId, uploaderId)
                 .like(StringUtils.isNotBlank(originalName), ResourceMeta::getOriginalName, originalName)
                 .eq(StringUtils.isNotBlank(hash), ResourceMeta::getHash, hash)
-                .eq(StringUtils.isNotBlank(resourceType), ResourceMeta::getResourceType, resourceType)
+                .eq(resourceType != null, ResourceMeta::getResourceType, resourceType)
                 .eq(status != null, ResourceMeta::getStatus, status)
                 .orderByDesc(ResourceMeta::getId);
         return this.list(wrapper);
@@ -82,7 +82,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
                 .hash(existing.getHash())
                 .objectKey(StringUtils.isNotBlank(request.getObjectKey()) ? request.getObjectKey() : existing.getObjectKey())
                 .originalName(StringUtils.isNotBlank(request.getOriginalName()) ? request.getOriginalName() : existing.getOriginalName())
-                .resourceType(StringUtils.isNotBlank(request.getResourceType()) ? request.getResourceType() : existing.getResourceType())
+                .resourceType(request.getResourceType() != null ? request.getResourceType() : existing.getResourceType())
                 .status(request.getStatus() != null ? request.getStatus() : existing.getStatus())
                 .build();
 

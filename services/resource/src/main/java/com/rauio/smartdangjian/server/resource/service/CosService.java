@@ -6,6 +6,7 @@ import com.qcloud.cos.http.HttpMethodName;
 import com.qcloud.cos.model.*;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.resource.Constant.ResourceStatusConstants;
+import com.rauio.smartdangjian.server.resource.Constant.ResourceTypeConstants;
 import com.rauio.smartdangjian.server.resource.pojo.cache.CosUploadSession;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.*;
@@ -158,8 +159,8 @@ public class CosService {
         createRequest.setOriginalName(session.getFileName());
         createRequest.setHash(session.getFileHash());
         createRequest.setObjectKey(session.getObjectKey());
-        createRequest.setResourceType(session.getContentType());
-        createRequest.setStatus(ResourceStatusConstants.AVAILABLE);
+        createRequest.setResourceType(detectResourceType(session.getContentType()));
+        createRequest.setStatus(ResourceStatusConstants.PUBLIC);
         ResourceMeta meta = resourceMetaService.create(createRequest);
 
         session.setStatus(STATUS_COMPLETED);
@@ -271,5 +272,18 @@ public class CosService {
             return "";
         }
         return suffix.startsWith(".") ? suffix : "." + suffix;
+    }
+
+    private Integer detectResourceType(String contentType) {
+        if (contentType == null) {
+            throw new BusinessException(4000, "资源类型不能为空");
+        }
+        if (contentType.startsWith("image/")) {
+            return ResourceTypeConstants.IMAGE;
+        }
+        if (contentType.startsWith("video/")) {
+            return ResourceTypeConstants.VIDEO;
+        }
+        throw new BusinessException(4000, "当前仅支持图片和视频资源");
     }
 }

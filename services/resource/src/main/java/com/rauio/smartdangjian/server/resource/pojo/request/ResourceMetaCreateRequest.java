@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.server.resource.pojo.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
@@ -24,10 +25,10 @@ public class ResourceMetaCreateRequest {
     @NotBlank(message = "objectKey不能为空")
     private String objectKey;
 
-    @Schema(description = "资源类型，一般为MIME类型", example = "image/png")
-    @NotBlank(message = "resourceType不能为空")
-    private String resourceType;
+    @Schema(description = "资源类型：0表示图片，1表示视频", example = "0")
+    @NotNull(message = "resourceType不能为空")
+    private Integer resourceType;
 
-    @Schema(description = "资源状态：0表示禁用，1表示可用，2表示已删除；未传时服务端默认置为1", example = "1")
+    @Schema(description = "资源状态：0表示上传中，1表示公开可用，2表示隐藏；未传时服务端默认置为1", example = "1")
     private Integer status;
 }

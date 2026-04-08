@@ -12,14 +12,13 @@ public class ResourceMetaUpdateRequest {
     @Pattern(regexp = "^$|.*\\S.*", message = "originalName不能为空白字符")
     private String originalName;
 
-    @Schema(description = "资源类型，一般为MIME类型", example = "image/png")
-    @Pattern(regexp = "^$|.*\\S.*", message = "resourceType不能为空白字符")
-    private String resourceType;
+    @Schema(description = "资源类型：0表示图片，1表示视频", example = "0")
+    private Integer resourceType;
 
     @Schema(description = "对象存储键，即文件在COS中的完整存储路径", example = "image/8f14e45fceea167a5a36dedd4bea2543.png")
     @Pattern(regexp = "^$|.*\\S.*", message = "objectKey不能为空白字符")
     private String objectKey;
 
-    @Schema(description = "资源状态：0表示禁用，1表示可用，2表示已删除", example = "1")
+    @Schema(description = "资源状态：0表示上传中，1表示公开可用，2表示隐藏", example = "1")
     private Integer status;
 }

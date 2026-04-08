@@ -33,6 +33,9 @@ public class AiPrompts {
     @Schema(description = "提示词名称", example = "通用回复规范")
     private String name;
 
+    @Schema(description = "提示词类别", example = "通用")
+    private String category;
+
     @Schema(description = "提示词内容", example = "你是党务学习助手，回答需严谨、客观、简洁。")
     private String content;
 

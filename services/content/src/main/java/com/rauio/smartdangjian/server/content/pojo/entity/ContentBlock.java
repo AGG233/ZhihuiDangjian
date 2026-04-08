@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.server.content.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -20,12 +21,15 @@ import java.time.LocalDateTime;
 @Schema(description = "内容块")
 public class ContentBlock {
 
+    @TableId
     @Schema(description = "内容块ID")
     @JsonSerialize(using = ToStringSerializer.class)
     private String      id;
 
     @Schema(description = "父级内容块ID")
     private String      parentId;
+    @Schema(description = "内容块排序序号")
+    private Integer     orderIndex;
     @EnumValue
     @Schema(description = "父级内容块类型")
     private ParentType parentType;

@@ -3,7 +3,6 @@ package com.rauio.smartdangjian.server.content.pojo.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
@@ -27,9 +26,8 @@ public class CategoryDto {
     @Schema(description = "分类父级ID，由路径参数或系统自动维护", accessMode = Schema.AccessMode.READ_ONLY)
     private String parentId;
 
-    @Pattern(regexp = "^\\d{1,9}$", message = "分类排序必须为非负整数")
     @Schema(description = "分类排序，使用非负整数表示")
-    private String sortOrder;
+    private Integer sortOrder;
 
     @Schema(description = "分类状态，当前接口忽略该字段", deprecated = true)
     private Integer status;

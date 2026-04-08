@@ -1,6 +1,9 @@
 package com.rauio.smartdangjian.server.content.pojo.entity;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +16,8 @@ import java.time.LocalDateTime;
 @Schema(description = "章节")
 public class Chapter {
 
+    @TableId
+    @JsonSerialize(using = ToStringSerializer.class)
     @Schema(description = "章节ID")
     private String id;
 

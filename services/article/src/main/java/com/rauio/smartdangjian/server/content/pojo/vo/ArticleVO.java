@@ -16,7 +16,7 @@ public class ArticleVO {
     private String id;
 
     @Schema(description = "作者ID")
-    private String author_id;
+    private String authorId;
 
     @Schema(description = "文章标题")
     private String title;
@@ -28,5 +28,5 @@ public class ArticleVO {
     private ArticleStatus status;
 
     @Schema(description = "发布时间")
-    private LocalDateTime published_at;
+    private LocalDateTime publishedAt;
 }

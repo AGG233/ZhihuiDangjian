@@ -13,7 +13,7 @@ public class ArticleDto {
     @Schema(description = "文章ID，默认留空",hidden = true)
     private String id;
     @Schema(description = "作者的用户ID")
-    private String author_id;
+    private String authorId;
 
     @Schema(description = "文章标题")
     private String title;

@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -28,7 +29,7 @@ public class UserSimilarity {
     private String userId2;
 
     @Schema(description = "相似度分值", example = "0.82")
-    private double similarityScore;
+    private BigDecimal similarityScore;
 
     @Schema(description = "相似度类型", example = "learning_behavior")
     private String similarityType;
@@ -47,4 +48,7 @@ public class UserSimilarity {
 
     @Schema(description = "过期时间")
     private LocalDateTime expiresAt;
+
+    @Schema(description = "更新时间")
+    private LocalDateTime updateTime;
 }
