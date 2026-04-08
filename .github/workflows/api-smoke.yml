@@ -94,7 +94,7 @@ jobs:
         run: npm install --global @usebruno/cli
 
       - name: Grant execute permission
-        run: chmod +x gradlew scripts/wait-for-app.sh
+        run: chmod +x gradlew
 
       - name: Initialize MySQL schema
         run: |
@@ -127,7 +127,7 @@ jobs:
           nohup java -jar server/build/libs/server.jar > build/api-smoke-app.log 2>&1 &
 
       - name: Wait for application
-        run: ./scripts/wait-for-app.sh http://127.0.0.1:9000/api/school/all 180
+        run: bash scripts/wait-for-app.sh http://127.0.0.1:9000/api/school/all 180
 
       - name: Run Bruno smoke tests
         run: bru run tests/bruno

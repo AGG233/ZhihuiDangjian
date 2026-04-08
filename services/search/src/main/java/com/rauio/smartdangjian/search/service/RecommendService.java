@@ -167,8 +167,7 @@ public class RecommendService {
                 ORDER BY score DESC
                 """;
 
-        List<String> sorted = new ArrayList<>();
-        sorted.addAll(neo4jClient.query(cypher)
+        List<String> sorted = new ArrayList<>(neo4jClient.query(cypher)
                 .bind(userId).to("userId")
                 .fetchAs(String.class)
                 .mappedBy((type, record) -> record.get("courseId").asString())
