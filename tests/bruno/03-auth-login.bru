@@ -1,0 +1,42 @@
+meta {
+  name: 03 Auth Login
+  type: http
+  seq: 3
+}
+
+post {
+  url: __BASE_URL__/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "passport": "__TEST_LOGIN_PASSPORT__",
+    "password": "__TEST_LOGIN_PASSWORD__",
+    "platform": "web",
+    "captchaUUID": "ci-smoke",
+    "captchaCode": "__AUTH_TEST_CAPTCHA_CODE__"
+  }
+}
+
+script:post-response {
+  const body = res.getBody();
+  if (body && body.data && body.data.accessToken) {
+    bru.setVar("accessToken", body.data.accessToken);
+  }
+}
+
+tests {
+  test("login responds successfully", function () {
+    expect(res.getStatus()).to.equal(200);
+    const body = res.getBody();
+    expect(body.code).to.equal("200");
+    expect(body.data.accessToken).to.not.equal(undefined);
+  });
+}
