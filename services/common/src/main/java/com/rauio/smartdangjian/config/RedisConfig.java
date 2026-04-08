@@ -1,13 +1,8 @@
 package com.rauio.smartdangjian.config;
 
-import com.alibaba.druid.support.json.JSONUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.redisson.Redisson;
-import org.redisson.api.RedissonClient;
-import org.redisson.codec.JsonJacksonCodec;
-import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.cache.annotation.EnableCaching;

@@ -3,8 +3,10 @@ package com.rauio.smartdangjian.search.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.CourseConvertor;
+import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
 import com.rauio.smartdangjian.server.user.service.UserService;
@@ -23,8 +25,8 @@ public class SearchService {
     private final CourseMapper courseMapper;
     private final UserService userService;
     private final CourseConvertor courseConvertor;
+    private final CategoryCourseMapper categoryCourseMapper;
     private final RecommendService recommendService;
-    private final UserProfileService userProfileService;
 
     /**
      * 全文检索课程，支持关键词、分类、难度过滤
@@ -34,14 +36,24 @@ public class SearchService {
         LambdaQueryWrapper<Course> wrapper = new LambdaQueryWrapper<Course>()
                 .eq(Course::getIsPublished, true)
                 .select(Course::getId, Course::getTitle, Course::getDescription,
-                        Course::getCategoryId, Course::getDifficulty, Course::getCoverImageHash,
+                        Course::getDifficulty, Course::getCoverImageId,
                         Course::getEnrollmentCount, Course::getAverageRating);
 
         if (StringUtils.isNotBlank(keyword)) {
             wrapper.apply("MATCH(title, description) AGAINST({0} IN BOOLEAN MODE)", keyword);
         }
         if (StringUtils.isNotBlank(categoryId)) {
-            wrapper.eq(Course::getCategoryId, categoryId);
+            List<String> matchedCourseIds = categoryCourseMapper.selectList(new LambdaQueryWrapper<CategoryCourse>()
+                            .eq(CategoryCourse::getCategoryId, categoryId))
+                    .stream()
+                    .map(CategoryCourse::getCourseId)
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .toList();
+            if (matchedCourseIds.isEmpty()) {
+                return new Page<>(pageNum, pageSize, 0);
+            }
+            wrapper.in(Course::getId, matchedCourseIds);
         }
         if (StringUtils.isNotBlank(difficulty)) {
             wrapper.eq(Course::getDifficulty, difficulty);
@@ -53,7 +65,7 @@ public class SearchService {
         Page<Course> coursePage = courseMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
 
         Page<CourseVO> result = new Page<>(coursePage.getCurrent(), coursePage.getSize(), coursePage.getTotal());
-        result.setRecords(courseConvertor.toVOList(coursePage.getRecords()));
+        result.setRecords(toCourseVOList(coursePage.getRecords()));
         return result;
     }
 
@@ -80,13 +92,39 @@ public class SearchService {
                     .collect(Collectors.toSet());
 
             if (!idsToFetch.isEmpty()) {
-                List<CourseVO> recommended = courseConvertor.toVOList(
-                        courseMapper.selectBatchIds(idsToFetch));
+                List<CourseVO> recommended = toCourseVOList(courseMapper.selectBatchIds(idsToFetch));
                 records.addAll(recommended);
             }
         }
 
         searchPage.setRecords(records);
         return searchPage;
+    }
+
+    private List<CourseVO> toCourseVOList(List<Course> courses) {
+        if (courses == null || courses.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<CourseVO> courseVOList = courseConvertor.toVOList(courses);
+        Map<String, String> categoryIdMap = getCategoryIdMap(courses.stream()
+                .map(Course::getId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet()));
+        courseVOList.forEach(item -> item.setCategoryId(categoryIdMap.get(item.getId())));
+        return courseVOList;
+    }
+
+    private Map<String, String> getCategoryIdMap(Set<String> courseIds) {
+        if (courseIds == null || courseIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return categoryCourseMapper.selectList(new LambdaQueryWrapper<CategoryCourse>()
+                        .in(CategoryCourse::getCourseId, courseIds))
+                .stream()
+                .collect(Collectors.toMap(
+                        CategoryCourse::getCourseId,
+                        CategoryCourse::getCategoryId,
+                        (left, right) -> left
+                ));
     }
 }

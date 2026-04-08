@@ -21,13 +21,13 @@ public class Category implements Serializable {
     @Schema(description = "分类ID")
     private String id;
 
-    @Schema(description = "所属学校ID，null表示公共分类")
+    @Schema(description = "所属学校ID")
     private String universityId;
 
     @Schema(description = "分类名称")
     private String name;
 
-    @Schema(description = "分类层级，0为根目录")
+    @Schema(description = "分类层级，根目录为1")
     private Integer level;
 
     @Schema(description = "分类描述")

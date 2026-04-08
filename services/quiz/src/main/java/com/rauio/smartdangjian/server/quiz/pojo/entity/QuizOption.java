@@ -25,10 +25,10 @@ public class QuizOption {
     @Schema(description = "选项内容")
     private String optionText;
 
-    @Schema(description = "是否正确选项")
+    @Schema(description = "是否为正确答案：0表示错误选项，1表示正确选项", example = "true")
     private Boolean isCorrect;
 
-    @Schema(description = "选项排序序号")
+    @Schema(description = "选项标签，例如 A、B、C、D")
     private String orderIndex;
 
 }

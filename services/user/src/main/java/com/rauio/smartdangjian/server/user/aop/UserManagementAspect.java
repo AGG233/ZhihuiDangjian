@@ -120,7 +120,7 @@ public class UserManagementAspect implements DataScopeResolver {
                 }
                 if (payload.getUserType() != null
                         || StringUtils.isNotBlank(payload.getUniversityId())
-                        || StringUtils.isNotBlank(payload.getStatus())) {
+                        || payload.getStatus() != null) {
                     throw new BusinessException(ErrorConstants.RESOURCE_NOT_AUTHORIZED, "普通用户不能修改角色、学校或状态");
                 }
                 if (StringUtils.isNotBlank(payload.getPassword())) {

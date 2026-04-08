@@ -28,16 +28,13 @@ public class Course {
     @Schema(description = "课程描述")
     private String description;
 
-    @Schema(description = "课程封面图片哈希")
-    private String coverImageHash;
-
-    @Schema(description = "课程分类ID")
-    private String categoryId;
+    @Schema(description = "课程封面资源ID")
+    private String coverImageId;
 
     @Schema(description = "课程难度")
     private String difficulty;
 
-    @Schema(description = "预计学习时长（秒）")
+    @Schema(description = "预计学习时长（分钟）")
     private Integer estimatedDuration;
 
     @Schema(description = "创建者ID")

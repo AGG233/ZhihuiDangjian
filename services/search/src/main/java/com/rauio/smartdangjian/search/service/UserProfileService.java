@@ -2,8 +2,8 @@ package com.rauio.smartdangjian.search.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.search.pojo.vo.UserProfileVO;
-import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
+import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
 import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
 import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserChapterProgress;
@@ -30,12 +30,14 @@ import static com.rauio.smartdangjian.constants.RedisConstants.USER_PROFILE_CACH
 @RequiredArgsConstructor
 public class UserProfileService {
 
+    private static final int QUIZ_ANSWER_CORRECT = 1;
+
     private final UserLearningRecordMapper learningRecordMapper;
     private final UserChapterProgressMapper chapterProgressMapper;
     private final UserQuizAnswerMapper quizAnswerMapper;
     private final QuizMapper quizMapper;
     private final ChapterMapper chapterMapper;
-    private final CourseMapper courseMapper;
+    private final CategoryCourseMapper categoryCourseMapper;
     private final UserService userService;
 
     @Cacheable(value = USER_PROFILE_CACHE_PREFIX, key = "#userId")
@@ -148,16 +150,16 @@ public class UserProfileService {
 
         if (courseIds.isEmpty()) return Collections.emptyList();
 
-        List<Course> courses = courseMapper.selectList(
-                new LambdaQueryWrapper<Course>()
-                        .in(Course::getId, courseIds)
-                        .select(Course::getId, Course::getCategoryId)
+        List<CategoryCourse> relations = categoryCourseMapper.selectList(
+                new LambdaQueryWrapper<CategoryCourse>()
+                        .in(CategoryCourse::getCourseId, courseIds)
         );
 
         // 按分类出现频次排序
-        return courses.stream()
-                .filter(c -> c.getCategoryId() != null)
-                .collect(Collectors.groupingBy(Course::getCategoryId, Collectors.counting()))
+        return relations.stream()
+                .map(CategoryCourse::getCategoryId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(categoryId -> categoryId, Collectors.counting()))
                 .entrySet().stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
                 .map(Map.Entry::getKey)
@@ -172,7 +174,9 @@ public class UserProfileService {
         );
 
         int totalAnswers = answers.size();
-        int correctCount = (int) answers.stream().filter(a -> Boolean.TRUE.equals(a.getIsCorrect())).count();
+        int correctCount = (int) answers.stream()
+                .filter(a -> Integer.valueOf(QUIZ_ANSWER_CORRECT).equals(a.getIsCorrect()))
+                .count();
         double correctRate = totalAnswers == 0 ? 0 : (double) correctCount / totalAnswers;
         double avgTimeSpent = answers.stream()
                 .filter(a -> a.getTimeSpent() != null)
@@ -202,7 +206,9 @@ public class UserProfileService {
 
                 for (Map.Entry<String, List<UserQuizAnswer>> entry : byDiff.entrySet()) {
                     List<UserQuizAnswer> group = entry.getValue();
-                    long correct = group.stream().filter(a -> Boolean.TRUE.equals(a.getIsCorrect())).count();
+                    long correct = group.stream()
+                            .filter(a -> Integer.valueOf(QUIZ_ANSWER_CORRECT).equals(a.getIsCorrect()))
+                            .count();
                     byDifficulty.put(entry.getKey(), group.isEmpty() ? 0 : (double) correct / group.size());
                 }
             }

@@ -1,7 +1,8 @@
 package com.rauio.smartdangjian.server.user.pojo.dto;
 
 import com.rauio.smartdangjian.annotation.validation.Sensitive;
-import com.rauio.smartdangjian.server.user.utils.spec.UserStatus;
+import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
+import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -26,14 +27,17 @@ public class UserDto {
     @Schema(description = "党员ID")
     private String partyMemberId;
 
-    @Schema(description = "党员状态")
-    private UserStatus partyStatus;
+    @Schema(description = "政治面貌：正式党员、预备党员、发展对象、积极分子、群众")
+    private PartyStatus partyStatus;
 
     @Schema(description = "党支部名称")
     private String branchName;
 
-    @Schema(description = "用户类型")
+    @Schema(description = "用户类型：学生、学校、管理员")
     private UserType userType;
+
+    @Schema(description = "账号状态：active表示正常，inactive表示未激活，banned表示封禁")
+    private AccountStatus status;
 
     @Schema(description = "学校ID")
     private String universityId;

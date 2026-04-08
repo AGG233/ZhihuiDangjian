@@ -4,8 +4,10 @@ package com.rauio.smartdangjian.search.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
+import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
+import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
 import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
@@ -23,6 +25,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -38,6 +41,7 @@ public class RecommendService {
     private final UserChapterProgressMapper userChapterProgressMapper;
     private final UserSimilarityMapper userSimilarityMapper;
     private final ChapterMapper chapterMapper;
+    private final CategoryCourseMapper categoryCourseMapper;
     private final CourseMapper courseMapper;
     private final UserSimilarityService userSimilarityService;
     private final Neo4jClient neo4jClient;
@@ -164,12 +168,11 @@ public class RecommendService {
                 """;
 
         List<String> sorted = new ArrayList<>();
-        neo4jClient.query(cypher)
+        sorted.addAll(neo4jClient.query(cypher)
                 .bind(userId).to("userId")
                 .fetchAs(String.class)
                 .mappedBy((type, record) -> record.get("courseId").asString())
-                .all()
-                .forEach(sorted::add);
+                .all());
 
         return paginate(sorted, pageNum, pageSize);
     }
@@ -195,7 +198,17 @@ public class RecommendService {
         // 优先推荐兴趣分类
         List<String> interestIds = profile.getInterestCategoryIds();
         if (interestIds != null && !interestIds.isEmpty()) {
-            wrapper.in(Course::getCategoryId, interestIds);
+            List<String> matchedCourseIds = categoryCourseMapper.selectList(new LambdaQueryWrapper<CategoryCourse>()
+                            .in(CategoryCourse::getCategoryId, interestIds))
+                    .stream()
+                    .map(CategoryCourse::getCourseId)
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .toList();
+            if (matchedCourseIds.isEmpty()) {
+                return new Page<>(pageNum, pageSize);
+            }
+            wrapper.in(Course::getId, matchedCourseIds);
         }
 
         // 根据答题正确率推荐适合难度
@@ -266,7 +279,7 @@ public class RecommendService {
             double userVectorLen = Math.sqrt(userItemMap.get(userId).size());
 
             PriorityQueue<UserSimilarity> topQueue = new PriorityQueue<>(
-                    Comparator.comparingDouble(UserSimilarity::getSimilarityScore)
+                    Comparator.comparing(UserSimilarity::getSimilarityScore)
             );
 
             for (Map.Entry<String, Integer> relatedEntry : relatedUsers.entrySet()) {
@@ -276,18 +289,19 @@ public class RecommendService {
                 double score = count / (userVectorLen * relatedUserVectorLen);
 
                 if (score < 0.1) continue;
+                BigDecimal similarityScore = BigDecimal.valueOf(score);
 
                 UserSimilarity sim = UserSimilarity.builder()
                         .userId1(userId)
                         .userId2(relatedUserId)
-                        .similarityScore(score)
+                        .similarityScore(similarityScore)
                         .isValid(true)
                         .calculatedAt(java.time.LocalDateTime.now())
                         .build();
 
                 if (topQueue.size() < TOP_N_NEIGHBORS) {
                     topQueue.offer(sim);
-                } else if (score > topQueue.peek().getSimilarityScore()) {
+                } else if (similarityScore.compareTo(topQueue.peek().getSimilarityScore()) > 0) {
                     topQueue.poll();
                     topQueue.offer(sim);
                 }

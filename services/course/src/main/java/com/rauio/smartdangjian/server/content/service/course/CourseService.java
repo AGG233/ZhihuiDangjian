@@ -16,8 +16,13 @@ import com.rauio.smartdangjian.server.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +40,12 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
      */
     public CourseVO get(String courseId) {
         Course entity = this.getById(courseId);
-        return courseConvertor.toVO(entity);
+        if (entity == null) {
+            return null;
+        }
+        CourseVO vo = courseConvertor.toVO(entity);
+        vo.setCategoryId(getCategoryIdByCourseId(courseId));
+        return vo;
     }
 
     /**
@@ -50,7 +60,9 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
 
         course.setCreatorId(user.getId());
 
-        this.save(course);
+        if (!this.save(course)) {
+            return false;
+        }
         return categoryCourseMapper.insert(CategoryCourse.builder()
                 .courseId(course.getId())
                 .categoryId(courseDto.getCategoryId())
@@ -73,11 +85,24 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
 
         Course  course = courseConvertor.toCourse(courseDto);
         Course  target = this.getById(id);
-        if(target == null && course.getId().equals(id)){
+        if (target == null) {
             return false;
         }
         course.setId(id);
-        return this.updateById(course);
+        boolean updated = this.updateById(course);
+        if (!updated) {
+            return false;
+        }
+
+        if (courseDto.getCategoryId() != null) {
+            categoryCourseMapper.delete(new LambdaQueryWrapper<CategoryCourse>()
+                    .eq(CategoryCourse::getCourseId, id));
+            return categoryCourseMapper.insert(CategoryCourse.builder()
+                    .courseId(id)
+                    .categoryId(courseDto.getCategoryId())
+                    .build()) > 0;
+        }
+        return true;
     }
 
     /**
@@ -87,6 +112,8 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
      * @return 是否删除成功
      */
     public Boolean delete(String courseId) {
+        categoryCourseMapper.delete(new LambdaQueryWrapper<CategoryCourse>()
+                .eq(CategoryCourse::getCourseId, courseId));
         return this.removeById(courseId);
     }
 
@@ -129,11 +156,67 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
      */
     public PageVO<Object> getPage(int pageNum, int pageSize) {
         Page<Course> page = this.page(new Page<>(pageNum,pageSize));
+        List<CourseVO> courseVOList = toCourseVOList(page.getRecords());
         return PageVO.builder()
                 .total(page.getTotal())
                 .size(page.getSize())
                 .current(page.getCurrent())
-                .list(Collections.singletonList(page.getRecords()))
+                .list(Collections.singletonList(courseVOList))
                 .build();
+    }
+
+    public List<CourseVO> toCourseVOList(List<Course> courses) {
+        if (courses == null || courses.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<CourseVO> courseVOList = new ArrayList<>(courseConvertor.toVOList(courses));
+        Map<String, String> categoryIdMap = getCategoryIdMapByCourseIds(courses.stream()
+                .map(Course::getId)
+                .filter(Objects::nonNull)
+                .toList());
+
+        for (CourseVO courseVO : courseVOList) {
+            courseVO.setCategoryId(categoryIdMap.get(courseVO.getId()));
+        }
+        return courseVOList;
+    }
+
+    public Map<String, String> getCategoryIdMapByCourseIds(List<String> courseIds) {
+        if (courseIds == null || courseIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<CategoryCourse> relations = categoryCourseMapper.selectList(new LambdaQueryWrapper<CategoryCourse>()
+                .in(CategoryCourse::getCourseId, courseIds));
+
+        Map<String, String> categoryIdMap = new HashMap<>();
+        for (CategoryCourse relation : relations) {
+            categoryIdMap.putIfAbsent(relation.getCourseId(), relation.getCategoryId());
+        }
+        return categoryIdMap;
+    }
+
+    public String getCategoryIdByCourseId(String courseId) {
+        if (courseId == null) {
+            return null;
+        }
+        CategoryCourse relation = categoryCourseMapper.selectOne(new LambdaQueryWrapper<CategoryCourse>()
+                .eq(CategoryCourse::getCourseId, courseId)
+                .last("limit 1"));
+        return relation == null ? null : relation.getCategoryId();
+    }
+
+    public List<String> getCourseIdsByCategoryIds(List<String> categoryIds) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return categoryCourseMapper.selectList(new LambdaQueryWrapper<CategoryCourse>()
+                        .in(CategoryCourse::getCategoryId, categoryIds))
+                .stream()
+                .map(CategoryCourse::getCourseId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
     }
 }

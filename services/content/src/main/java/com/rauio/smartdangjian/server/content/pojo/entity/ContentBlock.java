@@ -26,7 +26,7 @@ public class ContentBlock {
     @JsonSerialize(using = ToStringSerializer.class)
     private String      id;
 
-    @Schema(description = "父级内容块ID")
+    @Schema(description = "父实体ID，例如章节ID或文章ID")
     private String      parentId;
     @Schema(description = "内容块排序序号")
     private Integer     orderIndex;

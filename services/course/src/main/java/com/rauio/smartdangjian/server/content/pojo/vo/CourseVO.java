@@ -21,16 +21,16 @@ public class CourseVO {
     @Schema(description = "课程描述")
     private String description;
 
-    @Schema(description = "课程分类ID")
+    @Schema(description = "课程分类ID，当前业务通过分类关联表维护")
     private String categoryId;
 
     @Schema(description = "课程难度")
     private String difficulty;
 
-    @Schema(description = "课程封面图片哈希")
-    private String coverImageHash;
+    @Schema(description = "课程封面资源ID")
+    private String coverImageId;
 
-    @Schema(description = "预计学习时长（秒）")
+    @Schema(description = "预计学习时长（分钟）")
     private Integer estimatedDuration;
 
     @Schema(description = "报名人数")

@@ -33,8 +33,8 @@ public class UserQuizAnswer {
     @Schema(description = "用户答案")
     private String userAnswer;
 
-    @Schema(description = "是否回答正确")
-    private Boolean isCorrect;
+    @Schema(description = "答题结果：0表示错误，1表示完全正确，2表示部分正确", example = "1")
+    private Integer isCorrect;
 
     @Schema(description = "获得分数", example = "5")
     private Integer scoreObtained;

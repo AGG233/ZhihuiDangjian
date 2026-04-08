@@ -1,6 +1,6 @@
 package com.rauio.smartdangjian.server.user.pojo.vo;
 
-import com.rauio.smartdangjian.server.user.utils.spec.UserStatus;
+import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -20,8 +20,8 @@ public class UserPublicVO {
     @Schema(description = "党员编号")
     private String partyMemberId;
 
-    @Schema(description = "党员状态")
-    private UserStatus partyStatus;
+    @Schema(description = "政治面貌")
+    private PartyStatus partyStatus;
 
     @Schema(description = "党支部名称")
     private String branchName;

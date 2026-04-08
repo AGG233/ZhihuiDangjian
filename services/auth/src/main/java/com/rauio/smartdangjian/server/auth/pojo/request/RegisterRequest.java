@@ -1,6 +1,6 @@
 package com.rauio.smartdangjian.server.auth.pojo.request;
 
-import com.rauio.smartdangjian.server.user.utils.spec.UserStatus;
+import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Schema(description = "注册请求体")
 public class RegisterRequest {
 
-    @Schema(description = "用户类型")
+    @Schema(description = "用户类型：学生、学校、管理员")
     private UserType type;
 
     @NotBlank(message = "用户名不能为空")
@@ -43,8 +43,8 @@ public class RegisterRequest {
     private String partyMemberId;
 
     @NotNull(message = "党员状态不能为空")
-    @Schema(description = "党员状态")
-    private UserStatus partyStatus;
+    @Schema(description = "政治面貌：正式党员、预备党员、发展对象、积极分子、群众")
+    private PartyStatus partyStatus;
 
     @Size(min = 2, max = 100, message = "分支名称长度必须在2-100个字符之间")
     @Schema(description = "所属党支部名称")

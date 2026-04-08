@@ -9,6 +9,7 @@ import com.rauio.smartdangjian.server.auth.pojo.request.RegisterRequest;
 import com.rauio.smartdangjian.server.auth.pojo.response.LoginResponse;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
 import com.rauio.smartdangjian.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -82,6 +83,7 @@ public class AuthService {
                 .universityId(registerRequest.getUniversityId())
                 .joinPartyDate(registerRequest.getJoinPartyDate())
                 .userType(registerRequest.getType())
+                .status(AccountStatus.ACTIVE)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();

@@ -8,7 +8,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
-import com.rauio.smartdangjian.server.user.utils.spec.UserStatus;
+import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
+import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -49,14 +50,14 @@ public class User implements UserDetails, CurrentUserPrincipal {
     private String partyMemberId;
     @Schema(description = "入党时间")
     private LocalDateTime   joinPartyDate;
-    @Schema(description = "党员状态")
-    private UserStatus partyStatus;
+    @Schema(description = "政治面貌：正式党员、预备党员、发展对象、积极分子、群众")
+    private PartyStatus partyStatus;
     @Schema(description = "党支部名称")
     private String branchName;
-    @Schema(description = "用户类型")
+    @Schema(description = "用户类型：学生、学校、管理员")
     private UserType userType;
-    @Schema(description = "账号状态")
-    private String status;
+    @Schema(description = "账号状态：active表示正常，inactive表示未激活，banned表示封禁")
+    private AccountStatus status;
     @Schema(description = "邮箱")
     private String email;
     @Schema(description = "手机号")
