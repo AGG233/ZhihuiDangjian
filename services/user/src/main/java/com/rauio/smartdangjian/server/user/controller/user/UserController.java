@@ -8,6 +8,7 @@ import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.pojo.vo.UserPublicVO;
 import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -17,7 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "用户管理接口", description = "提供用户信息操作")
+@Tag(name = "用户管理接口", description = "提供用户信息操作，搜索仅返回基本公开信息，不包含邮箱、手机等敏感数据")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/user/users")
@@ -26,17 +27,17 @@ public class UserController {
 
     private final UserService userService;
 
-    @Operation(summary = "获取用户信息", description = "通过ID获取用户信息")
+    @Operation(summary = "获取用户信息", description = "通过ID获取用户信息，返回含脱敏联系方式的用户详情")
     @GetMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.USER_MANAGEMENT, action = DataScopeAction.READ, id = "#id")
     public Result<UserVO> get(@Parameter(name = "id", description = "用户ID") @PathVariable String id) {
         return Result.ok(userService.get(id));
     }
 
-    @Operation(summary = "分页查询用户", description = "通过用户请求体的信息模糊查询条件匹配的用户")
+    @Operation(summary = "用户分页搜索", description = "按条件分页查询用户，仅返回基本公开信息（用户名、姓名、党员信息等），不包含邮箱、手机等敏感数据")
     @PostMapping("/search")
     @DataScopeAccess(resource = DataScopeResources.USER_MANAGEMENT, action = DataScopeAction.SEARCH, query = "#userDto")
-    public Result<Page<User>> getPage(
+    public Result<Page<UserPublicVO>> getPage(
             @RequestBody UserDto userDto,
             @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
             @Parameter(name = "pageSize", description = "页大小") @RequestParam(defaultValue = "10") int pageSize

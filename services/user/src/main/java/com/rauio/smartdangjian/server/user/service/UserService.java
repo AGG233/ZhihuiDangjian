@@ -11,6 +11,7 @@ import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
 import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.pojo.vo.UserPublicVO;
 import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CachePut;
@@ -218,30 +219,53 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     }
 
     /**
-     * 按条件分页查询用户。
+     * 按条件分页查询用户（用户侧，仅返回公开信息）。
      *
      * @param dto 查询条件
      * @param pageNum 页码
      * @param pageSize 每页条数
-     * @return 用户分页结果
+     * @return 用户公开信息分页结果
      */
-    public Page<User> getPage(UserDto dto, int pageNum, int pageSize) {
-        Page<User> pageInfo = new Page<>(pageNum,pageSize);
+    public Page<UserPublicVO> getPage(UserDto dto, int pageNum, int pageSize) {
+        Page<User> pageInfo = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<User> wrapper = buildQueryWrapper(dto);
+        Page<User> result = this.page(pageInfo, wrapper);
+        Page<UserPublicVO> voPage = new Page<>(result.getCurrent(), result.getSize(), result.getTotal());
+        voPage.setRecords(convertor.toPublicVO(result.getRecords()));
+        return voPage;
+    }
 
+    /**
+     * 按条件分页查询用户（管理员侧，返回完整信息）。
+     *
+     * @param dto 查询条件
+     * @param pageNum 页码
+     * @param pageSize 每页条数
+     * @return 用户完整信息分页结果
+     */
+    public Page<UserVO> getAdminPage(UserDto dto, int pageNum, int pageSize) {
+        Page<User> pageInfo = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<User> wrapper = buildQueryWrapper(dto);
+        Page<User> result = this.page(pageInfo, wrapper);
+        Page<UserVO> voPage = new Page<>(result.getCurrent(), result.getSize(), result.getTotal());
+        voPage.setRecords(convertor.toVO(result.getRecords()));
+        return voPage;
+    }
+
+    private LambdaQueryWrapper<User> buildQueryWrapper(UserDto dto) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper
-                .like(StringUtils.isNotColumnName(dto.getUserId()),User::getId,dto.getUserId())
-                .like(StringUtils.isNotColumnName(dto.getUsername()),User::getUsername,dto.getUsername())
-                .like(StringUtils.isNotColumnName(dto.getRealName()),User::getRealName,dto.getRealName())
-                .like(StringUtils.isNotColumnName(dto.getPartyMemberId()),User::getPartyMemberId,dto.getPartyMemberId())
-                .like(StringUtils.isNotColumnName(dto.getEmail()),User::getEmail,dto.getEmail())
-                .like(StringUtils.isNotColumnName(dto.getPhone()),User::getPhone,dto.getPhone())
-                .eq(User::getUserType,dto.getUserType())
-                .eq(User::getPartyStatus,dto.getPartyStatus())
+                .like(StringUtils.isNotColumnName(dto.getUserId()), User::getId, dto.getUserId())
+                .like(StringUtils.isNotColumnName(dto.getUsername()), User::getUsername, dto.getUsername())
+                .like(StringUtils.isNotColumnName(dto.getRealName()), User::getRealName, dto.getRealName())
+                .like(StringUtils.isNotColumnName(dto.getPartyMemberId()), User::getPartyMemberId, dto.getPartyMemberId())
+                .like(StringUtils.isNotColumnName(dto.getEmail()), User::getEmail, dto.getEmail())
+                .like(StringUtils.isNotColumnName(dto.getPhone()), User::getPhone, dto.getPhone())
+                .eq(User::getUserType, dto.getUserType())
+                .eq(User::getPartyStatus, dto.getPartyStatus())
                 .eq(StringUtils.isNotBlank(dto.getUniversityId()), User::getUniversityId, dto.getUniversityId())
-                .like(StringUtils.isNotColumnName(dto.getBranchName()),User::getBranchName,dto.getBranchName());
-
-        return this.page(pageInfo,wrapper);
+                .like(StringUtils.isNotColumnName(dto.getBranchName()), User::getBranchName, dto.getBranchName());
+        return wrapper;
     }
 
     /**
