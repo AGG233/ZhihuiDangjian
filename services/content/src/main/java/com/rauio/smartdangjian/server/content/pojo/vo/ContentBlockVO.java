@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.pojo.entity;
+package com.rauio.smartdangjian.server.content.pojo.vo;
 
 import com.rauio.smartdangjian.server.content.spec.BlockType;
 import com.rauio.smartdangjian.server.content.spec.ParentType;
