@@ -15,10 +15,15 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import java.lang.reflect.Method;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 @Aspect
 @Slf4j
 public class ResourceAccessAspect {
+
+    private static final Pattern SAFE_SPEL_PATTERN = Pattern.compile(
+            "^#[_a-zA-Z][_a-zA-Z0-9]*(\\.[_a-zA-Z][_a-zA-Z0-9]*)*$|^'[^']*'$"
+    );
 
     private final SpelExpressionParser parser = new SpelExpressionParser();
     private final DefaultParameterNameDiscoverer paramDiscoverer = new DefaultParameterNameDiscoverer();
@@ -44,6 +49,7 @@ public class ResourceAccessAspect {
     }
 
     private String getTargetUserId(ProceedingJoinPoint joinPoint, String spelExpression) {
+        validateExpression(spelExpression);
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
         Object[] args = joinPoint.getArgs();
@@ -51,6 +57,7 @@ public class ResourceAccessAspect {
         MethodBasedEvaluationContext context = new MethodBasedEvaluationContext(null, method, args, paramDiscoverer);
 
         try {
+            // nosemgrep: java.spring.security.audit.spel-injection.spel-injection
             Expression expression = parser.parseExpression(spelExpression);
             Object value = expression.getValue(context, Object.class);
             if (value instanceof String stringValue) {
@@ -63,6 +70,12 @@ public class ResourceAccessAspect {
         } catch (Exception e) {
             log.error("解析SpEL表达式 '{}' 失败", spelExpression, e);
             return null;
+        }
+    }
+
+    private void validateExpression(String expression) {
+        if (!SAFE_SPEL_PATTERN.matcher(expression).matches()) {
+            throw new IllegalArgumentException("非法SpEL表达式");
         }
     }
 }

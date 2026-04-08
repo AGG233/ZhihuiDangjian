@@ -14,9 +14,15 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import java.lang.reflect.Method;
+import java.util.regex.Pattern;
 
 @Getter
 public class DataScopeContext {
+
+    // Only allow simple parameter references like #id, #dto.userId, or quoted literals like 'QUIZ'.
+    private static final Pattern SAFE_SPEL_PATTERN = Pattern.compile(
+            "^#[_a-zA-Z][_a-zA-Z0-9]*(\\.[_a-zA-Z][_a-zA-Z0-9]*)*$|^'[^']*'$"
+    );
 
     private final ProceedingJoinPoint joinPoint;
     private final DataScopeAccess access;
@@ -34,11 +40,13 @@ public class DataScopeContext {
         if (StringUtils.isBlank(expression)) {
             return null;
         }
+        validateExpression(expression);
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
         Object[] args = joinPoint.getArgs();
         MethodBasedEvaluationContext context = new MethodBasedEvaluationContext(null, method, args, paramDiscoverer);
         try {
+            // nosemgrep: java.spring.security.audit.spel-injection.spel-injection
             Expression parsed = parser.parseExpression(expression);
             return parsed.getValue(context, targetType);
         } catch (Exception e) {
@@ -52,5 +60,11 @@ public class DataScopeContext {
             throw new BusinessException(ErrorConstants.ARGS_ERROR, message);
         }
         return value;
+    }
+
+    private void validateExpression(String expression) {
+        if (!SAFE_SPEL_PATTERN.matcher(expression).matches()) {
+            throw new BusinessException(ErrorConstants.ARGS_ERROR, "非法参数表达式");
+        }
     }
 }
