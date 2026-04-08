@@ -5,31 +5,43 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/**
- * (CourseCategory)实体类
- *
- * @author makejava
- * @since 2024-09-06 11:06:42
- */
 @Data
 @TableName("category")
+@Schema(description = "分类/目录")
 public class Category implements Serializable {
 
     @TableId(type = IdType.AUTO)
     @JsonSerialize(using = ToStringSerializer.class)
+    @Schema(description = "分类ID")
     private String id;
-    private String universityId;
-    private String name;
-    private Integer level;
-    private String description;
-    private String parentId;
-    private String sortOrder;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
+    @Schema(description = "所属学校ID，null表示公共分类")
+    private String universityId;
+
+    @Schema(description = "分类名称")
+    private String name;
+
+    @Schema(description = "分类层级，0为根目录")
+    private Integer level;
+
+    @Schema(description = "分类描述")
+    private String description;
+
+    @Schema(description = "父分类ID")
+    private String parentId;
+
+    @Schema(description = "排序序号")
+    private String sortOrder;
+
+    @Schema(description = "创建时间")
+    private LocalDateTime createdAt;
+
+    @Schema(description = "更新时间")
+    private LocalDateTime updatedAt;
 }

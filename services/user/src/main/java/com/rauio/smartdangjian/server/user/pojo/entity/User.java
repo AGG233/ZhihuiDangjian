@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.user.utils.spec.UserStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,28 +28,45 @@ import java.util.Collections;
 @TableName("user")
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "用户")
 public class User implements UserDetails, CurrentUserPrincipal {
 
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
+    @Schema(description = "用户ID")
     private String id;
+    @Schema(description = "学校ID")
     private String universityId;
+    @Schema(description = "用户名")
     private String username;
+    @Schema(description = "密码")
     private String password;
+    @Schema(description = "真实姓名")
     private String realName;
+    @Schema(description = "身份证号")
     private String idCard;
+    @Schema(description = "党员编号")
     private String partyMemberId;
+    @Schema(description = "入党时间")
     private LocalDateTime   joinPartyDate;
+    @Schema(description = "党员状态")
     private UserStatus partyStatus;
+    @Schema(description = "党支部名称")
     private String branchName;
+    @Schema(description = "用户类型")
     private UserType userType;
+    @Schema(description = "账号状态")
     private String status;
+    @Schema(description = "邮箱")
     private String email;
+    @Schema(description = "手机号")
     private String phone;
 
     @TableField(fill = FieldFill.INSERT)
+    @Schema(description = "创建时间")
     private LocalDateTime createdAt;
     @TableField(fill = FieldFill.INSERT_UPDATE)
+    @Schema(description = "更新时间")
     private LocalDateTime updatedAt;
 
     @Override
