@@ -11,9 +11,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
         basePackages = "com.rauio.smartdangjian",
         annotationClass = org.apache.ibatis.annotations.Mapper.class
 )
-
-//@EnableFeignClients(basePackages = "com.rauio.smartdangjian")
-//@EnableDiscoveryClient
 public class SmartDangjianApplication {
     public static void main(String[] args) {
         SpringApplication.run(SmartDangjianApplication.class, args);
