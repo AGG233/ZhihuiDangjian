@@ -5,6 +5,7 @@ import com.qcloud.cos.COSClient;
 import com.qcloud.cos.http.HttpMethodName;
 import com.qcloud.cos.model.*;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.resource.Constant.ResourceStatusConstants;
 import com.rauio.smartdangjian.server.resource.pojo.cache.CosUploadSession;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.*;
@@ -158,7 +159,7 @@ public class CosService {
         createRequest.setHash(session.getFileHash());
         createRequest.setObjectKey(session.getObjectKey());
         createRequest.setResourceType(session.getContentType());
-        createRequest.setStatus(1);
+        createRequest.setStatus(ResourceStatusConstants.AVAILABLE);
         ResourceMeta meta = resourceMetaService.create(createRequest);
 
         session.setStatus(STATUS_COMPLETED);

@@ -16,7 +16,7 @@ public record BannerResourceResponse(
         String objectKey,
         @Schema(description = "资源类型", example = "image/png")
         String resourceType,
-        @Schema(description = "资源状态", example = "1")
+        @Schema(description = "资源状态：0表示禁用，1表示可用，2表示已删除", example = "1")
         Integer status,
         @Schema(description = "可直接访问的预签名下载链接，当前默认有效期为10分钟")
         String downloadUrl

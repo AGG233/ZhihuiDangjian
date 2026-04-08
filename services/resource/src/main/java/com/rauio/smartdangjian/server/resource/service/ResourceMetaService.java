@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.resource.Constant.ResourceStatusConstants;
 import com.rauio.smartdangjian.server.resource.mapper.ResourceMetaMapper;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaCreateRequest;
@@ -28,7 +29,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
                 .hash(request.getHash())
                 .objectKey(request.getObjectKey())
                 .resourceType(request.getResourceType())
-                .status(request.getStatus() != null ? request.getStatus() : 1)
+                .status(request.getStatus() != null ? request.getStatus() : ResourceStatusConstants.AVAILABLE)
                 .build();
         if (!this.save(meta)) {
             throw new BusinessException(4000, "创建资源失败");

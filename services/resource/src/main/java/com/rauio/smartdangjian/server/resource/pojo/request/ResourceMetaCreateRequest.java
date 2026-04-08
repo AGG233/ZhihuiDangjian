@@ -28,6 +28,6 @@ public class ResourceMetaCreateRequest {
     @NotBlank(message = "resourceType不能为空")
     private String resourceType;
 
-    @Schema(description = "资源状态，未传时服务端通常默认置为1", example = "1")
+    @Schema(description = "资源状态：0表示禁用，1表示可用，2表示已删除；未传时服务端默认置为1", example = "1")
     private Integer status;
 }

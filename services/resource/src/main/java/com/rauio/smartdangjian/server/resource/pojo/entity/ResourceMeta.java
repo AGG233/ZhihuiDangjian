@@ -34,7 +34,7 @@ public class ResourceMeta {
     @Schema(description = "资源类型，一般为MIME类型", example = "image/png")
     private String  resourceType;
 
-    @Schema(description = "资源状态，通常1表示可用，具体含义由业务约定", example = "1")
+    @Schema(description = "资源状态：0表示禁用，1表示可用，2表示已删除", example = "1")
     private Integer status;
 
 }

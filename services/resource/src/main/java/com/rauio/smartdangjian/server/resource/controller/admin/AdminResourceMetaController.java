@@ -50,7 +50,7 @@ public class AdminResourceMetaController {
             @Parameter(name = "originalName", description = "原始文件名") @RequestParam(required = false) String originalName,
             @Parameter(name = "hash", description = "文件哈希") @RequestParam(required = false) String hash,
             @Parameter(name = "resourceType", description = "资源类型") @RequestParam(required = false) String resourceType,
-            @Parameter(name = "status", description = "资源状态") @RequestParam(required = false) Integer status
+            @Parameter(name = "status", description = "资源状态：0表示禁用，1表示可用，2表示已删除") @RequestParam(required = false) Integer status
     ) {
         return Result.ok(resourceMetaService.list(uploaderId, originalName, hash, resourceType, status));
     }

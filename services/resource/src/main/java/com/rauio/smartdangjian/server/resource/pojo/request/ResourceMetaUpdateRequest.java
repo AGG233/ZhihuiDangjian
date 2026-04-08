@@ -20,6 +20,6 @@ public class ResourceMetaUpdateRequest {
     @Pattern(regexp = "^$|.*\\S.*", message = "objectKey不能为空白字符")
     private String objectKey;
 
-    @Schema(description = "资源状态，具体状态语义由业务定义", example = "1")
+    @Schema(description = "资源状态：0表示禁用，1表示可用，2表示已删除", example = "1")
     private Integer status;
 }
