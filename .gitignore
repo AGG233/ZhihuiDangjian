@@ -1,6 +1,7 @@
 HELP.md
 .gradle
 .claude
+.venv
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
