@@ -1,13 +1,11 @@
 package com.rauio.smartdangjian.pojo.response;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 
 import java.util.Objects;
 
@@ -24,16 +22,12 @@ public class Result<T> {
     @Schema(description = "响应信息，如果没有特殊信息一般为空或者OK")
     private String message = "OK";
 
+    @Schema(description = "响应数据")
     private T data;
-    
-    @Schema(hidden = true)
-    @JsonIgnore
-    private ResponseEntity<Result<T>> responseEntity;
 
     public Result() {
-        this.code   = "200";
+        this.code = "200";
         this.message = "OK";
-        this.responseEntity = ResponseEntity.ok(this);
     }
 
     public Result(T data) {
@@ -42,39 +36,30 @@ public class Result<T> {
         if ((data instanceof Boolean && !(Boolean) data) || Objects.isNull(data)) {
             this.code = "400";
             this.message = "Operation failed";
-            this.data = data;
-        } else {
-            this.data = data;
         }
-        this.responseEntity = ResponseEntity.ok(this);
+        this.data = data;
     }
 
     @ApiResponse(responseCode = "200", description = "操作成功")
     public static <T> Result<T> ok(T data) {
-        Result<T> response = new Result<T>(data);
-        response.responseEntity = ResponseEntity.ok(response);
-        return response;
+        return new Result<>(data);
     }
 
     @ApiResponse(responseCode = "200", description = "操作成功")
     public static <T> Result<T> ok(String code, String message, T data) {
-        Result<T> response = Result.<T>builder()
+        return Result.<T>builder()
                 .code(code)
                 .message(message)
                 .data(data)
                 .build();
-        response.responseEntity = ResponseEntity.ok(response);
-        return response;
     }
 
     @ApiResponse(responseCode = "400", description = "操作失败，详情看信息")
     public static <T> Result<T> error(String code, String message) {
-        Result<T> response = Result.<T>builder()
+        return Result.<T>builder()
                 .code(code)
                 .message(message)
                 .build();
-        response.responseEntity = ResponseEntity.ok(response);
-        return response;
     }
 
     @ApiResponse(responseCode = "500", description = "服务器内部错误，请联系开发")

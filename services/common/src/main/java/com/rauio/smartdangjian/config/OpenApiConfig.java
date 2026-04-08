@@ -1,10 +1,6 @@
 package com.rauio.smartdangjian.config;
 
-
-import com.rauio.smartdangjian.pojo.response.Result;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
-import jakarta.annotation.PostConstruct;
-import org.springdoc.core.utils.SpringDocUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 
 @AutoConfiguration
@@ -16,8 +12,4 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
         )
 )
 public class OpenApiConfig {
-    @PostConstruct
-    public void init() {
-        SpringDocUtils.getConfig().addResponseTypeToIgnore(Result.class);
-    }
 }
