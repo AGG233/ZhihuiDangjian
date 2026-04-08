@@ -33,8 +33,6 @@ dependencyManagement {
         val springBootVersion = libs.findVersion("spring-boot").get().requiredVersion
         mavenBom("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
 
-        mavenBom(getBom("spring-cloud-bom"))
-        mavenBom(getBom("spring-cloud-alibaba-bom"))
         mavenBom(getBom("spring-ai-bom"))
     }
 }
