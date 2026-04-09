@@ -301,17 +301,20 @@ async function login(passport) {
 }
 
 async function main() {
+    const tokens = {
+        manager: await login(LOGIN_USERS.manager),
+    };
+
     const {response: docsResponse, body: spec} = await requestJson(DOCS_URL, {
-        headers: {Accept: "application/json"},
+        headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${tokens.manager}`,
+        },
     });
 
     if (!docsResponse.ok || !spec?.paths) {
         throw new Error(`Unable to load OpenAPI docs from ${DOCS_URL}: HTTP ${docsResponse.status}`);
     }
-
-    const tokens = {
-        manager: await login(LOGIN_USERS.manager),
-    };
 
     const operations = [];
     for (const [pathName, pathItem] of Object.entries(spec.paths)) {

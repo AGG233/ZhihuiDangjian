@@ -1,4 +1,4 @@
-name: API Smoke
+name: API Test
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
     paths:
       - services/**/controller/**
       - services/**/service/**
-      - .github/workflows/api-smoke.yml
+      - .github/workflows/api-test.yml
       - ddl.sql
       - .github/scripts/api-smoke-openapi.mjs
       - .github/scripts/wait-for-app.sh
@@ -20,15 +20,15 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: api-smoke-${{ github.workflow }}-${{ github.ref }}
+  group: api-test-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
-  openapi-smoke:
-    name: OpenAPI Smoke Test
+  openapi-test:
+    name: OpenAPI Test
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -118,18 +118,18 @@ jobs:
       - name: Start application
         run: |
           mkdir -p build
-          nohup java -jar server/build/libs/server.jar > build/api-smoke-app.log 2>&1 &
+          nohup java -jar server/build/libs/server.jar > build/api-test-app.log 2>&1 &
 
       - name: Wait for application
         run: bash .github/scripts/wait-for-app.sh http://127.0.0.1:9000/api/school/all 180
 
-      - name: Run OpenAPI smoke tests
+      - name: Run API tests
         run: node .github/scripts/api-smoke-openapi.mjs
 
       - name: Upload app log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: api-smoke-logs
-          path: build/api-smoke-app.log
+          name: api-test-logs
+          path: build/api-test-app.log
           if-no-files-found: ignore
