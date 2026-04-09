@@ -10,7 +10,9 @@ on:
   push:
     branches:
       - master
-
+    paths:
+      - server
+      - services
 jobs:
   qodana:
     runs-on: ubuntu-latest
