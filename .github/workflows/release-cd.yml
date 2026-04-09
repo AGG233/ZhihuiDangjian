@@ -88,11 +88,6 @@ jobs:
           labels: ${{ steps.docker-meta.outputs.labels }}
 
           platforms: linux/amd64,linux/arm64
-      - name: Push Notification
-        uses: easychen/github-action-server-chan@v1.0.0
-        with:
-          sendkey: ${{ secrets.SEND_KEY }}
-          title: "我是一个小测试"
   summary:
     name: Release Summary
     runs-on: ubuntu-latest
