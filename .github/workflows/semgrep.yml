@@ -5,7 +5,9 @@ on:
   push:
     branches:
       - master
-
+    paths:
+      - services
+      - server
 permissions:
   contents: read
   security-events: write
