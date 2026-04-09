@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.ai.agent.memory;
+package com.rauio.smartdangjian.server.ai.memory;
 
 import com.alibaba.cloud.ai.graph.checkpoint.savers.redis.RedisSaver;
 import org.redisson.api.RedissonClient;

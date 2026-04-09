@@ -6,10 +6,13 @@ on:
       - master
       - develop
     paths:
-      - services/**/controller
-      - services/**/service
+      - services/**/controller/**
+      - services/**/service/**
       - .github/workflows/api-smoke.yml
       - ddl.sql
+      - .github/scripts/api-smoke-openapi.mjs
+      - .github/scripts/wait-for-app.sh
+      - .github/sql/ci-seed.sql
   pull_request:
     branches:
       - master
@@ -24,8 +27,8 @@ permissions:
   contents: read
 
 jobs:
-  bruno-smoke:
-    name: Bruno Smoke Test
+  openapi-smoke:
+    name: OpenAPI Smoke Test
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -77,6 +80,8 @@ jobs:
       AI_KEY: ${{ secrets.AI_KEY || 'dummy-key' }}
       AUTH_TEST_CAPTCHA_CODE: CI8888
       TEST_LOGIN_PASSPORT: ci_smoke_user
+      TEST_SCHOOL_LOGIN_PASSPORT: ci_smoke_school
+      TEST_MANAGER_LOGIN_PASSPORT: ci_smoke_manager
       TEST_LOGIN_PASSWORD: Test@1234
       TENCENT_CLOUD_COS_ENABLED: "false"
 
@@ -95,9 +100,6 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install Bruno CLI
-        run: npm install --global @usebruno/cli
-
       - name: Grant execute permission
         run: chmod +x gradlew
 
@@ -108,58 +110,10 @@ jobs:
           done
           mysql -h127.0.0.1 -uroot -proot -e "CREATE DATABASE IF NOT EXISTS zhdj CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
           mysql -h127.0.0.1 -uroot -proot zhdj < ddl.sql
-          mysql -h127.0.0.1 -uroot -proot zhdj <<'SQL'
-          INSERT INTO zhdj.universities (id, name)
-          VALUES ('1001', 'CI测试学校');
-
-          INSERT INTO zhdj.user (
-              id,
-              university_id,
-              username,
-              password,
-              user_type,
-              real_name,
-              id_card,
-              party_member_id,
-              party_status,
-              branch_name,
-              join_party_date,
-              status,
-              email,
-              phone
-          ) VALUES (
-              10001,
-              1001,
-              'ci_smoke_user',
-              '$2a$10$DhmonCqt7Ek.10jGN8ZO8O09.JB1N3GO4axf2KwngKBitHDxre3lO',
-              '学生',
-              '测试用户',
-              '110101199001011234',
-              'CI202604080000000001',
-              '群众',
-              'CI测试支部',
-              '2024-01-01 00:00:00',
-              'active',
-              'ci_smoke_user@example.com',
-              '13800138000'
-          );
-          SQL
+          mysql -h127.0.0.1 -uroot -proot zhdj < .github/sql/ci-seed.sql
 
       - name: Build server jar
         run: ./gradlew --no-daemon :server:bootJar
-
-      - name: Prepare Bruno placeholders
-        run: |
-          escape() {
-            printf '%s' "$1" | sed -e 's/[\/&]/\\&/g'
-          }
-          escaped_passport="$(escape "${TEST_LOGIN_PASSPORT}")"
-          escaped_password="$(escape "${TEST_LOGIN_PASSWORD}")"
-          escaped_captcha="$(escape "${AUTH_TEST_CAPTCHA_CODE}")"
-          find tests/bruno -type f -name '*.bru' -print0 | xargs -0 sed -i "s|__BASE_URL__|http://127.0.0.1:9000|g"
-          find tests/bruno -type f -name '*.bru' -print0 | xargs -0 sed -i "s|__TEST_LOGIN_PASSPORT__|${escaped_passport}|g"
-          find tests/bruno -type f -name '*.bru' -print0 | xargs -0 sed -i "s|__TEST_LOGIN_PASSWORD__|${escaped_password}|g"
-          find tests/bruno -type f -name '*.bru' -print0 | xargs -0 sed -i "s|__AUTH_TEST_CAPTCHA_CODE__|${escaped_captcha}|g"
 
       - name: Start application
         run: |
@@ -167,10 +121,10 @@ jobs:
           nohup java -jar server/build/libs/server.jar > build/api-smoke-app.log 2>&1 &
 
       - name: Wait for application
-        run: bash scripts/wait-for-app.sh http://127.0.0.1:9000/api/school/all 180
+        run: bash .github/scripts/wait-for-app.sh http://127.0.0.1:9000/api/school/all 180
 
-      - name: Run Bruno smoke tests
-        run: bru run tests/bruno
+      - name: Run OpenAPI smoke tests
+        run: node .github/scripts/api-smoke-openapi.mjs
 
       - name: Upload app log
         if: always()
