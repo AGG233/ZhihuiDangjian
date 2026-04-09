@@ -8,6 +8,8 @@ on:
     paths:
       - services/**/controller
       - services/**/service
+      - .github/workflows/api-smoke.yml
+      - ddl.sql
   pull_request:
     branches:
       - master
