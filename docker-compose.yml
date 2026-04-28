@@ -5,7 +5,7 @@ services:
     restart: no
     network_mode: host
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=dev
       - DATABASE_URL=jdbc:mysql://172.17.0.1:3306/zhihuidangjian?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       - DATABASE_USERNAME=root
       - DATABASE_PASSWORD=your_password
