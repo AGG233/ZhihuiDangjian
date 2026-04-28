@@ -72,7 +72,7 @@ public class FileController {
             description = "上传一个资源ID列表，返回对应的预签名下载链接列表。顺序与输入列表一致。"
     )
     @PostMapping("/batch/id")
-    public Result<List<String>> getBatchById(@RequestBody List<String> ids) {
+    public Result<List<String>> getBatchById(@RequestBody @Valid List<String> ids) {
         return Result.ok(fileService.getBatchByIds(ids));
     }
 
@@ -81,7 +81,7 @@ public class FileController {
             description = "上传一个文件哈希列表，返回对应的预签名下载链接列表。顺序与输入列表一致。"
     )
     @PostMapping("/batch/hash")
-    public Result<List<String>> getBatchByHash(@RequestBody List<String> hashes) {
+    public Result<List<String>> getBatchByHash(@RequestBody @Valid List<String> hashes) {
         return Result.ok(fileService.getBatchByHashes(hashes));
     }
 

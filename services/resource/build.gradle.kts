@@ -7,8 +7,7 @@ dependencies {
     implementation(project(":services:content"))
     implementation(project(":services:user"))
     implementation(libs.mapstruct)
-    implementation(libs.qcloud.cos)
-    implementation(libs.qcloud.cos.sts)
+    implementation(libs.xfile)
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)

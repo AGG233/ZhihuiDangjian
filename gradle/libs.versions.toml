@@ -14,6 +14,7 @@ hikari-cp = "7.0.2"
 
 commons-lang3 = "3.18.0"
 commons-codec = "1.15"
+xfile = "2.3.0"
 
 qcloud-cos = "5.6.251"
 qcloud-cos-sts = "3.1.0"
@@ -74,9 +75,10 @@ mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
 mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
 tika-core = { module = "org.apache.tika:tika-core", version.ref = "tika" }
 
-# Object storage
+# File Storage
 qcloud-cos = { module = "com.qcloud:cos_api", version.ref = "qcloud-cos" }
 qcloud-cos-sts = { module = "com.qcloud:cos-sts_api", version.ref = "qcloud-cos-sts" }
+xfile = { module = "org.dromara.x-file-storage:x-file-storage-spring", version.ref = "xfile"}
 
 # Documentation
 springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
@@ -118,9 +120,10 @@ datasource-mybatis-generator = [
 datasource-mybatis-plus-join = [
   "mybatis-plus-join-starter"
 ]
-object-storage = [
-  "qcloud-cos",
-  "qcloud-cos-sts"
+file-storage = [
+  "xfile",
+  'qcloud-cos',
+  'qcloud-cos-sts'
 ]
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }

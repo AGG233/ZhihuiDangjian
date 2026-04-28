@@ -1,0 +1,12 @@
+app:
+  security:
+    enabled: false
+
+spring:
+  ai:
+    openai:
+      api-key: ${AI_KEY:dummy-key}
+
+logging:
+  level:
+    root: DEBUG

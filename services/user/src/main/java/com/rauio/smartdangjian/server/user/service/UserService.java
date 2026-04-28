@@ -261,8 +261,8 @@ public class UserService extends ServiceImpl<UserMapper, User> {
                 .like(StringUtils.isNotColumnName(dto.getPartyMemberId()), User::getPartyMemberId, dto.getPartyMemberId())
                 .like(StringUtils.isNotColumnName(dto.getEmail()), User::getEmail, dto.getEmail())
                 .like(StringUtils.isNotColumnName(dto.getPhone()), User::getPhone, dto.getPhone())
-                .eq(User::getUserType, dto.getUserType())
-                .eq(User::getPartyStatus, dto.getPartyStatus())
+                .eq(dto.getUserType() != null, User::getUserType, dto.getUserType())
+                .eq(dto.getPartyStatus() != null, User::getPartyStatus, dto.getPartyStatus())
                 .eq(StringUtils.isNotBlank(dto.getUniversityId()), User::getUniversityId, dto.getUniversityId())
                 .like(StringUtils.isNotColumnName(dto.getBranchName()), User::getBranchName, dto.getBranchName());
         return wrapper;

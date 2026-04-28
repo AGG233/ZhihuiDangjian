@@ -33,7 +33,7 @@ public class AdminChapterController {
     @Operation(summary = "更新章节")
     @PutMapping
     @DataScopeAccess(resource = DataScopeResources.CHAPTER_ADMIN, action = DataScopeAction.UPDATE, body = "#chapter")
-    public Result<Boolean> update(@RequestBody ChapterDto chapter){
+    public Result<Boolean> update(@RequestBody @Valid ChapterDto chapter){
         Boolean result = chapterService.update(chapter);
         return Result.ok(result);
     }

@@ -38,7 +38,7 @@ public class AuthController {
             description = "uuid为验证码的唯一标识码，code为用户输入的验证码，验证成功返回true，验证失败返回false"
     )
     @PostMapping("/captcha")
-    public Result<Boolean> isValid(@RequestParam @Valid  String uuid, @RequestParam @Valid String code){
+    public Result<Boolean> isValid(@RequestParam String uuid, @RequestParam String code){
         Boolean result = captchaService.validate(uuid,code);
         return Result.ok(result);
     }
@@ -76,7 +76,7 @@ public class AuthController {
             description = "登出成功后将返回一个空的响应体"
     )
     @PostMapping("/logout")
-    public Result logout(@RequestParam @Valid String token){
+    public Result logout(@RequestParam String token){
         authService.logout(token);
         return Result.ok("");
     }

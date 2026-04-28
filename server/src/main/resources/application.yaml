@@ -1,8 +1,10 @@
+app:
+  security:
+    enabled: true
+
 spring:
   application:
     name: server
-  profiles:
-    default: standalone
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
@@ -46,7 +48,6 @@ tencent-cos:
     base-path: /
 
 server:
-  port: 9000server:
   port: 9000
 
 knife4j:
@@ -59,4 +60,4 @@ knife4j:
     language: zh_cn
 logging:
   level:
-    org.springframework.security: DEBUG
+    root: DEBUG
