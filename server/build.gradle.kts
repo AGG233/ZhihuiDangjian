@@ -19,4 +19,7 @@ dependencies {
     implementation(project(":services:user"))
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("com.h2database:h2")
 }

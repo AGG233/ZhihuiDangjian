@@ -4,6 +4,7 @@ import com.rauio.smartdangjian.aop.ResourceAccessAspect;
 import com.rauio.smartdangjian.aop.UserAspect;
 import com.rauio.smartdangjian.exception.GlobalExceptionHandler;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -12,11 +13,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     @Bean
+    @ConditionalOnProperty(name = "app.security.enabled", havingValue = "true", matchIfMissing = true)
     public UserAspect userAspect() {
         return new UserAspect();
     }
 
     @Bean
+    @ConditionalOnProperty(name = "app.security.enabled", havingValue = "true", matchIfMissing = true)
     public ResourceAccessAspect resourceAccessAspect() {
         return new ResourceAccessAspect();
     }

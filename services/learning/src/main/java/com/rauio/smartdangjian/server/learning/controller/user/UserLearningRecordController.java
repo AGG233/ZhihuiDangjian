@@ -13,6 +13,7 @@ import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,7 +60,7 @@ public class UserLearningRecordController {
     @PostMapping("/")
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#dto.userId")
-    public Result<Boolean> create(@RequestBody UserLearningRecordDto dto) {
+    public Result<Boolean> create(@RequestBody @Valid UserLearningRecordDto dto) {
         Boolean result = recordService.create(dto);
         return Result.ok(result);
     }
@@ -68,7 +69,7 @@ public class UserLearningRecordController {
     @PutMapping("/")
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#dto.userId")
-    public Result<Boolean> update(@RequestBody UserLearningRecordDto dto) {
+    public Result<Boolean> update(@RequestBody @Valid UserLearningRecordDto dto) {
         Boolean result = recordService.update(dto);
         return Result.ok(result);
     }

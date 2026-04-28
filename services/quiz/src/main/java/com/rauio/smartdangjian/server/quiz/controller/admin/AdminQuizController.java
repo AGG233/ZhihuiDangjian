@@ -13,6 +13,7 @@ import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +29,7 @@ public class AdminQuizController {
 
     @Operation(summary = "创建试题", description = "创建一道新试题")
     @PostMapping
-    public Result<Boolean> createQuiz(@RequestBody Quiz quiz) {
+    public Result<Boolean> createQuiz(@RequestBody @Valid Quiz quiz) {
         return Result.ok(quizService.create(quiz));
     }
 
@@ -37,7 +38,7 @@ public class AdminQuizController {
     @DataScopeAccess(resource = DataScopeResources.QUIZ_ADMIN, action = DataScopeAction.UPDATE, id = "#id", query = "'QUIZ'")
     public Result<Boolean> updateQuiz(
             @Parameter(name = "id", description = "试题ID") @PathVariable String id,
-            @RequestBody Quiz quiz) {
+            @RequestBody @Valid Quiz quiz) {
         quiz.setId(id);
         return Result.ok(quizService.update(quiz));
     }
@@ -54,7 +55,7 @@ public class AdminQuizController {
     @PostMapping("/{id}/options")
     public Result<Boolean> createQuizOption(
             @Parameter(name = "id", description = "试题ID") @PathVariable String id,
-            @RequestBody QuizOption quizOption) {
+            @RequestBody @Valid QuizOption quizOption) {
         return Result.ok(quizOptionService.create(id, quizOption));
     }
 
@@ -63,7 +64,7 @@ public class AdminQuizController {
     @DataScopeAccess(resource = DataScopeResources.QUIZ_ADMIN, action = DataScopeAction.UPDATE, id = "#optionId", query = "'OPTION'")
     public Result<Boolean> updateQuizOption(
             @Parameter(name = "optionId", description = "选项ID") @PathVariable String optionId,
-            @RequestBody QuizOption quizOption) {
+            @RequestBody @Valid QuizOption quizOption) {
         return Result.ok(quizOptionService.update(optionId, quizOption));
     }
 

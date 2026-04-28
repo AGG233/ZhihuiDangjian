@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.exception;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.rauio.smartdangjian.pojo.response.Result;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,13 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Result handleArgumentNotValidExceptions(MethodArgumentNotValidException e) {
         String msg = e.getBindingResult().getFieldErrors().getFirst().getDefaultMessage();
+        return buildResult("400", msg);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result handleConstraintViolationException(ConstraintViolationException e) {
+        String msg = e.getConstraintViolations().iterator().next().getMessage();
         return buildResult("400", msg);
     }
 

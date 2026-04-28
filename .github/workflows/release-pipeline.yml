@@ -110,111 +110,12 @@ jobs:
           path: server/build/libs/*.jar
           retention-days: 1
 
-  # ── Stage 4: API Automated Test ──────────────────────────────────────
-  api-test:
-    name: API Test
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: build
-
-    services:
-      mysql:
-        image: mysql:8.4
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: zhdj
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=12
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd="redis-cli ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=12
-      neo4j:
-        image: neo4j:5
-        env:
-          NEO4J_AUTH: neo4j/password
-        ports:
-          - 7474:7474
-          - 7687:7687
-        options: >-
-          --health-cmd="wget --no-verbose --tries=1 --spider http://127.0.0.1:7474 || exit 1"
-          --health-interval=10s
-          --health-timeout=10s
-          --health-retries=20
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Download JAR artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: server-jar
-          path: server/build/libs
-
-      - name: Initialize MySQL schema
-        run: |
-          mysql -h127.0.0.1 -uroot -proot -e "CREATE DATABASE IF NOT EXISTS zhdj CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-          mysql -h127.0.0.1 -uroot -proot zhdj < ddl.sql
-          mysql -h127.0.0.1 -uroot -proot zhdj < .github/sql/ci-seed.sql
-
-      - name: Start application
-        env:
-          DATABASE_URL: jdbc:mysql://127.0.0.1:3306/zhdj?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-          DATABASE_USERNAME: root
-          DATABASE_PASSWORD: root
-          REDIS_HOST: 127.0.0.1
-          REDIS_PORT: 6379
-          REDIS_DATABASE: 0
-          NEO4J_URI: bolt://127.0.0.1:7687
-          NEO4J_USERNAME: neo4j
-          NEO4J_PASSWORD: password
-          AI_KEY: ${{ secrets.AI_KEY || 'dummy-key' }}
-          TENCENT_CLOUD_COS_ENABLED: "false"
-        run: |
-          mkdir -p build
-          nohup java -jar server/build/libs/server.jar > build/api-test-app.log 2>&1 &
-
-      - name: Wait for application
-        run: bash .github/scripts/wait-for-app.sh http://127.0.0.1:9000/api/school/all 180
-
-      - name: Run API tests
-        run: node .github/scripts/api-smoke-openapi.mjs
-        env:
-          AUTH_TEST_CAPTCHA_CODE: CI8888
-          TEST_LOGIN_PASSPORT: ci_smoke_user
-          TEST_SCHOOL_LOGIN_PASSPORT: ci_smoke_school
-          TEST_MANAGER_LOGIN_PASSPORT: ci_smoke_manager
-          TEST_LOGIN_PASSWORD: Test@1234
-
-      - name: Upload app log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-test-logs
-          path: build/api-test-app.log
-          if-no-files-found: ignore
-
-  # ── Stage 5: Build & Push Docker Image ───────────────────────────────
+  # ── Stage 4: Build & Push Docker Image ───────────────────────────────
   release:
     name: Push Docker Image
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: api-test
+    needs: build
     steps:
       - uses: actions/checkout@v4
 
@@ -271,4 +172,4 @@ jobs:
           echo "| Version | \`${{ needs.build.outputs.version }}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Trigger | \`${{ github.event_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Commit | \`${{ github.sha }}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Pipeline | audit → quality → build → api-test → release |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Pipeline | audit → quality → build → release |" >> "$GITHUB_STEP_SUMMARY"

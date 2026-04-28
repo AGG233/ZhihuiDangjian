@@ -7,6 +7,7 @@ import com.rauio.smartdangjian.server.content.service.ContentBlockService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,13 +26,13 @@ public class AdminContentController {
 
     @Operation(summary = "更新轮播图")
     @PutMapping("/carousel")
-    public Result<Boolean> updateCarousel(@RequestBody ContentBlock contentBlock) {
+    public Result<Boolean> updateCarousel(@RequestBody @Valid ContentBlock contentBlock) {
         return Result.ok(contentBlockService.update(contentBlock));
     }
 
     @Operation(summary = "添加轮播图")
     @PostMapping("/carousel")
-    public Result<Boolean> addCarousel(@RequestBody List<ContentBlock> contentBlocks) {
+    public Result<Boolean> addCarousel(@RequestBody @Valid List<ContentBlock> contentBlocks) {
         for (ContentBlock contentBlock : contentBlocks) {
             contentBlock.setParentId(CAROUSEL_PARENT_ID);
         }
