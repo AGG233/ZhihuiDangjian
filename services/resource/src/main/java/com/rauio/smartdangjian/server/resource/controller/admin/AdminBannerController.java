@@ -7,7 +7,6 @@ import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.BannerCreateRequest;
 import com.rauio.smartdangjian.server.resource.pojo.request.BannerUpdateRequest;
-import com.rauio.smartdangjian.server.resource.pojo.request.MultipartUploadSessionRequest;
 import com.rauio.smartdangjian.server.resource.service.BannerService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,12 +42,6 @@ public class AdminBannerController {
     @PostMapping
     public Result<ResourceMeta> create(@RequestBody @Valid BannerCreateRequest request) {
         return Result.ok(createOrUpdate(request.resourceId(), request.hash(), true, null));
-    }
-
-    @Operation(summary = "完成上传并添加轮播图")
-    @PostMapping("/complete-upload")
-    public Result<ResourceMeta> createByUpload(@RequestBody @Valid MultipartUploadSessionRequest request) {
-        return Result.ok(bannerService.create(request));
     }
 
     @Operation(summary = "更新指定顺序的轮播图")

@@ -3,14 +3,11 @@ package com.rauio.smartdangjian.server.resource.service;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
-import com.rauio.smartdangjian.server.resource.pojo.request.MultipartUploadSessionRequest;
 import com.rauio.smartdangjian.server.resource.pojo.response.BannerResourceResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +23,7 @@ public class BannerService {
     private static final int BANNER_LIST_END = -1;
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ObjectProvider<CosService> cosServiceProvider;
+    private final FileService fileService;
     private final ResourceMetaService resourceMetaService;
 
     public List<ResourceMeta> getList() {
@@ -81,13 +78,8 @@ public class BannerService {
         return toUserResponse(order, get(order));
     }
 
-    public ResourceMeta create(MultipartUploadSessionRequest request) {
-        CosService cosService = cosServiceProvider.getIfAvailable();
-        if (cosService == null) {
-            throw new BusinessException(4000, "COS功能当前已禁用");
-        }
-        ResourceMeta meta = cosService.completeMultipartUpload(request);
-        return create(meta.getId());
+    public ResourceMeta createByResourceId(String resourceId) {
+        return create(resourceId);
     }
 
     public ResourceMeta create(String resourceId) {
@@ -169,11 +161,7 @@ public class BannerService {
     }
 
     private BannerResourceResponse toUserResponse(int order, ResourceMeta meta) {
-        CosService cosService = cosServiceProvider.getIfAvailable();
-        if (cosService == null) {
-            throw new BusinessException(4000, "COS功能当前已禁用");
-        }
-        URL downloadUrl = cosService.generateDownloadUrl(meta.getId());
+        String downloadUrl = fileService.getDownloadUrl(meta.getId());
         return new BannerResourceResponse(
                 order,
                 meta.getId(),
@@ -182,7 +170,7 @@ public class BannerService {
                 meta.getObjectKey(),
                 meta.getResourceType(),
                 meta.getStatus(),
-                downloadUrl.toString()
+                downloadUrl
         );
     }
 }
