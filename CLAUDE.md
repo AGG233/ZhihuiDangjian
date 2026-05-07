@@ -54,12 +54,12 @@ Registered via `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfi
 
 ## Documentation
 
-Detailed documentation in `docs/`:
+Detailed documentation in `docs/`（gitignored, local only）:
 
-- **[系统模块划分与关键代码](docs/系统模块划分与关键代码.md)** — 10 个模块的职责、关键代码位置、论文可用表述。含 AI 智能问答模块的最新架构（ReactAgent、多 Agent、Tool 系统、双层记忆）。
-- **[测试编写指南](docs/测试编写指南.md)** — 测试基础设施、MockMvc 集成测试、AOP 切面测试、AI 模块 Service 层测试模式（`@Spy` + `doReturn()`）、异常响应对照表。
-- **[迁移问题清单](docs/迁移问题清单.md)** — 迁移过程中的已知问题与解决方案。
-- **[前端接口升级说明-0.5.0](docs/前端接口升级说明-0.5.0.md)** — 前端接口版本升级注意事项。
+- 系统模块划分与关键代码 — 10 个模块的职责、关键代码位置、论文可用表述。含 AI 智能问答模块的最新架构（ReactAgent、多 Agent、Tool 系统、双层记忆）。
+- 测试编写指南 — 测试基础设施、MockMvc 集成测试、AOP 切面测试、AI 模块 Service 层测试模式（`@Spy` + `doReturn()`）、异常响应对照表。
+- 迁移问题清单 — 迁移过程中的已知问题与解决方案。
+- 前端接口升级说明-0.5.0 — 前端接口版本升级注意事项。
 
 ## CI/CD
 
