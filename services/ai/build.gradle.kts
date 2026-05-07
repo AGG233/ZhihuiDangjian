@@ -24,4 +24,5 @@ dependencies {
     annotationProcessor(libs.spring.boot.configuration.processor)
     annotationProcessor(libs.mapstruct.processor)
 
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
 }

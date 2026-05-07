@@ -47,13 +47,24 @@ public class AiSkill {
     private LocalDateTime updatedAt;
 
     public String renderSkillMarkdown() {
-        return """
-                ---
-                name: %s
-                description: %s
-                ---
+        String safeName = escapeYamlValue(name);
+        String safeDesc = escapeYamlValue(description);
+        StringBuilder sb = new StringBuilder();
+        sb.append("---\n");
+        sb.append("name: \"").append(safeName).append("\"\n");
+        sb.append("description: \"").append(safeDesc).append("\"\n");
+        if (toolGroups != null && !toolGroups.isEmpty()) {
+            sb.append("toolGroups: [").append(String.join(", ", toolGroups)).append("]\n");
+        }
+        sb.append("---\n\n");
+        sb.append(content == null ? "" : content);
+        return sb.toString().trim();
+    }
 
-                %s
-                """.formatted(name, description, content == null ? "" : content).trim();
+    private static String escapeYamlValue(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 }

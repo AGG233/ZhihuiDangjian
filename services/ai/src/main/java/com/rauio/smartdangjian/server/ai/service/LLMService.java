@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.UUID;
 
@@ -81,6 +82,8 @@ public class LLMService {
 
     private Flux<AiChatResponse> stream(AiAgentRunContext context) throws GraphRunnerException {
         String sessionId = normalizeSessionId(context.sessionId());
+        String agentName = context.agentType().agentName();
+        String agentCode = context.agentType().code();
         RunnableConfig runnableConfig = RunnableConfig.builder()
                 .threadId(sessionId)
                 .addMetadata("sessionId", sessionId)
@@ -88,16 +91,24 @@ public class LLMService {
                 .build();
         AtomicReference<String> finalOutput = new AtomicReference<>("");
 
+        log.info("AI请求开始 agent={} sessionId={} userId={}", agentName, sessionId, context.userId());
         return aiAgentRegistry.get(context.agentType()).stream(context.input(), runnableConfig)
-                .<AiChatResponse>handle((output, sink) -> sink.next(buildAiChatResponse(sessionId, context.agentType().agentName(), output, finalOutput)))
+                .<AiChatResponse>handle((output, sink) -> sink.next(buildAiChatResponse(sessionId, agentName, output, finalOutput)))
                 .publishOn(Schedulers.boundedElastic())
-                .doOnComplete(() -> aiMemoryService.saveConversation(
-                        context.userId(),
-                        sessionId,
-                        context.agentType().code(),
-                        context.input(),
-                        finalOutput.get()
-                ));
+                .timeout(Duration.ofSeconds(120),
+                        Flux.just(new AiChatResponse("ERROR", sessionId, "AI 响应超时，请稍后重试", "error", agentName)))
+                .doOnComplete(() -> {
+                    String output = finalOutput.get();
+                    if (output == null || output.isBlank()) {
+                        output = "[AI 未返回文本内容]";
+                    }
+                    aiMemoryService.saveConversation(context.userId(), sessionId, agentCode, context.input(), output);
+                    log.info("AI请求完成 agent={} sessionId={}", agentName, sessionId);
+                })
+                .doOnCancel(() -> log.warn("客户端断开连接 agent={} sessionId={}", agentName, sessionId))
+                .doOnError(e -> log.error("AI流式错误 agent={} sessionId={}", agentName, sessionId, e))
+                .onErrorResume(e -> Flux.just(
+                        new AiChatResponse("ERROR", sessionId, "AI 服务暂时不可用，请稍后重试", "error", agentName)));
     }
 
     private static AiChatResponse buildAiChatResponse(String sessionId,

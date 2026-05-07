@@ -2,7 +2,9 @@ package com.rauio.smartdangjian.server.ai.config;
 
 import com.rauio.smartdangjian.server.ai.tool.LearningTool;
 import com.rauio.smartdangjian.server.ai.tool.QuizTool;
+import com.rauio.smartdangjian.server.ai.tool.RecommendTool;
 import com.rauio.smartdangjian.server.ai.tool.UserInfoTool;
+import com.rauio.smartdangjian.server.ai.tool.UserProfileTool;
 import com.rauio.smartdangjian.server.ai.tool.UserQuizAnswerTool;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.method.MethodToolCallbackProvider;
@@ -37,6 +39,20 @@ public class ToolProviderConfig {
     public ToolCallbackProvider quizToolProvider(QuizTool quizTool) {
         return MethodToolCallbackProvider.builder()
                 .toolObjects(quizTool)
+                .build();
+    }
+
+    @Bean
+    public ToolCallbackProvider recommendToolProvider(RecommendTool recommendTool) {
+        return MethodToolCallbackProvider.builder()
+                .toolObjects(recommendTool)
+                .build();
+    }
+
+    @Bean
+    public ToolCallbackProvider userProfileToolProvider(UserProfileTool userProfileTool) {
+        return MethodToolCallbackProvider.builder()
+                .toolObjects(userProfileTool)
                 .build();
     }
 }

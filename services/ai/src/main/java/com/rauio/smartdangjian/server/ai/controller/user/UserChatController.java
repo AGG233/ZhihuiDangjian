@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.server.ai.controller.user;
 
 import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
+import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiChatRequest;
@@ -10,6 +11,7 @@ import com.rauio.smartdangjian.server.ai.pojo.response.AiChatResponse;
 import com.rauio.smartdangjian.server.ai.service.AiMemoryService;
 import com.rauio.smartdangjian.server.ai.service.LLMService;
 import com.rauio.smartdangjian.server.user.service.UserService;
+import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,6 +31,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/ai/chat")
 @RequiredArgsConstructor
+@PermissionAccess(UserType.STUDENT)
 public class UserChatController {
 
     private final LLMService llmService;

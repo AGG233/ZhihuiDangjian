@@ -50,7 +50,6 @@ public class AgentModuleConfig {
                     .name(type.agentName())
                     .description(type.description())
                     .model(chatModel)
-                    .systemPrompt("你是智慧党建平台AI助手，必须基于系统提示词、技能和记忆上下文作答。")
                     .toolCallbackProviders(toolCallbackProviders.toArray(ToolCallbackProvider[]::new))
                     .saver(redisSaver)
                     .hooks(skillsAgentHook)
