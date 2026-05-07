@@ -21,7 +21,8 @@ Single Spring Boot application using Gradle multi-module layout. Despite Spring 
 
 - **`server`** — Main boot application entry point (`SmartDangjianApplication`). Aggregates all service modules into one JAR.
 - **`services/common`** — Shared library: Spring Security, Redis, MyBatis-Plus config, custom validation annotations, AOP-based access control, global exception handling, COS/Tika utilities. All other modules depend on this.
-- **`services/ai`**, **`services/auth`** — Independent boot applications (each has its own `@SpringBootApplication`).
+- **`services/ai`** — AI intelligent Q&A module (Spring AI + Alibaba Cloud AI Graph ReactAgent). Three agents (CHAT/QUIZ/EVALUATION), 6 tools (learning records, quiz answers, user profile, recommendations, etc.), SSE streaming, database-driven prompts & skills, dual-layer memory (Redis checkpoints + MySQL long-term). Independent boot application.
+- **`services/auth`** — Independent boot application (authentication/JWT).
 - **`services/user`**, **`services/content`**, **`services/article`**, etc. — Library modules providing domain-specific controllers, services, and mappers.
 
 ### Key Technical Decisions
@@ -50,6 +51,15 @@ Registered via `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfi
 - **Exceptions**: Throw `BusinessException(code, message)`, caught by `GlobalExceptionHandler`.
 - **Module package base**: `com.rauio.smartdangjian.server.<module>.<layer>`
 - **Mappers**: `@Mapper` interface extending `BaseMapper<T>`, scanned from `com.rauio.smartdangjian`.
+
+## Documentation
+
+Detailed documentation in `docs/`:
+
+- **[系统模块划分与关键代码](docs/系统模块划分与关键代码.md)** — 10 个模块的职责、关键代码位置、论文可用表述。含 AI 智能问答模块的最新架构（ReactAgent、多 Agent、Tool 系统、双层记忆）。
+- **[测试编写指南](docs/测试编写指南.md)** — 测试基础设施、MockMvc 集成测试、AOP 切面测试、AI 模块 Service 层测试模式（`@Spy` + `doReturn()`）、异常响应对照表。
+- **[迁移问题清单](docs/迁移问题清单.md)** — 迁移过程中的已知问题与解决方案。
+- **[前端接口升级说明-0.5.0](docs/前端接口升级说明-0.5.0.md)** — 前端接口版本升级注意事项。
 
 ## CI/CD
 
