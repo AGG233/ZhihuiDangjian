@@ -35,7 +35,7 @@ import java.util.List;
 public class UserChatController {
 
     private final LLMService llmService;
-    private final AiMemoryService aiMemoryService;
+private final AiMemoryService aiMemoryService;
     private final UserService userService;
 
     @Operation(summary = "AI文本聊天接口", description = "SSE流式返回纯文本回复")
