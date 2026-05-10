@@ -14,6 +14,7 @@ import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.pojo.vo.UserPublicVO;
 import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
@@ -30,6 +31,9 @@ public class UserService extends ServiceImpl<UserMapper, User> {
 
     private final PasswordEncoder   passwordEncoder;
     private final UserConvertor     convertor;
+
+    @Value("${app.dev.default-user-id:}")
+    private String defaultDevUserId;
 
     /**
      * 根据通行凭证识别并查询用户。
@@ -84,7 +88,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     /**
      * 获取当前登录用户 ID。
      *
-     * @return 当前用户 ID
+     * @return 当前用户 ID，未登录时返回开发环境默认值（如有配置）
      */
     @RequireUser
     public String getCurrentUserId() {
@@ -96,7 +100,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
                 return ((User) principal).getId();
             }
         }
-        return null;
+        return defaultDevUserId;
     }
 
     /**
@@ -255,16 +259,16 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     private LambdaQueryWrapper<User> buildQueryWrapper(UserDto dto) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper
-                .like(StringUtils.isNotColumnName(dto.getUserId()), User::getId, dto.getUserId())
-                .like(StringUtils.isNotColumnName(dto.getUsername()), User::getUsername, dto.getUsername())
-                .like(StringUtils.isNotColumnName(dto.getRealName()), User::getRealName, dto.getRealName())
-                .like(StringUtils.isNotColumnName(dto.getPartyMemberId()), User::getPartyMemberId, dto.getPartyMemberId())
-                .like(StringUtils.isNotColumnName(dto.getEmail()), User::getEmail, dto.getEmail())
-                .like(StringUtils.isNotColumnName(dto.getPhone()), User::getPhone, dto.getPhone())
+                .like(StringUtils.isNotBlank(dto.getUserId()), User::getId, dto.getUserId())
+                .like(StringUtils.isNotBlank(dto.getUsername()), User::getUsername, dto.getUsername())
+                .like(StringUtils.isNotBlank(dto.getRealName()), User::getRealName, dto.getRealName())
+                .like(StringUtils.isNotBlank(dto.getPartyMemberId()), User::getPartyMemberId, dto.getPartyMemberId())
+                .like(StringUtils.isNotBlank(dto.getEmail()), User::getEmail, dto.getEmail())
+                .like(StringUtils.isNotBlank(dto.getPhone()), User::getPhone, dto.getPhone())
                 .eq(dto.getUserType() != null, User::getUserType, dto.getUserType())
                 .eq(dto.getPartyStatus() != null, User::getPartyStatus, dto.getPartyStatus())
                 .eq(StringUtils.isNotBlank(dto.getUniversityId()), User::getUniversityId, dto.getUniversityId())
-                .like(StringUtils.isNotColumnName(dto.getBranchName()), User::getBranchName, dto.getBranchName());
+                .like(StringUtils.isNotBlank(dto.getBranchName()), User::getBranchName, dto.getBranchName());
         return wrapper;
     }
 

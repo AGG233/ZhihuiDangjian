@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import static com.rauio.smartdangjian.server.ai.constants.AiConstants.MESSAGE_INPUT;
 import static com.rauio.smartdangjian.server.ai.constants.AiConstants.MESSAGE_OUTPUT;
@@ -77,7 +76,6 @@ public class AiMemoryService {
                                        String content,
                                        Map<String, Object> metadata) {
         return AiChatMessage.builder()
-                .id(UUID.randomUUID().toString())
                 .userId(userId)
                 .sessionId(sessionId)
                 .agentType(agentType)

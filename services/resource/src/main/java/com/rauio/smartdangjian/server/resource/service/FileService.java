@@ -36,7 +36,7 @@ public class FileService {
     public FileUploadResponse upload(UploadFileRequest request) {
         String extension = extractExtension(request.getFileName());
         String uuid = UUID.randomUUID().toString().replace("-", "");
-        String path = resolvePath(request.getMimeType().toString());
+        String path = resolvePath(request.getMimeType());
         String filename = uuid + extension;
         String objectKey = path + filename;
 
@@ -45,7 +45,7 @@ public class FileService {
         createRequest.setOriginalName(request.getFileName());
         createRequest.setHash(uuid);
         createRequest.setObjectKey(objectKey);
-        createRequest.setResourceType(detectResourceType(request.getMimeType().toString()));
+        createRequest.setResourceType(detectResourceType(request.getMimeType()));
         createRequest.setStatus(ResourceStatusConstants.UPLOADING);
         ResourceMeta meta = resourceMetaService.create(createRequest);
 

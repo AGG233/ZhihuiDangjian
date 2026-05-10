@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.server.ai.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -22,7 +23,7 @@ import java.util.Map;
 @Schema(description = "AI聊天消息")
 public class AiChatMessage {
 
-    @TableId
+    @TableId(type = IdType.ASSIGN_ID)
     @Schema(description = "消息ID")
     private String id;
 

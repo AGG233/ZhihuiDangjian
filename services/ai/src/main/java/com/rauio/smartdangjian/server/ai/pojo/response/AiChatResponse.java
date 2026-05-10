@@ -11,6 +11,7 @@ public record AiChatResponse(
         @Schema(description = "会话id")
         String sessionId,
 
+
         @Schema(description = "ai的输出内容")
         String output,
 

@@ -1,5 +1,6 @@
 package com.rauio.smartdangjian.server.auth.config;
 
+import com.rauio.smartdangjian.server.auth.security.DevAuthenticationFilter;
 import com.rauio.smartdangjian.server.auth.security.JwtAuthenticationFilter;
 import com.rauio.smartdangjian.server.auth.service.JwtService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -30,7 +31,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            ObjectProvider<JwtAuthenticationFilter> jwtAuthenticationFilterProvider
+            ObjectProvider<JwtAuthenticationFilter> jwtAuthenticationFilterProvider,
+            ObjectProvider<DevAuthenticationFilter> devAuthenticationFilterProvider
     ) throws Exception {
         http
                 .cors(cors -> {})
@@ -47,6 +49,11 @@ public class SecurityConfig {
         JwtAuthenticationFilter jwtAuthenticationFilter = jwtAuthenticationFilterProvider.getIfAvailable();
         if (jwtAuthenticationFilter != null) {
             http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        }
+
+        DevAuthenticationFilter devAuthenticationFilter = devAuthenticationFilterProvider.getIfAvailable();
+        if (devAuthenticationFilter != null) {
+            http.addFilterBefore(devAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         }
 
         return http.build();
