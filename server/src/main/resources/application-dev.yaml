@@ -4,7 +4,7 @@ app:
   dev:
     default-user-id: 1987026098687483905
 server:
-  port: 8080
+  port: 9000
   ai:
     openai:
       api-key: ${AI_KEY:dummy-key}
