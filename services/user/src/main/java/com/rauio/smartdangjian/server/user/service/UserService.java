@@ -247,13 +247,10 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param pageSize 每页条数
      * @return 用户完整信息分页结果
      */
-    public Page<UserVO> getAdminPage(UserDto dto, int pageNum, int pageSize) {
+    public Page<User> getAdminPage(UserDto dto, int pageNum, int pageSize) {
         Page<User> pageInfo = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<User> wrapper = buildQueryWrapper(dto);
-        Page<User> result = this.page(pageInfo, wrapper);
-        Page<UserVO> voPage = new Page<>(result.getCurrent(), result.getSize(), result.getTotal());
-        voPage.setRecords(convertor.toVO(result.getRecords()));
-        return voPage;
+        return this.page(pageInfo, wrapper);
     }
 
     private LambdaQueryWrapper<User> buildQueryWrapper(UserDto dto) {
