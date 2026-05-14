@@ -44,8 +44,14 @@ jobs:
           use-caches: true
           post-pr-comment: true
           use-annotations: true
-          upload-result: false
+          upload-result: true
           push-fixes: 'none'
+
+      - name: Upload Qodana SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: ${{ runner.temp }}/qodana/results/qodana.sarif.json
 
   # ── Stage 3: Build ───────────────────────────────────────────────────
   build:
