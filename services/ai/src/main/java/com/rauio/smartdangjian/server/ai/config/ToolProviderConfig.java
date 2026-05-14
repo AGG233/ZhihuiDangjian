@@ -1,8 +1,12 @@
 package com.rauio.smartdangjian.server.ai.config;
 
 import com.rauio.smartdangjian.server.ai.tool.AiQuizGeneratorTool;
-import com.rauio.smartdangjian.server.ai.tool.LearningTool;
+import com.rauio.smartdangjian.server.ai.tool.ArticleDetailTool;
+import com.rauio.smartdangjian.server.ai.tool.ContentReviewTool;
+import com.rauio.smartdangjian.server.ai.tool.ContentSafetyTool;
 import com.rauio.smartdangjian.server.ai.tool.ContentSearchTool;
+import com.rauio.smartdangjian.server.ai.tool.LearningPathTool;
+import com.rauio.smartdangjian.server.ai.tool.LearningTool;
 import com.rauio.smartdangjian.server.ai.tool.QuizManageTool;
 import com.rauio.smartdangjian.server.ai.tool.QuizTool;
 import com.rauio.smartdangjian.server.ai.tool.RecommendTool;
@@ -77,6 +81,34 @@ public class ToolProviderConfig {
     public ToolCallbackProvider aiQuizGeneratorToolProvider(AiQuizGeneratorTool aiQuizGeneratorTool) {
         return MethodToolCallbackProvider.builder()
                 .toolObjects(aiQuizGeneratorTool)
+                .build();
+    }
+
+    @Bean
+    public ToolCallbackProvider articleDetailToolProvider(ArticleDetailTool articleDetailTool) {
+        return MethodToolCallbackProvider.builder()
+                .toolObjects(articleDetailTool)
+                .build();
+    }
+
+    @Bean
+    public ToolCallbackProvider contentReviewToolProvider(ContentReviewTool contentReviewTool) {
+        return MethodToolCallbackProvider.builder()
+                .toolObjects(contentReviewTool)
+                .build();
+    }
+
+    @Bean
+    public ToolCallbackProvider contentSafetyToolProvider(ContentSafetyTool contentSafetyTool) {
+        return MethodToolCallbackProvider.builder()
+                .toolObjects(contentSafetyTool)
+                .build();
+    }
+
+    @Bean
+    public ToolCallbackProvider learningPathToolProvider(LearningPathTool learningPathTool) {
+        return MethodToolCallbackProvider.builder()
+                .toolObjects(learningPathTool)
                 .build();
     }
 }

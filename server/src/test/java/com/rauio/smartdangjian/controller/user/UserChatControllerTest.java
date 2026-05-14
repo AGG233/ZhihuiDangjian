@@ -5,8 +5,6 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.ai.controller.user.UserChatController;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiChatRequest;
-import com.rauio.smartdangjian.server.ai.pojo.request.AiEvaluationRequest;
-import com.rauio.smartdangjian.server.ai.pojo.request.AiQuizRequest;
 import com.rauio.smartdangjian.server.ai.pojo.response.AiChatResponse;
 import com.rauio.smartdangjian.server.ai.service.AiMemoryService;
 import com.rauio.smartdangjian.server.ai.service.LLMService;
@@ -76,9 +74,9 @@ class UserChatControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("POST /evaluation - SSE 学习评估成功")
+        @DisplayName("POST /evaluation - SSE 学习评估成功（兼容垫片）")
         void evaluateSuccess() throws Exception {
-            when(llmService.evaluate(any(AiEvaluationRequest.class))).thenReturn(Flux.empty());
+            when(llmService.chat(any(AiChatRequest.class))).thenReturn(Flux.empty());
 
             mockMvc.perform(post("/api/ai/chat/evaluation")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -89,9 +87,9 @@ class UserChatControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("POST /quiz - SSE 测试小题成功")
+        @DisplayName("POST /quiz - SSE 测试小题成功（兼容垫片）")
         void quizSuccess() throws Exception {
-            when(llmService.quiz(any(AiQuizRequest.class))).thenReturn(Flux.empty());
+            when(llmService.chat(any(AiChatRequest.class))).thenReturn(Flux.empty());
 
             mockMvc.perform(post("/api/ai/chat/quiz")
                             .contentType(MediaType.APPLICATION_JSON)

@@ -1,8 +1,19 @@
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: zhihuidangjian-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+
   app:
     image: ghcr.io/agg233/zhihuidangjian:latest
     container_name: zhihuidangjian
     restart: no
+    depends_on:
+      - redis
     ports:
       - "${APP_PORT:-9000}:9000"
     environment:
@@ -10,8 +21,8 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - DATABASE_USERNAME=${DATABASE_USERNAME}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - REDIS_HOST=${REDIS_HOST:-172.17.0.1}
-      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
       - REDIS_DATABASE=${REDIS_DATABASE:-0}
       - AI_KEY=${AI_KEY}
       - COS_SECRET_ID=${COS_SECRET_ID}
@@ -31,3 +42,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     command: --interval 300 --cleanup --label-enable
+
+volumes:
+  redis-data:
