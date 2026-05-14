@@ -11,7 +11,5 @@ server:
 
 logging:
   level:
-    root: DEBUG
-    sun.rmi: WARN
-    javax.management: WARN
-    java.lang.Runtime: INFO
+    root: INFO
+    com.rauio.smartdangjian: DEBUG
