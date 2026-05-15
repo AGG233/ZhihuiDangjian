@@ -13,6 +13,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The project requires Java 21. Gradle wrapper (`./gradlew`) is included.
 
+## Code Retrieval
+
+The project codebase has been indexed in ChromaDB for semantic search. When you need to find relevant code, understand a module, or locate specific implementations, use the ChromaDB MCP tools to query the following collections:
+
+| Collection | Content | Query hint |
+|---|---|---|
+| `source-code` | 304 Java source files (main + test) | "find controller for X", "show service implementation" |
+| `config-build` | Gradle files, YAML configs, Dockerfile | "how is module X configured", "dependency setup" |
+| `docs` | Markdown documents (CLAUDE.md, docs/) | "architecture documentation", "migration notes" |
+| `scripts` | Python/SQL/JS helper scripts | "data import scripts", "DB schema" |
+
+Use `chroma_query_documents` with `n_results` appropriate to the query scope. Each document's metadata includes `module`, `filePath`, `layer` (controller/service/mapper/pojo/config/etc.), and `isTest` — use these in the `where` filter to narrow results.
+
 ## Architecture
 
 Single Spring Boot application using Gradle multi-module layout. Despite Spring Cloud dependencies being present, `@EnableFeignClients` and `@EnableDiscoveryClient` are commented out — it runs as a monolith.
