@@ -13,6 +13,42 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The project requires Java 21. Gradle wrapper (`./gradlew`) is included.
 
+## Development Workflow
+
+Two branches with automated CI/CD:
+
+```
+dev       日常开发，随时推送
+  ↓ 验证通过后合并
+product   发布基线，合入后自动构建部署
+```
+
+**日常流程：**
+
+```bash
+git checkout dev
+# 开发、提交...
+git push origin dev              # CI 自动编译检查
+
+# 准备发版时
+git checkout product
+git merge dev
+# 修改 gradle.properties 版本号
+git add gradle.properties && git commit -m "chore: bump to x.x.x"
+git push origin product          # CI 编译 + Release Pipeline 构建镜像并部署
+```
+
+**紧急修复直接基于 product：**
+
+```bash
+git checkout product
+# 修复、提交...
+git push origin product          # 自动构建部署
+git checkout dev && git merge product    # 同步回 dev
+```
+
+**注意：** 不要在 `product` 上直接开发新功能，它只接收发版合并和紧急修复。
+
 ## Code Retrieval
 
 The project codebase has been indexed in ChromaDB for semantic search. When you need to find relevant code, understand a module, or locate specific implementations, use the ChromaDB MCP tools to query the following collections:
