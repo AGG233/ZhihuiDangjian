@@ -51,11 +51,11 @@ jobs:
         with:
           sarif_file: ${{ runner.temp }}/qodana/results/qodana.sarif.json
 
-  # ── Stage 3: Build ───────────────────────────────────────────────────
-  build:
-    name: Build bootJar
+  # ── Stage 3: Build & Push Docker Image ───────────────────────────────
+  release:
+    name: Build & Push Docker Image
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     needs: quality
     outputs:
       version: ${{ steps.meta.outputs.version }}
@@ -85,30 +85,8 @@ jobs:
       - name: Build bootJar
         run: ./gradlew --no-daemon clean :server:bootJar -x test
 
-      - name: Upload JAR artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: server-jar
-          path: server/build/libs/*.jar
-          retention-days: 1
-
-  # ── Stage 4: Build & Push Docker Image ───────────────────────────────
-  release:
-    name: Push Docker Image
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: build
-    steps:
-      - uses: actions/checkout@v4
-
       - name: Set lowercase image name
         run: echo "IMAGE_NAME=${GITHUB_REPOSITORY_OWNER,,}/zhihuidangjian" >> "$GITHUB_ENV"
-
-      - name: Download JAR artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: server-jar
-          path: server/build/libs
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -134,7 +112,7 @@ jobs:
           context: .
           file: server/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.version }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           labels: ${{ steps.docker-meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
 
@@ -142,7 +120,7 @@ jobs:
   summary:
     name: Release Summary
     runs-on: ubuntu-latest
-    needs: [ build, release ]
+    needs: [ release ]
     if: always()
     steps:
       - name: Print release info
@@ -151,7 +129,7 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "| Item | Value |" >> "$GITHUB_STEP_SUMMARY"
           echo "|------|-------|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Version | \`${{ needs.build.outputs.version }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Version | \`${{ needs.release.outputs.version }}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Trigger | \`${{ github.event_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Commit | \`${{ github.sha }}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Pipeline | quality → build → release |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Pipeline | quality → release |" >> "$GITHUB_STEP_SUMMARY"
