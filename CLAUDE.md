@@ -66,3 +66,23 @@ Detailed documentation in `docs/`（gitignored, local only）:
 - **CI** (`.github/workflows/ci.yml`): Compiles + builds bootJar on push/PR to product/dev.
 - **CD** (`.github/workflows/release-cd.yml`): Triggered by `v*` tags. Builds multi-arch Docker image → pushes to GHCR → deploys via SSH.
 - **Dockerfile** (`server/Dockerfile`): Two-stage build (gradle:8.12-jdk21 → eclipse-temurin:21-jre-alpine).
+
+## Known Issues & Gotchas
+
+### 实体类 Jackson 反序列化失败
+
+**现象**: `InvalidDefinitionException: Cannot construct instance of ...User (no Creators, like default constructor, exist)`
+
+**根因**: 实体类仅标注了 `@Data` + `@Builder`，缺少 `@NoArgsConstructor`。`@Data` 包含的是 `@RequiredArgsConstructor`（仅为 final 和 `@NonNull` 字段生成构造方法），不生成无参构造方法。Jackson 反序列化时需要无参构造方法（或 `@JsonCreator`）。
+
+**修复**: 实体类必须同时标注 `@NoArgsConstructor` 和 `@AllArgsConstructor`（`@Builder` 需要全参构造方法）。
+
+```java
+@Data
+@Builder
+@NoArgsConstructor        // Jackson 反序列化需要
+@AllArgsConstructor       // @Builder 需要
+public class User implements UserDetails { ... }
+```
+
+**注意**: 如果实体类被 Jackson 反序列化（例如从 Redis 缓存 JSON 读取），都必须加上这两个注解。该问题于 2026-04-07 在 commit `4537f8b` 中修复。
