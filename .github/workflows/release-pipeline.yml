@@ -17,7 +17,7 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/zhihuidangjian
+  IMAGE_NAME: ${{ lower(github.repository_owner) }}/zhihuidangjian
   TCR_REGISTRY: ccr.ccs.tencentyun.com
   TCR_NAMESPACE: zhihuidangjian
 
