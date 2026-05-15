@@ -5,9 +5,6 @@ on:
     branches:
       - product
       - dev
-    paths:
-      - services
-      - server
   pull_request:
     branches:
       - product
