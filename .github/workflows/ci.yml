@@ -46,7 +46,7 @@ jobs:
         run: ./gradlew --no-daemon compileJava
 
       - name: Build bootJar (skip tests)
-        run: ./gradlew --no-daemon bootJar -x test
+        run: ./gradlew --no-daemon clean bootJar -x test
 
       - name: Upload build reports
         if: always()
