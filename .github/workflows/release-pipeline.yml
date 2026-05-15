@@ -142,15 +142,29 @@ jobs:
             type=raw,value=latest
             type=raw,value=${{ needs.build.outputs.version }}
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image (GHCR)
         uses: docker/build-push-action@v6
         with:
           context: .
           file: server/Dockerfile
           push: true
-          tags: ${{ steps.docker-meta.outputs.tags }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.version }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           labels: ${{ steps.docker-meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
+
+      - name: Push Docker image (TCR)
+        shell: bash
+        run: |
+          VERSION="${{ needs.build.outputs.version }}"
+          TCR_IMAGE="${{ env.TCR_REGISTRY }}/${{ env.TCR_NAMESPACE }}/app"
+
+          docker pull ghcr.io/${{ env.IMAGE_NAME }}:$VERSION --platform linux/amd64
+
+          docker tag ghcr.io/${{ env.IMAGE_NAME }}:$VERSION "$TCR_IMAGE:$VERSION"
+          docker tag ghcr.io/${{ env.IMAGE_NAME }}:$VERSION "$TCR_IMAGE:latest"
+
+          docker push "$TCR_IMAGE:$VERSION"
+          docker push "$TCR_IMAGE:latest"
 
   # ── Summary ──────────────────────────────────────────────────────────
   summary:
