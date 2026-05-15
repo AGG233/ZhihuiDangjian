@@ -77,7 +77,7 @@ Detailed documentation in `docs/`（gitignored, local only）:
 ## CI/CD
 
 - **CI** (`.github/workflows/ci.yml`): Compiles + builds bootJar on push/PR to product/dev.
-- **CD** (`.github/workflows/release-cd.yml`): Triggered by `v*` tags. Builds multi-arch Docker image → pushes to GHCR → deploys via SSH.
+- **CD** (`.github/workflows/release-pipeline.yml`): Triggered by push to `product` or manually (`workflow_dispatch`). Reads version from `gradle.properties`. Builds multi-arch Docker image → pushes to GHCR → deploys via SSH.
 - **Dockerfile** (`server/Dockerfile`): Two-stage build (gradle:8.12-jdk21 → eclipse-temurin:21-jre-alpine).
 
 ## Known Issues & Gotchas
