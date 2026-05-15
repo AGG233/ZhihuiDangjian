@@ -51,8 +51,54 @@ Registered via `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfi
 - **Module package base**: `com.rauio.smartdangjian.server.<module>.<layer>`
 - **Mappers**: `@Mapper` interface extending `BaseMapper<T>`, scanned from `com.rauio.smartdangjian`.
 
+## Development Workflow
+
+Two branches, no feature branches:
+
+```
+dev       日常开发，随时推送
+  ↓ 验证通过后合并到 product
+product   发布基线，推送后自动构建部署
+```
+
+### 日常流程
+
+```bash
+# dev 上开发
+git checkout dev
+# ...修改代码、提交...
+git push origin dev              # → 触发 CI（编译 + 测试 + bootJar）
+
+# 准备发版：dev → product
+git checkout product
+git merge dev
+# 修改 gradle.properties 版本号
+git add gradle.properties && git commit -m "chore: bump to x.x.x"
+git push origin product          # → 触发 CI + Release（Qodana → bootJar → Docker 镜像）
+```
+
+### 紧急修复
+
+```bash
+git checkout product
+# 修复、提交、推送
+git push origin product          # → 自动构建部署
+git checkout dev
+git merge product                # 修复同步回 dev
+```
+
+### 注意事项
+
+- **不要在 `product` 上开发新功能**，它只接收发版合并和紧急修复
+- **确保 `dev` 和 `product` 的 Gradle 版本一致**：`./gradlew wrapper --gradle-version 9.5.0`
+- 推送后去 [Actions](https://github.com/AGG233/ZhihuiDangjian/actions) 页面查看 CI/CD 运行状态
+
 ## CI/CD
 
-- **CI** (`.github/workflows/ci.yml`): Compiles + builds bootJar on push/PR to product/dev.
-- **CD** (`.github/workflows/release-cd.yml`): Triggered by `v*` tags. Builds multi-arch Docker image → pushes to GHCR → deploys via SSH.
-- **Dockerfile** (`server/Dockerfile`): Two-stage build (gradle:8.12-jdk21 → eclipse-temurin:21-jre-alpine).
+| 工作流 | 触发条件 | 执行内容 |
+|---|---|---|
+| `ci.yml` | 推送到 `product`/`dev` | compileJava → test → bootJar（含 Redis + Neo4j 服务容器）|
+| `release.yml` | 推送到 `product` | Qodana → bootJar → 构建并推送 Docker 镜像到 GHCR |
+| `qodana.yml` | 推送到 `product`/`dev` | Qodana 代码质量扫描 |
+
+- **Dockerfile** (`server/Dockerfile`): eclipse-temurin:21-jre-alpine，多阶段构建
