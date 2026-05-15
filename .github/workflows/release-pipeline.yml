@@ -18,7 +18,7 @@ permissions:
 env:
   REGISTRY: ghcr.io
   TCR_REGISTRY: ccr.ccs.tencentyun.com
-  TCR_NAMESPACE: zhihuidangjian
+  TCR_NAMESPACE: zhdj
 
 jobs:
   # ── Stage 1: Code Quality ────────────────────────────────────────────
