@@ -2,8 +2,8 @@ name: Release Pipeline
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - product
   workflow_dispatch:
 
 concurrency:
@@ -78,11 +78,9 @@ jobs:
         id: meta
         shell: bash
         run: |
-          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-            echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
-          else
-            echo "version=manual-${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
-          fi
+          VERSION=$(grep '^projectVersion=' gradle.properties | cut -d= -f2)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Using version: ${VERSION}"
 
       - name: Build bootJar
         run: ./gradlew --no-daemon clean :server:bootJar -x test
