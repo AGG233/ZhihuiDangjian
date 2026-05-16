@@ -7,6 +7,7 @@ import com.rauio.smartdangjian.aop.support.DataScopeResolver;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.constants.CategoryErrorConstants;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.content.pojo.dto.CategoryDto;
@@ -110,7 +111,7 @@ public class CategoryAccessAspect implements DataScopeResolver {
     private void assertCategoryInSameUniversity(CurrentUserPrincipal currentUser, String categoryId) {
         Category category = categoryService.getById(categoryId);
         if (category == null) {
-            throw new BusinessException(4001, "目录不存在");
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_NOT_FOUND, "目录不存在");
         }
         if (!belongsToCurrentUniversity(currentUser, category.getUniversityId())) {
             throw new BusinessException(ErrorConstants.RESOURCE_NOT_AUTHORIZED, "无权访问本校外分类");
@@ -120,7 +121,7 @@ public class CategoryAccessAspect implements DataScopeResolver {
     private void assertCategoryManageable(CurrentUserPrincipal currentUser, String categoryId) {
         Category category = categoryService.getById(categoryId);
         if (category == null) {
-            throw new BusinessException(4001, "目录不存在");
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_NOT_FOUND, "目录不存在");
         }
         if (StringUtils.isBlank(category.getUniversityId())) {
             throw new BusinessException(ErrorConstants.RESOURCE_NOT_AUTHORIZED, "公共分类仅系统管理员可维护");

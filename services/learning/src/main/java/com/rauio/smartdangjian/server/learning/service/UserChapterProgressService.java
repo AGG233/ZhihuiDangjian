@@ -3,6 +3,7 @@ package com.rauio.smartdangjian.server.learning.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.learning.constants.LearningErrorConstants;
 import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
 import com.rauio.smartdangjian.server.learning.pojo.convertor.UserChapterProgressConvertor;
 import com.rauio.smartdangjian.server.learning.pojo.dto.UserChapterProgressDto;
@@ -31,7 +32,7 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
     public UserChapterProgressVO get(String id) {
         UserChapterProgress progress = this.getById(id);
         if (progress == null) {
-            throw new BusinessException(4000, "进度记录不存在");
+            throw new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在");
         }
         return convertor.toVO(progress);
     }
@@ -74,7 +75,7 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
         wrapper.eq("user_id", userId).eq("chapter_id", chapterId);
         UserChapterProgress progress = this.getOne(wrapper);
         if (progress == null) {
-            throw new BusinessException(4000, "进度记录不存在");
+            throw new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在");
         }
         return convertor.toVO(progress);
     }
@@ -92,7 +93,7 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
         UserChapterProgress existing = this.getOne(wrapper);
         
         if (existing != null) {
-            throw new BusinessException(4000, "该用户的章节进度记录已存在");
+            throw new BusinessException(LearningErrorConstants.PROGRESS_ALREADY_EXISTS, "该用户的章节进度记录已存在");
         }
 
         UserChapterProgress progress = convertor.toEntity(dto);
@@ -103,7 +104,7 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
         }
 
         if (!this.save(progress)) {
-            throw new BusinessException(4000, "创建进度记录失败");
+            throw new BusinessException(LearningErrorConstants.PROGRESS_CREATE_FAILED, "创建进度记录失败");
         }
         return true;
     }
@@ -116,12 +117,12 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      */
     public Boolean update(UserChapterProgressDto dto) {
         if (dto.getId() == null) {
-            throw new BusinessException(4000, "更新时必须提供进度ID");
+            throw new BusinessException(LearningErrorConstants.PROGRESS_ID_REQUIRED, "更新时必须提供进度ID");
         }
 
         UserChapterProgress existing = this.getById(dto.getId());
         if (existing == null) {
-            throw new BusinessException(4000, "进度记录不存在");
+            throw new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在");
         }
 
         UserChapterProgress progress = convertor.toEntity(dto);
@@ -134,7 +135,7 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
 
         Boolean result = this.updateById(progress);
         if (!result) {
-            throw new BusinessException(4000, "更新进度记录失败");
+            throw new BusinessException(LearningErrorConstants.PROGRESS_UPDATE_FAILED, "更新进度记录失败");
         }
         return result;
     }
@@ -148,12 +149,12 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
     public Boolean delete(String id) {
         UserChapterProgress existing = this.getById(id);
         if (existing == null) {
-            throw new BusinessException(4000, "进度记录不存在");
+            throw new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在");
         }
 
         Boolean result = this.removeById(id);
         if (!result) {
-            throw new BusinessException(4000, "删除进度记录失败");
+            throw new BusinessException(LearningErrorConstants.PROGRESS_DELETE_FAILED, "删除进度记录失败");
         }
         return result;
     }

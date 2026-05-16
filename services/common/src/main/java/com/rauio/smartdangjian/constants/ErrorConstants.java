@@ -1,27 +1,19 @@
 package com.rauio.smartdangjian.constants;
 
 /**
- * 错误码常量定义
+ * 通用错误码常量定义（范围 1-99）
+ * 模块级错误码定义在各模块的 constants 包下
  */
 public class ErrorConstants {
 
+    public static final int NOT_FOUND = 1;
+    public static final int ARGS_ERROR = 2;
+    public static final int MAX_VALUE = 3;
+    public static final int MIN_VALUE = 4;
 
-    public static int NOT_FOUND = 404;
+    public static final int RESOURCE_NOT_AUTHORIZED = 10;
+    public static final int RESOURCE_NOT_EXISTS = 11;
+    public static final int RESOURCE_NOT_AVAILABLE = 12;
 
-    // 用户相关错误码
-    public static final int PHONE_EXISTS = 1001;
-    public static final int EMAIL_EXISTS = 1002;
-    public static final int USERNAME_EXISTS = 1003;
-    public static final int PARTY_MEMBER_ID_EXISTS = 1004;
-    public static final int USER_NOT_EXISTS = 1005;
-    
-    // 参数相关错误码
-    public static final int ARGS_ERROR      = 2001;
-    public static final int MAX_VALUE       = 2003;
-    public static final int MIN_VALUE       = 2004;
-
-    // 资源错误码
-    public static final int RESOURCE_NOT_EXISTS     = 4001;
-    public static final int RESOURCE_NOT_AVAILABLE  = 4002;
-    public static final int RESOURCE_NOT_AUTHORIZED = 4003;
+    public static final int USER_NOT_EXISTS = 15;
 }

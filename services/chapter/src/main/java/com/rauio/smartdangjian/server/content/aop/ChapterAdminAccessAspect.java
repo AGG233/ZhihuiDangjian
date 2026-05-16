@@ -7,6 +7,8 @@ import com.rauio.smartdangjian.aop.support.DataScopeResolver;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.constants.ChapterErrorConstants;
+import com.rauio.smartdangjian.server.content.constants.CourseErrorConstants;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
@@ -64,7 +66,7 @@ public class ChapterAdminAccessAspect implements DataScopeResolver {
     private void assertChapterInSameUniversity(CurrentUserPrincipal currentUser, String chapterId) {
         Chapter chapter = chapterMapper.selectById(chapterId);
         if (chapter == null) {
-            throw new BusinessException(4000, "章节不存在");
+            throw new BusinessException(ChapterErrorConstants.CHAPTER_NOT_FOUND, "章节不存在");
         }
         assertCourseInSameUniversity(currentUser, chapter.getCourseId());
     }
@@ -72,7 +74,7 @@ public class ChapterAdminAccessAspect implements DataScopeResolver {
     private void assertCourseInSameUniversity(CurrentUserPrincipal currentUser, String courseId) {
         Course course = courseMapper.selectById(courseId);
         if (course == null) {
-            throw new BusinessException(4000, "课程不存在");
+            throw new BusinessException(CourseErrorConstants.COURSE_NOT_FOUND, "课程不存在");
         }
         User creator = userMapper.selectById(course.getCreatorId());
         if (creator == null || !Objects.equals(currentUser.getUniversityId(), creator.getUniversityId())) {

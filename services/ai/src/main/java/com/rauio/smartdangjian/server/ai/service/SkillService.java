@@ -2,6 +2,8 @@ package com.rauio.smartdangjian.server.ai.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.ai.constants.AiErrorConstants;
 import com.rauio.smartdangjian.server.ai.mapper.AiSkillMapper;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiSkill;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiSkillCreateRequest;
@@ -36,7 +38,7 @@ public class SkillService extends ServiceImpl<AiSkillMapper, AiSkill> {
     public AiSkill update(String id, AiSkillUpdateRequest request) {
         AiSkill skill = this.getById(id);
         if (skill == null) {
-            throw new IllegalArgumentException("技能不存在: " + id);
+            throw new BusinessException(AiErrorConstants.SKILL_NOT_FOUND, "技能不存在: " + id);
         }
         if (request.getAgentType() != null) {
             skill.setAgentType(request.getAgentType().toUpperCase());

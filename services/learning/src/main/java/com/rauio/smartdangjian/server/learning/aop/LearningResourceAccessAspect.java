@@ -8,6 +8,7 @@ import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.server.learning.constants.LearningErrorConstants;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
 import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
@@ -123,14 +124,14 @@ public class LearningResourceAccessAspect implements DataScopeResolver {
             case DataScopeResources.LEARNING_RECORD -> {
                 UserLearningRecord record = learningRecordMapper.selectById(id);
                 if (record == null) {
-                    throw new BusinessException(4000, "学习记录不存在");
+                    throw new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "学习记录不存在");
                 }
                 yield record.getUserId();
             }
             case DataScopeResources.CHAPTER_PROGRESS -> {
                 UserChapterProgress progress = chapterProgressMapper.selectById(id);
                 if (progress == null) {
-                    throw new BusinessException(4000, "进度记录不存在");
+                    throw new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在");
                 }
                 yield progress.getUserId();
             }

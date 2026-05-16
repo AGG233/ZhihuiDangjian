@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.server.graph.service;
 
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.graph.constants.GraphErrorConstants;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
@@ -37,15 +38,15 @@ public class KnowledgeGraphService {
     public void upsertLearningGraph(String userId, String chapterId) {
         User user = userMapper.selectById(userId);
         if (user == null) {
-            throw new BusinessException(4000, "用户不存在");
+            throw new BusinessException(GraphErrorConstants.USER_NOT_FOUND, "用户不存在");
         }
         Chapter chapter = chapterMapper.selectById(chapterId);
         if (chapter == null) {
-            throw new BusinessException(4000, "章节不存在");
+            throw new BusinessException(GraphErrorConstants.CHAPTER_NOT_FOUND, "章节不存在");
         }
         Course course = courseMapper.selectById(chapter.getCourseId());
         if (course == null) {
-            throw new BusinessException(4000, "课程不存在");
+            throw new BusinessException(GraphErrorConstants.COURSE_NOT_FOUND, "课程不存在");
         }
 
         String userName = user.getRealName() != null ? user.getRealName() : user.getUsername();

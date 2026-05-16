@@ -29,7 +29,7 @@ public class UserAspect {
         }
 
         if (annotation == null) {
-            throw new RuntimeException("权限注解不存在");
+            throw new BusinessException(ErrorConstants.RESOURCE_NOT_AUTHORIZED, "权限注解不存在");
         }
 
         UserType currentUserType = SecurityUtils.getCurrentUserType();

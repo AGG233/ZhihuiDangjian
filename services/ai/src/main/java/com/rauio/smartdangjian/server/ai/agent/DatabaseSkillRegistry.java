@@ -2,6 +2,8 @@ package com.rauio.smartdangjian.server.ai.agent;
 
 import com.alibaba.cloud.ai.graph.skills.SkillMetadata;
 import com.alibaba.cloud.ai.graph.skills.registry.SkillRegistry;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.ai.constants.AiErrorConstants;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiSkill;
 import com.rauio.smartdangjian.server.ai.service.SkillService;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
@@ -80,7 +82,7 @@ public class DatabaseSkillRegistry implements SkillRegistry {
     public String readSkillContent(String name) {
         SkillMetadata metadata = cache.get(name);
         if (metadata == null) {
-            throw new IllegalStateException("Skill not found: " + name);
+            throw new BusinessException(AiErrorConstants.SKILL_NOT_IN_CACHE, "Skill not found: " + name);
         }
         return metadata.getFullContent();
     }

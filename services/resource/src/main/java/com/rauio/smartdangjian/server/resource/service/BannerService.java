@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.server.resource.service;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.response.BannerResourceResponse;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +51,7 @@ public class BannerService {
         validateOrder(order);
         Object hash = redisTemplate.opsForList().index(BANNER_PREFIX, order);
         if (!(hash instanceof String bannerHash) || !StringUtils.isNotBlank(bannerHash)) {
-            throw new BusinessException(4000, "轮播图不存在");
+            throw new BusinessException(ResourceErrorConstants.BANNER_NOT_FOUND, "轮播图不存在");
         }
         return resourceMetaService.getByHash(bannerHash);
     }
@@ -116,31 +117,31 @@ public class BannerService {
 
     private void appendBanner(String hash) {
         if (!StringUtils.isNotBlank(hash)) {
-            throw new BusinessException(4000, "轮播图资源不能为空");
+            throw new BusinessException(ResourceErrorConstants.BANNER_RESOURCE_EMPTY, "轮播图资源不能为空");
         }
         Long size = redisTemplate.opsForList().size(BANNER_PREFIX);
         if (size != null && size >= BANNER_MAX_SIZE) {
-            throw new BusinessException(4000, "轮播图数量已达上限");
+            throw new BusinessException(ResourceErrorConstants.BANNER_MAX_SIZE, "轮播图数量已达上限");
         }
         if (contains(hash)) {
-            throw new BusinessException(4000, "该资源已存在于轮播图中");
+            throw new BusinessException(ResourceErrorConstants.BANNER_ALREADY_EXISTS, "该资源已存在于轮播图中");
         }
         Long result = redisTemplate.opsForList().rightPush(BANNER_PREFIX, hash);
         if (result == null) {
-            throw new BusinessException(4000, "轮播图创建失败");
+            throw new BusinessException(ResourceErrorConstants.BANNER_CREATE_FAILED, "轮播图创建失败");
         }
     }
 
     private void replaceBanner(int order, String hash) {
         if (!StringUtils.isNotBlank(hash)) {
-            throw new BusinessException(4000, "轮播图资源不能为空");
+            throw new BusinessException(ResourceErrorConstants.BANNER_RESOURCE_EMPTY, "轮播图资源不能为空");
         }
         Object current = redisTemplate.opsForList().index(BANNER_PREFIX, order);
         if (hash.equals(current)) {
             return;
         }
         if (contains(hash)) {
-            throw new BusinessException(4000, "该资源已存在于轮播图中");
+            throw new BusinessException(ResourceErrorConstants.BANNER_ALREADY_EXISTS, "该资源已存在于轮播图中");
         }
         redisTemplate.opsForList().set(BANNER_PREFIX, order, hash);
     }
@@ -156,7 +157,7 @@ public class BannerService {
     private void validateOrder(int order) {
         Long size = redisTemplate.opsForList().size(BANNER_PREFIX);
         if (size == null || order < 0 || order >= size) {
-            throw new BusinessException(4000, "轮播图不存在");
+            throw new BusinessException(ResourceErrorConstants.BANNER_NOT_FOUND, "轮播图不存在");
         }
     }
 

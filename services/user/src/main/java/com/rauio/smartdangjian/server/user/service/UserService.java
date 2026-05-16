@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.aop.annotation.RequireUser;
-import com.rauio.smartdangjian.constants.ErrorConstants;
+import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
@@ -193,14 +193,14 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      */
     public Boolean changePassword(String oldPassword, String newPassword) {
         if (oldPassword == null || oldPassword.isEmpty()){
-            throw new BusinessException(ErrorConstants.ARGS_ERROR,"有空参数");
+            throw new BusinessException(UserErrorConstants.EMPTY_ARGS,"有空参数");
         }
         User user = getCurrentUser();
         if (user.getPassword().equals(oldPassword)){
             user.setPassword(passwordEncoder.encode(newPassword));
             return this.updateById(user);
         }
-        throw new RuntimeException("修改密码时出现错误");
+        throw new BusinessException(UserErrorConstants.PASSWORD_CHANGE_ERROR, "修改密码时出现错误");
     }
 
     /**
@@ -210,7 +210,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      */
     public Boolean isUserBelongsSchool(String id, String schoolId) {
         if (schoolId == null) {
-            throw new BusinessException(ErrorConstants.ARGS_ERROR,"有空参数");
+            throw new BusinessException(UserErrorConstants.EMPTY_ARGS,"有空参数");
         }
         User targetUser = this.getById(id);
         return targetUser != null
@@ -276,7 +276,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     private void checkEmailRegistered(String email) {
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<User>().eq(User::getEmail, email);
         if (this.exists(queryWrapper)) {
-            throw new BusinessException(ErrorConstants.EMAIL_EXISTS,"该邮箱已被注册");
+            throw new BusinessException(UserErrorConstants.EMAIL_EXISTS,"该邮箱已被注册");
         }
     }
 
@@ -288,7 +288,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     private void checkPhoneRegistered(String phone) {
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<User>().eq(User::getPhone, phone);
         if (this.exists(queryWrapper)) {
-            throw new BusinessException(ErrorConstants.PHONE_EXISTS, "该手机号已被注册");
+            throw new BusinessException(UserErrorConstants.PHONE_EXISTS, "该手机号已被注册");
         }
     }
 
@@ -300,7 +300,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     private void checkUsernameOccupied(String username) {
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<User>().eq(User::getUsername, username);
         if (this.exists(queryWrapper)) {
-            throw new BusinessException(ErrorConstants.USERNAME_EXISTS, "该昵称已被占用");
+            throw new BusinessException(UserErrorConstants.USERNAME_EXISTS, "该昵称已被占用");
         }
     }
 
@@ -312,7 +312,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     private void checkPartyMemberId(String partyMemberId) {
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<User>().eq(User::getPartyMemberId, partyMemberId);
         if (this.exists(queryWrapper)) {
-            throw new BusinessException(ErrorConstants.PARTY_MEMBER_ID_EXISTS, "党员编号已存在");
+            throw new BusinessException(UserErrorConstants.PARTY_MEMBER_ID_EXISTS, "党员编号已存在");
         }
     }
 }

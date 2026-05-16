@@ -2,6 +2,8 @@ package com.rauio.smartdangjian.server.ai.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.ai.constants.AiErrorConstants;
 import com.rauio.smartdangjian.server.ai.mapper.AiPromptsMapper;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiPrompts;
 import com.rauio.smartdangjian.server.ai.pojo.enums.PromptRoleEnum;
@@ -36,7 +38,7 @@ public class PromptService extends ServiceImpl<AiPromptsMapper, AiPrompts> {
     public AiPrompts update(String id, AiPromptUpdateRequest request) {
         AiPrompts prompt = this.getById(id);
         if (prompt == null) {
-            throw new IllegalArgumentException("提示词不存在: " + id);
+            throw new BusinessException(AiErrorConstants.PROMPT_NOT_FOUND, "提示词不存在: " + id);
         }
         if (request.getAgentType() != null) {
             prompt.setAgentType(request.getAgentType().toUpperCase());

@@ -1,7 +1,7 @@
 package com.rauio.smartdangjian.controller.admin;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.constants.ErrorConstants;
+import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.user.controller.admin.AdminUserController;
@@ -463,13 +463,13 @@ class AdminUserControllerTest {
         @DisplayName("Service 抛出 BusinessException 返回 400 并携带错误码和消息")
         void searchServiceThrowsBusinessException() throws Exception {
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
-                    .thenThrow(new BusinessException(ErrorConstants.USER_NOT_EXISTS, "用户不存在"));
+                    .thenThrow(new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户不存在"));
 
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("1005"))
+                    .andExpect(jsonPath("$.code").value("2005"))
                     .andExpect(jsonPath("$.message").value("用户不存在"));
         }
 
@@ -834,7 +834,7 @@ class AdminUserControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4003"));
+                    .andExpect(jsonPath("$.code").value("10"));
         }
 
         /**

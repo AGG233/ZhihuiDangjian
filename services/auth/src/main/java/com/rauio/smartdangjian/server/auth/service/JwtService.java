@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rauio.smartdangjian.constants.SecurityConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -70,24 +71,24 @@ public class JwtService{
 
             String userId = decodedJWT.getSubject();
             if (!StringUtils.hasText(userId)) {
-                throw new BusinessException(401, "令牌格式错误：Subject为空");
+                throw new BusinessException(AuthErrorConstants.TOKEN_INVALID_SUBJECT, "令牌格式错误：Subject为空");
             }
 
             User user = getUserFromCacheOrDb(userId);
             if (user == null) {
-                throw new BusinessException(401, "用户不存在或已被删除");
+                throw new BusinessException(AuthErrorConstants.TOKEN_USER_NOT_FOUND, "用户不存在或已被删除");
             }
 
             return user;
 
         } catch (TokenExpiredException e) {
-            throw new BusinessException(401, "登录已过期，请重新登录");
+            throw new BusinessException(AuthErrorConstants.TOKEN_EXPIRED, "登录已过期，请重新登录");
         } catch (JWTVerificationException e) {
             log.error("JWT验证失败: {}", e.getMessage());
-            throw new BusinessException(401, "身份验证失败，请重新登录");
+            throw new BusinessException(AuthErrorConstants.TOKEN_VERIFICATION_FAILED, "身份验证失败，请重新登录");
         } catch (Exception e) {
             log.error("Token处理异常", e);
-            throw new BusinessException(500, "服务器验证身份时出错");
+            throw new BusinessException(AuthErrorConstants.TOKEN_SERVER_ERROR, "服务器验证身份时出错");
         }
     }
 
@@ -199,7 +200,7 @@ public class JwtService{
         try {
             return JWT.decode(token);
         }catch (Exception e){
-            throw new BusinessException(404,"令牌错误，请重新登录");
+            throw new BusinessException(AuthErrorConstants.TOKEN_DECODE_ERROR,"令牌错误，请重新登录");
         }
     }
 

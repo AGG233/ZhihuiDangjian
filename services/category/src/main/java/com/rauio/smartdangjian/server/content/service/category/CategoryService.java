@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.server.content.constants.CategoryErrorConstants;
 import com.rauio.smartdangjian.server.content.mapper.CategoryMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.CategoryConvertor;
 import com.rauio.smartdangjian.server.content.pojo.dto.CategoryDto;
@@ -37,7 +38,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
         Category category = super.getById(id);
         List<CategoryVO> children;
         if (category == null){
-            throw new BusinessException(4001,"目录不存在");
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_NOT_FOUND,"目录不存在");
         }
 
         CategoryVO parent = convertor.toVO(category);
@@ -83,7 +84,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      */
     public Boolean create(CategoryDto dto) {
         if (dto == null) {
-            throw new BusinessException(4001,"参数错误");
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_ARGS_ERROR,"参数错误");
         }
 
         Category category = convertor.toEntity(dto);
@@ -94,7 +95,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
 
         List<CategoryDto> childrenNode = dto.getChildrenNode();
         if (childrenNode == null || childrenNode.isEmpty()) {
-            throw new BusinessException(4001, "参数错误");
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_ARGS_ERROR, "参数错误");
         }
         return createByParentId(childrenNode, category.getId());
     }
@@ -109,10 +110,10 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
     public Boolean createByParentId(List<CategoryDto> children, String parentId) {
         Category parent = super.getById(parentId);
         if (parent == null || children == null) {
-            throw new BusinessException(4001, "目录或子目录不存在");
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_OR_CHILD_NOT_FOUND, "目录或子目录不存在");
         }
         if (parent.getLevel() >= MAX_LEVEL) {
-            throw new BusinessException(4001, "目录层级不能超过3级");
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_MAX_LEVEL, "目录层级不能超过3级");
         }
 
         for (CategoryDto dto : children){
@@ -124,7 +125,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
             if (node.getLevel() < MAX_LEVEL){
                 this.save(node);
             }else {
-                throw new BusinessException(4001,"目录层级不能超过3级");
+                throw new BusinessException(CategoryErrorConstants.CATEGORY_MAX_LEVEL,"目录层级不能超过3级");
             }
 
             List<CategoryDto> nodeChildren = dto.getChildrenNode();
@@ -144,7 +145,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
     public Boolean delete(String categoryId) {
         if (!this.list(new LambdaQueryWrapper<Category>()
                 .eq(Category::getParentId, categoryId)).isEmpty()) {
-            throw new BusinessException(4001, "该目录有子目录，请先删除子目录");
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_HAS_CHILDREN, "该目录有子目录，请先删除子目录");
         }
         return this.removeById(categoryId);
     }
@@ -158,7 +159,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
     public Boolean deleteByIdWithChildren(String categoryId){
         Category category = super.getById(categoryId);
         if (category == null) {
-            throw new BusinessException(4001, "目录不存在");
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_NOT_FOUND, "目录不存在");
         }
 
         List<Category> children = this.list(new LambdaQueryWrapper<Category>()
@@ -178,11 +179,11 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      */
     public Boolean update(CategoryDto dto, String id) {
         if (dto == null) {
-            throw new BusinessException(4001,"参数错误");
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_ARGS_ERROR,"参数错误");
         }
         Category existing = super.getById(id);
         if (existing == null) {
-            throw new BusinessException(4001, "目录不存在");
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_NOT_FOUND, "目录不存在");
         }
 
         Category category = convertor.toEntity(dto);
@@ -196,7 +197,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
     private String resolveRootCategoryUniversityId() {
         CurrentUserPrincipal currentUser = SecurityUtils.getCurrentUser();
         if (currentUser == null) {
-            throw new BusinessException(4001, "当前用户不存在");
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_USER_NOT_FOUND, "当前用户不存在");
         }
         if (currentUser.getUserType() == UserType.MANAGER) {
             return null;

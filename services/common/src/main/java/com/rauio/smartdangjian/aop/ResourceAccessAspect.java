@@ -1,6 +1,8 @@
 package com.rauio.smartdangjian.aop;
 
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
+import com.rauio.smartdangjian.constants.ErrorConstants;
+import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.utils.SecurityUtils;
 import com.rauio.smartdangjian.utils.spec.UserType;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +47,7 @@ public class ResourceAccessAspect {
         if (targetUser.equals(currentUser)) {
             return joinPoint.proceed();
         }
-        throw new RuntimeException("权限不足");
+        throw new BusinessException(ErrorConstants.RESOURCE_NOT_AUTHORIZED, "权限不足");
     }
 
     private String getTargetUserId(ProceedingJoinPoint joinPoint, String spelExpression) {
@@ -75,7 +77,7 @@ public class ResourceAccessAspect {
 
     private void validateExpression(String expression) {
         if (!SAFE_SPEL_PATTERN.matcher(expression).matches()) {
-            throw new IllegalArgumentException("非法SpEL表达式");
+            throw new BusinessException(ErrorConstants.ARGS_ERROR, "非法SpEL表达式");
         }
     }
 }
