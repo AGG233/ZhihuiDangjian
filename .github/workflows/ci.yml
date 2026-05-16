@@ -6,8 +6,9 @@ on:
       - product
       - dev
     paths:
-      - services
-      - server
+      - 'services/**'
+      - 'server/**'
+      - '.github/workflows/ci.yml'
   pull_request:
     branches:
       - product
