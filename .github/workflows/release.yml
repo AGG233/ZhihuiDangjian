@@ -23,11 +23,25 @@ jobs:
   quality:
     name: SonarQube Code Quality
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       pull-requests: write
       checks: write
       security-events: write
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+      neo4j:
+        image: neo4j:5-community
+        env:
+          NEO4J_AUTH: none
+        ports:
+          - 7687:7687
+
     steps:
       - uses: actions/checkout@v4
         with:
