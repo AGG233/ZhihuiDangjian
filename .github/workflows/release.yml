@@ -19,64 +19,16 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  # ── Stage 1: Code Quality ────────────────────────────────────────────
-  quality:
-    name: SonarQube Code Quality
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    permissions:
-      contents: read
-      pull-requests: write
-      checks: write
-      security-events: write
-
-    services:
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-      neo4j:
-        image: neo4j:5-community
-        env:
-          NEO4J_AUTH: none
-        ports:
-          - 7687:7687
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Build and test with coverage
-        run: ./gradlew --no-daemon test jacocoTestReport
-
-      - name: Official SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v8.0.0
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-      - name: SonarQube Quality Gate Check
-        uses: SonarSource/sonarqube-quality-gate-action@v1.2.0
-        continue-on-error: true
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-  # ── Stage 3: Build & Push Docker Image ───────────────────────────────
+  # ── Stage 1: Build & Push Docker Image ───────────────────────────────
   release:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: quality
+    permissions:
+      contents: read
+      security-events: write
+      packages: write
+    needs: []
     outputs:
       version: ${{ steps.meta.outputs.version }}
     steps:
@@ -152,4 +104,4 @@ jobs:
           echo "| Version | \`${{ needs.release.outputs.version }}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Trigger | \`${{ github.event_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Commit | \`${{ github.sha }}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Pipeline | quality → release |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Pipeline | build → release |" >> "$GITHUB_STEP_SUMMARY"

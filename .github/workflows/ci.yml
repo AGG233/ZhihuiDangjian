@@ -60,8 +60,15 @@ jobs:
       - name: Compile sources
         run: ./gradlew --no-daemon compileJava
 
-      - name: Run tests
-        run: ./gradlew --no-daemon test
+      - name: Run tests with coverage
+        run: ./gradlew --no-daemon test jacocoTestReport
+
+      - name: Upload coverage to Codacy
+        if: always()
+        uses: codacy/codacy-coverage-reporter-action@v1
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: server/build/reports/jacoco/test/jacocoTestReport.xml
 
       - name: Build server bootJar
         run: ./gradlew --no-daemon clean :server:bootJar -x test

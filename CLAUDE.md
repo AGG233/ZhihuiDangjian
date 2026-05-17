@@ -121,8 +121,7 @@ git merge product                # 修复同步回 dev
 
 | 工作流 | 触发条件 | 执行内容 |
 |---|---|---|
-| `ci.yml` | PR `dev`→`product` | compileJava → test → bootJar（含 Redis + Neo4j 服务容器）|
-| `release.yml` | 推送到 `product` | Semgrep → SonarQube + Quality Gate → bootJar → Docker 镜像（GHCR）|
-| `sonarqube_code_quality.yml` | PR `dev`→`product` | compileJava → SonarQube Scan → Quality Gate Check |
+| `ci.yml` | PR `dev`→`product` | compileJava → test + JaCoCo → Codacy 覆盖率上传 → bootJar（含 Redis + Neo4j 服务容器）|
+| `release.yml` | 推送到 `product` | bootJar → Docker 镜像（GHCR）|
 
 - **Dockerfile** (`server/Dockerfile`): eclipse-temurin:21-jre-alpine，多阶段构建
