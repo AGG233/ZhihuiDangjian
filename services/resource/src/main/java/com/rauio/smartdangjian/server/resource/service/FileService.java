@@ -5,6 +5,7 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.resource.Constant.ResourceConstant;
 import com.rauio.smartdangjian.server.resource.Constant.ResourceStatusConstants;
 import com.rauio.smartdangjian.server.resource.Constant.ResourceTypeConstants;
+import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaCreateRequest;
 import com.rauio.smartdangjian.server.resource.pojo.request.UploadFileRequest;
@@ -41,7 +42,7 @@ public class FileService {
         String objectKey = path + filename;
 
         ResourceMetaCreateRequest createRequest = new ResourceMetaCreateRequest();
-        createRequest.setUploaderId(userService.getCurrentUserId());
+        createRequest.setUploaderId(request.getUserId() != null ? request.getUserId() : userService.getCurrentUserId());
         createRequest.setOriginalName(request.getFileName());
         createRequest.setHash(uuid);
         createRequest.setObjectKey(objectKey);
@@ -72,6 +73,9 @@ public class FileService {
         ResourceMeta meta = resourceMetaService.get(resourceId);
         if (meta.getStatus() != null && meta.getStatus() == ResourceStatusConstants.PUBLIC) {
             return meta;
+        }
+        if (!fileStorageService.exists(buildFileInfo(meta.getObjectKey()))) {
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "文件尚未上传到存储服务器，请先上传");
         }
         meta.setStatus(ResourceStatusConstants.PUBLIC);
         resourceMetaService.updateById(meta);

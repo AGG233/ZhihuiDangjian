@@ -1,11 +1,14 @@
 package com.rauio.smartdangjian.server.content.controller.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
+import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
 import com.rauio.smartdangjian.server.content.pojo.vo.PageVO;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,6 +41,8 @@ public class UserCourseController {
 
     @Operation(summary = "获取用户已学习课程", description = "根据用户ID获取已学习课程列表")
     @GetMapping("/learned/{id}")
+    @PermissionAccess(UserType.STUDENT)
+    @ResourceAccess(id = "#id")
     public Result<List<Course>> getByUserIdCourses(@PathVariable String id) {
         return Result.ok(courseService.getByUserId(id));
     }

@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.controller.user;
 
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.ai.constants.AiChatResponseType;
 import com.rauio.smartdangjian.server.ai.controller.user.UserChatController;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiChatRequest;
@@ -17,16 +18,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.web.bind.annotation.PostMapping;
 import reactor.core.publisher.Flux;
 
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -63,40 +67,43 @@ class UserChatControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST / - SSE 聊天成功")
         void chatSuccess() throws Exception {
-            when(llmService.chat(any(AiChatRequest.class))).thenReturn(Flux.empty());
+            when(llmService.chat(any(AiChatRequest.class))).thenReturn(
+                    Flux.just(new AiChatResponse("assistant", "回复内容", null, AiChatResponseType.TEXT, null))
+            );
 
             mockMvc.perform(post("/api/ai/chat")
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.TEXT_EVENT_STREAM)
                             .content("{\"message\":\"hello\"}"))
-                    .andExpect(status().isOk())
-                    .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM_VALUE));
+                    .andExpect(status().isOk());
         }
 
         @Test
         @DisplayName("POST /evaluation - SSE 学习评估成功（兼容垫片）")
         void evaluateSuccess() throws Exception {
-            when(llmService.chat(any(AiChatRequest.class))).thenReturn(Flux.empty());
+            when(llmService.chat(any(AiChatRequest.class))).thenReturn(
+                    Flux.just(new AiChatResponse("assistant", "评估结果", null, AiChatResponseType.TEXT, null))
+            );
 
             mockMvc.perform(post("/api/ai/chat/evaluation")
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.TEXT_EVENT_STREAM)
                             .content("{}"))
-                    .andExpect(status().isOk())
-                    .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM_VALUE));
+                    .andExpect(status().isOk());
         }
 
         @Test
         @DisplayName("POST /quiz - SSE 测试小题成功（兼容垫片）")
         void quizSuccess() throws Exception {
-            when(llmService.chat(any(AiChatRequest.class))).thenReturn(Flux.empty());
+            when(llmService.chat(any(AiChatRequest.class))).thenReturn(
+                    Flux.just(new AiChatResponse("assistant", "测试题", null, AiChatResponseType.TEXT, null))
+            );
 
             mockMvc.perform(post("/api/ai/chat/quiz")
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.TEXT_EVENT_STREAM)
                             .content("{\"topic\":\"党的纪律建设\"}"))
-                    .andExpect(status().isOk())
-                    .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM_VALUE));
+                    .andExpect(status().isOk());
         }
 
         @Test
@@ -122,6 +129,14 @@ class UserChatControllerTest extends BaseControllerTest {
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.length()").value(1))
                     .andExpect(jsonPath("$.data[0].id").value("msg-1"));
+        }
+
+        @Test
+        @DisplayName("流式接口声明 SSE 响应类型")
+        void streamingEndpointsDeclareSseMediaType() throws Exception {
+            assertPostMappingProducesSse("chat", AiChatRequest.class);
+            assertPostMappingProducesSse("evaluate", com.rauio.smartdangjian.server.ai.pojo.request.AiEvaluationRequest.class);
+            assertPostMappingProducesSse("quiz", com.rauio.smartdangjian.server.ai.pojo.request.AiQuizRequest.class);
         }
     }
 
@@ -264,5 +279,16 @@ class UserChatControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/ai/chat/session-1/messages"))
                     .andExpect(status().isMethodNotAllowed());
         }
+    }
+
+    private void assertPostMappingProducesSse(String methodName, Class<?> parameterType) throws NoSuchMethodException {
+        Method method = UserChatController.class.getDeclaredMethod(methodName, parameterType);
+        PostMapping postMapping = method.getAnnotation(PostMapping.class);
+
+        assertThat(postMapping)
+                .as("%s must declare @PostMapping", methodName)
+                .isNotNull();
+        assertThat(Arrays.asList(postMapping.produces()))
+                .contains(MediaType.TEXT_EVENT_STREAM_VALUE);
     }
 }

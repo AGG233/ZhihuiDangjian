@@ -56,7 +56,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
         Page<UserLearningRecord> pageInfo = new Page<>(pageNum,pageSize);
 
         LambdaQueryWrapper<UserLearningRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(StringUtils.isNotBlank(dto.getUserId()),UserLearningRecord::getId,dto.getUserId())
+        wrapper.eq(StringUtils.isNotBlank(dto.getUserId()),UserLearningRecord::getUserId,dto.getUserId())
                 .like(StringUtils.isNotBlank(dto.getChapterId()),UserLearningRecord::getChapterId,dto.getChapterId())
                 .eq(StringUtils.isNotBlank(dto.getDeviceType()),UserLearningRecord::getDeviceType,dto.getDeviceType())
                 .like(dto.getCreatedAt() != null,UserLearningRecord::getCreatedAt,dto.getCreatedAt());

@@ -200,7 +200,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
             throw new BusinessException(UserErrorConstants.EMPTY_ARGS,"有空参数");
         }
         User user = getCurrentUser();
-        if (user.getPassword().equals(oldPassword)){
+        if (passwordEncoder.matches(oldPassword, user.getPassword())){
             user.setPassword(passwordEncoder.encode(newPassword));
             return this.updateById(user);
         }

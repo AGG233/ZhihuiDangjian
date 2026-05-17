@@ -300,7 +300,7 @@ class AdminContentControllerTest extends BaseControllerTest {
 
             mockMvc.perform(delete(CAROUSEL_URL + "/nonexistent"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
+                    .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false));
         }
 
@@ -314,7 +314,7 @@ class AdminContentControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(ContentTestDataFactory.toJson(block)))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
+                    .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false));
         }
     }

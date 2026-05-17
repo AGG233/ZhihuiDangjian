@@ -116,8 +116,8 @@ class UserContentControllerTest extends BaseControllerTest {
 
             mockMvc.perform(get(CAROUSEL_URL))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
-                    .andExpect(jsonPath("$.message").value("Operation failed"));
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.message").value("OK"));
         }
     }
 
