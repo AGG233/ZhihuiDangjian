@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.resource.Constant.ResourceStatusConstants;
+import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 import com.rauio.smartdangjian.server.resource.mapper.ResourceMetaMapper;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaCreateRequest;
@@ -32,7 +33,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
                 .status(request.getStatus() != null ? request.getStatus() : ResourceStatusConstants.PUBLIC)
                 .build();
         if (!this.save(meta)) {
-            throw new BusinessException(4000, "创建资源失败");
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_CREATE_FAILED, "创建资源失败");
         }
         return meta;
     }
@@ -40,7 +41,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
     public ResourceMeta get(String id) {
         ResourceMeta meta = this.getById(id);
         if (meta == null) {
-            throw new BusinessException(4000, "资源不存在");
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在");
         }
         return meta;
     }
@@ -51,7 +52,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
                 .eq(ResourceMeta::getHash, hash)
                 .last("limit 1"));
         if (meta == null) {
-            throw new BusinessException(4000, "资源不存在");
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在");
         }
         return meta;
     }
@@ -87,7 +88,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
                 .build();
 
         if (!this.updateById(meta)) {
-            throw new BusinessException(4000, "更新资源失败");
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_UPDATE_FAILED, "更新资源失败");
         }
         return true;
     }
@@ -96,7 +97,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         this.get(id);
 
         if (!this.removeById(id)) {
-            throw new BusinessException(4000, "删除资源失败");
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_DELETE_FAILED, "删除资源失败");
         }
         return true;
     }
@@ -106,7 +107,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
                 .eq(ResourceMeta::getHash, hash)
                 .last("limit 1"));
         if (meta == null) {
-            throw new BusinessException(4000, "资源不存在");
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在");
         }
         return delete(meta.getId());
     }
@@ -123,14 +124,14 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
                 .eq(StringUtils.isNotBlank(hash), ResourceMeta::getHash, hash)
                 .last("limit 1"));
         if (sameHash != null && !sameHash.getId().equals(currentId)) {
-            throw new BusinessException(4000, "资源哈希已存在");
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_HASH_EXISTS, "资源哈希已存在");
         }
 
         ResourceMeta sameObjectKey = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
                 .eq(StringUtils.isNotBlank(objectKey), ResourceMeta::getObjectKey, objectKey)
                 .last("limit 1"));
         if (sameObjectKey != null && !sameObjectKey.getId().equals(currentId)) {
-            throw new BusinessException(4000, "对象存储键已存在");
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_OBJECT_KEY_EXISTS, "对象存储键已存在");
         }
     }
 }

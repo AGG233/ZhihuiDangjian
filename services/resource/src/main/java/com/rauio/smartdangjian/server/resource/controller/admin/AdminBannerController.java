@@ -3,6 +3,7 @@ package com.rauio.smartdangjian.server.resource.controller.admin;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.BannerCreateRequest;
@@ -63,6 +64,6 @@ public class AdminBannerController {
         if (StringUtils.isNotBlank(hash)) {
             return create ? bannerService.createByHash(hash) : bannerService.updateByHash(order, hash);
         }
-        throw new BusinessException(4000, "resourceId和hash不能同时为空");
+        throw new BusinessException(ResourceErrorConstants.BANNER_ID_AND_HASH_EMPTY, "resourceId和hash不能同时为空");
     }
 }

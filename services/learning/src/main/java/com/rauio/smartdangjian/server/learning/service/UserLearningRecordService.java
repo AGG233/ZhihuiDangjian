@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.learning.constants.LearningErrorConstants;
 import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
 import com.rauio.smartdangjian.server.learning.pojo.convertor.UserLearningRecordConvertor;
@@ -37,7 +38,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
     public UserLearningRecordVO get(String id) {
         UserLearningRecord record = this.getById(id);
         if (record == null) {
-            throw new BusinessException(4000, "学习记录不存在");
+            throw new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "学习记录不存在");
         }
         return convertor.toVO(record);
     }
@@ -194,7 +195,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
 
         Boolean result = this.save(record);
         if (!result) {
-            throw new BusinessException(4000, "创建学习记录失败");
+            throw new BusinessException(LearningErrorConstants.RECORD_CREATE_FAILED, "创建学习记录失败");
         }
         if (record.getUserId() != null && record.getChapterId() != null) {
             knowledgeGraphService.upsertLearningGraph(record.getUserId(), record.getChapterId());
@@ -210,12 +211,12 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      */
     public Boolean update(UserLearningRecordDto dto) {
         if (dto.getId() == null) {
-            throw new BusinessException(4000, "更新时必须提供记录ID");
+            throw new BusinessException(LearningErrorConstants.RECORD_ID_REQUIRED, "更新时必须提供记录ID");
         }
 
         UserLearningRecord existing = this.getById(dto.getId());
         if (existing == null) {
-            throw new BusinessException(4000, "学习记录不存在");
+            throw new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "学习记录不存在");
         }
 
         UserLearningRecord record = convertor.toEntity(dto);
@@ -228,7 +229,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
 
         Boolean result = this.updateById(record);
         if (!result) {
-            throw new BusinessException(4000, "更新学习记录失败");
+            throw new BusinessException(LearningErrorConstants.RECORD_UPDATE_FAILED, "更新学习记录失败");
         }
         return result;
     }
@@ -242,12 +243,12 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
     public Boolean delete(String id) {
         UserLearningRecord existing = this.getById(id);
         if (existing == null) {
-            throw new BusinessException(4000, "学习记录不存在");
+            throw new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "学习记录不存在");
         }
 
         Boolean result = this.removeById(id);
         if (!result) {
-            throw new BusinessException(4000, "删除学习记录失败");
+            throw new BusinessException(LearningErrorConstants.RECORD_DELETE_FAILED, "删除学习记录失败");
         }
         return result;
     }

@@ -10,6 +10,8 @@ import com.rauio.smartdangjian.server.auth.pojo.response.LoginResponse;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
+import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
+import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,8 +21,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-
-import static com.rauio.smartdangjian.constants.ErrorConstants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +34,7 @@ public class AuthService {
 
     public LoginResponse login(LoginRequest loginRequest) {
         if (!captchaService.validate(loginRequest.getCaptchaUUID(), loginRequest.getCaptchaCode())) {
-            throw new BusinessException(ARGS_ERROR, "验证码错误");
+            throw new BusinessException(AuthErrorConstants.CAPTCHA_ERROR, "验证码错误");
         }
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -49,7 +49,7 @@ public class AuthService {
 
             return LoginResponse.builder().accessToken(accessToken).build();
         }catch (Exception e){
-            throw new BusinessException("密码错误");
+            throw new BusinessException(AuthErrorConstants.PASSWORD_ERROR, "密码错误");
         }
 
 
@@ -62,7 +62,7 @@ public class AuthService {
 
     public Result<Object> register(RegisterRequest registerRequest) {
         if (!captchaService.validate(registerRequest.getCaptchaUUID(), registerRequest.getCaptchaCode())) {
-            throw new BusinessException(ARGS_ERROR, "验证码错误");
+            throw new BusinessException(AuthErrorConstants.CAPTCHA_ERROR, "验证码错误");
         }
 
         checkEmailRegistered(registerRequest.getEmail());
@@ -95,16 +95,16 @@ public class AuthService {
     public Boolean changePassword(ChangePasswordRequest request) {
         String userId = SecurityUtils.getCurrentUserId();
         if (userId == null) {
-            throw new BusinessException(401, "未登录或登录已过期");
+            throw new BusinessException(AuthErrorConstants.UNAUTHORIZED, "未登录或登录已过期");
         }
 
         User user = userMapper.selectById(userId);
         if (user == null) {
-            throw new BusinessException(404, "用户不存在");
+            throw new BusinessException(AuthErrorConstants.USER_NOT_FOUND, "用户不存在");
         }
 
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-            throw new BusinessException(ARGS_ERROR, "旧密码错误");
+            throw new BusinessException(AuthErrorConstants.OLD_PASSWORD_ERROR, "旧密码错误");
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
@@ -119,21 +119,21 @@ public class AuthService {
         }
         boolean exists = userMapper.exists(new LambdaQueryWrapper<User>().eq(User::getEmail, email));
         if (exists) {
-            throw new BusinessException(EMAIL_EXISTS, "该邮箱已被注册");
+            throw new BusinessException(UserErrorConstants.EMAIL_EXISTS, "该邮箱已被注册");
         }
     }
 
     private void checkPhoneRegistered(String phone) {
         boolean exists = userMapper.exists(new LambdaQueryWrapper<User>().eq(User::getPhone, phone));
         if (exists) {
-            throw new BusinessException(PHONE_EXISTS, "该手机号已被注册");
+            throw new BusinessException(UserErrorConstants.PHONE_EXISTS, "该手机号已被注册");
         }
     }
 
     private void checkUsernameOccupied(String username) {
         boolean exists = userMapper.exists(new LambdaQueryWrapper<User>().eq(User::getUsername, username));
         if (exists) {
-            throw new BusinessException(USERNAME_EXISTS, "该昵称已被占用");
+            throw new BusinessException(UserErrorConstants.USERNAME_EXISTS, "该昵称已被占用");
         }
     }
 
@@ -143,7 +143,7 @@ public class AuthService {
         }
         boolean exists = userMapper.exists(new LambdaQueryWrapper<User>().eq(User::getPartyMemberId, partyMemberId));
         if (exists) {
-            throw new BusinessException(PARTY_MEMBER_ID_EXISTS, "党员编号已存在");
+            throw new BusinessException(UserErrorConstants.PARTY_MEMBER_ID_EXISTS, "党员编号已存在");
         }
     }
 }

@@ -3,6 +3,7 @@ package com.rauio.smartdangjian.server.content.service.chapter;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.constants.ChapterErrorConstants;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterConvertor;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ContentBlockConvertor;
@@ -36,9 +37,8 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
     public ChapterVO get(String chapterId) {
         Chapter chapter = this.getById(chapterId);
         if (chapter == null) {
-            throw new BusinessException(4000, "章节不存在");
+            throw new BusinessException(ChapterErrorConstants.CHAPTER_NOT_FOUND, "章节不存在");
         }
-
 
         return chapterConvertor.toVO(chapter);
     }
@@ -53,13 +53,13 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
         if (this.getOne(new LambdaQueryWrapper<Chapter>()
                 .eq(Chapter::getCourseId, dto.getCourseId())
                 .eq(Chapter::getTitle, dto.getTitle())) != null) {
-            throw new BusinessException(4000, "章节已存在");
+            throw new BusinessException(ChapterErrorConstants.CHAPTER_ALREADY_EXISTS, "章节已存在");
         }
 
         Chapter chapter = chapterConvertor.toEntity(dto);
 
         if (!this.save(chapter)){
-            throw new BusinessException(4000, "章节无法创建");
+            throw new BusinessException(ChapterErrorConstants.CHAPTER_CREATE_FAILED, "章节无法创建");
         }
 
         if (dto.getContent() != null && !dto.getContent().isEmpty()) {
@@ -70,7 +70,7 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
                 contentService.save(block);
             });
         } else {
-            throw new BusinessException(4000, "课程至少需要一个章节");
+            throw new BusinessException(ChapterErrorConstants.CHAPTER_MIN_REQUIRED, "课程至少需要一个章节");
         }
         return true;
     }

@@ -5,14 +5,11 @@ import lombok.Getter;
 import static com.rauio.smartdangjian.constants.ErrorConstants.NOT_FOUND;
 
 @Getter
-public class BusinessException extends RuntimeException{
-
-    public static int SERVICE_UNAVAILABLE = 503;
-    public static int BUSINESS_ERROR = 500;
+public class BusinessException extends RuntimeException {
 
     private final int code;
 
-    public BusinessException(Integer code, String message) {
+    public BusinessException(int code, String message) {
         super(message);
         this.code = code;
     }

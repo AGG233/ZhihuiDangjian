@@ -6,6 +6,7 @@ import com.rauio.smartdangjian.aop.support.DataScopeResolver;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
@@ -59,7 +60,7 @@ public class QuizAdminAccessAspect implements DataScopeResolver {
             case "OPTION" -> {
                 QuizOption option = quizOptionMapper.selectById(resourceId);
                 if (option == null) {
-                    throw new BusinessException(4000, "题目选项不存在");
+                    throw new BusinessException(QuizErrorConstants.QUIZ_OPTION_NOT_FOUND, "题目选项不存在");
                 }
                 yield option.getQuizId();
             }
@@ -68,15 +69,15 @@ public class QuizAdminAccessAspect implements DataScopeResolver {
 
         Quiz quiz = quizMapper.selectById(quizId);
         if (quiz == null) {
-            throw new BusinessException(4000, "题目不存在");
+            throw new BusinessException(QuizErrorConstants.QUIZ_NOT_FOUND, "题目不存在");
         }
         Chapter chapter = chapterMapper.selectById(quiz.getChapterId());
         if (chapter == null) {
-            throw new BusinessException(4000, "章节不存在");
+            throw new BusinessException(QuizErrorConstants.CHAPTER_NOT_FOUND, "章节不存在");
         }
         Course course = courseMapper.selectById(chapter.getCourseId());
         if (course == null) {
-            throw new BusinessException(4000, "课程不存在");
+            throw new BusinessException(QuizErrorConstants.COURSE_NOT_FOUND, "课程不存在");
         }
         User creator = userMapper.selectById(course.getCreatorId());
         if (creator == null || !Objects.equals(currentUser.getUniversityId(), creator.getUniversityId())) {

@@ -6,6 +6,7 @@ import com.rauio.smartdangjian.aop.support.DataScopeContext;
 import com.rauio.smartdangjian.aop.support.DataScopeResolver;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.constants.ErrorConstants;
+import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
@@ -169,7 +170,7 @@ public class UserManagementAspect implements DataScopeResolver {
         String userId = context.require(context.getAccess().id(), String.class, "用户ID不能为空");
         User targetUser = userMapper.selectById(userId);
         if (targetUser == null) {
-            throw new BusinessException(ErrorConstants.USER_NOT_EXISTS, "用户不存在");
+            throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户不存在");
         }
         return targetUser;
     }
