@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Static factory for test data — produces UserVO, Page, UserDto, and JSON helpers.
+ * Static factory for test data — produces User, Page, UserDto, and JSON helpers.
  * All IDs are deterministic strings so jsonPath assertions are predictable.
  */
 public final class UserTestDataFactory {
@@ -27,91 +27,95 @@ public final class UserTestDataFactory {
 
     // ── Single-user builders ──────────────────────────────────────
 
-    public static UserVO createDefaultUserVO() {
-        return createUserVO("user-001", "zhangsan", "张三", UserType.STUDENT);
+    public static User createDefaultUser() {
+        return createUser("user-001", "zhangsan", "张三", UserType.STUDENT);
     }
 
-    public static UserVO createUserVO(String id, String username, String realName, UserType userType) {
-        UserVO vo = new UserVO();
-        vo.setId(id);
-        vo.setUsername(username);
-        vo.setRealName(realName);
-        vo.setPartyMemberId("PM-" + id);
-        vo.setPartyStatus(PartyStatus.FORMAL_MEMBER);
-        vo.setBranchName("第一党支部");
-        vo.setUserType(userType);
-        vo.setStatus(AccountStatus.ACTIVE);
-        vo.setUniversityId("uni-sustech-001");
-        vo.setEmail(username + "@example.com");
-        vo.setPhone("+8613800138000");
-        vo.setJoinPartyDate(LocalDateTime.of(2024, 1, 15, 10, 30));
-        return vo;
+    public static User createUser(String id, String username, String realName, UserType userType) {
+        User user = new User();
+        user.setId(id);
+        user.setUsername(username);
+        user.setRealName(realName);
+        user.setPartyMemberId("PM-" + id);
+        user.setPartyStatus(PartyStatus.FORMAL_MEMBER);
+        user.setBranchName("第一党支部");
+        user.setUserType(userType);
+        user.setStatus(AccountStatus.ACTIVE);
+        user.setUniversityId("uni-sustech-001");
+        user.setEmail(username + "@example.com");
+        user.setPhone("+8613800138000");
+        user.setJoinPartyDate(LocalDateTime.of(2024, 1, 15, 10, 30));
+        user.setCreatedAt(LocalDateTime.of(2024, 1, 15, 10, 30));
+        user.setUpdatedAt(LocalDateTime.of(2024, 6, 15, 14, 0));
+        return user;
     }
 
-    public static UserVO createSchoolUserVO() {
-        UserVO vo = createUserVO("school-001", "schooladmin", "学校管理员", UserType.SCHOOL);
-        vo.setEmail("schooladmin@school.edu.cn");
-        vo.setBranchName("校党委");
-        return vo;
+    public static User createSchoolUser() {
+        User user = createUser("school-001", "schooladmin", "学校管理员", UserType.SCHOOL);
+        user.setEmail("schooladmin@school.edu.cn");
+        user.setBranchName("校党委");
+        return user;
     }
 
-    public static UserVO createManagerUserVO() {
-        UserVO vo = createUserVO("manager-001", "superadmin", "系统管理员", UserType.MANAGER);
-        vo.setEmail("superadmin@system.cn");
-        vo.setBranchName("系统管理");
-        return vo;
+    public static User createManagerUser() {
+        User user = createUser("manager-001", "superadmin", "系统管理员", UserType.MANAGER);
+        user.setEmail("superadmin@system.cn");
+        user.setBranchName("系统管理");
+        return user;
     }
 
-    public static UserVO createInactiveUserVO() {
-        UserVO vo = createUserVO("user-inactive", "lisi", "李四", UserType.STUDENT);
-        vo.setStatus(AccountStatus.INACTIVE);
-        return vo;
+    public static User createInactiveUser() {
+        User user = createUser("user-inactive", "lisi", "李四", UserType.STUDENT);
+        user.setStatus(AccountStatus.INACTIVE);
+        return user;
     }
 
-    public static UserVO createBannedUserVO() {
-        UserVO vo = createUserVO("user-banned", "wangwu", "王五", UserType.STUDENT);
-        vo.setStatus(AccountStatus.BANNED);
-        return vo;
+    public static User createBannedUser() {
+        User user = createUser("user-banned", "wangwu", "王五", UserType.STUDENT);
+        user.setStatus(AccountStatus.BANNED);
+        return user;
     }
 
     // ── Bulk builders ─────────────────────────────────────────────
 
-    public static List<UserVO> createUserVOList(int count) {
-        return createUserVOList(count, UserType.STUDENT, "uni-sustech-001");
+    public static List<User> createUserList(int count) {
+        return createUserList(count, UserType.STUDENT, "uni-sustech-001");
     }
 
-    public static List<UserVO> createUserVOList(int count, UserType userType) {
-        return createUserVOList(count, userType, "uni-sustech-001");
+    public static List<User> createUserList(int count, UserType userType) {
+        return createUserList(count, userType, "uni-sustech-001");
     }
 
-    public static List<UserVO> createUserVOList(int count, UserType userType, String universityId) {
-        List<UserVO> list = new ArrayList<>();
+    public static List<User> createUserList(int count, UserType userType, String universityId) {
+        List<User> list = new ArrayList<>();
         String[] names = {"张三", "李四", "王五", "赵六", "孙七", "周八", "吴九", "郑十", "陈十一", "林十二"};
         PartyStatus[] statuses = PartyStatus.values();
         for (int i = 0; i < count; i++) {
             int idx = i + 1;
-            UserVO vo = new UserVO();
-            vo.setId("user-" + String.format("%03d", idx));
-            vo.setUsername("user" + String.format("%03d", idx));
-            vo.setRealName(names[i % names.length]);
-            vo.setPartyMemberId("PM-2024" + String.format("%04d", idx));
-            vo.setPartyStatus(statuses[i % statuses.length]);
-            vo.setBranchName("第" + ((i % 5) + 1) + "党支部");
-            vo.setUserType(userType);
-            vo.setStatus(i == 0 ? AccountStatus.INACTIVE : AccountStatus.ACTIVE);
-            vo.setUniversityId(universityId);
-            vo.setEmail("user" + String.format("%03d", idx) + "@example.com");
-            vo.setPhone("+8613800138" + String.format("%03d", idx));
-            vo.setJoinPartyDate(LocalDateTime.of(2024, 1, 15, 10, 30));
-            list.add(vo);
+            User user = new User();
+            user.setId("user-" + String.format("%03d", idx));
+            user.setUsername("user" + String.format("%03d", idx));
+            user.setRealName(names[i % names.length]);
+            user.setPartyMemberId("PM-2024" + String.format("%04d", idx));
+            user.setPartyStatus(statuses[i % statuses.length]);
+            user.setBranchName("第" + ((i % 5) + 1) + "党支部");
+            user.setUserType(userType);
+            user.setStatus(i == 0 ? AccountStatus.INACTIVE : AccountStatus.ACTIVE);
+            user.setUniversityId(universityId);
+            user.setEmail("user" + String.format("%03d", idx) + "@example.com");
+            user.setPhone("+8613800138" + String.format("%03d", idx));
+            user.setJoinPartyDate(LocalDateTime.of(2024, 1, 15, 10, 30));
+            user.setCreatedAt(LocalDateTime.of(2024, 1, 15, 10, 30));
+            user.setUpdatedAt(LocalDateTime.of(2024, 6, 15, 14, 0));
+            list.add(user);
         }
         return list;
     }
 
     // ── Page builders ─────────────────────────────────────────────
 
-    public static Page<UserVO> createPage(List<UserVO> records, int current, int size, long total) {
-        Page<UserVO> page = new Page<>();
+    public static Page<User> createPage(List<User> records, int current, int size, long total) {
+        Page<User> page = new Page<>();
         page.setRecords(records);
         page.setCurrent(current);
         page.setSize(size);
@@ -119,8 +123,8 @@ public final class UserTestDataFactory {
         return page;
     }
 
-    public static Page<UserVO> createEmptyPage(int current, int size) {
-        Page<UserVO> page = new Page<>();
+    public static Page<User> createEmptyPage(int current, int size) {
+        Page<User> page = new Page<>();
         page.setRecords(List.of());
         page.setCurrent(current);
         page.setSize(size);

@@ -6,11 +6,8 @@ import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.alibaba.cloud.ai.graph.streaming.OutputType;
 import com.alibaba.cloud.ai.graph.streaming.StreamingOutput;
 import com.rauio.smartdangjian.server.ai.agent.AiAgentRegistry;
-import com.rauio.smartdangjian.server.ai.agent.AiAgentType;
-import com.rauio.smartdangjian.server.ai.pojo.dto.AiAgentRunContext;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiChatRequest;
-import com.rauio.smartdangjian.server.ai.pojo.request.AiEvaluationRequest;
-import com.rauio.smartdangjian.server.ai.pojo.request.AiQuizRequest;
+import com.rauio.smartdangjian.server.ai.constants.AiChatResponseType;
 import com.rauio.smartdangjian.server.ai.pojo.response.AiChatResponse;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +18,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.UUID;
 
@@ -41,63 +39,52 @@ public class LLMService {
     }
 
     /**
-     * 常规对话
+     * 统一入口：用户消息通过 Coordinator 自动路由到合适的专业 Agent
      */
-    public Flux<AiChatResponse> chat(AiChatRequest request) throws GraphRunnerException {
-        return stream(new AiAgentRunContext(
-                AiAgentType.CHAT,
-                request.sessionId(),
-                userService.getCurrentUserId(),
-                request.message()
-        ));
+    public Flux<AiChatResponse> chat(AiChatRequest request) {
+        return stream(request.sessionId(), userService.getCurrentUserId(), request.message());
     }
 
-    /**
-     * 生成测试小题
-     */
-    public Flux<AiChatResponse> quiz(AiQuizRequest request) throws GraphRunnerException {
-        return stream(new AiAgentRunContext(
-                AiAgentType.QUIZ,
-                request.sessionId(),
-                userService.getCurrentUserId(),
-                "请围绕以下主题生成测试小题：" + request.topic()
-        ));
-    }
+    private Flux<AiChatResponse> stream(String providedSessionId, String userId, String input) {
+        return Flux.defer(() -> {
+            String sessionId = normalizeSessionId(providedSessionId);
+            String uid = userId != null ? userId : "";
+            RunnableConfig runnableConfig = RunnableConfig.builder()
+                    .threadId(sessionId)
+                    .addMetadata("sessionId", sessionId)
+                    .addMetadata("userId", uid)
+                    .build();
+            AtomicReference<String> finalOutput = new AtomicReference<>("");
 
-    /**
-     * 生成学习评估
-     */
-    public Flux<AiChatResponse> evaluate(AiEvaluationRequest request) throws GraphRunnerException {
-        String prompt = request.message() == null || request.message().isBlank()
-                ? "请结合我的学习记录和答题情况生成一份学习评估。"
-                : "请结合我的学习记录和答题情况生成学习评估，并重点处理以下要求：" + request.message();
-        return stream(new AiAgentRunContext(
-                AiAgentType.EVALUATION,
-                request.sessionId(),
-                userService.getCurrentUserId(),
-                prompt
-        ));
-    }
-
-    private Flux<AiChatResponse> stream(AiAgentRunContext context) throws GraphRunnerException {
-        String sessionId = normalizeSessionId(context.sessionId());
-        RunnableConfig runnableConfig = RunnableConfig.builder()
-                .threadId(sessionId)
-                .addMetadata("sessionId", sessionId)
-                .addMetadata("userId", context.userId())
-                .build();
-        AtomicReference<String> finalOutput = new AtomicReference<>("");
-
-        return aiAgentRegistry.get(context.agentType()).stream(context.input(), runnableConfig)
-                .<AiChatResponse>handle((output, sink) -> sink.next(buildAiChatResponse(sessionId, context.agentType().agentName(), output, finalOutput)))
-                .publishOn(Schedulers.boundedElastic())
-                .doOnComplete(() -> aiMemoryService.saveConversation(
-                        context.userId(),
-                        sessionId,
-                        context.agentType().code(),
-                        context.input(),
-                        finalOutput.get()
-                ));
+            log.info("AI请求开始 sessionId={} userId={}", sessionId, uid);
+            try {
+                return Flux.concat(
+                        Flux.just(new AiChatResponse(AiChatResponseType.START, sessionId, "", "start", "coordinator")),
+                        aiAgentRegistry.getCoordinator().stream(input, runnableConfig)
+                                .<AiChatResponse>handle((output, sink) -> {
+                                    String agentName = output.node() != null ? output.node() : "coordinator";
+                                    sink.next(buildAiChatResponse(sessionId, agentName, output, finalOutput));
+                                })
+                                .publishOn(Schedulers.boundedElastic())
+                                .timeout(Duration.ofSeconds(120),
+                                        Flux.just(new AiChatResponse(AiChatResponseType.ERROR, sessionId, "AI 响应超时，请稍后重试", "error", "coordinator")))
+                                .doOnComplete(() -> {
+                                    String output = finalOutput.get();
+                                    if (output == null || output.isBlank()) {
+                                        output = "[AI 未返回文本内容]";
+                                    }
+                                    aiMemoryService.saveConversation(uid, sessionId, "COORDINATOR", input, output);
+                                    log.info("AI请求完成 sessionId={}", sessionId);
+                                })
+                                .doOnCancel(() -> log.warn("客户端断开连接 sessionId={}", sessionId))
+                                .doOnError(e -> log.error("AI流式错误 sessionId={}", sessionId, e))
+                                .onErrorResume(e -> Flux.just(
+                                        new AiChatResponse(AiChatResponseType.ERROR, sessionId, "AI 服务暂时不可用，请稍后重试", "error", "coordinator")))
+                ).concatWith(Flux.just(new AiChatResponse(AiChatResponseType.END, sessionId, "", "end", "coordinator")));
+            } catch (GraphRunnerException e) {
+                return Flux.error(e);
+            }
+        });
     }
 
     private static AiChatResponse buildAiChatResponse(String sessionId,
@@ -109,26 +96,25 @@ public class LLMService {
             OutputType type = streamingOutput.getOutputType();
             Message message = streamingOutput.message();
 
-
             if (type == OutputType.AGENT_MODEL_STREAMING) {
-                return new AiChatResponse("THINKING", sessionId, streamingOutput.message().getText(), output.node(), agentName);
+                return new AiChatResponse(AiChatResponseType.TEXT, sessionId, streamingOutput.message().getText(), output.node(), agentName);
             } else if (type == OutputType.AGENT_MODEL_FINISHED) {
                 log.debug("AI模型输出完成, agent={}, sessionId={}", agentName, sessionId);
             }
 
             if (type == OutputType.AGENT_MODEL_FINISHED && message instanceof AssistantMessage am) {
                 if (am.hasToolCalls()) {
-                    return new AiChatResponse("TOOL_CALL", sessionId, am.getToolCalls().toString(), output.node(), agentName);
+                    return new AiChatResponse(AiChatResponseType.TOOL_CALL, sessionId, am.getToolCalls().toString(), output.node(), agentName);
                 }
                 finalOutput.set(am.getText());
-                return new AiChatResponse("FINISHED", sessionId, am.getText(), output.node(), agentName);
+                return new AiChatResponse(AiChatResponseType.FINISHED, sessionId, am.getText(), output.node(), agentName);
             }
 
             if (type == OutputType.AGENT_TOOL_FINISHED && message instanceof ToolResponseMessage tr) {
-                return new AiChatResponse("TOOL_RESULT", sessionId, tr.getResponses().toString(), output.node(), agentName);
+                return new AiChatResponse(AiChatResponseType.TOOL_RESULT, sessionId, tr.getResponses().toString(), output.node(), agentName);
             }
         }
-        return new AiChatResponse("OTHER", sessionId, "Processing...", output.node(), agentName);
+        return new AiChatResponse(AiChatResponseType.OTHER, sessionId, "Processing...", output.node(), agentName);
     }
 
     private String normalizeSessionId(String requestedSessionId) {

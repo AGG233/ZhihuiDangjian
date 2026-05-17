@@ -27,7 +27,7 @@ public class PromptService extends ServiceImpl<AiPromptsMapper, AiPrompts> {
                 .agentType(request.getAgentType().toUpperCase())
                 .name(request.getName())
                 .content(request.getContent())
-                .role(PromptRoleEnum.valueOf(request.getRole().toUpperCase()))
+                .role(parsePromptRole(request.getRole()))
                 .enabled(Boolean.TRUE.equals(request.getEnabled()))
                 .sort(request.getSort() == null ? 0 : request.getSort())
                 .build();
@@ -50,7 +50,7 @@ public class PromptService extends ServiceImpl<AiPromptsMapper, AiPrompts> {
             prompt.setContent(request.getContent());
         }
         if (request.getRole() != null) {
-            prompt.setRole(PromptRoleEnum.valueOf(request.getRole().toUpperCase()));
+            prompt.setRole(parsePromptRole(request.getRole()));
         }
         if (request.getEnabled() != null) {
             prompt.setEnabled(request.getEnabled());
@@ -68,6 +68,14 @@ public class PromptService extends ServiceImpl<AiPromptsMapper, AiPrompts> {
                 .eq(AiPrompts::getRole, PromptRoleEnum.SYSTEM)
                 .and(wrapper -> wrapper.eq(AiPrompts::getAgentType, "COMMON").or().eq(AiPrompts::getAgentType, agentType))
                 .orderByAsc(AiPrompts::getSort, AiPrompts::getUpdatedAt));
+    }
+
+    private PromptRoleEnum parsePromptRole(String role) {
+        try {
+            return PromptRoleEnum.valueOf(role.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("无效的提示词角色: " + role + "，可选值: SYSTEM, DEVELOPER");
+        }
     }
 
     public String buildSystemPrompt(String agentType) {

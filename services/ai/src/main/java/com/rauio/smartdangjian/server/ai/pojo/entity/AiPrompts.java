@@ -4,8 +4,6 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.rauio.smartdangjian.server.ai.pojo.enums.PromptRoleEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -24,7 +22,6 @@ import java.time.LocalDateTime;
 public class AiPrompts {
 
     @TableId
-    @JsonSerialize(using = ToStringSerializer.class)
     @Schema(description = "提示词ID", example = "1")
     private String id;
 

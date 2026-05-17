@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
@@ -40,10 +41,12 @@ public class User implements UserDetails, CurrentUserPrincipal {
     private String universityId;
     @Schema(description = "用户名")
     private String username;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Schema(description = "密码")
     private String password;
     @Schema(description = "真实姓名")
     private String realName;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Schema(description = "身份证号")
     private String idCard;
     @Schema(description = "党员编号")

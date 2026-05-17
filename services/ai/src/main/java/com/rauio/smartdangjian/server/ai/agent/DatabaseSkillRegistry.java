@@ -34,7 +34,7 @@ public class DatabaseSkillRegistry implements SkillRegistry {
             """;
 
     private final SkillService skillService;
-    private final Map<String, SkillMetadata> cache = new ConcurrentHashMap<>();
+    private volatile Map<String, SkillMetadata> cache = new ConcurrentHashMap<>();
     private final SystemPromptTemplate systemPromptTemplate = SystemPromptTemplate.builder()
             .template(SKILL_SYSTEM_PROMPT)
             .build();
@@ -66,15 +66,20 @@ public class DatabaseSkillRegistry implements SkillRegistry {
 
     @Override
     public void reload() {
-        cache.clear();
-        for (AiSkill skill : skillService.listEnabledSkills()) {
-            cache.put(skill.getName(), SkillMetadata.builder()
-                    .name(skill.getName())
-                    .description(skill.getDescription())
-                    .skillPath("db://ai_skill/" + skill.getId())
-                    .source("database")
-                    .fullContent(skill.renderSkillMarkdown())
-                    .build());
+        Map<String, SkillMetadata> newCache = new ConcurrentHashMap<>();
+        try {
+            for (AiSkill skill : skillService.listEnabledSkills()) {
+                newCache.put(skill.getName(), SkillMetadata.builder()
+                        .name(skill.getName())
+                        .description(skill.getDescription())
+                        .skillPath("db://ai_skill/" + skill.getId())
+                        .source("database")
+                        .fullContent(skill.renderSkillMarkdown())
+                        .build());
+            }
+            this.cache = newCache;
+        } catch (Exception e) {
+            throw new IllegalStateException("重新加载技能缓存失败: " + e.getMessage(), e);
         }
     }
 

@@ -6,6 +6,8 @@ dependencies {
     implementation(project(":services:common"))
     implementation(project(":services:content"))
     implementation(project(":services:chapter"))
+    implementation(project(":services:course"))
+    implementation(project(":services:article"))
     implementation(project(":services:user"))
     implementation(project(":services:learning"))
     implementation(project(":services:quiz"))
@@ -24,4 +26,5 @@ dependencies {
     annotationProcessor(libs.spring.boot.configuration.processor)
     annotationProcessor(libs.mapstruct.processor)
 
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
 }

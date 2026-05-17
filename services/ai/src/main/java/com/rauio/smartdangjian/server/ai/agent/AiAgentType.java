@@ -1,9 +1,11 @@
 package com.rauio.smartdangjian.server.ai.agent;
 
 public enum AiAgentType {
-    CHAT("CHAT", "chat-agent", "处理党务学习场景下的日常问答"),
-    QUIZ("QUIZ", "quiz-agent", "根据主题和学习记录生成测试小题"),
-    EVALUATION("EVALUATION", "evaluation-agent", "结合学习记录和答题情况给出学习评估");
+    STUDY_ASSISTANT("STUDY_ASSISTANT", "study-assistant-agent", "党务学习日常问答、知识讲解、学习指导"),
+    CONTENT_DISCOVERY("CONTENT_DISCOVERY", "content-discovery-agent", "课程/文章/章节搜索、内容浏览、推荐"),
+    ASSESSMENT("ASSESSMENT", "assessment-agent", "测试题目生成、答题评估、学习评估"),
+    REVIEW("REVIEW", "review-agent", "内容质量审查与用户内容安全审核"),
+    PROFILE("PROFILE", "profile-agent", "学习画像分析、学习路径规划、数据洞察");
 
     private final String code;
     private final String agentName;
@@ -25,5 +27,13 @@ public enum AiAgentType {
 
     public String description() {
         return description;
+    }
+
+    public static AiAgentType fromLegacyCode(String code) {
+        return switch (code) {
+            case "CHAT" -> STUDY_ASSISTANT;
+            case "QUIZ", "EVALUATION" -> ASSESSMENT;
+            default -> valueOf(code);
+        };
     }
 }

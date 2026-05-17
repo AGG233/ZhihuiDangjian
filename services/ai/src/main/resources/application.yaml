@@ -5,9 +5,9 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
-      connection-timeout: 2000
+      connection-timeout: 3000
       minimum-idle: 4
-      maximum-pool-size: 16
+      maximum-pool-size: 24
       idle-timeout: 30000
       username: ${DATABASE_USERNAME}
       password: ${DATABASE_PASSWORD}
@@ -23,7 +23,9 @@ spring:
       api-key: ${AI_KEY:dummy-key}
       chat:
         options:
-          model: deepseek-chat
+          model: ${AI_MODEL:deepseek-chat}
+          temperature: ${AI_TEMPERATURE:0.7}
+          max-tokens: ${AI_MAX_TOKENS:4096}
     mcp:
       client:
         enabled: ${AI_MCP_ENABLED:false}

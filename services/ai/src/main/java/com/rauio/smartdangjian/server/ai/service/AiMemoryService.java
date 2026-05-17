@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import static com.rauio.smartdangjian.server.ai.constants.AiConstants.MESSAGE_INPUT;
 import static com.rauio.smartdangjian.server.ai.constants.AiConstants.MESSAGE_OUTPUT;
@@ -24,20 +23,23 @@ public class AiMemoryService {
     private final AiChatMessageService aiChatMessageService;
 
     public void saveConversation(String userId, String sessionId, String agentType, String input, String output) {
-        if (userId == null || sessionId == null) {
+        if (userId == null || sessionId == null || userId.isBlank() || sessionId.isBlank()) {
             return;
         }
-        aiChatMessageService.save(buildMessage(userId, sessionId, agentType, SENDER_USER, MESSAGE_INPUT, input, Map.of()));
-        aiChatMessageService.save(buildMessage(userId, sessionId, agentType, SENDER_ASSISTANT, MESSAGE_OUTPUT, output, Map.of()));
+        String safeOutput = output == null || output.isBlank() ? "[AI 未返回文本内容]" : output;
+        Map<String, Object> metadata = Map.of("agentType", agentType);
+        aiChatMessageService.save(buildMessage(userId, sessionId, agentType, SENDER_USER, MESSAGE_INPUT, input, metadata));
+        aiChatMessageService.save(buildMessage(userId, sessionId, agentType, SENDER_ASSISTANT, MESSAGE_OUTPUT, safeOutput, metadata));
     }
 
     public String buildLongTermMemory(String userId, String sessionId, int limit) {
         if (userId == null || userId.isBlank()) {
             return "";
         }
+        boolean excludeCurrentSession = sessionId != null && !sessionId.isBlank();
         List<AiChatMessage> memories = aiChatMessageService.list(new LambdaQueryWrapper<AiChatMessage>()
                 .eq(AiChatMessage::getUserId, userId)
-                .ne(sessionId != null && !sessionId.isBlank(), AiChatMessage::getSessionId, sessionId)
+                .ne(excludeCurrentSession, AiChatMessage::getSessionId, sessionId)
                 .orderByDesc(AiChatMessage::getCreatedAt)
                 .last("limit " + Math.max(limit, 1)));
 
@@ -74,7 +76,6 @@ public class AiMemoryService {
                                        String content,
                                        Map<String, Object> metadata) {
         return AiChatMessage.builder()
-                .id(UUID.randomUUID().toString())
                 .userId(userId)
                 .sessionId(sessionId)
                 .agentType(agentType)

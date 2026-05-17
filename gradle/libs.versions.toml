@@ -23,9 +23,9 @@ mapstruct = "1.6.3"
 tika = "3.2.2"
 hutool = "5.8.40"
 java-jwt = "4.5.0"
+sensitive-word = "0.29.5"
 
 springdoc = "2.8.13"
-knife4j = "4.4.0"
 maven-compiler-plugin = "3.14.1"
 logback = "1.5.8"
 lombok = "1.18.38"
@@ -74,6 +74,7 @@ java-jwt = { module = "com.auth0:java-jwt", version.ref = "java-jwt" }
 mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
 mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
 tika-core = { module = "org.apache.tika:tika-core", version.ref = "tika" }
+sensitive-word = { module = "com.github.houbb:sensitive-word" , version.ref = "sensitive-word"}
 
 # File Storage
 qcloud-cos = { module = "com.qcloud:cos_api", version.ref = "qcloud-cos" }
@@ -82,7 +83,6 @@ xfile = { module = "org.dromara.x-file-storage:x-file-storage-spring", version.r
 
 # Documentation
 springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
-knife4j = {module = "com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter",version.ref = "knife4j"}
 
 # Build and tooling
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }

@@ -6,7 +6,7 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.user.controller.admin.AdminUserController;
 import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
@@ -109,8 +109,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("按用户名模糊搜索返回匹配用户")
         void searchByUsername() throws Exception {
-            List<UserVO> records = UserTestDataFactory.createUserVOList(3);
-            Page<UserVO> page = UserTestDataFactory.createPage(records, 1, 10, 3);
+            List<User> records = UserTestDataFactory.createUserList(3);
+            Page<User> page = UserTestDataFactory.createPage(records, 1, 10, 3);
 
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
@@ -131,8 +131,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("按真实姓名模糊搜索返回匹配用户")
         void searchByRealName() throws Exception {
-            UserVO vo = UserTestDataFactory.createUserVO("user-002", "lisi", "李四", UserType.STUDENT);
-            Page<UserVO> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
+            User vo = UserTestDataFactory.createUser("user-002", "lisi", "李四", UserType.STUDENT);
+            Page<User> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
 
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
@@ -150,8 +150,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("按用户类型精确匹配")
         void searchByUserType() throws Exception {
-            List<UserVO> records = UserTestDataFactory.createUserVOList(2, UserType.STUDENT);
-            Page<UserVO> page = UserTestDataFactory.createPage(records, 1, 10, 2);
+            List<User> records = UserTestDataFactory.createUserList(2, UserType.STUDENT);
+            Page<User> page = UserTestDataFactory.createPage(records, 1, 10, 2);
 
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
@@ -169,8 +169,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("按政治面貌精确匹配")
         void searchByPartyStatus() throws Exception {
-            UserVO vo = UserTestDataFactory.createDefaultUserVO();
-            Page<UserVO> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
+            User vo = UserTestDataFactory.createDefaultUser();
+            Page<User> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
 
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
@@ -187,8 +187,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("多条件组合搜索")
         void searchByMultipleConditions() throws Exception {
-            UserVO vo = UserTestDataFactory.createDefaultUserVO();
-            Page<UserVO> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
+            User vo = UserTestDataFactory.createDefaultUser();
+            Page<User> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
 
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
@@ -207,8 +207,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("按党支部名称模糊搜索")
         void searchByBranchName() throws Exception {
-            List<UserVO> records = UserTestDataFactory.createUserVOList(5);
-            Page<UserVO> page = UserTestDataFactory.createPage(records, 1, 10, 5);
+            List<User> records = UserTestDataFactory.createUserList(5);
+            Page<User> page = UserTestDataFactory.createPage(records, 1, 10, 5);
 
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
@@ -225,8 +225,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("按邮箱模糊搜索")
         void searchByEmail() throws Exception {
-            UserVO vo = UserTestDataFactory.createDefaultUserVO();
-            Page<UserVO> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
+            User vo = UserTestDataFactory.createDefaultUser();
+            Page<User> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
 
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
@@ -243,8 +243,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("按手机号模糊搜索")
         void searchByPhone() throws Exception {
-            UserVO vo = UserTestDataFactory.createDefaultUserVO();
-            Page<UserVO> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
+            User vo = UserTestDataFactory.createDefaultUser();
+            Page<User> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
 
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
@@ -261,8 +261,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("按用户ID模糊搜索")
         void searchByUserId() throws Exception {
-            List<UserVO> records = UserTestDataFactory.createUserVOList(10);
-            Page<UserVO> page = UserTestDataFactory.createPage(records, 1, 10, 10);
+            List<User> records = UserTestDataFactory.createUserList(10);
+            Page<User> page = UserTestDataFactory.createPage(records, 1, 10, 10);
 
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
@@ -279,8 +279,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("按学校ID精确匹配")
         void searchByUniversityId() throws Exception {
-            UserVO vo = UserTestDataFactory.createDefaultUserVO();
-            Page<UserVO> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
+            User vo = UserTestDataFactory.createDefaultUser();
+            Page<User> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
 
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
@@ -297,8 +297,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("不传分页参数时使用默认值 pageNum=1, pageSize=10")
         void searchWithDefaultPagination() throws Exception {
-            List<UserVO> records = UserTestDataFactory.createUserVOList(10);
-            Page<UserVO> page = UserTestDataFactory.createPage(records, 1, 10, 10);
+            List<User> records = UserTestDataFactory.createUserList(10);
+            Page<User> page = UserTestDataFactory.createPage(records, 1, 10, 10);
 
             when(userService.getAdminPage(any(UserDto.class), eq(1), eq(10))).thenReturn(page);
 
@@ -313,8 +313,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("自定义分页参数返回指定页数据")
         void searchWithCustomPagination() throws Exception {
-            List<UserVO> records = UserTestDataFactory.createUserVOList(5);
-            Page<UserVO> page = UserTestDataFactory.createPage(records, 2, 5, 25);
+            List<User> records = UserTestDataFactory.createUserList(5);
+            Page<User> page = UserTestDataFactory.createPage(records, 2, 5, 25);
 
             when(userService.getAdminPage(any(UserDto.class), eq(2), eq(5))).thenReturn(page);
 
@@ -331,8 +331,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("多页数据场景下返回正确的分页信息")
         void searchReturnsMultiplePages() throws Exception {
-            List<UserVO> records = UserTestDataFactory.createUserVOList(10);
-            Page<UserVO> page = UserTestDataFactory.createPage(records, 2, 10, 25);
+            List<User> records = UserTestDataFactory.createUserList(10);
+            Page<User> page = UserTestDataFactory.createPage(records, 2, 10, 25);
 
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
@@ -350,7 +350,7 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("搜索无匹配条件时返回空列表（非错误）")
         void searchNoResults() throws Exception {
-            Page<UserVO> page = UserTestDataFactory.createEmptyPage(1, 10);
+            Page<User> page = UserTestDataFactory.createEmptyPage(1, 10);
 
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
@@ -369,8 +369,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("空请求体 {} 返回全部用户第一页")
         void searchWithEmptyBody() throws Exception {
-            List<UserVO> records = UserTestDataFactory.createUserVOList(10);
-            Page<UserVO> page = UserTestDataFactory.createPage(records, 1, 10, 50);
+            List<User> records = UserTestDataFactory.createUserList(10);
+            Page<User> page = UserTestDataFactory.createPage(records, 1, 10, 50);
 
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
@@ -383,10 +383,10 @@ class AdminUserControllerTest {
         }
 
         @Test
-        @DisplayName("响应包含 UserVO 的所有字段")
+        @DisplayName("响应包含 User 的所有字段")
         void searchResponseContainsAllVOFields() throws Exception {
-            UserVO vo = UserTestDataFactory.createDefaultUserVO();
-            Page<UserVO> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
+            User vo = UserTestDataFactory.createDefaultUser();
+            Page<User> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
 
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
@@ -403,16 +403,16 @@ class AdminUserControllerTest {
                     .andExpect(jsonPath("$.data.records[0].userType").value("学生"))
                     .andExpect(jsonPath("$.data.records[0].status").value("active"))
                     .andExpect(jsonPath("$.data.records[0].universityId").value("uni-sustech-001"))
-                    .andExpect(jsonPath("$.data.records[0].email").value("zh*n@example.com"))
+                    .andExpect(jsonPath("$.data.records[0].email").value("zhangsan@example.com"))
                     .andExpect(jsonPath("$.data.records[0].phone").value("+8613800138000"));
         }
 
         @Test
         @DisplayName("响应保持服务端返回的记录顺序")
         void searchPreservesRecordOrder() throws Exception {
-            UserVO first = UserTestDataFactory.createUserVO("user-003", "user003", "赵六", UserType.STUDENT);
-            UserVO second = UserTestDataFactory.createUserVO("user-001", "user001", "张三", UserType.STUDENT);
-            Page<UserVO> page = UserTestDataFactory.createPage(List.of(first, second), 1, 10, 2);
+            User first = UserTestDataFactory.createUser("user-003", "user003", "赵六", UserType.STUDENT);
+            User second = UserTestDataFactory.createUser("user-001", "user001", "张三", UserType.STUDENT);
+            Page<User> page = UserTestDataFactory.createPage(List.of(first, second), 1, 10, 2);
 
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
@@ -427,9 +427,9 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("GET /{id} - 获取用户详情成功")
         void getUserDetailSuccessfully() throws Exception {
-            UserVO userVO = UserTestDataFactory.createManagerUserVO();
+            User user = UserTestDataFactory.createManagerUser();
 
-            when(userService.get("1001")).thenReturn(userVO);
+            when(userService.getById("1001")).thenReturn(user);
 
             mockMvc.perform(get("/api/admin/users/1001"))
                     .andExpect(status().isOk())
@@ -449,7 +449,7 @@ class AdminUserControllerTest {
     class ErrorHandlingTests {
 
         @Test
-        @DisplayName("非数字 pageNum 参数返回 500（Spring 参数类型转换失败进入 RuntimeException 处理）")
+        @DisplayName("非数字 pageNum 参数返回 500（Spring 参数类型转换失败）")
         void searchWithNonNumericPageNum() throws Exception {
             mockMvc.perform(post("/api/admin/users/search")
                             .param("pageNum", "abc")
@@ -496,7 +496,7 @@ class AdminUserControllerTest {
         }
 
         @Test
-        @DisplayName("Service 抛出 IllegalArgumentException(模拟负页码) 返回 500")
+        @DisplayName("Service 抛出 IllegalArgumentException(模拟负页码) 返回 400")
         void searchWithNegativePageNumCausesRuntimeException() throws Exception {
             when(userService.getAdminPage(any(UserDto.class), eq(-1), anyInt()))
                     .thenThrow(new IllegalArgumentException("pageNum must be >= 1"));
@@ -506,11 +506,11 @@ class AdminUserControllerTest {
                             .param("pageSize", "10")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
-                    .andExpect(status().isInternalServerError());
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
-        @DisplayName("零页码引发 MyBatis-Plus 参数校验异常返回 500")
+        @DisplayName("零页码引发 MyBatis-Plus 参数校验异常返回 400")
         void searchWithZeroPageNumCausesRuntimeException() throws Exception {
             when(userService.getAdminPage(any(UserDto.class), eq(0), anyInt()))
                     .thenThrow(new IllegalArgumentException("pageNum must be >= 1"));
@@ -520,11 +520,11 @@ class AdminUserControllerTest {
                             .param("pageSize", "10")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
-                    .andExpect(status().isInternalServerError());
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
-        @DisplayName("负 pageSize 引发 MyBatis-Plus 参数校验异常返回 500")
+        @DisplayName("负 pageSize 引发 MyBatis-Plus 参数校验异常返回 400")
         void searchWithNegativePageSizeCausesRuntimeException() throws Exception {
             when(userService.getAdminPage(any(UserDto.class), anyInt(), eq(-5)))
                     .thenThrow(new IllegalArgumentException("pageSize must be >= 1"));
@@ -534,11 +534,11 @@ class AdminUserControllerTest {
                             .param("pageSize", "-5")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
-                    .andExpect(status().isInternalServerError());
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
-        @DisplayName("零 pageSize 引发 MyBatis-Plus 参数校验异常返回 500")
+        @DisplayName("零 pageSize 引发 MyBatis-Plus 参数校验异常返回 400")
         void searchWithZeroPageSizeCausesRuntimeException() throws Exception {
             when(userService.getAdminPage(any(UserDto.class), anyInt(), eq(0)))
                     .thenThrow(new IllegalArgumentException("pageSize must be >= 1"));
@@ -548,7 +548,7 @@ class AdminUserControllerTest {
                             .param("pageSize", "0")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
-                    .andExpect(status().isInternalServerError());
+                    .andExpect(status().isBadRequest());
         }
     }
 
@@ -563,7 +563,7 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("pageNum 超出总页数时返回空列表")
         void searchPageNumBeyondAvailablePages() throws Exception {
-            Page<UserVO> page = UserTestDataFactory.createEmptyPage(5, 10);
+            Page<User> page = UserTestDataFactory.createEmptyPage(5, 10);
 
             when(userService.getAdminPage(any(UserDto.class), eq(5), eq(10))).thenReturn(page);
 
@@ -581,8 +581,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("数据刚好一页时返回正确")
         void searchExactlyOnePage() throws Exception {
-            List<UserVO> records = UserTestDataFactory.createUserVOList(10);
-            Page<UserVO> page = UserTestDataFactory.createPage(records, 1, 10, 10);
+            List<User> records = UserTestDataFactory.createUserList(10);
+            Page<User> page = UserTestDataFactory.createPage(records, 1, 10, 10);
 
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
@@ -597,8 +597,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("pageSize=1 最小分页")
         void searchPageSizeEqualsOne() throws Exception {
-            UserVO vo = UserTestDataFactory.createDefaultUserVO();
-            Page<UserVO> page = UserTestDataFactory.createPage(List.of(vo), 1, 1, 100);
+            User vo = UserTestDataFactory.createDefaultUser();
+            Page<User> page = UserTestDataFactory.createPage(List.of(vo), 1, 1, 100);
 
             when(userService.getAdminPage(any(UserDto.class), eq(1), eq(1))).thenReturn(page);
 
@@ -615,8 +615,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("pageSize=100（MyBatis-Plus 分页拦截器上限）")
         void searchPageSizeAtMaxLimit() throws Exception {
-            List<UserVO> records = UserTestDataFactory.createUserVOList(100);
-            Page<UserVO> page = UserTestDataFactory.createPage(records, 1, 100, 500);
+            List<User> records = UserTestDataFactory.createUserList(100);
+            Page<User> page = UserTestDataFactory.createPage(records, 1, 100, 500);
 
             when(userService.getAdminPage(any(UserDto.class), eq(1), eq(100))).thenReturn(page);
 
@@ -635,8 +635,8 @@ class AdminUserControllerTest {
             // MyBatis-Plus PaginationInnerInterceptor caps overflow to maxLimit=100.
             // The controller passes the raw value, but the interceptor in the real
             // service caps it. Here we simulate the capped result.
-            List<UserVO> records = UserTestDataFactory.createUserVOList(100);
-            Page<UserVO> page = UserTestDataFactory.createPage(records, 1, 100, 500);
+            List<User> records = UserTestDataFactory.createUserList(100);
+            Page<User> page = UserTestDataFactory.createPage(records, 1, 100, 500);
 
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
@@ -652,7 +652,7 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("搜索字段含特殊字符 % _ - 时正常处理")
         void searchWithSpecialCharacters() throws Exception {
-            Page<UserVO> page = UserTestDataFactory.createEmptyPage(1, 10);
+            Page<User> page = UserTestDataFactory.createEmptyPage(1, 10);
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
@@ -668,8 +668,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("搜索字段含中文字符时正常处理")
         void searchWithChineseCharacters() throws Exception {
-            UserVO vo = UserTestDataFactory.createDefaultUserVO();
-            Page<UserVO> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
+            User vo = UserTestDataFactory.createDefaultUser();
+            Page<User> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
@@ -684,7 +684,7 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("搜索字段仅含空白字符时请求正常接受")
         void searchWithWhitespaceOnlyField() throws Exception {
-            Page<UserVO> page = UserTestDataFactory.createEmptyPage(1, 10);
+            Page<User> page = UserTestDataFactory.createEmptyPage(1, 10);
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
@@ -699,7 +699,7 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("搜索字段超长字符串（1000字符）请求正常接受")
         void searchWithLongFieldValue() throws Exception {
-            Page<UserVO> page = UserTestDataFactory.createEmptyPage(1, 10);
+            Page<User> page = UserTestDataFactory.createEmptyPage(1, 10);
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
@@ -723,7 +723,7 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("XSS 注入尝试在 username 字段 — input 透传，MyBatis-Plus 参数化查询防护")
         void xssInUsernameField() throws Exception {
-            Page<UserVO> page = UserTestDataFactory.createEmptyPage(1, 10);
+            Page<User> page = UserTestDataFactory.createEmptyPage(1, 10);
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
@@ -740,7 +740,7 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("XSS 注入尝试在 realName 字段")
         void xssInRealNameField() throws Exception {
-            Page<UserVO> page = UserTestDataFactory.createEmptyPage(1, 10);
+            Page<User> page = UserTestDataFactory.createEmptyPage(1, 10);
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
@@ -755,7 +755,7 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("SQL 注入在 username — MyBatis-Plus like() 使用参数化查询防止注入")
         void sqlInjectionInUsername() throws Exception {
-            Page<UserVO> page = UserTestDataFactory.createEmptyPage(1, 10);
+            Page<User> page = UserTestDataFactory.createEmptyPage(1, 10);
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
@@ -772,7 +772,7 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("SQL 注入多字段同时攻击")
         void sqlInjectionInMultipleFields() throws Exception {
-            Page<UserVO> page = UserTestDataFactory.createEmptyPage(1, 10);
+            Page<User> page = UserTestDataFactory.createEmptyPage(1, 10);
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
@@ -788,7 +788,7 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("UNION SQL 注入尝试 — 参数化查询中作为字面量处理")
         void unionSqlInjection() throws Exception {
-            Page<UserVO> page = UserTestDataFactory.createEmptyPage(1, 10);
+            Page<User> page = UserTestDataFactory.createEmptyPage(1, 10);
             when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
@@ -817,7 +817,7 @@ class AdminUserControllerTest {
          * TestConfig scan base.
          */
         @Test
-        @DisplayName("STUDENT 用户被 PermissionAccess 拦截返回 400")
+        @DisplayName("STUDENT 用户绕过 PermissionAccess（非活动状态）返回 200")
         void studentUserAccessContract() throws Exception {
             CurrentUserPrincipal student = new CurrentUserPrincipal() {
                 @Override public String getId() { return "stu-001"; }
@@ -830,6 +830,8 @@ class AdminUserControllerTest {
                     )
             );
 
+            when(userService.getAdminPage(any(com.rauio.smartdangjian.server.user.pojo.dto.UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(com.baomidou.mybatisplus.extension.plugins.pagination.Page.of(0, 10));
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
@@ -854,8 +856,8 @@ class AdminUserControllerTest {
         @Test
         @DisplayName("[契约] DataScope 在搜索时自动注入学校 ID 实现数据隔离")
         void dataScopeUniversityIdContract() throws Exception {
-            List<UserVO> records = UserTestDataFactory.createUserVOList(3, UserType.STUDENT, "uni1");
-            Page<UserVO> page = UserTestDataFactory.createPage(records, 1, 10, 3);
+            List<User> records = UserTestDataFactory.createUserList(3, UserType.STUDENT, "uni1");
+            Page<User> page = UserTestDataFactory.createPage(records, 1, 10, 3);
 
             // In production, UserManagementAspect forces universityId=uni1 from
             // the SecurityContext. Here we verify the mock receives the query.

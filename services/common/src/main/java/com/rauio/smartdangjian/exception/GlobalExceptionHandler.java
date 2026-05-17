@@ -61,6 +61,18 @@ public class GlobalExceptionHandler {
         return buildResult("409", "数据已存在：" + e.getMessage());
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result handleIllegalArgumentException(IllegalArgumentException e) {
+        return buildResult("400", e.getMessage());
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Result handleIllegalStateException(IllegalStateException e) {
+        return buildResult("409", e.getMessage());
+    }
+
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Result handleRuntimeExceptions(RuntimeException e) {

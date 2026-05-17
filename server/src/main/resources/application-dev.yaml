@@ -1,12 +1,15 @@
 app:
   security:
     enabled: false
-
-spring:
+  dev:
+    default-user-id: 1987026098687483905
+server:
+  port: 9000
   ai:
     openai:
       api-key: ${AI_KEY:dummy-key}
 
 logging:
   level:
-    root: DEBUG
+    root: INFO
+    com.rauio.smartdangjian: DEBUG

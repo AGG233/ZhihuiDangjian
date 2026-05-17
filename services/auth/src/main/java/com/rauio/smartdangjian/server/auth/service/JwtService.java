@@ -110,7 +110,7 @@ public class JwtService{
                     redisKey,
                     objectMapper.writeValueAsString(user),
                     DEFAULT_ACCESS_EXPIRATION,
-                    TimeUnit.MINUTES
+                    TimeUnit.MILLISECONDS
             );
         }
 
