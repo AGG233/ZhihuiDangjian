@@ -1,5 +1,6 @@
 package com.rauio.smartdangjian.server.resource.controller.user;
 
+import com.rauio.smartdangjian.aop.annotation.RequireUser;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.UploadFileRequest;
@@ -35,6 +36,7 @@ public class FileController {
             summary = "确认文件上传完成",
             description = "前端通过预签名URL成功上传文件到COS后，调用本接口通知服务端。服务端会将ResourceMeta状态从UPLOADING更新为PUBLIC，此后文件即为可用资源。"
     )
+    @RequireUser
     @PostMapping("/confirm/{resourceId}")
     public Result<ResourceMeta> confirmUpload(@PathVariable String resourceId) {
         return Result.ok(fileService.confirmUpload(resourceId));
@@ -62,6 +64,7 @@ public class FileController {
             summary = "获取文件下载链接",
             description = "根据资源ID生成COS预签名下载链接。前端拿到返回的URL后，可直接发起GET请求下载或预览文件；链接具有时效性，过期后需重新调用本接口获取。"
     )
+    @RequireUser
     @GetMapping("/{id}/download")
     public Result<String> getDownloadUrl(@PathVariable String id) {
         return Result.ok(fileService.getDownloadUrl(id));
@@ -89,6 +92,7 @@ public class FileController {
             summary = "删除文件",
             description = "根据资源ID删除文件。服务端会先从COS删除文件对象，再删除resource_meta数据库记录。"
     )
+    @RequireUser
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable String id) {
         fileService.delete(id);

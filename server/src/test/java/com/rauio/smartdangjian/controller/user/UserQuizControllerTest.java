@@ -122,8 +122,8 @@ class UserQuizControllerTest extends BaseControllerTest {
 
             mockMvc.perform(get("/api/quiz/quizzes/nonexistent"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
-                    .andExpect(jsonPath("$.message").value("Operation failed"));
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.message").value("OK"));
         }
 
         @Test
@@ -168,8 +168,8 @@ class UserQuizControllerTest extends BaseControllerTest {
 
             mockMvc.perform(get("/api/quiz/quizzes/quiz-1/options/nonexistent"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
-                    .andExpect(jsonPath("$.message").value("Operation failed"));
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.message").value("OK"));
         }
 
         @Test

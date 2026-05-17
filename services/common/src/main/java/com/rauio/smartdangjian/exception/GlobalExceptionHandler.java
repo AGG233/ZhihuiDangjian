@@ -58,7 +58,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DuplicateKeyException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public Result handleDuplicateKeyException(DuplicateKeyException e) {
-        return buildResult("409", "数据已存在：" + e.getMessage());
+        log.warn("数据重复:", e);
+        return buildResult("409", "数据已存在");
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

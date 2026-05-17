@@ -188,7 +188,7 @@ class AdminCategoryControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CategoryTestDataFactory.toJson(dto)))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"));
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test
@@ -250,7 +250,7 @@ class AdminCategoryControllerTest extends BaseControllerTest {
 
             mockMvc.perform(delete("/api/admin/content/categories/nonexistent"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"));
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test

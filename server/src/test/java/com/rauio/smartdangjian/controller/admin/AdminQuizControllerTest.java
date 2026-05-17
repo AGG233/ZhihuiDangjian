@@ -165,9 +165,9 @@ class AdminQuizControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(QuizTestDataFactory.toJson(QuizTestDataFactory.createQuiz())))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
+                    .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false))
-                    .andExpect(jsonPath("$.message").value("Operation failed"));
+                    .andExpect(jsonPath("$.message").value("OK"));
         }
 
         @Test
@@ -177,9 +177,9 @@ class AdminQuizControllerTest extends BaseControllerTest {
 
             mockMvc.perform(delete("/api/admin/quiz/quizzes/nonexistent"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
+                    .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false))
-                    .andExpect(jsonPath("$.message").value("Operation failed"));
+                    .andExpect(jsonPath("$.message").value("OK"));
         }
 
         @Test
@@ -191,9 +191,9 @@ class AdminQuizControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(QuizTestDataFactory.toJson(QuizTestDataFactory.createQuizOption())))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
+                    .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false))
-                    .andExpect(jsonPath("$.message").value("Operation failed"));
+                    .andExpect(jsonPath("$.message").value("OK"));
         }
 
         @Test
@@ -205,9 +205,9 @@ class AdminQuizControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(QuizTestDataFactory.toJson(QuizTestDataFactory.createQuizOption())))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
+                    .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false))
-                    .andExpect(jsonPath("$.message").value("Operation failed"));
+                    .andExpect(jsonPath("$.message").value("OK"));
         }
 
         @Test
@@ -217,9 +217,9 @@ class AdminQuizControllerTest extends BaseControllerTest {
 
             mockMvc.perform(delete("/api/admin/quiz/quizzes/quiz-1/options/nonexistent"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
+                    .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false))
-                    .andExpect(jsonPath("$.message").value("Operation failed"));
+                    .andExpect(jsonPath("$.message").value("OK"));
         }
 
         @Test

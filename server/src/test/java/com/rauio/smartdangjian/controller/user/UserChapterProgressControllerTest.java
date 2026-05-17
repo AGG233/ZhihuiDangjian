@@ -180,9 +180,9 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(LearningTestDataFactory.toJson(LearningTestDataFactory.createChapterProgressDto())))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
+                    .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false))
-                    .andExpect(jsonPath("$.message").value("Operation failed"));
+                    .andExpect(jsonPath("$.message").value("OK"));
         }
 
         @Test
@@ -208,9 +208,9 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(LearningTestDataFactory.toJson(LearningTestDataFactory.createChapterProgressUpdateDto("prog-001"))))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
+                    .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false))
-                    .andExpect(jsonPath("$.message").value("Operation failed"));
+                    .andExpect(jsonPath("$.message").value("OK"));
         }
 
         @Test

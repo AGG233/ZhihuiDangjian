@@ -216,9 +216,9 @@ class AuthControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(AuthTestDataFactory.toJson(AuthTestDataFactory.createChangePasswordRequest())))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
+                    .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false))
-                    .andExpect(jsonPath("$.message").value("Operation failed"));
+                    .andExpect(jsonPath("$.message").value("OK"));
         }
 
         @Test
@@ -277,8 +277,8 @@ class AuthControllerTest extends BaseControllerTest {
                             .param("uuid", "uuid-001")
                             .param("code", "wrong-code"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
-                    .andExpect(jsonPath("$.message").value("Operation failed"))
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.message").value("OK"))
                     .andExpect(jsonPath("$.data").value(false));
         }
 

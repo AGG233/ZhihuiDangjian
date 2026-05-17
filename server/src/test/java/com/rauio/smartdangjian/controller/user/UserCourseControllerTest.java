@@ -120,8 +120,8 @@ class UserCourseControllerTest extends BaseControllerTest {
 
             mockMvc.perform(get("/api/content/courses/nonexistent"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
-                    .andExpect(jsonPath("$.message").value("Operation failed"));
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.message").value("OK"));
         }
 
         @Test

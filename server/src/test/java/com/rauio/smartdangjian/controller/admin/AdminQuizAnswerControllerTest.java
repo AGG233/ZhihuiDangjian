@@ -107,9 +107,9 @@ class AdminQuizAnswerControllerTest extends BaseControllerTest {
 
             mockMvc.perform(delete("/api/admin/quiz/answers/users/user-none/quizzes/quiz-none/options/opt-none"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
+                    .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false))
-                    .andExpect(jsonPath("$.message").value("Operation failed"));
+                    .andExpect(jsonPath("$.message").value("OK"));
         }
     }
 

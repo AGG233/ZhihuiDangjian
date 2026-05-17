@@ -153,8 +153,8 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
 
             mockMvc.perform(get("/api/quiz/answers/users/user-1/quizzes/quiz-1/options/opt-none"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
-                    .andExpect(jsonPath("$.message").value("Operation failed"));
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.message").value("OK"));
         }
 
         @Test
@@ -164,9 +164,9 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
 
             mockMvc.perform(post("/api/quiz/answers/users/user-1/quizzes/quiz-1/options/opt-1"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
+                    .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false))
-                    .andExpect(jsonPath("$.message").value("Operation failed"));
+                    .andExpect(jsonPath("$.message").value("OK"));
         }
 
         @Test
@@ -177,9 +177,9 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
 
             mockMvc.perform(put("/api/quiz/answers/users/user-1/quizzes/quiz-1/options/opt-1"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("400"))
+                    .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false))
-                    .andExpect(jsonPath("$.message").value("Operation failed"));
+                    .andExpect(jsonPath("$.message").value("OK"));
         }
 
         @Test

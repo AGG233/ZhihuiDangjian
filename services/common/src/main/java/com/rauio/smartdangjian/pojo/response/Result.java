@@ -33,10 +33,6 @@ public class Result<T> {
     public Result(T data) {
         this.code = "200";
         this.message = "OK";
-        if ((data instanceof Boolean && !(Boolean) data) || Objects.isNull(data)) {
-            this.code = "400";
-            this.message = "Operation failed";
-        }
         this.data = data;
     }
 
