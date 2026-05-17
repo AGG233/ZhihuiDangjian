@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.aop;
 
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
+import com.rauio.smartdangjian.aop.resolver.ResourceOwnerResolver;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -14,10 +15,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @DisplayName("ResourceAccessAspect 单元测试")
@@ -62,12 +66,56 @@ class ResourceAccessAspectTest {
                 .hasMessageContaining("资源ID不能为空");
     }
 
+    @Test
+    @DisplayName("非用户资源通过 resolver 解析到当前用户时放行")
+    void allowsResolvedResourceOwnerAccess() throws Throwable {
+        setSecurityContext("user-001", UserType.STUDENT);
+        ResourceOwnerResolver resolver = resourceOwnerResolver("RESOURCE_META", "user-001");
+        ResourceAccessAspect resourceAspect = new ResourceAccessAspect(List.of(resolver));
+        ProceedingJoinPoint joinPoint = joinPoint("byResourceMeta", new Object[]{"resource-001"});
+        when(joinPoint.proceed()).thenReturn("ok");
+
+        Object result = resourceAspect.checkResourceAccess(joinPoint);
+
+        assertThat(result).isEqualTo("ok");
+        verify(resolver).findResourceOwner("resource-001");
+    }
+
+    @Test
+    @DisplayName("非用户资源解析到其他用户时拒绝访问")
+    void rejectsResolvedResourceOwnedByOtherUser() {
+        setSecurityContext("user-001", UserType.STUDENT);
+        ResourceOwnerResolver resolver = resourceOwnerResolver("RESOURCE_META", "user-002");
+        ResourceAccessAspect resourceAspect = new ResourceAccessAspect(List.of(resolver));
+        ProceedingJoinPoint joinPoint = joinPoint("byResourceMeta", new Object[]{"resource-001"});
+
+        assertThatThrownBy(() -> resourceAspect.checkResourceAccess(joinPoint))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("权限不足");
+        verify(resolver).findResourceOwner("resource-001");
+    }
+
+    @Test
+    @DisplayName("非用户资源无法解析归属时拒绝访问")
+    void rejectsResourceWhenOwnerCannotBeResolved() {
+        setSecurityContext("user-001", UserType.STUDENT);
+        ProceedingJoinPoint joinPoint = joinPoint("byResourceMeta", new Object[]{"resource-001"});
+
+        assertThatThrownBy(() -> aspect.checkResourceAccess(joinPoint))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("无法解析资源归属");
+    }
+
     @ResourceAccess(id = "#userId")
     void byUserId(String userId) {
     }
 
     @ResourceAccess(id = "#dto.userId")
     void byDto(TestDto dto) {
+    }
+
+    @ResourceAccess(id = "#resourceId", type = "RESOURCE_META")
+    void byResourceMeta(String resourceId) {
     }
 
     private ProceedingJoinPoint joinPoint(String methodName, Object[] args) {
@@ -110,6 +158,13 @@ class ResourceAccessAspectTest {
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList())
         );
+    }
+
+    private ResourceOwnerResolver resourceOwnerResolver(String resourceType, String ownerId) {
+        ResourceOwnerResolver resolver = mock(ResourceOwnerResolver.class);
+        when(resolver.supports(resourceType)).thenReturn(true);
+        when(resolver.findResourceOwner("resource-001")).thenReturn(ownerId);
+        return resolver;
     }
 
     private record TestDto(String userId) {

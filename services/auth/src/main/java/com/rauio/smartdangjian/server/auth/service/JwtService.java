@@ -68,6 +68,9 @@ public class JwtService{
         try {
             JWTVerifier verifier = JWT.require(algorithm).build();
             DecodedJWT decodedJWT = verifier.verify(token);
+            if (Boolean.TRUE.equals(stringRedisTemplate.hasKey("blacklist:" + token))) {
+                throw new BusinessException(AuthErrorConstants.TOKEN_VERIFICATION_FAILED, "令牌已失效，请重新登录");
+            }
 
             String userId = decodedJWT.getSubject();
             if (!StringUtils.hasText(userId)) {
@@ -86,6 +89,8 @@ public class JwtService{
         } catch (JWTVerificationException e) {
             log.error("JWT验证失败: {}", e.getMessage());
             throw new BusinessException(AuthErrorConstants.TOKEN_VERIFICATION_FAILED, "身份验证失败，请重新登录");
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Token处理异常", e);
             throw new BusinessException(AuthErrorConstants.TOKEN_SERVER_ERROR, "服务器验证身份时出错");

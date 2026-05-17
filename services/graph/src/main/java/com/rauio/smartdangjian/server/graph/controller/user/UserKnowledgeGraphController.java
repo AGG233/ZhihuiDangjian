@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.server.graph.controller.user;
 
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
+import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.graph.pojo.vo.KnowledgeGraphVO;
 import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
@@ -25,6 +26,7 @@ public class UserKnowledgeGraphController {
     @Operation(summary = "获取用户学习图谱", description = "返回用户学习课程和章节的图谱结构")
     @GetMapping("/users/{userId}")
     @PermissionAccess(UserType.STUDENT)
+    @ResourceAccess(id = "#userId")
     public Result<KnowledgeGraphVO> getUserGraph(@Parameter(name = "userId", description = "用户ID") @PathVariable String userId) {
         return Result.ok(knowledgeGraphService.getUserGraph(userId));
     }

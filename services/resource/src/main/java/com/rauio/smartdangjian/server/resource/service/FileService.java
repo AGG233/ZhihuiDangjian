@@ -42,7 +42,7 @@ public class FileService {
         String objectKey = path + filename;
 
         ResourceMetaCreateRequest createRequest = new ResourceMetaCreateRequest();
-        createRequest.setUploaderId(userService.getCurrentUserId());
+        createRequest.setUploaderId(request.getUserId() != null ? request.getUserId() : userService.getCurrentUserId());
         createRequest.setOriginalName(request.getFileName());
         createRequest.setHash(uuid);
         createRequest.setObjectKey(objectKey);

@@ -20,32 +20,43 @@ class CriticalEndpointAnnotationTest {
     @Test
     @DisplayName("文件写操作必须要求登录并校验当前用户资源")
     void fileWriteEndpointsRequireCurrentUserResourceAccess() throws Exception {
-        assertPermissionAndResource(FileController.class, "upload", "#request.userId");
-        assertPermissionAndResource(FileController.class, "confirmUpload", "#resourceId");
-        assertPermissionAndResource(FileController.class, "delete", "#id");
+        assertStudentPermission(FileController.class, "upload");
+        assertPermissionAndResource(FileController.class, "confirmUpload", "#resourceId", "RESOURCE_META");
+        assertPermissionAndResource(FileController.class, "delete", "#id", "RESOURCE_META");
     }
 
     @Test
     @DisplayName("用户学习轨迹接口必须校验路径用户是当前用户")
     void learnedCoursesRequireCurrentUserResourceAccess() throws Exception {
-        assertPermissionAndResource(UserCourseController.class, "getByUserIdCourses", "#id");
+        assertPermissionAndResource(UserCourseController.class, "getByUserIdCourses", "#id", "USER");
     }
 
     @Test
     @DisplayName("用户图谱接口必须校验路径用户是当前用户")
     void userKnowledgeGraphRequiresCurrentUserResourceAccess() throws Exception {
-        assertPermissionAndResource(UserKnowledgeGraphController.class, "getUserGraph", "#userId");
+        assertPermissionAndResource(UserKnowledgeGraphController.class, "getUserGraph", "#userId", "USER");
     }
 
     @Test
     @DisplayName("学习图谱同步接口必须校验路径用户是当前用户")
     void graphSyncRequiresCurrentUserResourceAccess() throws Exception {
-        assertPermissionAndResource(UserLearningGraphSyncController.class, "syncUserGraph", "#userId");
+        assertPermissionAndResource(UserLearningGraphSyncController.class, "syncUserGraph", "#userId", "USER");
     }
 
-    private void assertPermissionAndResource(Class<?> controllerClass, String methodName, String expectedSpel) {
+    private void assertPermissionAndResource(Class<?> controllerClass, String methodName, String expectedSpel, String expectedType) {
+        assertStudentPermission(controllerClass, methodName);
         Method method = findMethod(controllerClass, methodName);
 
+        ResourceAccess resourceAccess = method.getAnnotation(ResourceAccess.class);
+        assertThat(resourceAccess)
+                .as("%s.%s must check resource ownership", controllerClass.getSimpleName(), methodName)
+                .isNotNull();
+        assertThat(resourceAccess.id()).isEqualTo(expectedSpel);
+        assertThat(resourceAccess.type()).isEqualTo(expectedType);
+    }
+
+    private void assertStudentPermission(Class<?> controllerClass, String methodName) {
+        Method method = findMethod(controllerClass, methodName);
         PermissionAccess methodPermission = method.getAnnotation(PermissionAccess.class);
         PermissionAccess classPermission = controllerClass.getAnnotation(PermissionAccess.class);
         PermissionAccess permission = methodPermission != null ? methodPermission : classPermission;
@@ -53,12 +64,6 @@ class CriticalEndpointAnnotationTest {
                 .as("%s.%s must require at least STUDENT permission", controllerClass.getSimpleName(), methodName)
                 .isNotNull();
         assertThat(permission.value()).isEqualTo(UserType.STUDENT);
-
-        ResourceAccess resourceAccess = method.getAnnotation(ResourceAccess.class);
-        assertThat(resourceAccess)
-                .as("%s.%s must check resource ownership", controllerClass.getSimpleName(), methodName)
-                .isNotNull();
-        assertThat(resourceAccess.id()).isEqualTo(expectedSpel);
     }
 
     private Method findMethod(Class<?> controllerClass, String methodName) {

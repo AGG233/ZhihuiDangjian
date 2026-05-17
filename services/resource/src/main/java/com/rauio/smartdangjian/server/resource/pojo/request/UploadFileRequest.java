@@ -9,6 +9,9 @@ import lombok.Data;
 @Schema(description = "文件上传请求体")
 public class UploadFileRequest {
 
+    @Schema(description = "上传用户ID，服务端会覆盖为当前登录用户", hidden = true)
+    private String userId;
+
     @Schema(description = "文件原始名称（含扩展名），用于提取后缀并生成对象存储键", example = "party-lesson-cover.png")
     @NotBlank(message = "文件名不能为空")
     private String  fileName;

@@ -2,12 +2,15 @@ package com.rauio.smartdangjian.config;
 
 import com.rauio.smartdangjian.aop.ResourceAccessAspect;
 import com.rauio.smartdangjian.aop.UserAspect;
+import com.rauio.smartdangjian.aop.resolver.ResourceOwnerResolver;
 import com.rauio.smartdangjian.exception.GlobalExceptionHandler;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 @AutoConfiguration
 public class WebConfig implements WebMvcConfigurer {
@@ -20,8 +23,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Bean
     @ConditionalOnProperty(name = "app.security.enabled", havingValue = "true", matchIfMissing = true)
-    public ResourceAccessAspect resourceAccessAspect() {
-        return new ResourceAccessAspect();
+    public ResourceAccessAspect resourceAccessAspect(List<ResourceOwnerResolver> ownerResolvers) {
+        return new ResourceAccessAspect(ownerResolvers);
     }
 
     @Bean

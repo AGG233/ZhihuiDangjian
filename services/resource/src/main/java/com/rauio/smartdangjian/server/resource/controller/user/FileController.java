@@ -2,11 +2,15 @@ package com.rauio.smartdangjian.server.resource.controller.user;
 
 import com.rauio.smartdangjian.aop.annotation.RequireUser;
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
+import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.UploadFileRequest;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
 import com.rauio.smartdangjian.server.resource.service.FileService;
+import com.rauio.smartdangjian.utils.SecurityUtils;
+import com.rauio.smartdangjian.utils.spec.UserType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,7 +32,9 @@ public class FileController {
             description = "前端调用本接口获取预签名PUT上传地址。服务端会创建ResourceMeta记录（状态为UPLOADING）并返回预签名URL。前端拿到uploadUrl后，应直接对该地址发起HTTP PUT请求，把文件二进制内容作为请求体上传。上传完成后，需调用confirm接口确认。"
     )
     @PostMapping("/upload")
+    @PermissionAccess(UserType.STUDENT)
     public Result<FileUploadResponse> upload(@RequestBody @Valid UploadFileRequest request) {
+        request.setUserId(SecurityUtils.getCurrentUserId());
         return Result.ok(fileService.upload(request));
     }
 
@@ -38,6 +44,8 @@ public class FileController {
     )
     @RequireUser
     @PostMapping("/confirm/{resourceId}")
+    @PermissionAccess(UserType.STUDENT)
+    @ResourceAccess(id = "#resourceId", type = "RESOURCE_META")
     public Result<ResourceMeta> confirmUpload(@PathVariable String resourceId) {
         return Result.ok(fileService.confirmUpload(resourceId));
     }
@@ -94,6 +102,8 @@ public class FileController {
     )
     @RequireUser
     @DeleteMapping("/{id}")
+    @PermissionAccess(UserType.STUDENT)
+    @ResourceAccess(id = "#id", type = "RESOURCE_META")
     public Result<Boolean> delete(@PathVariable String id) {
         fileService.delete(id);
         return Result.ok(true);
