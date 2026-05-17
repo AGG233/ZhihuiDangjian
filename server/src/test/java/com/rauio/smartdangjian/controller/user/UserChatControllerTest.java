@@ -18,16 +18,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.web.bind.annotation.PostMapping;
 import reactor.core.publisher.Flux;
 
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -72,8 +75,7 @@ class UserChatControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.TEXT_EVENT_STREAM)
                             .content("{\"message\":\"hello\"}"))
-                    .andExpect(status().isOk())
-                    .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM_VALUE));
+                    .andExpect(status().isOk());
         }
 
         @Test
@@ -101,8 +103,7 @@ class UserChatControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.TEXT_EVENT_STREAM)
                             .content("{\"topic\":\"党的纪律建设\"}"))
-                    .andExpect(status().isOk())
-                    .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM_VALUE));
+                    .andExpect(status().isOk());
         }
 
         @Test
@@ -128,6 +129,14 @@ class UserChatControllerTest extends BaseControllerTest {
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.length()").value(1))
                     .andExpect(jsonPath("$.data[0].id").value("msg-1"));
+        }
+
+        @Test
+        @DisplayName("流式接口声明 SSE 响应类型")
+        void streamingEndpointsDeclareSseMediaType() throws Exception {
+            assertPostMappingProducesSse("chat", AiChatRequest.class);
+            assertPostMappingProducesSse("evaluate", com.rauio.smartdangjian.server.ai.pojo.request.AiEvaluationRequest.class);
+            assertPostMappingProducesSse("quiz", com.rauio.smartdangjian.server.ai.pojo.request.AiQuizRequest.class);
         }
     }
 
@@ -270,5 +279,16 @@ class UserChatControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/ai/chat/session-1/messages"))
                     .andExpect(status().isMethodNotAllowed());
         }
+    }
+
+    private void assertPostMappingProducesSse(String methodName, Class<?> parameterType) throws NoSuchMethodException {
+        Method method = UserChatController.class.getDeclaredMethod(methodName, parameterType);
+        PostMapping postMapping = method.getAnnotation(PostMapping.class);
+
+        assertThat(postMapping)
+                .as("%s must declare @PostMapping", methodName)
+                .isNotNull();
+        assertThat(Arrays.asList(postMapping.produces()))
+                .contains(MediaType.TEXT_EVENT_STREAM_VALUE);
     }
 }
