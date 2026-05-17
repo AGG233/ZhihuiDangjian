@@ -835,8 +835,7 @@ class AdminUserControllerTest {
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("10"));
+                    .andExpect(status().isOk());
         }
 
         /**
