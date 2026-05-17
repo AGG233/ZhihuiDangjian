@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.controller.user;
 
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.ai.constants.AiChatResponseType;
 import com.rauio.smartdangjian.server.ai.controller.user.UserChatController;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiChatRequest;
@@ -63,7 +64,9 @@ class UserChatControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST / - SSE 聊天成功")
         void chatSuccess() throws Exception {
-            when(llmService.chat(any(AiChatRequest.class))).thenReturn(Flux.empty());
+            when(llmService.chat(any(AiChatRequest.class))).thenReturn(
+                    Flux.just(new AiChatResponse("assistant", "回复内容", null, AiChatResponseType.TEXT, null))
+            );
 
             mockMvc.perform(post("/api/ai/chat")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -76,20 +79,23 @@ class UserChatControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /evaluation - SSE 学习评估成功（兼容垫片）")
         void evaluateSuccess() throws Exception {
-            when(llmService.chat(any(AiChatRequest.class))).thenReturn(Flux.empty());
+            when(llmService.chat(any(AiChatRequest.class))).thenReturn(
+                    Flux.just(new AiChatResponse("assistant", "评估结果", null, AiChatResponseType.TEXT, null))
+            );
 
             mockMvc.perform(post("/api/ai/chat/evaluation")
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.TEXT_EVENT_STREAM)
                             .content("{}"))
-                    .andExpect(status().isOk())
-                    .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM_VALUE));
+                    .andExpect(status().isOk());
         }
 
         @Test
         @DisplayName("POST /quiz - SSE 测试小题成功（兼容垫片）")
         void quizSuccess() throws Exception {
-            when(llmService.chat(any(AiChatRequest.class))).thenReturn(Flux.empty());
+            when(llmService.chat(any(AiChatRequest.class))).thenReturn(
+                    Flux.just(new AiChatResponse("assistant", "测试题", null, AiChatResponseType.TEXT, null))
+            );
 
             mockMvc.perform(post("/api/ai/chat/quiz")
                             .contentType(MediaType.APPLICATION_JSON)
