@@ -50,16 +50,23 @@ public class FileService {
         createRequest.setStatus(ResourceStatusConstants.UPLOADING);
         ResourceMeta meta = resourceMetaService.create(createRequest);
 
-        GeneratePresignedUrlResult urlResult = fileStorageService
-                .generatePresignedUrl()
-                .setPlatform(ResourceConstant.COS_PLATFORM)
-                .setPath(path)
-                .setFilename(filename)
-                .setMethod(Constant.GeneratePresignedUrl.Method.PUT)
-                .setExpiration(DateUtil.offsetMinute(new Date(), 10))
-                .putHeaders(Constant.Metadata.CONTENT_TYPE, request.getMimeType().toString())
-                .putUserMetadata("resourceId", meta.getId())
-                .generatePresignedUrl();
+        GeneratePresignedUrlResult urlResult;
+        try {
+            urlResult = fileStorageService
+                    .generatePresignedUrl()
+                    .setPlatform(ResourceConstant.COS_PLATFORM)
+                    .setPath(path)
+                    .setFilename(filename)
+                    .setMethod(Constant.GeneratePresignedUrl.Method.PUT)
+                    .setExpiration(DateUtil.offsetMinute(new Date(), 10))
+                    .putHeaders(Constant.Metadata.CONTENT_TYPE, request.getMimeType())
+                    .putUserMetadata("resourceId", meta.getId())
+                    .generatePresignedUrl();
+        } catch (Exception e) {
+            log.error("生成 COS 预签名上传 URL 失败，请检查 COS 配置 (SecretId/SecretKey/Bucket/Region)", e);
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_CREATE_FAILED,
+                    "文件存储服务暂不可用，请稍后重试");
+        }
 
         return FileUploadResponse.builder()
                 .resourceId(meta.getId())
@@ -142,16 +149,22 @@ public class FileService {
         String path = extractPath(objectKey);
         String filename = extractFilename(objectKey);
 
-        GeneratePresignedUrlResult result = fileStorageService
-                .generatePresignedUrl()
-                .setPlatform(ResourceConstant.COS_PLATFORM)
-                .setPath(path)
-                .setFilename(filename)
-                .setMethod(Constant.GeneratePresignedUrl.Method.GET)
-                .setExpiration(DateUtil.offsetMinute(new Date(), 10))
-                .generatePresignedUrl();
+        try {
+            GeneratePresignedUrlResult result = fileStorageService
+                    .generatePresignedUrl()
+                    .setPlatform(ResourceConstant.COS_PLATFORM)
+                    .setPath(path)
+                    .setFilename(filename)
+                    .setMethod(Constant.GeneratePresignedUrl.Method.GET)
+                    .setExpiration(DateUtil.offsetMinute(new Date(), 10))
+                    .generatePresignedUrl();
 
-        return result.getUrl();
+            return result.getUrl();
+        } catch (Exception e) {
+            log.error("生成 COS 预签名下载 URL 失败，objectKey={}", objectKey, e);
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND,
+                    "文件服务暂不可用，请稍后重试");
+        }
     }
 
     private FileInfo buildFileInfo(String objectKey) {

@@ -28,6 +28,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CourseService extends ServiceImpl<CourseMapper, Course> {
 
+    private static final Map<String, String> DIFFICULTY_MAP = Map.of(
+            "入门", "beginner",
+            "中级", "intermediate",
+            "高级", "advanced"
+    );
+
     private final UserService       userService;
     private final CourseConvertor   courseConvertor;
     private final CategoryCourseMapper categoryCourseMapper;
@@ -59,6 +65,16 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         Course  course      = courseConvertor.toCourse(courseDto);
 
         course.setCreatorId(user.getId());
+
+        // 空字符串 coverImageId 视为未设置
+        if (course.getCoverImageId() != null && course.getCoverImageId().isBlank()) {
+            course.setCoverImageId(null);
+        }
+
+        // 中英文难度值映射
+        if (course.getDifficulty() != null && DIFFICULTY_MAP.containsKey(course.getDifficulty())) {
+            course.setDifficulty(DIFFICULTY_MAP.get(course.getDifficulty()));
+        }
 
         if (!this.save(course)) {
             return false;
