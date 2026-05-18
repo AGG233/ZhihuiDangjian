@@ -1,6 +1,7 @@
 plugins {
     `java-library`
     id("io.spring.dependency-management")
+    jacoco
 }
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
@@ -39,6 +40,29 @@ dependencyManagement {
 
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-parameters")
+}
+
+val integrationTestSourceSet = sourceSets.create("integrationTest") {
+    java.srcDir("src/integrationTest/java")
+    resources.srcDir("src/integrationTest/resources")
+    compileClasspath += sourceSets.main.get().output + configurations.testRuntimeClasspath.get()
+    runtimeClasspath += output + compileClasspath
+}
+
+configurations[integrationTestSourceSet.implementationConfigurationName].extendsFrom(configurations.testImplementation.get())
+configurations[integrationTestSourceSet.runtimeOnlyConfigurationName].extendsFrom(configurations.testRuntimeOnly.get())
+
+val integrationTest = tasks.register<Test>("integrationTest") {
+    description = "Runs integration tests."
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    testClassesDirs = integrationTestSourceSet.output.classesDirs
+    classpath = integrationTestSourceSet.runtimeClasspath
+    shouldRunAfter(tasks.test)
+    useJUnitPlatform()
+}
+
+tasks.check {
+    dependsOn(integrationTest)
 }
 
 configurations.configureEach {
