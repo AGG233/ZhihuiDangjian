@@ -90,12 +90,16 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
         Category category = convertor.toEntity(dto);
         category.setLevel(0);
         category.setParentId(null);
-        category.setUniversityId(resolveRootCategoryUniversityId());
+        String universityId = resolveRootCategoryUniversityId();
+        if (universityId == null) {
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_ARGS_ERROR, "不能获取当前用户所属学校");
+        }
+        category.setUniversityId(universityId);
         this.save(category);
 
         List<CategoryDto> childrenNode = dto.getChildrenNode();
         if (childrenNode == null || childrenNode.isEmpty()) {
-            throw new BusinessException(CategoryErrorConstants.CATEGORY_ARGS_ERROR, "参数错误");
+            return true;
         }
         return createByParentId(childrenNode, category.getId());
     }

@@ -28,9 +28,24 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CourseService extends ServiceImpl<CourseMapper, Course> {
 
+    private static final Map<String, String> DIFFICULTY_MAP = Map.of(
+            "入门", "beginner",
+            "中级", "intermediate",
+            "高级", "advanced"
+    );
+
     private final UserService       userService;
     private final CourseConvertor   courseConvertor;
     private final CategoryCourseMapper categoryCourseMapper;
+
+    private void normalizeCourseFields(Course course) {
+        if (course.getCoverImageId() != null && course.getCoverImageId().isBlank()) {
+            course.setCoverImageId(null);
+        }
+        if (course.getDifficulty() != null && DIFFICULTY_MAP.containsKey(course.getDifficulty())) {
+            course.setDifficulty(DIFFICULTY_MAP.get(course.getDifficulty()));
+        }
+    }
 
     /**
      * 根据课程 ID 获取课程详情。
@@ -59,6 +74,7 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         Course  course      = courseConvertor.toCourse(courseDto);
 
         course.setCreatorId(user.getId());
+        normalizeCourseFields(course);
 
         if (!this.save(course)) {
             return false;
@@ -89,6 +105,7 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
             return false;
         }
         course.setId(id);
+        normalizeCourseFields(course);
         boolean updated = this.updateById(course);
         if (!updated) {
             return false;
