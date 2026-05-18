@@ -64,6 +64,7 @@ public class FileService {
                     .generatePresignedUrl();
         } catch (Exception e) {
             log.error("生成 COS 预签名上传 URL 失败，请检查 COS 配置 (SecretId/SecretKey/Bucket/Region)", e);
+            resourceMetaService.delete(meta.getId());
             throw new BusinessException(ResourceErrorConstants.RESOURCE_CREATE_FAILED,
                     "文件存储服务暂不可用，请稍后重试");
         }
