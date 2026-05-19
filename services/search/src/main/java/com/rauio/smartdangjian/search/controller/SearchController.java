@@ -5,11 +5,11 @@ import org.springframework.web.bind.annotation.*;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.search.pojo.vo.UserProfileVO;
+import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 import com.rauio.smartdangjian.search.service.RecommendService;
 import com.rauio.smartdangjian.search.service.SearchService;
 import com.rauio.smartdangjian.search.service.UserProfileService;
-import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
+import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,7 +30,7 @@ public class SearchController {
     @Operation(summary = "搜索课程", description = "支持关键词全文检索，可按分类和难度过滤")
     @GetMapping("/courses")
     @PermissionAccess(UserType.STUDENT)
-    public Result<Page<CourseVO>> searchCourses(
+    public Result<Page<CourseResponse>> searchCourses(
             @Parameter(name = "keyword", description = "搜索关键词") @RequestParam(required = false) String keyword,
             @Parameter(name = "categoryId", description = "分类ID") @RequestParam(required = false) String categoryId,
             @Parameter(name = "difficulty", description = "难度") @RequestParam(required = false) String difficulty,
@@ -42,7 +42,7 @@ public class SearchController {
     @Operation(summary = "混合搜索", description = "全文检索 + 个性化推荐补充")
     @GetMapping("/hybrid")
     @PermissionAccess(UserType.STUDENT)
-    public Result<Page<CourseVO>> hybridSearch(
+    public Result<Page<CourseResponse>> hybridSearch(
             @Parameter(name = "keyword", description = "搜索关键词") @RequestParam String keyword,
             @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
             @Parameter(name = "pageSize", description = "每页条数") @RequestParam(defaultValue = "10") int pageSize) {
@@ -62,7 +62,7 @@ public class SearchController {
     @Operation(summary = "获取当前用户画像", description = "返回用户学习统计、知识掌握、兴趣分类、答题统计")
     @GetMapping("/profile")
     @PermissionAccess(UserType.STUDENT)
-    public Result<UserProfileVO> getProfile() {
+    public Result<UserProfileResponse> getProfile() {
         return Result.ok(userProfileService.getCurrentUserProfile());
     }
 }

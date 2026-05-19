@@ -21,8 +21,8 @@ import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.controller.user.UserCourseController;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
-import com.rauio.smartdangjian.server.content.pojo.vo.PageVO;
+import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.content.pojo.response.PageResponse;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
 
 @SpringBootTest(
@@ -49,7 +49,7 @@ class UserCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 获取课程详情成功")
         void getCourseDetailSuccess() throws Exception {
-            CourseVO vo = CourseTestDataFactory.createCourseVO("course-1");
+            CourseResponse vo = CourseTestDataFactory.createCourseResponse("course-1");
             when(courseService.get("course-1")).thenReturn(vo);
 
             mockMvc.perform(get("/api/content/courses/course-1"))
@@ -66,8 +66,8 @@ class UserCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET / - 分页获取课程列表成功")
         void getPageSuccess() throws Exception {
-            CourseVO vo = CourseTestDataFactory.createCourseVO("course-1");
-            PageVO<Object> pageVO = CourseTestDataFactory.createPageVO(List.of(vo), 1, 1, 10);
+            CourseResponse vo = CourseTestDataFactory.createCourseResponse("course-1");
+            PageResponse<Object> pageVO = CourseTestDataFactory.createPageResponse(List.of(vo), 1, 1, 10);
             when(courseService.getPage(1, 10)).thenReturn(pageVO);
 
             mockMvc.perform(get("/api/content/courses").param("pageNum", "1").param("pageSize", "10"))
@@ -81,7 +81,7 @@ class UserCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET / - 不传分页参数时使用默认值")
         void getPageWithDefaults() throws Exception {
-            PageVO<Object> emptyPage = CourseTestDataFactory.createEmptyPageVO(1, 10);
+            PageResponse<Object> emptyPage = CourseTestDataFactory.createEmptyPageResponse(1, 10);
             when(courseService.getPage(1, 10)).thenReturn(emptyPage);
 
             mockMvc.perform(get("/api/content/courses"))
@@ -161,7 +161,7 @@ class UserCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET / - 空分页结果返回空列表")
         void getPageEmptyResult() throws Exception {
-            PageVO<Object> emptyPage = CourseTestDataFactory.createEmptyPageVO(1, 10);
+            PageResponse<Object> emptyPage = CourseTestDataFactory.createEmptyPageResponse(1, 10);
             when(courseService.getPage(1, 10)).thenReturn(emptyPage);
 
             mockMvc.perform(get("/api/content/courses").param("pageNum", "1").param("pageSize", "10"))
@@ -186,7 +186,7 @@ class UserCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 路径含中文正常处理")
         void getWithChineseId() throws Exception {
-            CourseVO vo = CourseTestDataFactory.createCourseVO("c-1");
+            CourseResponse vo = CourseTestDataFactory.createCourseResponse("c-1");
             when(courseService.get("课程")).thenReturn(vo);
 
             mockMvc.perform(get("/api/content/courses/课程"))

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.pojo.entity.Article;
-import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
+import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
 import com.rauio.smartdangjian.server.content.service.ContentBlockService;
 import com.rauio.smartdangjian.server.content.service.article.ArticleService;
 
@@ -48,7 +48,7 @@ public class ArticleDetailTool {
         if (article == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "文章不存在");
         }
-        List<ContentBlockVO> blocks = contentBlockService.getByParentId(articleId);
+        List<ContentBlockResponse> blocks = contentBlockService.getByParentId(articleId);
 
         Map<String, Object> result = new HashMap<>();
         result.put("id", article.getId());

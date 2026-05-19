@@ -15,8 +15,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.content.pojo.dto.ChapterDto;
-import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
+import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
+import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,9 +34,9 @@ class AdminChapterControllerTest {
     // ================================================================
 
     @Test
-    @DisplayName("get 根据章节 ID 返回 ChapterVO")
-    void getShouldReturnChapterVO() {
-        ChapterVO vo = ChapterVO.builder()
+    @DisplayName("get 根据章节 ID 返回 ChapterResponse")
+    void getShouldReturnChapterResponse() {
+        ChapterResponse vo = ChapterResponse.builder()
                 .id("ch-001")
                 .courseId("course-001")
                 .title("第一章")
@@ -48,7 +48,7 @@ class AdminChapterControllerTest {
                 .build();
         when(chapterService.get("ch-001")).thenReturn(vo);
 
-        Result<ChapterVO> result = controller.get("ch-001");
+        Result<ChapterResponse> result = controller.get("ch-001");
 
         assertThat(result).isNotNull();
         assertThat(result.getData()).isNotNull();
@@ -59,14 +59,14 @@ class AdminChapterControllerTest {
     @Test
     @DisplayName("get 返回的 Result 包含成功状态码")
     void getShouldReturnSuccessResult() {
-        ChapterVO vo = ChapterVO.builder()
+        ChapterResponse vo = ChapterResponse.builder()
                 .id("ch-001")
                 .courseId("course-001")
                 .title("第一章")
                 .build();
         when(chapterService.get("ch-001")).thenReturn(vo);
 
-        Result<ChapterVO> result = controller.get("ch-001");
+        Result<ChapterResponse> result = controller.get("ch-001");
 
         assertThat(result.getCode()).isEqualTo("200");
         assertThat(result.getMessage()).isEqualTo("OK");
@@ -78,13 +78,13 @@ class AdminChapterControllerTest {
 
     @Test
     @DisplayName("getByCourseId 根据课程 ID 返回章节列表")
-    void getByCourseIdShouldReturnChapterVOList() {
-        List<ChapterVO> vos = List.of(
-                ChapterVO.builder().id("ch-001").title("第一章").build(),
-                ChapterVO.builder().id("ch-002").title("第二章").build());
+    void getByCourseIdShouldReturnChapterResponseList() {
+        List<ChapterResponse> vos = List.of(
+                ChapterResponse.builder().id("ch-001").title("第一章").build(),
+                ChapterResponse.builder().id("ch-002").title("第二章").build());
         when(chapterService.getByCourseId("course-001")).thenReturn(vos);
 
-        Result<List<ChapterVO>> result = controller.getByCourseId("course-001");
+        Result<List<ChapterResponse>> result = controller.getByCourseId("course-001");
 
         assertThat(result).isNotNull();
         assertThat(result.getData()).hasSize(2);
@@ -97,7 +97,7 @@ class AdminChapterControllerTest {
     void getByCourseIdShouldReturnEmptyListWhenNoChapters() {
         when(chapterService.getByCourseId("empty-course")).thenReturn(Collections.emptyList());
 
-        Result<List<ChapterVO>> result = controller.getByCourseId("empty-course");
+        Result<List<ChapterResponse>> result = controller.getByCourseId("empty-course");
 
         assertThat(result).isNotNull();
         assertThat(result.getData()).isEmpty();
@@ -108,7 +108,7 @@ class AdminChapterControllerTest {
     void getByCourseIdShouldReturnSuccessResult() {
         when(chapterService.getByCourseId("course-001")).thenReturn(Collections.emptyList());
 
-        Result<List<ChapterVO>> result = controller.getByCourseId("course-001");
+        Result<List<ChapterResponse>> result = controller.getByCourseId("course-001");
 
         assertThat(result.getCode()).isEqualTo("200");
         assertThat(result.getMessage()).isEqualTo("OK");
@@ -121,14 +121,14 @@ class AdminChapterControllerTest {
     @Test
     @DisplayName("create 创建章节成功时返回 true")
     void createShouldReturnTrue() {
-        ChapterDto dto = ChapterDto.builder()
+        ChapterRequest dto = ChapterRequest.builder()
                 .courseId("course-001")
                 .title("新章节")
                 .description("描述")
                 .duration(1800)
                 .orderIndex(1)
                 .build();
-        when(chapterService.create(any(ChapterDto.class))).thenReturn(true);
+        when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
 
         Result<Boolean> result = controller.create(dto);
 
@@ -140,14 +140,14 @@ class AdminChapterControllerTest {
     @Test
     @DisplayName("create 创建章节失败时返回 false")
     void createShouldReturnFalseWhenServiceFails() {
-        ChapterDto dto = ChapterDto.builder()
+        ChapterRequest dto = ChapterRequest.builder()
                 .courseId("course-001")
                 .title("失败章节")
                 .description("描述")
                 .duration(1800)
                 .orderIndex(1)
                 .build();
-        when(chapterService.create(any(ChapterDto.class))).thenReturn(false);
+        when(chapterService.create(any(ChapterRequest.class))).thenReturn(false);
 
         Result<Boolean> result = controller.create(dto);
 
@@ -163,8 +163,8 @@ class AdminChapterControllerTest {
     @Test
     @DisplayName("update 更新章节成功时返回 true")
     void updateShouldReturnTrue() {
-        ChapterDto dto = ChapterDto.builder().title("更新章节").description("更新描述").build();
-        when(chapterService.update(any(ChapterDto.class))).thenReturn(true);
+        ChapterRequest dto = ChapterRequest.builder().title("更新章节").description("更新描述").build();
+        when(chapterService.update(any(ChapterRequest.class))).thenReturn(true);
 
         Result<Boolean> result = controller.update(dto);
 
@@ -176,8 +176,8 @@ class AdminChapterControllerTest {
     @Test
     @DisplayName("update 更新章节失败时返回 false")
     void updateShouldReturnFalseWhenServiceFails() {
-        ChapterDto dto = ChapterDto.builder().title("失败更新").description("描述").build();
-        when(chapterService.update(any(ChapterDto.class))).thenReturn(false);
+        ChapterRequest dto = ChapterRequest.builder().title("失败更新").description("描述").build();
+        when(chapterService.update(any(ChapterRequest.class))).thenReturn(false);
 
         Result<Boolean> result = controller.update(dto);
 

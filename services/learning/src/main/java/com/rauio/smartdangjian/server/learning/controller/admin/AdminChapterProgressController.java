@@ -9,7 +9,7 @@ import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.learning.pojo.vo.UserChapterProgressVO;
+import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
 import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
@@ -30,7 +30,7 @@ public class AdminChapterProgressController {
     @Operation(summary = "获取章节所有进度")
     @GetMapping("/chapter/{chapterId}")
     @DataScopeAccess(resource = DataScopeResources.CHAPTER_PROGRESS, action = DataScopeAction.FILTER, id = "#chapterId")
-    public Result<List<UserChapterProgressVO>> getByChapterId(
+    public Result<List<UserChapterProgressResponse>> getByChapterId(
             @Parameter(name = "chapterId", description = "章节ID") @PathVariable String chapterId) {
         return Result.ok(progressService.getByChapterId(chapterId));
     }

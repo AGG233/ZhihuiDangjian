@@ -15,9 +15,9 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.content.constants.CategoryErrorConstants;
-import com.rauio.smartdangjian.server.content.pojo.dto.CategoryDto;
 import com.rauio.smartdangjian.server.content.pojo.entity.Category;
-import com.rauio.smartdangjian.server.content.pojo.vo.CategoryVO;
+import com.rauio.smartdangjian.server.content.pojo.request.CategoryRequest;
+import com.rauio.smartdangjian.server.content.pojo.response.CategoryResponse;
 import com.rauio.smartdangjian.server.content.service.category.CategoryService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
@@ -63,9 +63,9 @@ public class CategoryAccessAspect implements DataScopeResolver {
             return result;
         }
         if (wrapped.getData() instanceof List<?> data) {
-            List<CategoryVO> filtered = data.stream()
-                    .filter(CategoryVO.class::isInstance)
-                    .map(CategoryVO.class::cast)
+            List<CategoryResponse> filtered = data.stream()
+                    .filter(CategoryResponse.class::isInstance)
+                    .map(CategoryResponse.class::cast)
                     .filter(item -> belongsToCurrentUniversity(context.getCurrentUser(), item.getUniversityId()))
                     .toList();
             setResultData(wrapped, filtered);
@@ -90,7 +90,7 @@ public class CategoryAccessAspect implements DataScopeResolver {
         }
         String categoryId = context.require(context.getAccess().id(), String.class, "分类ID不能为空");
         assertCategoryManageable(currentUser, categoryId);
-        context.require(context.getAccess().body(), CategoryDto.class, "分类信息不能为空");
+        context.require(context.getAccess().body(), CategoryRequest.class, "分类信息不能为空");
     }
 
     private void handleDelete(DataScopeContext context, CurrentUserPrincipal currentUser) {

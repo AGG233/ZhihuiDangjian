@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
 import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
+import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 import com.rauio.smartdangjian.server.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,8 +19,8 @@ public class UserInfoTool {
     private final UserConvertor userConvertor;
 
     @Tool(description = "获取用户基本信息")
-    public UserVO getUserInfo(ToolContext toolContext) {
+    public UserResponse getUserInfo(ToolContext toolContext) {
         String userId = ToolContextUtil.getUserId(toolContext, userService);
-        return userConvertor.toVO(userService.getById(userId));
+        return userConvertor.toResponse(userService.getById(userId));
     }
 }

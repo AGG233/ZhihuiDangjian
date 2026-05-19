@@ -14,7 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
 
@@ -44,9 +44,9 @@ class AdminUserControllerTest {
     @Test
     @DisplayName("getPage 委托 service 分页查询用户")
     void getPage() {
-        UserDto dto = new UserDto();
+        UserRequest dto = new UserRequest();
         Page<User> page = new Page<>(1, 10);
-        when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+        when(userService.getAdminPage(any(UserRequest.class), anyInt(), anyInt())).thenReturn(page);
 
         var result = controller.getPage(dto, 1, 10);
 
@@ -59,9 +59,9 @@ class AdminUserControllerTest {
     @Test
     @DisplayName("getPage 使用默认分页参数")
     void getPageWithDefaults() {
-        UserDto dto = new UserDto();
+        UserRequest dto = new UserRequest();
         Page<User> page = new Page<>(1, 10);
-        when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+        when(userService.getAdminPage(any(UserRequest.class), anyInt(), anyInt())).thenReturn(page);
 
         var result = controller.getPage(dto, 0, 0);
 

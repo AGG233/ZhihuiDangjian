@@ -19,8 +19,8 @@ import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
 import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserChapterProgress;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
-import com.rauio.smartdangjian.server.learning.pojo.vo.UserChapterProgressVO;
-import com.rauio.smartdangjian.server.learning.pojo.vo.UserLearningRecordVO;
+import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
+import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -101,17 +101,17 @@ public class LearningResourceAccessAspect implements DataScopeResolver {
             return result;
         }
         if (DataScopeResources.LEARNING_RECORD.equals(resource)) {
-            List<UserLearningRecordVO> filtered = data.stream()
-                    .filter(UserLearningRecordVO.class::isInstance)
-                    .map(UserLearningRecordVO.class::cast)
+            List<UserLearningRecordResponse> filtered = data.stream()
+                    .filter(UserLearningRecordResponse.class::isInstance)
+                    .map(UserLearningRecordResponse.class::cast)
                     .filter(item -> belongsToCurrentSchool(currentUser, item.getUserId()))
                     .toList();
             setResultData(wrapped, filtered);
             return wrapped;
         }
-        List<UserChapterProgressVO> filtered = data.stream()
-                .filter(UserChapterProgressVO.class::isInstance)
-                .map(UserChapterProgressVO.class::cast)
+        List<UserChapterProgressResponse> filtered = data.stream()
+                .filter(UserChapterProgressResponse.class::isInstance)
+                .map(UserChapterProgressResponse.class::cast)
                 .filter(item -> belongsToCurrentSchool(currentUser, item.getUserId()))
                 .toList();
         setResultData(wrapped, filtered);

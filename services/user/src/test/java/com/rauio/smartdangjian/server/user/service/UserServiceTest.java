@@ -34,10 +34,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserPublicVO;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
+import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
+import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -127,20 +127,20 @@ class UserServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("get 根据ID调用getById并转换为UserVO返回")
+    @DisplayName("get 根据ID调用getById并转换为UserResponse返回")
     void getByIdConvertsToVO() {
         User user = createUser("u1", "testuser", "test@example.com", "13800138000");
-        UserVO expectedVO = new UserVO();
+        UserResponse expectedVO = new UserResponse();
         expectedVO.setId("u1");
         expectedVO.setUsername("testuser");
 
         doReturn(user).when(userService).getById("u1");
-        when(convertor.toVO(user)).thenReturn(expectedVO);
+        when(convertor.toResponse(user)).thenReturn(expectedVO);
 
-        UserVO result = userService.get("u1");
+        UserResponse result = userService.get("u1");
 
         assertThat(result).isEqualTo(expectedVO);
-        verify(convertor).toVO(user);
+        verify(convertor).toResponse(user);
     }
 
     // ================================================================
@@ -582,39 +582,39 @@ class UserServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("getPage 按条件分页查询并转换为 UserPublicVO")
+    @DisplayName("getPage 按条件分页查询并转换为 UserPublicResponse")
     void getPageCallsConvertor() {
-        UserDto dto = new UserDto();
-        dto.setUsername("test");
+        UserRequest request = new UserRequest();
+        request.setUsername("test");
 
         List<User> userList = List.of(createUser("u1", "testuser", "test@example.com", "13800138000"));
         Page<User> userPage = new Page<>(1, 10, 1);
         userPage.setRecords(userList);
 
-        List<UserPublicVO> voList = List.of(new UserPublicVO());
+        List<UserPublicResponse> responseList = List.of(new UserPublicResponse());
         doReturn(userPage).when(userService).page(any(Page.class), any(LambdaQueryWrapper.class));
-        when(convertor.toPublicVO(userList)).thenReturn(voList);
+        when(convertor.toPublicResponse(userList)).thenReturn(responseList);
 
-        Page<UserPublicVO> result = userService.getPage(dto, 1, 10);
+        Page<UserPublicResponse> result = userService.getPage(request, 1, 10);
 
         assertThat(result).isNotNull();
-        assertThat(result.getRecords()).isEqualTo(voList);
-        verify(convertor).toPublicVO(userList);
+        assertThat(result.getRecords()).isEqualTo(responseList);
+        verify(convertor).toPublicResponse(userList);
     }
 
     @Test
     @DisplayName("getPage 空条件时返回全部用户")
     void getPageWithEmptyDto() {
-        UserDto dto = new UserDto();
+        UserRequest request = new UserRequest();
 
         Page<User> userPage = new Page<>(1, 10);
         doReturn(userPage).when(userService).page(any(Page.class), any(LambdaQueryWrapper.class));
-        when(convertor.toPublicVO(anyList())).thenReturn(List.of());
+        when(convertor.toPublicResponse(anyList())).thenReturn(List.of());
 
-        Page<UserPublicVO> result = userService.getPage(dto, 1, 10);
+        Page<UserPublicResponse> result = userService.getPage(request, 1, 10);
 
         assertThat(result).isNotNull();
-        verify(convertor).toPublicVO(anyList());
+        verify(convertor).toPublicResponse(anyList());
     }
 
     // ================================================================
@@ -624,15 +624,15 @@ class UserServiceTest {
     @Test
     @DisplayName("getAdminPage 按条件分页查询返回用户实体")
     void getAdminPageReturnsUserPage() {
-        UserDto dto = new UserDto();
-        dto.setRealName("张三");
+        UserRequest request = new UserRequest();
+        request.setRealName("张三");
 
         List<User> userList = List.of(createUser("u1", "testuser", "test@example.com", "13800138000"));
         Page<User> userPage = new Page<>(1, 10, 1);
         userPage.setRecords(userList);
         doReturn(userPage).when(userService).page(any(Page.class), any(LambdaQueryWrapper.class));
 
-        Page<User> result = userService.getAdminPage(dto, 1, 10);
+        Page<User> result = userService.getAdminPage(request, 1, 10);
 
         assertThat(result).isNotNull();
         assertThat(result.getRecords()).hasSize(1);
@@ -641,12 +641,12 @@ class UserServiceTest {
     @Test
     @DisplayName("getAdminPage 空条件时返回所有用户")
     void getAdminPageWithEmptyDto() {
-        UserDto dto = new UserDto();
+        UserRequest request = new UserRequest();
 
         Page<User> userPage = new Page<>(1, 10);
         doReturn(userPage).when(userService).page(any(Page.class), any(LambdaQueryWrapper.class));
 
-        Page<User> result = userService.getAdminPage(dto, 1, 10);
+        Page<User> result = userService.getAdminPage(request, 1, 10);
 
         assertThat(result).isNotNull();
     }

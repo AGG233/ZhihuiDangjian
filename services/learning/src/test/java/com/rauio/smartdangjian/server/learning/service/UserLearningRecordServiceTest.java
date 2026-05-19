@@ -24,9 +24,9 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
 import com.rauio.smartdangjian.server.learning.pojo.convertor.UserLearningRecordConvertor;
-import com.rauio.smartdangjian.server.learning.pojo.dto.UserLearningRecordDto;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
-import com.rauio.smartdangjian.server.learning.pojo.vo.UserLearningRecordVO;
+import com.rauio.smartdangjian.server.learning.pojo.request.UserLearningRecordRequest;
+import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 
 @ExtendWith(MockitoExtension.class)
 class UserLearningRecordServiceTest {
@@ -62,15 +62,15 @@ class UserLearningRecordServiceTest {
                 .build();
         doReturn(entity).when(recordService).getById(RECORD_ID);
 
-        UserLearningRecordVO vo = UserLearningRecordVO.builder()
+        UserLearningRecordResponse vo = UserLearningRecordResponse.builder()
                 .id(RECORD_ID)
                 .userId(USER_ID)
                 .chapterId(CHAPTER_ID)
                 .duration(1800)
                 .build();
-        when(convertor.toVO(entity)).thenReturn(vo);
+        when(convertor.toResponse(entity)).thenReturn(vo);
 
-        UserLearningRecordVO result = recordService.get(RECORD_ID);
+        UserLearningRecordResponse result = recordService.get(RECORD_ID);
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(RECORD_ID);
@@ -92,7 +92,7 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("getPage 分页查询学习记录")
     void getPage() {
-        UserLearningRecordDto dto = UserLearningRecordDto.builder()
+        UserLearningRecordRequest dto = UserLearningRecordRequest.builder()
                 .userId(USER_ID)
                 .deviceType("web")
                 .build();
@@ -117,13 +117,13 @@ class UserLearningRecordServiceTest {
                 .chapterId(CHAPTER_ID)
                 .build());
         doReturn(list).when(recordService).list(any(QueryWrapper.class));
-        when(convertor.toVOList(list))
-                .thenReturn(List.of(UserLearningRecordVO.builder()
+        when(convertor.toResponseList(list))
+                .thenReturn(List.of(UserLearningRecordResponse.builder()
                         .id(RECORD_ID)
                         .userId(USER_ID)
                         .build()));
 
-        List<UserLearningRecordVO> result = recordService.getByUserId(USER_ID);
+        List<UserLearningRecordResponse> result = recordService.getByUserId(USER_ID);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getId()).isEqualTo(RECORD_ID);
@@ -161,13 +161,13 @@ class UserLearningRecordServiceTest {
         List<UserLearningRecord> list = List.of(
                 UserLearningRecord.builder().id(RECORD_ID).chapterId(CHAPTER_ID).build());
         doReturn(list).when(recordService).list(any(QueryWrapper.class));
-        when(convertor.toVOList(list))
-                .thenReturn(List.of(UserLearningRecordVO.builder()
+        when(convertor.toResponseList(list))
+                .thenReturn(List.of(UserLearningRecordResponse.builder()
                         .id(RECORD_ID)
                         .chapterId(CHAPTER_ID)
                         .build()));
 
-        List<UserLearningRecordVO> result = recordService.getByChapterId(CHAPTER_ID);
+        List<UserLearningRecordResponse> result = recordService.getByChapterId(CHAPTER_ID);
 
         assertThat(result).hasSize(1);
     }
@@ -183,14 +183,14 @@ class UserLearningRecordServiceTest {
                 .chapterId(CHAPTER_ID)
                 .build());
         doReturn(list).when(recordService).list(any(QueryWrapper.class));
-        when(convertor.toVOList(list))
-                .thenReturn(List.of(UserLearningRecordVO.builder()
+        when(convertor.toResponseList(list))
+                .thenReturn(List.of(UserLearningRecordResponse.builder()
                         .id(RECORD_ID)
                         .userId(USER_ID)
                         .chapterId(CHAPTER_ID)
                         .build()));
 
-        List<UserLearningRecordVO> result = recordService.getByUserIdAndChapterId(USER_ID, CHAPTER_ID);
+        List<UserLearningRecordResponse> result = recordService.getByUserIdAndChapterId(USER_ID, CHAPTER_ID);
 
         assertThat(result).hasSize(1);
     }
@@ -278,7 +278,7 @@ class UserLearningRecordServiceTest {
     void createSuccess() {
         LocalDateTime start = LocalDateTime.of(2025, 1, 1, 10, 0);
         LocalDateTime end = LocalDateTime.of(2025, 1, 1, 11, 0);
-        UserLearningRecordDto dto = UserLearningRecordDto.builder()
+        UserLearningRecordRequest dto = UserLearningRecordRequest.builder()
                 .userId(USER_ID)
                 .chapterId(CHAPTER_ID)
                 .startTime(start)
@@ -304,7 +304,7 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("create 未提供时间时自动设置创建时间")
     void createSetsCreatedAt() {
-        UserLearningRecordDto dto = UserLearningRecordDto.builder()
+        UserLearningRecordRequest dto = UserLearningRecordRequest.builder()
                 .userId(USER_ID)
                 .chapterId(CHAPTER_ID)
                 .build();
@@ -323,7 +323,7 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("create 保存失败抛出异常")
     void createFailed() {
-        UserLearningRecordDto dto = UserLearningRecordDto.builder()
+        UserLearningRecordRequest dto = UserLearningRecordRequest.builder()
                 .userId(USER_ID)
                 .chapterId(CHAPTER_ID)
                 .build();
@@ -342,7 +342,7 @@ class UserLearningRecordServiceTest {
     void updateSuccess() {
         LocalDateTime start = LocalDateTime.of(2025, 1, 1, 10, 0);
         LocalDateTime end = LocalDateTime.of(2025, 1, 1, 11, 30);
-        UserLearningRecordDto dto = UserLearningRecordDto.builder()
+        UserLearningRecordRequest dto = UserLearningRecordRequest.builder()
                 .id(RECORD_ID)
                 .startTime(start)
                 .endTime(end)
@@ -368,7 +368,7 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("update 没有ID抛出异常")
     void updateIdRequired() {
-        UserLearningRecordDto dto = UserLearningRecordDto.builder().build();
+        UserLearningRecordRequest dto = UserLearningRecordRequest.builder().build();
 
         assertThatThrownBy(() -> recordService.update(dto))
                 .isInstanceOf(BusinessException.class)
@@ -378,8 +378,8 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("update 记录不存在抛出异常")
     void updateNotFound() {
-        UserLearningRecordDto dto =
-                UserLearningRecordDto.builder().id(RECORD_ID).build();
+        UserLearningRecordRequest dto =
+                UserLearningRecordRequest.builder().id(RECORD_ID).build();
         doReturn(null).when(recordService).getById(RECORD_ID);
 
         assertThatThrownBy(() -> recordService.update(dto))

@@ -23,11 +23,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.CourseConvertor;
-import com.rauio.smartdangjian.server.content.pojo.dto.CourseDto;
+import com.rauio.smartdangjian.server.content.pojo.request.CourseRequest;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
-import com.rauio.smartdangjian.server.content.pojo.vo.PageVO;
+import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.content.pojo.response.PageResponse;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -53,20 +53,20 @@ class CourseServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("get 根据课程 ID 返回 CourseVO 含 categoryId")
-    void getReturnsCourseVOWithCategoryId() {
+    @DisplayName("get 根据课程 ID 返回 CourseResponse 含 categoryId")
+    void getReturnsCourseResponseWithCategoryId() {
         Course course = Course.builder().id("course-001").title("课程1").build();
-        CourseVO vo = CourseVO.builder().id("course-001").title("课程1").build();
+        CourseResponse vo = CourseResponse.builder().id("course-001").title("课程1").build();
         CategoryCourse cc = CategoryCourse.builder()
                 .courseId("course-001")
                 .categoryId("cat-001")
                 .build();
 
         doReturn(course).when(courseService).getById("course-001");
-        when(courseConvertor.toVO(course)).thenReturn(vo);
+        when(courseConvertor.toResponse(course)).thenReturn(vo);
         when(categoryCourseMapper.selectOne(any(LambdaQueryWrapper.class))).thenReturn(cc);
 
-        CourseVO result = courseService.get("course-001");
+        CourseResponse result = courseService.get("course-001");
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo("course-001");
@@ -78,7 +78,7 @@ class CourseServiceTest {
     void getReturnsNullWhenCourseNotFound() {
         doReturn(null).when(courseService).getById("non-existent");
 
-        CourseVO result = courseService.get("non-existent");
+        CourseResponse result = courseService.get("non-existent");
 
         assertThat(result).isNull();
     }
@@ -87,13 +87,13 @@ class CourseServiceTest {
     @DisplayName("get 课程无分类关联时 categoryId 为 null")
     void getReturnsNullCategoryIdWhenNoRelation() {
         Course course = Course.builder().id("course-001").title("课程").build();
-        CourseVO vo = CourseVO.builder().id("course-001").title("课程").build();
+        CourseResponse vo = CourseResponse.builder().id("course-001").title("课程").build();
 
         doReturn(course).when(courseService).getById("course-001");
-        when(courseConvertor.toVO(course)).thenReturn(vo);
+        when(courseConvertor.toResponse(course)).thenReturn(vo);
         when(categoryCourseMapper.selectOne(any(LambdaQueryWrapper.class))).thenReturn(null);
 
-        CourseVO result = courseService.get("course-001");
+        CourseResponse result = courseService.get("course-001");
 
         assertThat(result.getCategoryId()).isNull();
     }
@@ -110,7 +110,7 @@ class CourseServiceTest {
                 .username("creator")
                 .userType(UserType.SCHOOL)
                 .build();
-        CourseDto dto = CourseDto.builder()
+        CourseRequest dto = CourseRequest.builder()
                 .title("新课程")
                 .categoryId("cat-001")
                 .difficulty("入门")
@@ -134,7 +134,7 @@ class CourseServiceTest {
     @DisplayName("create 保存失败时返回 false")
     void createReturnsFalseWhenSaveFails() {
         User user = User.builder().id("user-001").userType(UserType.SCHOOL).build();
-        CourseDto dto = CourseDto.builder().title("失败课程").categoryId("cat-001").build();
+        CourseRequest dto = CourseRequest.builder().title("失败课程").categoryId("cat-001").build();
         Course course = Course.builder().title("失败课程").build();
 
         when(userService.getCurrentUser()).thenReturn(user);
@@ -151,7 +151,7 @@ class CourseServiceTest {
     @DisplayName("create difficulty 中文入门被转换为 beginner")
     void createNormalizesDifficultyFromChinese() {
         User user = User.builder().id("user-001").userType(UserType.SCHOOL).build();
-        CourseDto dto = CourseDto.builder()
+        CourseRequest dto = CourseRequest.builder()
                 .title("课程")
                 .categoryId("cat-001")
                 .difficulty("入门")
@@ -174,7 +174,7 @@ class CourseServiceTest {
     @DisplayName("create coverImageId 为空字符串时设为 null")
     void createNormalizesBlankCoverImageIdToNull() {
         User user = User.builder().id("user-001").userType(UserType.SCHOOL).build();
-        CourseDto dto = CourseDto.builder()
+        CourseRequest dto = CourseRequest.builder()
                 .title("课程")
                 .categoryId("cat-001")
                 .coverImageId("")
@@ -200,7 +200,7 @@ class CourseServiceTest {
     @Test
     @DisplayName("update 更新课程成功返回 true")
     void updateCourseSuccessfully() {
-        CourseDto dto = CourseDto.builder().title("更新课程").categoryId("cat-002").build();
+        CourseRequest dto = CourseRequest.builder().title("更新课程").categoryId("cat-002").build();
         Course course = Course.builder().title("更新课程").build();
         Course target = Course.builder().id("course-001").title("旧课程").build();
 
@@ -220,7 +220,7 @@ class CourseServiceTest {
     @Test
     @DisplayName("update id 为 null 时返回 false")
     void updateReturnsFalseWhenIdIsNull() {
-        CourseDto dto = CourseDto.builder().title("课程").build();
+        CourseRequest dto = CourseRequest.builder().title("课程").build();
 
         Boolean result = courseService.update(dto, null);
 
@@ -230,7 +230,7 @@ class CourseServiceTest {
     @Test
     @DisplayName("update 目标课程不存在时返回 false")
     void updateReturnsFalseWhenTargetNotFound() {
-        CourseDto dto = CourseDto.builder().title("课程").build();
+        CourseRequest dto = CourseRequest.builder().title("课程").build();
         Course course = Course.builder().title("课程").build();
 
         when(courseConvertor.toCourse(dto)).thenReturn(course);
@@ -244,7 +244,7 @@ class CourseServiceTest {
     @Test
     @DisplayName("update updateById 失败时返回 false")
     void updateReturnsFalseWhenUpdateByIdFails() {
-        CourseDto dto = CourseDto.builder().title("更新").build();
+        CourseRequest dto = CourseRequest.builder().title("更新").build();
         Course course = Course.builder().title("更新").build();
         Course target = Course.builder().id("course-001").title("旧").build();
 
@@ -260,7 +260,7 @@ class CourseServiceTest {
     @Test
     @DisplayName("update categoryId 为 null 时不更新分类关联")
     void updateWithoutCategoryChange() {
-        CourseDto dto = CourseDto.builder().title("只改标题").categoryId(null).build();
+        CourseRequest dto = CourseRequest.builder().title("只改标题").categoryId(null).build();
         Course course = Course.builder().title("只改标题").build();
         Course target = Course.builder().id("course-001").title("旧").build();
 
@@ -382,21 +382,21 @@ class CourseServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("getPage 返回分页结果含 CourseVO 列表")
-    void getPageReturnsPageVO() {
+    @DisplayName("getPage 返回分页结果含 CourseResponse 列表")
+    void getPageReturnsPageResponse() {
         Course c1 = Course.builder().id("course-001").title("课程1").build();
         Course c2 = Course.builder().id("course-002").title("课程2").build();
-        CourseVO vo1 = CourseVO.builder().id("course-001").title("课程1").build();
-        CourseVO vo2 = CourseVO.builder().id("course-002").title("课程2").build();
+        CourseResponse vo1 = CourseResponse.builder().id("course-001").title("课程1").build();
+        CourseResponse vo2 = CourseResponse.builder().id("course-002").title("课程2").build();
         Page<Course> page = new Page<>(1, 10);
         page.setRecords(List.of(c1, c2));
         page.setTotal(2);
 
         doReturn(page).when(courseService).page(any(Page.class));
-        when(courseConvertor.toVOList(List.of(c1, c2))).thenReturn(List.of(vo1, vo2));
+        when(courseConvertor.toResponseList(List.of(c1, c2))).thenReturn(List.of(vo1, vo2));
         when(categoryCourseMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(Collections.emptyList());
 
-        PageVO<Object> result = courseService.getPage(1, 10);
+        PageResponse<Object> result = courseService.getPage(1, 10);
 
         assertThat(result.getTotal()).isEqualTo(2L);
         assertThat(result.getSize()).isEqualTo(10L);
@@ -520,26 +520,26 @@ class CourseServiceTest {
     }
 
     // ================================================================
-    // toCourseVOList
+    // toCourseResponseList
     // ================================================================
 
     @Test
-    @DisplayName("toCourseVOList 将 Course 列表转为 CourseVO 列表且填充 categoryId")
-    void toCourseVOListConvertsAndFillsCategoryIds() {
+    @DisplayName("toCourseResponseList 将 Course 列表转为 CourseResponse 列表且填充 categoryId")
+    void toCourseResponseListConvertsAndFillsCategoryIds() {
         Course c1 = Course.builder().id("course-001").title("课程1").build();
         Course c2 = Course.builder().id("course-002").title("课程2").build();
-        CourseVO vo1 = CourseVO.builder().id("course-001").title("课程1").build();
-        CourseVO vo2 = CourseVO.builder().id("course-002").title("课程2").build();
+        CourseResponse vo1 = CourseResponse.builder().id("course-001").title("课程1").build();
+        CourseResponse vo2 = CourseResponse.builder().id("course-002").title("课程2").build();
 
         CategoryCourse cc = CategoryCourse.builder()
                 .courseId("course-001")
                 .categoryId("cat-001")
                 .build();
 
-        when(courseConvertor.toVOList(List.of(c1, c2))).thenReturn(List.of(vo1, vo2));
+        when(courseConvertor.toResponseList(List.of(c1, c2))).thenReturn(List.of(vo1, vo2));
         when(categoryCourseMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(List.of(cc));
 
-        List<CourseVO> result = courseService.toCourseVOList(List.of(c1, c2));
+        List<CourseResponse> result = courseService.toCourseResponseList(List.of(c1, c2));
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getCategoryId()).isEqualTo("cat-001");
@@ -547,17 +547,17 @@ class CourseServiceTest {
     }
 
     @Test
-    @DisplayName("toCourseVOList 传入 null 返回空列表")
-    void toCourseVOListNullReturnsEmptyList() {
-        List<CourseVO> result = courseService.toCourseVOList(null);
+    @DisplayName("toCourseResponseList 传入 null 返回空列表")
+    void toCourseResponseListNullReturnsEmptyList() {
+        List<CourseResponse> result = courseService.toCourseResponseList(null);
 
         assertThat(result).isEmpty();
     }
 
     @Test
-    @DisplayName("toCourseVOList 传入空列表返回空列表")
-    void toCourseVOListEmptyReturnsEmptyList() {
-        List<CourseVO> result = courseService.toCourseVOList(Collections.emptyList());
+    @DisplayName("toCourseResponseList 传入空列表返回空列表")
+    void toCourseResponseListEmptyReturnsEmptyList() {
+        List<CourseResponse> result = courseService.toCourseResponseList(Collections.emptyList());
 
         assertThat(result).isEmpty();
     }

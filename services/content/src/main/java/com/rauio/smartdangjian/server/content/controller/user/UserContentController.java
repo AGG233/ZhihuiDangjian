@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
+import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
 import com.rauio.smartdangjian.server.content.service.ContentBlockService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,7 +26,7 @@ public class UserContentController {
 
     @Operation(summary = "获取轮播图列表")
     @GetMapping("/carousel")
-    public Result<List<ContentBlockVO>> getCarousel() {
+    public Result<List<ContentBlockResponse>> getCarousel() {
         return Result.ok(contentBlockService.getByParentId(CAROUSEL_PARENT_ID));
     }
 }

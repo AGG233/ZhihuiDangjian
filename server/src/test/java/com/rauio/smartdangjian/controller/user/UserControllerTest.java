@@ -21,9 +21,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserPublicVO;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
+import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
+import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 
@@ -49,7 +49,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 获取用户信息成功")
         void getSuccess() throws Exception {
-            UserVO vo = new UserVO();
+            UserResponse vo = new UserResponse();
             vo.setId("user-001");
             vo.setUsername("zhangsan");
             vo.setRealName("张三");
@@ -67,17 +67,17 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /search - 用户分页搜索成功")
         void searchSuccess() throws Exception {
-            UserPublicVO publicVO = new UserPublicVO();
+            UserPublicResponse publicVO = new UserPublicResponse();
             publicVO.setId("user-001");
             publicVO.setUsername("zhangsan");
             publicVO.setRealName("张三");
             publicVO.setPartyStatus(PartyStatus.FORMAL_MEMBER);
-            Page<UserPublicVO> page = new Page<>(1, 10, 1);
+            Page<UserPublicResponse> page = new Page<>(1, 10, 1);
             page.setRecords(List.of(publicVO));
 
-            when(userService.getPage(any(UserDto.class), eq(1), eq(10))).thenReturn(page);
+            when(userService.getPage(any(UserRequest.class), eq(1), eq(10))).thenReturn(page);
 
-            UserDto dto = new UserDto();
+            UserRequest dto = new UserRequest();
             dto.setUsername("zhang");
             mockMvc.perform(post("/api/user/users/search")
                             .param("pageNum", "1")
@@ -146,7 +146,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /search - Service 抛出 BusinessException 返回 400")
         void searchThrowsBusinessException() throws Exception {
-            when(userService.getPage(any(UserDto.class), anyInt(), anyInt()))
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
                     .thenThrow(new BusinessException(1005, "用户不存在"));
 
             mockMvc.perform(post("/api/user/users/search")
@@ -160,7 +160,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /search - Service 抛出 RuntimeException 返回 500")
         void searchThrowsRuntimeException() throws Exception {
-            when(userService.getPage(any(UserDto.class), anyInt(), anyInt()))
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
                     .thenThrow(new RuntimeException("数据库连接失败"));
 
             mockMvc.perform(post("/api/user/users/search")
@@ -241,9 +241,9 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /search - 空结果集返回空列表")
         void searchEmptyResults() throws Exception {
-            Page<UserPublicVO> emptyPage = new Page<>(1, 10, 0);
+            Page<UserPublicResponse> emptyPage = new Page<>(1, 10, 0);
             emptyPage.setRecords(List.of());
-            when(userService.getPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(emptyPage);
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt())).thenReturn(emptyPage);
 
             mockMvc.perform(post("/api/user/users/search")
                             .param("pageNum", "1")
@@ -259,9 +259,9 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /search - 空请求体 {} 正常处理")
         void searchWithEmptyBody() throws Exception {
-            Page<UserPublicVO> page = new Page<>(1, 10, 0);
+            Page<UserPublicResponse> page = new Page<>(1, 10, 0);
             page.setRecords(List.of());
-            when(userService.getPage(any(UserDto.class), eq(1), eq(10))).thenReturn(page);
+            when(userService.getPage(any(UserRequest.class), eq(1), eq(10))).thenReturn(page);
 
             mockMvc.perform(post("/api/user/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -273,11 +273,11 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /search - 搜索字段含特殊字符")
         void searchWithSpecialChars() throws Exception {
-            Page<UserPublicVO> page = new Page<>(1, 10, 0);
+            Page<UserPublicResponse> page = new Page<>(1, 10, 0);
             page.setRecords(List.of());
-            when(userService.getPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt())).thenReturn(page);
 
-            UserDto dto = new UserDto();
+            UserRequest dto = new UserRequest();
             dto.setUsername("user_@#$%");
             mockMvc.perform(post("/api/user/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -289,11 +289,11 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /search - 搜索字段超长字符串")
         void searchWithLongField() throws Exception {
-            Page<UserPublicVO> page = new Page<>(1, 10, 0);
+            Page<UserPublicResponse> page = new Page<>(1, 10, 0);
             page.setRecords(List.of());
-            when(userService.getPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt())).thenReturn(page);
 
-            UserDto dto = new UserDto();
+            UserRequest dto = new UserRequest();
             dto.setUsername("a".repeat(1000));
             mockMvc.perform(post("/api/user/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -305,9 +305,9 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /search - 默认分页参数")
         void searchWithDefaultPagination() throws Exception {
-            Page<UserPublicVO> page = new Page<>(1, 10, 0);
+            Page<UserPublicResponse> page = new Page<>(1, 10, 0);
             page.setRecords(List.of());
-            when(userService.getPage(any(UserDto.class), eq(1), eq(10))).thenReturn(page);
+            when(userService.getPage(any(UserRequest.class), eq(1), eq(10))).thenReturn(page);
 
             mockMvc.perform(post("/api/user/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -338,11 +338,11 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 注入在搜索字段中")
         void xssInSearch() throws Exception {
-            Page<UserPublicVO> page = new Page<>(1, 10, 0);
+            Page<UserPublicResponse> page = new Page<>(1, 10, 0);
             page.setRecords(List.of());
-            when(userService.getPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt())).thenReturn(page);
 
-            UserDto dto = new UserDto();
+            UserRequest dto = new UserRequest();
             dto.setUsername("<script>alert('xss')</script>");
             mockMvc.perform(post("/api/user/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -353,11 +353,11 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入在搜索字段中")
         void sqlInjectionInSearch() throws Exception {
-            Page<UserPublicVO> page = new Page<>(1, 10, 0);
+            Page<UserPublicResponse> page = new Page<>(1, 10, 0);
             page.setRecords(List.of());
-            when(userService.getPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt())).thenReturn(page);
 
-            UserDto dto = new UserDto();
+            UserRequest dto = new UserRequest();
             dto.setUsername("' OR '1'='1");
             mockMvc.perform(post("/api/user/users/search")
                             .contentType(MediaType.APPLICATION_JSON)

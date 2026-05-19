@@ -25,11 +25,11 @@ import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.search.controller.SearchController;
-import com.rauio.smartdangjian.search.pojo.vo.UserProfileVO;
+import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 import com.rauio.smartdangjian.search.service.RecommendService;
 import com.rauio.smartdangjian.search.service.SearchService;
 import com.rauio.smartdangjian.search.service.UserProfileService;
-import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
+import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = SearchControllerTest.TestConfig.class)
 @DisplayName("搜索与推荐接口测试")
@@ -53,10 +53,10 @@ class SearchControllerTest extends BaseControllerTest {
     @MockitoBean
     private UserProfileService userProfileService;
 
-    private Page<CourseVO> createCoursePage(int count) {
-        Page<CourseVO> page = new Page<>(1, 10, count);
+    private Page<CourseResponse> createCoursePage(int count) {
+        Page<CourseResponse> page = new Page<>(1, 10, count);
         if (count > 0) {
-            page.setRecords(List.of(CourseTestDataFactory.createCourseVO("course-1")));
+            page.setRecords(List.of(CourseTestDataFactory.createCourseResponse("course-1")));
         } else {
             page.setRecords(List.of());
         }
@@ -99,7 +99,7 @@ class SearchControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /recommend - 个性化推荐成功")
         void recommendSuccess() throws Exception {
-            UserProfileVO profile = UserProfileVO.builder().userId("stu-001").build();
+            UserProfileResponse profile = UserProfileResponse.builder().userId("stu-001").build();
             when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
 
             Page<String> recommendPage = new Page<>(1, 10, 2);
@@ -115,9 +115,9 @@ class SearchControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /profile - 获取用户画像成功")
         void getProfileSuccess() throws Exception {
-            UserProfileVO profile = UserProfileVO.builder()
+            UserProfileResponse profile = UserProfileResponse.builder()
                     .userId("stu-001")
-                    .learning(UserProfileVO.LearningStats.builder()
+                    .learning(UserProfileResponse.LearningStats.builder()
                             .totalDuration(3600)
                             .avgDuration(600)
                             .totalRecords(6)
@@ -196,7 +196,7 @@ class SearchControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /recommend - 推荐结果为空")
         void recommendEmpty() throws Exception {
-            UserProfileVO profile = UserProfileVO.builder().userId("stu-001").build();
+            UserProfileResponse profile = UserProfileResponse.builder().userId("stu-001").build();
             when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
 
             Page<String> emptyPage = new Page<>(1, 10, 0);

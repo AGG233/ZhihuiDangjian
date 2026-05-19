@@ -12,8 +12,8 @@ import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.learning.pojo.dto.UserChapterProgressDto;
-import com.rauio.smartdangjian.server.learning.pojo.vo.UserChapterProgressVO;
+import com.rauio.smartdangjian.server.learning.pojo.request.UserChapterProgressRequest;
+import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
 import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
@@ -34,8 +34,8 @@ public class UserChapterProgressController {
     @GetMapping("/{id}")
     @PermissionAccess(UserType.STUDENT)
     @DataScopeAccess(resource = DataScopeResources.CHAPTER_PROGRESS, action = DataScopeAction.READ, id = "#id")
-    public Result<UserChapterProgressVO> get(@Parameter(name = "id", description = "进度ID") @PathVariable String id) {
-        UserChapterProgressVO result = progressService.get(id);
+    public Result<UserChapterProgressResponse> get(@Parameter(name = "id", description = "进度ID") @PathVariable String id) {
+        UserChapterProgressResponse result = progressService.get(id);
         return Result.ok(result);
     }
 
@@ -43,9 +43,9 @@ public class UserChapterProgressController {
     @GetMapping("/users/{userId}")
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#userId")
-    public Result<List<UserChapterProgressVO>> getByUserId(
+    public Result<List<UserChapterProgressResponse>> getByUserId(
             @Parameter(name = "userId", description = "用户ID") @PathVariable String userId) {
-        List<UserChapterProgressVO> result = progressService.getByUserId(userId);
+        List<UserChapterProgressResponse> result = progressService.getByUserId(userId);
         return Result.ok(result);
     }
 
@@ -53,10 +53,10 @@ public class UserChapterProgressController {
     @GetMapping("/users/{userId}/chapters/{chapterId}")
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#userId")
-    public Result<UserChapterProgressVO> getByUserIdAndChapterId(
+    public Result<UserChapterProgressResponse> getByUserIdAndChapterId(
             @Parameter(name = "userId", description = "用户ID") @PathVariable String userId,
             @Parameter(name = "chapterId", description = "章节ID") @PathVariable String chapterId) {
-        UserChapterProgressVO result = progressService.getByUserIdAndChapterId(userId, chapterId);
+        UserChapterProgressResponse result = progressService.getByUserIdAndChapterId(userId, chapterId);
         return Result.ok(result);
     }
 
@@ -64,7 +64,7 @@ public class UserChapterProgressController {
     @PostMapping
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#dto.userId")
-    public Result<Boolean> create(@RequestBody @Valid UserChapterProgressDto dto) {
+    public Result<Boolean> create(@RequestBody @Valid UserChapterProgressRequest dto) {
         Boolean result = progressService.create(dto);
         return Result.ok(result);
     }
@@ -73,7 +73,7 @@ public class UserChapterProgressController {
     @PutMapping
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#dto.userId")
-    public Result<Boolean> update(@RequestBody @Valid UserChapterProgressDto dto) {
+    public Result<Boolean> update(@RequestBody @Valid UserChapterProgressRequest dto) {
         Boolean result = progressService.update(dto);
         return Result.ok(result);
     }

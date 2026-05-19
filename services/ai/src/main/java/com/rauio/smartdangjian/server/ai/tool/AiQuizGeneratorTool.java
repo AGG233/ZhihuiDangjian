@@ -18,8 +18,8 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
-import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
+import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
+import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
 import com.rauio.smartdangjian.server.content.service.ContentBlockService;
 import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
@@ -57,11 +57,11 @@ public class AiQuizGeneratorTool {
         String effectiveChapterId = chapterId;
 
         if (chapterId != null && !chapterId.isBlank()) {
-            ChapterVO chapter = chapterService.get(chapterId);
+            ChapterResponse chapter = chapterService.get(chapterId);
             if (chapter == null) {
                 throw new BusinessException(RESOURCE_NOT_EXISTS, "章节不存在");
             }
-            List<ContentBlockVO> blocks = contentBlockService.getByParentId(chapterId);
+            List<ContentBlockResponse> blocks = contentBlockService.getByParentId(chapterId);
             StringBuilder sb = new StringBuilder();
             sb.append("章节标题：").append(chapter.getTitle()).append("\n");
             if (chapter.getDescription() != null) {
@@ -69,7 +69,7 @@ public class AiQuizGeneratorTool {
             }
             if (blocks != null && !blocks.isEmpty()) {
                 sb.append("章节内容：\n");
-                for (ContentBlockVO block : blocks) {
+                for (ContentBlockResponse block : blocks) {
                     String text = getFieldValue(block, "textContent");
                     if (text != null && !text.isBlank()) {
                         sb.append(text).append("\n");
@@ -223,14 +223,14 @@ public class AiQuizGeneratorTool {
         return cleaned.trim();
     }
 
-    private String getFieldValue(ContentBlockVO block, String fieldName) {
+    private String getFieldValue(ContentBlockResponse block, String fieldName) {
         try {
-            java.lang.reflect.Field field = ContentBlockVO.class.getDeclaredField(fieldName);
+            java.lang.reflect.Field field = ContentBlockResponse.class.getDeclaredField(fieldName);
             field.setAccessible(true);
             Object value = field.get(block);
             return value != null ? value.toString() : null;
         } catch (Exception e) {
-            log.warn("无法读取ContentBlockVO字段 {}", fieldName, e);
+            log.warn("无法读取ContentBlockResponse字段 {}", fieldName, e);
             return null;
         }
     }

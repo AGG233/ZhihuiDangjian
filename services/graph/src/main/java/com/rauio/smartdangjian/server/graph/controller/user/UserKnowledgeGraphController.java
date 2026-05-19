@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.graph.pojo.vo.KnowledgeGraphVO;
+import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
 import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
@@ -29,7 +29,7 @@ public class UserKnowledgeGraphController {
     @GetMapping("/users/{userId}")
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#userId")
-    public Result<KnowledgeGraphVO> getUserGraph(
+    public Result<KnowledgeGraphResponse> getUserGraph(
             @Parameter(name = "userId", description = "用户ID") @PathVariable String userId) {
         return Result.ok(knowledgeGraphService.getUserGraph(userId));
     }
@@ -37,7 +37,7 @@ public class UserKnowledgeGraphController {
     @Operation(summary = "获取课程图谱", description = "返回课程关联的学习用户和章节结构")
     @GetMapping("/courses/{courseId}")
     @PermissionAccess(UserType.STUDENT)
-    public Result<KnowledgeGraphVO> getCourseGraph(
+    public Result<KnowledgeGraphResponse> getCourseGraph(
             @Parameter(name = "courseId", description = "课程ID") @PathVariable String courseId) {
         return Result.ok(knowledgeGraphService.getCourseGraph(courseId));
     }

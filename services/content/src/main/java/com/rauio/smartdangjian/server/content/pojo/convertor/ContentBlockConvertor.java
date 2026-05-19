@@ -7,7 +7,7 @@ import org.mapstruct.ReportingPolicy;
 
 import com.rauio.smartdangjian.server.content.pojo.dto.ContentBlockDto;
 import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
-import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
+import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ContentBlockConvertor {
@@ -15,7 +15,7 @@ public interface ContentBlockConvertor {
 
     ContentBlockDto toDto(ContentBlock contentBlock);
 
-    ContentBlockVO toVO(ContentBlock contentBlock);
+    ContentBlockResponse toResponse(ContentBlock contentBlock);
 
-    List<ContentBlockVO> toVOList(List<ContentBlock> entities);
+    List<ContentBlockResponse> toResponseList(List<ContentBlock> entities);
 }

@@ -14,9 +14,9 @@ import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.graph.constants.GraphErrorConstants;
-import com.rauio.smartdangjian.server.graph.pojo.vo.GraphEdgeVO;
-import com.rauio.smartdangjian.server.graph.pojo.vo.GraphNodeVO;
-import com.rauio.smartdangjian.server.graph.pojo.vo.KnowledgeGraphVO;
+import com.rauio.smartdangjian.server.graph.pojo.response.GraphEdgeResponse;
+import com.rauio.smartdangjian.server.graph.pojo.response.GraphNodeResponse;
+import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 
@@ -88,7 +88,7 @@ public class KnowledgeGraphService {
      * @param userId 用户 ID
      * @return 知识图谱结果
      */
-    public KnowledgeGraphVO getUserGraph(String userId) {
+    public KnowledgeGraphResponse getUserGraph(String userId) {
         String cypher =
                 """
                 MATCH (u:User {id:$userId})
@@ -110,7 +110,7 @@ public class KnowledgeGraphService {
      * @param courseId 课程 ID
      * @return 知识图谱结果
      */
-    public KnowledgeGraphVO getCourseGraph(String courseId) {
+    public KnowledgeGraphResponse getCourseGraph(String courseId) {
         String cypher =
                 """
                 MATCH (c:Course {id:$courseId})
@@ -131,10 +131,10 @@ public class KnowledgeGraphService {
      * @param rows 查询结果行
      * @return 图谱视图对象
      */
-    private KnowledgeGraphVO buildGraph(List<Map<String, Object>> rows) {
-        Map<String, GraphNodeVO> nodeMap = new LinkedHashMap<>();
+    private KnowledgeGraphResponse buildGraph(List<Map<String, Object>> rows) {
+        Map<String, GraphNodeResponse> nodeMap = new LinkedHashMap<>();
         Set<String> edgeKeys = new LinkedHashSet<>();
-        List<GraphEdgeVO> edges = new ArrayList<>();
+        List<GraphEdgeResponse> edges = new ArrayList<>();
 
         for (Map<String, Object> row : rows) {
             Node userNode = asNode(row.get("u"));
@@ -160,7 +160,7 @@ public class KnowledgeGraphService {
             }
         }
 
-        return KnowledgeGraphVO.builder()
+        return KnowledgeGraphResponse.builder()
                 .nodes(new ArrayList<>(nodeMap.values()))
                 .edges(edges)
                 .build();
@@ -199,7 +199,7 @@ public class KnowledgeGraphService {
      * @param node Neo4j 节点
      * @return 节点唯一键
      */
-    private String addNode(Map<String, GraphNodeVO> nodeMap, Node node) {
+    private String addNode(Map<String, GraphNodeResponse> nodeMap, Node node) {
         if (node == null) {
             return null;
         }
@@ -210,7 +210,7 @@ public class KnowledgeGraphService {
         if (!nodeMap.containsKey(key)) {
             nodeMap.put(
                     key,
-                    GraphNodeVO.builder()
+                    GraphNodeResponse.builder()
                             .id(key)
                             .label(label)
                             .name(readName(node, id))
@@ -262,10 +262,10 @@ public class KnowledgeGraphService {
      * @param target 目标节点键
      * @param type 边类型
      */
-    private void addEdge(Set<String> edgeKeys, List<GraphEdgeVO> edges, String source, String target, String type) {
+    private void addEdge(Set<String> edgeKeys, List<GraphEdgeResponse> edges, String source, String target, String type) {
         String key = source + "|" + type + "|" + target;
         if (edgeKeys.add(key)) {
-            edges.add(GraphEdgeVO.builder()
+            edges.add(GraphEdgeResponse.builder()
                     .source(source)
                     .target(target)
                     .type(type)

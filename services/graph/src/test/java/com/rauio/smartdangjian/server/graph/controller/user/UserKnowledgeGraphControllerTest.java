@@ -12,9 +12,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.rauio.smartdangjian.server.graph.pojo.vo.GraphEdgeVO;
-import com.rauio.smartdangjian.server.graph.pojo.vo.GraphNodeVO;
-import com.rauio.smartdangjian.server.graph.pojo.vo.KnowledgeGraphVO;
+import com.rauio.smartdangjian.server.graph.pojo.response.GraphEdgeResponse;
+import com.rauio.smartdangjian.server.graph.pojo.response.GraphNodeResponse;
+import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
 import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,13 +29,13 @@ class UserKnowledgeGraphControllerTest {
     @Test
     @DisplayName("getUserGraph 委托 service 返回用户学习图谱")
     void getUserGraph() {
-        KnowledgeGraphVO graph = KnowledgeGraphVO.builder()
-                .nodes(List.of(GraphNodeVO.builder()
+        KnowledgeGraphResponse graph = KnowledgeGraphResponse.builder()
+                .nodes(List.of(GraphNodeResponse.builder()
                         .id("User:user-1")
                         .label("User")
                         .name("张三")
                         .build()))
-                .edges(List.of(GraphEdgeVO.builder()
+                .edges(List.of(GraphEdgeResponse.builder()
                         .source("User:user-1")
                         .target("Course:course-1")
                         .type("LEARNED")
@@ -54,8 +54,8 @@ class UserKnowledgeGraphControllerTest {
     @Test
     @DisplayName("getCourseGraph 委托 service 返回课程图谱")
     void getCourseGraph() {
-        KnowledgeGraphVO graph = KnowledgeGraphVO.builder()
-                .nodes(List.of(GraphNodeVO.builder()
+        KnowledgeGraphResponse graph = KnowledgeGraphResponse.builder()
+                .nodes(List.of(GraphNodeResponse.builder()
                         .id("Course:course-1")
                         .label("Course")
                         .name("测试课程")

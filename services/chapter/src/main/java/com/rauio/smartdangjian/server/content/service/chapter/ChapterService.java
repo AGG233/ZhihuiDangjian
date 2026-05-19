@@ -12,10 +12,10 @@ import com.rauio.smartdangjian.server.content.constants.ChapterErrorConstants;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterConvertor;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ContentBlockConvertor;
-import com.rauio.smartdangjian.server.content.pojo.dto.ChapterDto;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
-import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
+import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
+import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.service.ContentBlockService;
 import com.rauio.smartdangjian.server.content.spec.ParentType;
 
@@ -36,13 +36,13 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
      * @param chapterId 章节ID
      * @return 章节
      */
-    public ChapterVO get(String chapterId) {
+    public ChapterResponse get(String chapterId) {
         Chapter chapter = this.getById(chapterId);
         if (chapter == null) {
             throw new BusinessException(ChapterErrorConstants.CHAPTER_NOT_FOUND, "章节不存在");
         }
 
-        return chapterConvertor.toVO(chapter);
+        return chapterConvertor.toResponse(chapter);
     }
 
     /**
@@ -51,7 +51,7 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
      * @param dto 创建的新章节
      * @return 创建结果
      */
-    public Boolean create(ChapterDto dto) {
+    public Boolean create(ChapterRequest dto) {
         if (this.getOne(new LambdaQueryWrapper<Chapter>()
                         .eq(Chapter::getCourseId, dto.getCourseId())
                         .eq(Chapter::getTitle, dto.getTitle()))
@@ -84,7 +84,7 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
      * @param dto 前端传入的章节
      * @return 修改结果
      */
-    public Boolean update(ChapterDto dto) {
+    public Boolean update(ChapterRequest dto) {
         return this.updateById(chapterConvertor.toEntity(dto));
     }
 
@@ -94,9 +94,9 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
      * @param courseId 课程 ID
      * @return 课程所有章节
      */
-    public List<ChapterVO> getByCourseId(String courseId) {
+    public List<ChapterResponse> getByCourseId(String courseId) {
         List<Chapter> chapters = this.list(new LambdaQueryWrapper<Chapter>().eq(Chapter::getCourseId, courseId));
-        return chapterConvertor.toVOList(chapters);
+        return chapterConvertor.toResponseList(chapters);
     }
 
     /**

@@ -12,7 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.model.ToolContext;
 
-import com.rauio.smartdangjian.search.pojo.vo.UserProfileVO;
+import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 import com.rauio.smartdangjian.search.service.UserProfileService;
 import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
 import com.rauio.smartdangjian.server.user.service.UserService;
@@ -35,10 +35,10 @@ class UserProfileToolTest {
         ToolContext toolContext = mock(ToolContext.class);
         when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-1");
 
-        UserProfileVO profile = mock(UserProfileVO.class);
+        UserProfileResponse profile = mock(UserProfileResponse.class);
         when(userProfileService.getProfile("user-1")).thenReturn(profile);
 
-        UserProfileVO result = userProfileTool.getUserProfile(toolContext);
+        UserProfileResponse result = userProfileTool.getUserProfile(toolContext);
 
         assertThat(result).isSameAs(profile);
     }

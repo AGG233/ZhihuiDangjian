@@ -19,10 +19,10 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserPublicVO;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
+import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
+import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -64,8 +64,8 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @return 用户视图对象
      */
     @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#id")
-    public UserVO get(String id) {
-        return convertor.toVO(this.getById(id));
+    public UserResponse get(String id) {
+        return convertor.toResponse(this.getById(id));
     }
 
     /**
@@ -231,12 +231,12 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param pageSize 每页条数
      * @return 用户公开信息分页结果
      */
-    public Page<UserPublicVO> getPage(UserDto dto, int pageNum, int pageSize) {
+    public Page<UserPublicResponse> getPage(UserRequest request, int pageNum, int pageSize) {
         Page<User> pageInfo = new Page<>(pageNum, pageSize);
-        LambdaQueryWrapper<User> wrapper = buildQueryWrapper(dto);
+        LambdaQueryWrapper<User> wrapper = buildQueryWrapper(request);
         Page<User> result = this.page(pageInfo, wrapper);
-        Page<UserPublicVO> voPage = new Page<>(result.getCurrent(), result.getSize(), result.getTotal());
-        voPage.setRecords(convertor.toPublicVO(result.getRecords()));
+        Page<UserPublicResponse> voPage = new Page<>(result.getCurrent(), result.getSize(), result.getTotal());
+        voPage.setRecords(convertor.toPublicResponse(result.getRecords()));
         return voPage;
     }
 
@@ -248,24 +248,24 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param pageSize 每页条数
      * @return 用户完整信息分页结果
      */
-    public Page<User> getAdminPage(UserDto dto, int pageNum, int pageSize) {
+    public Page<User> getAdminPage(UserRequest request, int pageNum, int pageSize) {
         Page<User> pageInfo = new Page<>(pageNum, pageSize);
-        LambdaQueryWrapper<User> wrapper = buildQueryWrapper(dto);
+        LambdaQueryWrapper<User> wrapper = buildQueryWrapper(request);
         return this.page(pageInfo, wrapper);
     }
 
-    private LambdaQueryWrapper<User> buildQueryWrapper(UserDto dto) {
+    private LambdaQueryWrapper<User> buildQueryWrapper(UserRequest request) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.like(StringUtils.isNotBlank(dto.getUserId()), User::getId, dto.getUserId())
-                .like(StringUtils.isNotBlank(dto.getUsername()), User::getUsername, dto.getUsername())
-                .like(StringUtils.isNotBlank(dto.getRealName()), User::getRealName, dto.getRealName())
-                .like(StringUtils.isNotBlank(dto.getPartyMemberId()), User::getPartyMemberId, dto.getPartyMemberId())
-                .like(StringUtils.isNotBlank(dto.getEmail()), User::getEmail, dto.getEmail())
-                .like(StringUtils.isNotBlank(dto.getPhone()), User::getPhone, dto.getPhone())
-                .eq(dto.getUserType() != null, User::getUserType, dto.getUserType())
-                .eq(dto.getPartyStatus() != null, User::getPartyStatus, dto.getPartyStatus())
-                .eq(StringUtils.isNotBlank(dto.getUniversityId()), User::getUniversityId, dto.getUniversityId())
-                .like(StringUtils.isNotBlank(dto.getBranchName()), User::getBranchName, dto.getBranchName());
+        wrapper.like(StringUtils.isNotBlank(request.getUserId()), User::getId, request.getUserId())
+                .like(StringUtils.isNotBlank(request.getUsername()), User::getUsername, request.getUsername())
+                .like(StringUtils.isNotBlank(request.getRealName()), User::getRealName, request.getRealName())
+                .like(StringUtils.isNotBlank(request.getPartyMemberId()), User::getPartyMemberId, request.getPartyMemberId())
+                .like(StringUtils.isNotBlank(request.getEmail()), User::getEmail, request.getEmail())
+                .like(StringUtils.isNotBlank(request.getPhone()), User::getPhone, request.getPhone())
+                .eq(request.getUserType() != null, User::getUserType, request.getUserType())
+                .eq(request.getPartyStatus() != null, User::getPartyStatus, request.getPartyStatus())
+                .eq(StringUtils.isNotBlank(request.getUniversityId()), User::getUniversityId, request.getUniversityId())
+                .like(StringUtils.isNotBlank(request.getBranchName()), User::getBranchName, request.getBranchName());
         return wrapper;
     }
 

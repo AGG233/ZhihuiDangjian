@@ -16,11 +16,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.CourseConvertor;
-import com.rauio.smartdangjian.server.content.pojo.dto.CourseDto;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
-import com.rauio.smartdangjian.server.content.pojo.vo.PageVO;
+import com.rauio.smartdangjian.server.content.pojo.request.CourseRequest;
+import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.content.pojo.response.PageResponse;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
 
@@ -54,12 +54,12 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
      * @param courseId 课程 ID
      * @return 课程视图对象
      */
-    public CourseVO get(String courseId) {
+    public CourseResponse get(String courseId) {
         Course entity = this.getById(courseId);
         if (entity == null) {
             return null;
         }
-        CourseVO vo = courseConvertor.toVO(entity);
+        CourseResponse vo = courseConvertor.toResponse(entity);
         vo.setCategoryId(getCategoryIdByCourseId(courseId));
         return vo;
     }
@@ -67,12 +67,12 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
     /**
      * 创建课程并建立分类关联。
      *
-     * @param courseDto 课程创建参数
+     * @param courseRequest 课程创建参数
      * @return 是否创建成功
      */
-    public Boolean create(CourseDto courseDto) {
+    public Boolean create(CourseRequest courseRequest) {
         User user = userService.getCurrentUser();
-        Course course = courseConvertor.toCourse(courseDto);
+        Course course = courseConvertor.toCourse(courseRequest);
 
         course.setCreatorId(user.getId());
         normalizeCourseFields(course);
@@ -82,7 +82,7 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         }
         return categoryCourseMapper.insert(CategoryCourse.builder()
                         .courseId(course.getId())
-                        .categoryId(courseDto.getCategoryId())
+                        .categoryId(courseRequest.getCategoryId())
                         .build())
                 > 0;
     }
@@ -90,16 +90,16 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
     /**
      * 更新课程信息。
      *
-     * @param courseDto 课程更新参数
+     * @param courseRequest 课程更新参数
      * @param id 课程 ID
      * @return 是否更新成功
      */
-    public Boolean update(CourseDto courseDto, String id) {
+    public Boolean update(CourseRequest courseRequest, String id) {
         if (id == null) {
             return false;
         }
 
-        Course course = courseConvertor.toCourse(courseDto);
+        Course course = courseConvertor.toCourse(courseRequest);
         Course target = this.getById(id);
         if (target == null) {
             return false;
@@ -111,11 +111,11 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
             return false;
         }
 
-        if (courseDto.getCategoryId() != null) {
+        if (courseRequest.getCategoryId() != null) {
             categoryCourseMapper.delete(new LambdaQueryWrapper<CategoryCourse>().eq(CategoryCourse::getCourseId, id));
             return categoryCourseMapper.insert(CategoryCourse.builder()
                             .courseId(id)
-                            .categoryId(courseDto.getCategoryId())
+                            .categoryId(courseRequest.getCategoryId())
                             .build())
                     > 0;
         }
@@ -170,10 +170,10 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
      * @param pageSize 每页条数
      * @return 课程分页结果
      */
-    public PageVO<Object> getPage(int pageNum, int pageSize) {
+    public PageResponse<Object> getPage(int pageNum, int pageSize) {
         Page<Course> page = this.page(new Page<>(pageNum, pageSize));
-        List<CourseVO> courseVOList = toCourseVOList(page.getRecords());
-        return PageVO.builder()
+        List<CourseResponse> courseVOList = toCourseResponseList(page.getRecords());
+        return PageResponse.builder()
                 .total(page.getTotal())
                 .size(page.getSize())
                 .current(page.getCurrent())
@@ -181,16 +181,16 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
                 .build();
     }
 
-    public List<CourseVO> toCourseVOList(List<Course> courses) {
+    public List<CourseResponse> toCourseResponseList(List<Course> courses) {
         if (courses == null || courses.isEmpty()) {
             return Collections.emptyList();
         }
 
-        List<CourseVO> courseVOList = new ArrayList<>(courseConvertor.toVOList(courses));
+        List<CourseResponse> courseVOList = new ArrayList<>(courseConvertor.toResponseList(courses));
         Map<String, String> categoryIdMap = getCategoryIdMapByCourseIds(
                 courses.stream().map(Course::getId).filter(Objects::nonNull).toList());
 
-        for (CourseVO courseVO : courseVOList) {
+        for (CourseResponse courseVO : courseVOList) {
             courseVO.setCategoryId(categoryIdMap.get(courseVO.getId()));
         }
         return courseVOList;

@@ -13,7 +13,7 @@ import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.CourseConvertor;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
+import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class SearchService {
     /**
      * 全文检索课程，支持关键词、分类、难度过滤
      */
-    public Page<CourseVO> searchCourses(
+    public Page<CourseResponse> searchCourses(
             String keyword, String categoryId, String difficulty, int pageNum, int pageSize) {
         LambdaQueryWrapper<Course> wrapper = new LambdaQueryWrapper<Course>()
                 .eq(Course::getIsPublished, true)
@@ -71,22 +71,22 @@ public class SearchService {
 
         Page<Course> coursePage = courseMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
 
-        Page<CourseVO> result = new Page<>(coursePage.getCurrent(), coursePage.getSize(), coursePage.getTotal());
-        result.setRecords(toCourseVOList(coursePage.getRecords()));
+        Page<CourseResponse> result = new Page<>(coursePage.getCurrent(), coursePage.getSize(), coursePage.getTotal());
+        result.setRecords(toCourseResponseList(coursePage.getRecords()));
         return result;
     }
 
     /**
      * 混合搜索：全文检索 + 个性化推荐补充
      */
-    public Page<CourseVO> hybridSearch(String keyword, int pageNum, int pageSize) {
+    public Page<CourseResponse> hybridSearch(String keyword, int pageNum, int pageSize) {
         // 先做全文搜索
-        Page<CourseVO> searchPage = searchCourses(keyword, null, null, pageNum, pageSize);
-        List<CourseVO> records = new ArrayList<>(searchPage.getRecords());
+        Page<CourseResponse> searchPage = searchCourses(keyword, null, null, pageNum, pageSize);
+        List<CourseResponse> records = new ArrayList<>(searchPage.getRecords());
 
         // 搜索结果不足时，用推荐补充
         if (records.size() < pageSize) {
-            Set<String> existingIds = records.stream().map(CourseVO::getId).collect(Collectors.toSet());
+            Set<String> existingIds = records.stream().map(CourseResponse::getId).collect(Collectors.toSet());
 
             String userId = userService.getCurrentUserId();
             Page<String> cfIds = recommendService.recommend(userId, 1, pageSize);
@@ -97,7 +97,7 @@ public class SearchService {
                     .collect(Collectors.toSet());
 
             if (!idsToFetch.isEmpty()) {
-                List<CourseVO> recommended = toCourseVOList(courseMapper.selectBatchIds(idsToFetch));
+                List<CourseResponse> recommended = toCourseResponseList(courseMapper.selectBatchIds(idsToFetch));
                 records.addAll(recommended);
             }
         }
@@ -106,11 +106,11 @@ public class SearchService {
         return searchPage;
     }
 
-    private List<CourseVO> toCourseVOList(List<Course> courses) {
+    private List<CourseResponse> toCourseResponseList(List<Course> courses) {
         if (courses == null || courses.isEmpty()) {
             return Collections.emptyList();
         }
-        List<CourseVO> courseVOList = courseConvertor.toVOList(courses);
+        List<CourseResponse> courseVOList = courseConvertor.toResponseList(courses);
         Map<String, String> categoryIdMap = getCategoryIdMap(
                 courses.stream().map(Course::getId).filter(Objects::nonNull).collect(Collectors.toSet()));
         courseVOList.forEach(item -> item.setCategoryId(categoryIdMap.get(item.getId())));

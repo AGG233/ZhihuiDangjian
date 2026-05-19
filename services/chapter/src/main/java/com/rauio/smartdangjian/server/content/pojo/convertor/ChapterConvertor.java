@@ -5,17 +5,17 @@ import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
-import com.rauio.smartdangjian.server.content.pojo.dto.ChapterDto;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
-import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
+import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
+import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ChapterConvertor {
-    ChapterDto toDto(Chapter chapter);
+    ChapterRequest toRequest(Chapter chapter);
 
-    Chapter toEntity(ChapterDto chapterDto);
+    Chapter toEntity(ChapterRequest chapterRequest);
 
-    ChapterVO toVO(Chapter chapter);
+    ChapterResponse toResponse(Chapter chapter);
 
-    List<ChapterVO> toVOList(List<Chapter> chapterList);
+    List<ChapterResponse> toResponseList(List<Chapter> chapterList);
 }

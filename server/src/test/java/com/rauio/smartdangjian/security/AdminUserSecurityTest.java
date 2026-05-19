@@ -32,7 +32,7 @@ import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.user.aop.UserManagementAspect;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
 @ExtendWith(MockitoExtension.class)
@@ -96,7 +96,7 @@ class AdminUserSecurityTest {
                 resource = DataScopeResources.USER_MANAGEMENT,
                 action = DataScopeAction.SEARCH,
                 query = "#userDto")
-        Object searchUsers(UserDto userDto, int pageNum, int pageSize);
+        Object searchUsers(UserRequest userDto, int pageNum, int pageSize);
 
         @DataScopeAccess(resource = DataScopeResources.USER_MANAGEMENT, action = DataScopeAction.CREATE, body = "#user")
         Object createUser(com.rauio.smartdangjian.server.user.pojo.entity.User user);
@@ -215,7 +215,7 @@ class AdminUserSecurityTest {
         void schoolSearchInjectsUniversityId() throws Exception {
             setSecurityContext("sch-001", UserType.SCHOOL, "uni-sch-001");
 
-            UserDto queryDto = new UserDto();
+            UserRequest queryDto = new UserRequest();
             queryDto.setUsername("test");
 
             ProceedingJoinPoint jp = mockProceedingJoinPointWithArgs(
@@ -239,7 +239,7 @@ class AdminUserSecurityTest {
         void managerSearchHasNoRestrictions() throws Exception {
             setSecurityContext("mgr-001", UserType.MANAGER, null);
 
-            UserDto queryDto = new UserDto();
+            UserRequest queryDto = new UserRequest();
             queryDto.setUserType(UserType.MANAGER);
 
             ProceedingJoinPoint jp = mockProceedingJoinPointWithArgs(
@@ -260,7 +260,7 @@ class AdminUserSecurityTest {
         void schoolCannotSearchManagerType() throws Exception {
             setSecurityContext("sch-001", UserType.SCHOOL, "uni-sch-001");
 
-            UserDto queryDto = new UserDto();
+            UserRequest queryDto = new UserRequest();
             queryDto.setUserType(UserType.MANAGER);
 
             ProceedingJoinPoint jp = mockProceedingJoinPointWithArgs(
@@ -283,7 +283,7 @@ class AdminUserSecurityTest {
         void schoolWithoutUniversityIdRejected() throws Exception {
             setSecurityContext("sch-001", UserType.SCHOOL, null);
 
-            UserDto queryDto = new UserDto();
+            UserRequest queryDto = new UserRequest();
 
             ProceedingJoinPoint jp = mockProceedingJoinPointWithArgs(
                     TestAdminController.class, "searchUsers", new Object[] {queryDto, 1, 10});
@@ -305,7 +305,7 @@ class AdminUserSecurityTest {
         void studentSearchLimitedToOwnData() throws Exception {
             setSecurityContext("stu-001", UserType.STUDENT, "uni-001");
 
-            UserDto queryDto = new UserDto();
+            UserRequest queryDto = new UserRequest();
 
             ProceedingJoinPoint jp = mockProceedingJoinPointWithArgs(
                     TestAdminController.class, "searchUsers", new Object[] {queryDto, 1, 10});

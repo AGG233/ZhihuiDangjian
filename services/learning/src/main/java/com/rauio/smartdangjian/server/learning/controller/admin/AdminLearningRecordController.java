@@ -9,7 +9,7 @@ import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.learning.pojo.vo.UserLearningRecordVO;
+import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
@@ -30,7 +30,7 @@ public class AdminLearningRecordController {
     @Operation(summary = "获取章节所有学习记录")
     @GetMapping("/chapter/{chapterId}")
     @DataScopeAccess(resource = DataScopeResources.LEARNING_RECORD, action = DataScopeAction.FILTER, id = "#chapterId")
-    public Result<List<UserLearningRecordVO>> getByChapterId(
+    public Result<List<UserLearningRecordResponse>> getByChapterId(
             @Parameter(name = "chapterId", description = "章节ID") @PathVariable String chapterId) {
         return Result.ok(recordService.getByChapterId(chapterId));
     }

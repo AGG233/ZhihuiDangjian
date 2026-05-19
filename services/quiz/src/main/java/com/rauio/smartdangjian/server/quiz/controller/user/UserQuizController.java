@@ -11,6 +11,8 @@ import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
+import com.rauio.smartdangjian.server.quiz.pojo.response.QuizOptionResponse;
+import com.rauio.smartdangjian.server.quiz.pojo.response.QuizResponse;
 import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
 import com.rauio.smartdangjian.server.quiz.service.QuizService;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -32,28 +34,64 @@ public class UserQuizController {
 
     @Operation(summary = "获取试题详情", description = "根据试题ID获取试题详情")
     @GetMapping("/{id}")
-    public Result<Quiz> getQuiz(@Parameter(name = "id", description = "试题ID") @PathVariable String id) {
-        return Result.ok(quizService.get(id));
+    public Result<QuizResponse> getQuiz(@Parameter(name = "id", description = "试题ID") @PathVariable String id) {
+        return Result.ok(toQuizResponse(quizService.get(id)));
     }
 
     @Operation(summary = "获取章节下所有试题", description = "根据章节ID获取该章节下的所有试题列表")
     @GetMapping("/by-chapter/{chapterId}")
-    public Result<List<Quiz>> getQuizOfChapter(
+    public Result<List<QuizResponse>> getQuizOfChapter(
             @Parameter(name = "chapterId", description = "章节ID") @PathVariable String chapterId) {
-        return Result.ok(quizService.getByChapterId(chapterId));
+        List<QuizResponse> responses = quizService.getByChapterId(chapterId).stream()
+                .map(this::toQuizResponse)
+                .toList();
+        return Result.ok(responses);
     }
 
     @Operation(summary = "获取试题选项列表", description = "根据试题ID获取该试题的所有选项")
     @GetMapping("/{id}/options")
-    public Result<List<QuizOption>> getQuizOption(
+    public Result<List<QuizOptionResponse>> getQuizOption(
             @Parameter(name = "id", description = "试题ID") @PathVariable String id) {
-        return Result.ok(quizOptionService.getByQuizId(id));
+        List<QuizOptionResponse> responses = quizOptionService.getByQuizId(id).stream()
+                .map(this::toQuizOptionResponse)
+                .toList();
+        return Result.ok(responses);
     }
 
     @Operation(summary = "获取单个选项详情", description = "根据选项ID获取选项详情，学生未答题时隐藏正确答案")
     @GetMapping("/{id}/options/{optionId}")
-    public Result<QuizOption> getByOptionId(
+    public Result<QuizOptionResponse> getByOptionId(
             @Parameter(name = "optionId", description = "选项ID") @PathVariable String optionId) {
-        return Result.ok(quizOptionService.get(optionId));
+        return Result.ok(toQuizOptionResponse(quizOptionService.get(optionId)));
+    }
+
+    private QuizResponse toQuizResponse(Quiz quiz) {
+        if (quiz == null) {
+            return null;
+        }
+        return QuizResponse.builder()
+                .id(quiz.getId())
+                .chapterId(quiz.getChapterId())
+                .question(quiz.getQuestion())
+                .questionType(quiz.getQuestionType())
+                .score(quiz.getScore())
+                .difficulty(quiz.getDifficulty())
+                .explanation(quiz.getExplanation())
+                .isActive(quiz.getIsActive())
+                .createdAt(quiz.getCreatedAt())
+                .updatedAt(quiz.getUpdatedAt())
+                .build();
+    }
+
+    private QuizOptionResponse toQuizOptionResponse(QuizOption option) {
+        if (option == null) {
+            return null;
+        }
+        return QuizOptionResponse.builder()
+                .id(option.getId())
+                .quizId(option.getQuizId())
+                .optionText(option.getOptionText())
+                .orderIndex(option.getOrderIndex())
+                .build();
     }
 }

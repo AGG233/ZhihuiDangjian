@@ -11,8 +11,8 @@ import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.content.pojo.dto.ChapterDto;
-import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
+import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
+import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
@@ -31,21 +31,21 @@ public class AdminChapterController {
     @Operation(summary = "获取章节详情", description = "根据章节ID获取章节详情")
     @GetMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.CHAPTER_ADMIN, action = DataScopeAction.READ, id = "#id")
-    public Result<ChapterVO> get(@PathVariable String id) {
+    public Result<ChapterResponse> get(@PathVariable String id) {
         return Result.ok(chapterService.get(id));
     }
 
     @Operation(summary = "获取课程下的章节列表", description = "根据课程ID获取该课程下的所有章节列表")
     @GetMapping("/by-course/{courseId}")
     @DataScopeAccess(resource = DataScopeResources.CHAPTER_ADMIN, action = DataScopeAction.READ, id = "#courseId")
-    public Result<List<ChapterVO>> getByCourseId(@PathVariable String courseId) {
+    public Result<List<ChapterResponse>> getByCourseId(@PathVariable String courseId) {
         return Result.ok(chapterService.getByCourseId(courseId));
     }
 
     @Operation(summary = "创建章节", description = "具体在Schema看每个字段的作用")
     @PostMapping
     @DataScopeAccess(resource = DataScopeResources.CHAPTER_ADMIN, action = DataScopeAction.CREATE, body = "#chapter")
-    public Result<Boolean> create(@RequestBody @Valid ChapterDto chapter) {
+    public Result<Boolean> create(@RequestBody @Valid ChapterRequest chapter) {
         Boolean result = chapterService.create(chapter);
         return Result.ok(result);
     }
@@ -53,7 +53,7 @@ public class AdminChapterController {
     @Operation(summary = "更新章节")
     @PutMapping
     @DataScopeAccess(resource = DataScopeResources.CHAPTER_ADMIN, action = DataScopeAction.UPDATE, body = "#chapter")
-    public Result<Boolean> update(@RequestBody @Valid ChapterDto chapter) {
+    public Result<Boolean> update(@RequestBody @Valid ChapterRequest chapter) {
         Boolean result = chapterService.update(chapter);
         return Result.ok(result);
     }

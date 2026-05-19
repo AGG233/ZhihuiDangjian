@@ -16,7 +16,7 @@ import com.rauio.smartdangjian.server.content.constants.ChapterErrorConstants;
 import com.rauio.smartdangjian.server.content.constants.CourseErrorConstants;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
-import com.rauio.smartdangjian.server.content.pojo.dto.ChapterDto;
+import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
@@ -50,13 +50,13 @@ public class ChapterAdminAccessAspect implements DataScopeResolver {
         requireUniversityId(currentUser);
 
         if (context.getAccess().action() == DataScopeAction.CREATE) {
-            ChapterDto chapter = context.require(context.getAccess().body(), ChapterDto.class, "章节信息不能为空");
+            ChapterRequest chapter = context.require(context.getAccess().body(), ChapterRequest.class, "章节信息不能为空");
             assertCourseInSameUniversity(currentUser, chapter.getCourseId());
             return;
         }
 
         if (context.getAccess().action() == DataScopeAction.UPDATE) {
-            ChapterDto chapter = context.require(context.getAccess().body(), ChapterDto.class, "章节信息不能为空");
+            ChapterRequest chapter = context.require(context.getAccess().body(), ChapterRequest.class, "章节信息不能为空");
             assertCourseInSameUniversity(currentUser, chapter.getCourseId());
             return;
         }

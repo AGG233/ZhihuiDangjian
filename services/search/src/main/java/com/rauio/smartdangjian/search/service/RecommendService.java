@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.search.pojo.vo.UserProfileVO;
+import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
@@ -184,7 +184,7 @@ public class RecommendService {
      * 基于用户画像的内容推荐：根据兴趣分类和知识水平推荐课程
      */
     public Page<String> recommendByProfile(String userId, int pageNum, int pageSize) {
-        UserProfileVO profile = userProfileService.getProfile(userId);
+        UserProfileResponse profile = userProfileService.getProfile(userId);
         if (profile == null) {
             return new Page<>(pageNum, pageSize);
         }

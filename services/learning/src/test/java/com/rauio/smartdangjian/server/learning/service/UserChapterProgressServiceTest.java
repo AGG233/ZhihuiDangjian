@@ -19,9 +19,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
 import com.rauio.smartdangjian.server.learning.pojo.convertor.UserChapterProgressConvertor;
-import com.rauio.smartdangjian.server.learning.pojo.dto.UserChapterProgressDto;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserChapterProgress;
-import com.rauio.smartdangjian.server.learning.pojo.vo.UserChapterProgressVO;
+import com.rauio.smartdangjian.server.learning.pojo.request.UserChapterProgressRequest;
+import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
 
 @ExtendWith(MockitoExtension.class)
 class UserChapterProgressServiceTest {
@@ -54,15 +54,15 @@ class UserChapterProgressServiceTest {
                 .build();
         doReturn(entity).when(progressService).getById(PROGRESS_ID);
 
-        UserChapterProgressVO vo = UserChapterProgressVO.builder()
+        UserChapterProgressResponse vo = UserChapterProgressResponse.builder()
                 .id(PROGRESS_ID)
                 .userId(USER_ID)
                 .chapterId(CHAPTER_ID)
                 .progress(50)
                 .build();
-        when(convertor.toVO(entity)).thenReturn(vo);
+        when(convertor.toResponse(entity)).thenReturn(vo);
 
-        UserChapterProgressVO result = progressService.get(PROGRESS_ID);
+        UserChapterProgressResponse result = progressService.get(PROGRESS_ID);
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(PROGRESS_ID);
@@ -91,13 +91,13 @@ class UserChapterProgressServiceTest {
                 .build());
         doReturn(list).when(progressService).list(any(QueryWrapper.class));
 
-        when(convertor.toVOList(list))
-                .thenReturn(List.of(UserChapterProgressVO.builder()
+        when(convertor.toResponseList(list))
+                .thenReturn(List.of(UserChapterProgressResponse.builder()
                         .id(PROGRESS_ID)
                         .userId(USER_ID)
                         .build()));
 
-        List<UserChapterProgressVO> result = progressService.getByUserId(USER_ID);
+        List<UserChapterProgressResponse> result = progressService.getByUserId(USER_ID);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getId()).isEqualTo(PROGRESS_ID);
@@ -114,13 +114,13 @@ class UserChapterProgressServiceTest {
                 .chapterId(CHAPTER_ID)
                 .build());
         doReturn(list).when(progressService).list(any(QueryWrapper.class));
-        when(convertor.toVOList(list))
-                .thenReturn(List.of(UserChapterProgressVO.builder()
+        when(convertor.toResponseList(list))
+                .thenReturn(List.of(UserChapterProgressResponse.builder()
                         .id(PROGRESS_ID)
                         .chapterId(CHAPTER_ID)
                         .build()));
 
-        List<UserChapterProgressVO> result = progressService.getByChapterId(CHAPTER_ID);
+        List<UserChapterProgressResponse> result = progressService.getByChapterId(CHAPTER_ID);
 
         assertThat(result).hasSize(1);
     }
@@ -136,14 +136,14 @@ class UserChapterProgressServiceTest {
                 .chapterId(CHAPTER_ID)
                 .build();
         doReturn(entity).when(progressService).getOne(any(QueryWrapper.class));
-        when(convertor.toVO(entity))
-                .thenReturn(UserChapterProgressVO.builder()
+        when(convertor.toResponse(entity))
+                .thenReturn(UserChapterProgressResponse.builder()
                         .id(PROGRESS_ID)
                         .userId(USER_ID)
                         .chapterId(CHAPTER_ID)
                         .build());
 
-        UserChapterProgressVO result = progressService.getByUserIdAndChapterId(USER_ID, CHAPTER_ID);
+        UserChapterProgressResponse result = progressService.getByUserIdAndChapterId(USER_ID, CHAPTER_ID);
 
         assertThat(result).isNotNull();
         assertThat(result.getUserId()).isEqualTo(USER_ID);
@@ -164,7 +164,7 @@ class UserChapterProgressServiceTest {
     @Test
     @DisplayName("create 创建进度记录成功")
     void createSuccess() {
-        UserChapterProgressDto dto = UserChapterProgressDto.builder()
+        UserChapterProgressRequest dto = UserChapterProgressRequest.builder()
                 .userId(USER_ID)
                 .chapterId(CHAPTER_ID)
                 .progress(30)
@@ -189,7 +189,7 @@ class UserChapterProgressServiceTest {
     @Test
     @DisplayName("create 进度已存在抛出异常")
     void createAlreadyExists() {
-        UserChapterProgressDto dto = UserChapterProgressDto.builder()
+        UserChapterProgressRequest dto = UserChapterProgressRequest.builder()
                 .userId(USER_ID)
                 .chapterId(CHAPTER_ID)
                 .build();
@@ -205,7 +205,7 @@ class UserChapterProgressServiceTest {
     @Test
     @DisplayName("create 保存失败抛出异常")
     void createSaveFailed() {
-        UserChapterProgressDto dto = UserChapterProgressDto.builder()
+        UserChapterProgressRequest dto = UserChapterProgressRequest.builder()
                 .userId(USER_ID)
                 .chapterId(CHAPTER_ID)
                 .progress(30)
@@ -229,8 +229,8 @@ class UserChapterProgressServiceTest {
     @Test
     @DisplayName("update 更新进度记录成功")
     void updateSuccess() {
-        UserChapterProgressDto dto =
-                UserChapterProgressDto.builder().id(PROGRESS_ID).progress(100).build();
+        UserChapterProgressRequest dto =
+                UserChapterProgressRequest.builder().id(PROGRESS_ID).progress(100).build();
         UserChapterProgress existing = UserChapterProgress.builder()
                 .id(PROGRESS_ID)
                 .userId(USER_ID)
@@ -254,7 +254,7 @@ class UserChapterProgressServiceTest {
     @Test
     @DisplayName("update 没有ID抛出异常")
     void updateIdRequired() {
-        UserChapterProgressDto dto = UserChapterProgressDto.builder().build();
+        UserChapterProgressRequest dto = UserChapterProgressRequest.builder().build();
 
         assertThatThrownBy(() -> progressService.update(dto))
                 .isInstanceOf(BusinessException.class)
@@ -264,8 +264,8 @@ class UserChapterProgressServiceTest {
     @Test
     @DisplayName("update 记录不存在抛出异常")
     void updateNotFound() {
-        UserChapterProgressDto dto =
-                UserChapterProgressDto.builder().id(PROGRESS_ID).build();
+        UserChapterProgressRequest dto =
+                UserChapterProgressRequest.builder().id(PROGRESS_ID).build();
         doReturn(null).when(progressService).getById(PROGRESS_ID);
 
         assertThatThrownBy(() -> progressService.update(dto))
@@ -276,8 +276,8 @@ class UserChapterProgressServiceTest {
     @Test
     @DisplayName("update 进度100时自动设为完成")
     void updateAutoComplete() {
-        UserChapterProgressDto dto =
-                UserChapterProgressDto.builder().id(PROGRESS_ID).progress(100).build();
+        UserChapterProgressRequest dto =
+                UserChapterProgressRequest.builder().id(PROGRESS_ID).progress(100).build();
         UserChapterProgress existing = UserChapterProgress.builder()
                 .id(PROGRESS_ID)
                 .userId(USER_ID)

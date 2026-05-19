@@ -5,17 +5,17 @@ import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
-import com.rauio.smartdangjian.server.learning.pojo.dto.UserLearningRecordDto;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
-import com.rauio.smartdangjian.server.learning.pojo.vo.UserLearningRecordVO;
+import com.rauio.smartdangjian.server.learning.pojo.request.UserLearningRecordRequest;
+import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserLearningRecordConvertor {
-    UserLearningRecordDto toDto(UserLearningRecord userLearningRecord);
+    UserLearningRecordRequest toRequest(UserLearningRecord userLearningRecord);
 
-    UserLearningRecord toEntity(UserLearningRecordDto dto);
+    UserLearningRecord toEntity(UserLearningRecordRequest request);
 
-    UserLearningRecordVO toVO(UserLearningRecord userLearningRecord);
+    UserLearningRecordResponse toResponse(UserLearningRecord userLearningRecord);
 
-    List<UserLearningRecordVO> toVOList(List<UserLearningRecord> list);
+    List<UserLearningRecordResponse> toResponseList(List<UserLearningRecord> list);
 }

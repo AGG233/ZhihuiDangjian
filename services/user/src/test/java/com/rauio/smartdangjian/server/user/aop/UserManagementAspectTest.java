@@ -20,7 +20,7 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
@@ -83,9 +83,9 @@ class UserManagementAspectTest {
     void searchManagerPasses() {
         stubAction(DataScopeAction.SEARCH);
         when(currentUser.getUserType()).thenReturn(UserType.MANAGER);
-        UserDto query = new UserDto();
+        UserRequest query = new UserRequest();
         when(access.query()).thenReturn("#query");
-        when(context.require("#query", UserDto.class, "查询参数不能为空")).thenReturn(query);
+        when(context.require("#query", UserRequest.class, "查询参数不能为空")).thenReturn(query);
 
         assertThatCode(() -> aspect.before(context)).doesNotThrowAnyException();
     }
@@ -95,9 +95,9 @@ class UserManagementAspectTest {
     void searchSchoolSetsUniversityId() {
         stubAction(DataScopeAction.SEARCH);
         stubSchoolUser("univ-1");
-        UserDto query = new UserDto();
+        UserRequest query = new UserRequest();
         when(access.query()).thenReturn("#query");
-        when(context.require("#query", UserDto.class, "查询参数不能为空")).thenReturn(query);
+        when(context.require("#query", UserRequest.class, "查询参数不能为空")).thenReturn(query);
 
         aspect.before(context);
 
@@ -109,9 +109,9 @@ class UserManagementAspectTest {
     void searchSchoolNoUniversityThrows() {
         stubAction(DataScopeAction.SEARCH);
         stubSchoolUser(null);
-        UserDto query = new UserDto();
+        UserRequest query = new UserRequest();
         when(access.query()).thenReturn("#query");
-        when(context.require("#query", UserDto.class, "查询参数不能为空")).thenReturn(query);
+        when(context.require("#query", UserRequest.class, "查询参数不能为空")).thenReturn(query);
 
         assertThatThrownBy(() -> aspect.before(context))
                 .isInstanceOf(BusinessException.class)
@@ -125,9 +125,9 @@ class UserManagementAspectTest {
         stubAction(DataScopeAction.SEARCH);
         stubStudentUser("student-1");
         when(currentUser.getUniversityId()).thenReturn("univ-1");
-        UserDto query = new UserDto();
+        UserRequest query = new UserRequest();
         when(access.query()).thenReturn("#query");
-        when(context.require("#query", UserDto.class, "查询参数不能为空")).thenReturn(query);
+        when(context.require("#query", UserRequest.class, "查询参数不能为空")).thenReturn(query);
 
         aspect.before(context);
 

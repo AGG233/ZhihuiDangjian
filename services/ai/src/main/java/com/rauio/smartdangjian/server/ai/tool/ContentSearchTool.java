@@ -16,9 +16,9 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.pojo.entity.Article;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
-import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
-import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
+import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
+import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
+import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.content.service.ContentBlockService;
 import com.rauio.smartdangjian.server.content.service.article.ArticleService;
 import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
@@ -81,11 +81,11 @@ public class ContentSearchTool {
 
     @Tool(name = "getCourseDetail", description = "获取课程详情及其章节列表")
     public Map<String, Object> getCourseDetail(@ToolParam(description = "课程ID") String courseId) {
-        CourseVO course = courseService.get(courseId);
+        CourseResponse course = courseService.get(courseId);
         if (course == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "课程不存在");
         }
-        List<ChapterVO> chapters = chapterService.getByCourseId(courseId);
+        List<ChapterResponse> chapters = chapterService.getByCourseId(courseId);
 
         Map<String, Object> result = new HashMap<>();
         result.put("id", course.getId());
@@ -109,11 +109,11 @@ public class ContentSearchTool {
 
     @Tool(name = "getChapterDetail", description = "获取章节详情及其内容块")
     public Map<String, Object> getChapterDetail(@ToolParam(description = "章节ID") String chapterId) {
-        ChapterVO chapter = chapterService.get(chapterId);
+        ChapterResponse chapter = chapterService.get(chapterId);
         if (chapter == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "章节不存在");
         }
-        List<ContentBlockVO> blocks = contentBlockService.getByParentId(chapterId);
+        List<ContentBlockResponse> blocks = contentBlockService.getByParentId(chapterId);
 
         Map<String, Object> result = new HashMap<>();
         result.put("id", chapter.getId());

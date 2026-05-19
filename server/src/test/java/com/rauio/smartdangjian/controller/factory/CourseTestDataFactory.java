@@ -9,16 +9,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rauio.smartdangjian.server.content.pojo.dto.ChapterDto;
 import com.rauio.smartdangjian.server.content.pojo.dto.ContentBlockDto;
-import com.rauio.smartdangjian.server.content.pojo.dto.CourseDto;
+import com.rauio.smartdangjian.server.content.pojo.request.CourseRequest;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
-import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
-import com.rauio.smartdangjian.server.content.pojo.vo.PageVO;
+import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.content.pojo.response.PageResponse;
 import com.rauio.smartdangjian.server.content.spec.BlockType;
 
 /**
- * Static factory for course/chapter test data — produces CourseDto, CourseVO,
- * ChapterDto, ChapterVO, PageVO, Course, and JSON helpers.
+ * Static factory for course/chapter test data — produces CourseRequest, CourseResponse,
+ * ChapterDto, ChapterVO, PageResponse, Course, and JSON helpers.
  * All IDs are deterministic strings so jsonPath assertions are predictable.
  */
 public final class CourseTestDataFactory {
@@ -27,10 +27,10 @@ public final class CourseTestDataFactory {
 
     private CourseTestDataFactory() {}
 
-    // ── CourseDto ──────────────────────────────────────────────────
+    // ── CourseRequest ──────────────────────────────────────────────────
 
-    public static CourseDto createCourseDto() {
-        return CourseDto.builder()
+    public static CourseRequest createCourseRequest() {
+        return CourseRequest.builder()
                 .title("test-course")
                 .description("test-description")
                 .categoryId("cat-1")
@@ -40,10 +40,10 @@ public final class CourseTestDataFactory {
                 .build();
     }
 
-    // ── CourseVO ───────────────────────────────────────────────────
+    // ── CourseResponse ───────────────────────────────────────────────────
 
-    public static CourseVO createCourseVO(String id) {
-        return CourseVO.builder()
+    public static CourseResponse createCourseResponse(String id) {
+        return CourseResponse.builder()
                 .id(id)
                 .title("test-course")
                 .description("test-description")
@@ -104,11 +104,11 @@ public final class CourseTestDataFactory {
                 .build();
     }
 
-    // ── PageVO ─────────────────────────────────────────────────────
+    // ── PageResponse ─────────────────────────────────────────────────────
 
     @SuppressWarnings("unchecked")
-    public static PageVO<Object> createPageVO(List<?> data, long total, long current, long size) {
-        return PageVO.<Object>builder()
+    public static PageResponse<Object> createPageResponse(List<?> data, long total, long current, long size) {
+        return PageResponse.<Object>builder()
                 .total(total)
                 .size(size)
                 .current(current)
@@ -116,8 +116,8 @@ public final class CourseTestDataFactory {
                 .build();
     }
 
-    public static PageVO<Object> createEmptyPageVO(long current, long size) {
-        return PageVO.<Object>builder()
+    public static PageResponse<Object> createEmptyPageResponse(long current, long size) {
+        return PageResponse.<Object>builder()
                 .total(0L)
                 .size(size)
                 .current(current)

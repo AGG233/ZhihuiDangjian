@@ -9,8 +9,8 @@ import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
-import com.rauio.smartdangjian.server.content.pojo.vo.PageVO;
+import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.content.pojo.response.PageResponse;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
@@ -29,13 +29,13 @@ public class UserCourseController {
 
     @Operation(summary = "获取课程详情", description = "根据课程ID获取课程详细信息")
     @GetMapping("/{id}")
-    public Result<CourseVO> get(@PathVariable String id) throws JsonProcessingException {
+    public Result<CourseResponse> get(@PathVariable String id) throws JsonProcessingException {
         return Result.ok(courseService.get(id));
     }
 
     @Operation(summary = "分页获取课程", description = "根据分页参数获取课程列表")
     @GetMapping
-    public Result<PageVO<Object>> getPage(
+    public Result<PageResponse<Object>> getPage(
             @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
             @Parameter(name = "pageSize", description = "页的大小") @RequestParam(defaultValue = "10") int pageSize) {
         return Result.ok(courseService.getPage(pageNum, pageSize));

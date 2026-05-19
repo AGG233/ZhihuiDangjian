@@ -14,7 +14,7 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.content.constants.CourseErrorConstants;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
-import com.rauio.smartdangjian.server.content.pojo.dto.CourseDto;
+import com.rauio.smartdangjian.server.content.pojo.request.CourseRequest;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
@@ -46,7 +46,7 @@ public class CourseAdminAccessAspect implements DataScopeResolver {
         requireUniversityId(currentUser);
 
         if (context.getAccess().action() == DataScopeAction.CREATE) {
-            context.require(context.getAccess().body(), CourseDto.class, "课程信息不能为空");
+            context.require(context.getAccess().body(), CourseRequest.class, "课程信息不能为空");
             return;
         }
 

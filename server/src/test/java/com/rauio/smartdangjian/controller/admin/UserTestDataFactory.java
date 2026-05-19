@@ -7,14 +7,14 @@ import java.util.List;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
 /**
- * Static factory for test data — produces User, Page, UserDto, and JSON helpers.
+ * Static factory for test data — produces User, Page, UserRequest, and JSON helpers.
  * All IDs are deterministic strings so jsonPath assertions are predictable.
  */
 public final class UserTestDataFactory {
@@ -130,17 +130,17 @@ public final class UserTestDataFactory {
         return page;
     }
 
-    // ── UserDto helpers ───────────────────────────────────────────
+    // ── UserRequest helpers ──────────────────────────────────────────
 
-    public static UserDto createSearchDto() {
-        return new UserDto();
+    public static UserRequest createSearchDto() {
+        return new UserRequest();
     }
 
-    public static String toJson(UserDto dto) {
+    public static String toJson(UserRequest request) {
         try {
-            return OBJECT_MAPPER.writeValueAsString(dto);
+            return OBJECT_MAPPER.writeValueAsString(request);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize UserDto to JSON", e);
+            throw new RuntimeException("Failed to serialize UserRequest to JSON", e);
         }
     }
 
@@ -161,7 +161,7 @@ public final class UserTestDataFactory {
             String email,
             String phone,
             String idCard) {
-        UserDto dto = new UserDto();
+        UserRequest dto = new UserRequest();
         dto.setUserId(userId);
         dto.setUsername(username);
         dto.setRealName(realName);

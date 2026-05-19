@@ -24,7 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ContentBlockConvertor;
 import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
-import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
+import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
 import com.rauio.smartdangjian.server.content.spec.BlockType;
 
 @ExtendWith(MockitoExtension.class)
@@ -165,15 +165,15 @@ class ContentBlockServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("get 根据 ID 返回 ContentBlockVO")
-    void getReturnsContentBlockVO() {
+    @DisplayName("get 根据 ID 返回 ContentBlockResponse")
+    void getReturnsContentBlockResponse() {
         ContentBlock block =
                 ContentBlock.builder().id("cb-001").textContent("测试内容").build();
-        ContentBlockVO vo = mock(ContentBlockVO.class);
+        ContentBlockResponse vo = mock(ContentBlockResponse.class);
         doReturn(block).when(contentBlockService).getById("cb-001");
-        when(convertor.toVO(block)).thenReturn(vo);
+        when(convertor.toResponse(block)).thenReturn(vo);
 
-        ContentBlockVO result = contentBlockService.get("cb-001");
+        ContentBlockResponse result = contentBlockService.get("cb-001");
 
         assertThat(result).isNotNull();
         assertThat(result).isSameAs(vo);
@@ -183,9 +183,9 @@ class ContentBlockServiceTest {
     @DisplayName("get 内容块不存在返回 null")
     void getReturnsNullWhenNotFound() {
         doReturn(null).when(contentBlockService).getById("non-existent");
-        when(convertor.toVO(null)).thenReturn(null);
+        when(convertor.toResponse(null)).thenReturn(null);
 
-        ContentBlockVO result = contentBlockService.get("non-existent");
+        ContentBlockResponse result = contentBlockService.get("non-existent");
 
         assertThat(result).isNull();
     }
@@ -207,14 +207,14 @@ class ContentBlockServiceTest {
                 .parentId("ch-001")
                 .textContent("内容2")
                 .build();
-        ContentBlockVO vo1 = mock(ContentBlockVO.class);
-        ContentBlockVO vo2 = mock(ContentBlockVO.class);
-        List<ContentBlockVO> vos = List.of(vo1, vo2);
+        ContentBlockResponse vo1 = mock(ContentBlockResponse.class);
+        ContentBlockResponse vo2 = mock(ContentBlockResponse.class);
+        List<ContentBlockResponse> vos = List.of(vo1, vo2);
 
         doReturn(List.of(b1, b2)).when(contentBlockService).list(any(LambdaQueryWrapper.class));
-        when(convertor.toVOList(List.of(b1, b2))).thenReturn(vos);
+        when(convertor.toResponseList(List.of(b1, b2))).thenReturn(vos);
 
-        List<ContentBlockVO> result = contentBlockService.getByParentId("ch-001");
+        List<ContentBlockResponse> result = contentBlockService.getByParentId("ch-001");
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0)).isSameAs(vo1);
@@ -225,9 +225,9 @@ class ContentBlockServiceTest {
     @DisplayName("getByParentId 父节点无内容块时返回空列表")
     void getByParentIdReturnsEmptyListWhenNoBlocks() {
         doReturn(Collections.emptyList()).when(contentBlockService).list(any(LambdaQueryWrapper.class));
-        when(convertor.toVOList(Collections.emptyList())).thenReturn(Collections.emptyList());
+        when(convertor.toResponseList(Collections.emptyList())).thenReturn(Collections.emptyList());
 
-        List<ContentBlockVO> result = contentBlockService.getByParentId("empty-parent");
+        List<ContentBlockResponse> result = contentBlockService.getByParentId("empty-parent");
 
         assertThat(result).isEmpty();
     }
@@ -241,15 +241,15 @@ class ContentBlockServiceTest {
     void getByResourceIdsReturnsVOList() {
         ContentBlock b1 = ContentBlock.builder().id("r-001").textContent("资源1").build();
         ContentBlock b2 = ContentBlock.builder().id("r-002").textContent("资源2").build();
-        ContentBlockVO vo1 = mock(ContentBlockVO.class);
-        ContentBlockVO vo2 = mock(ContentBlockVO.class);
-        List<ContentBlockVO> vos = List.of(vo1, vo2);
+        ContentBlockResponse vo1 = mock(ContentBlockResponse.class);
+        ContentBlockResponse vo2 = mock(ContentBlockResponse.class);
+        List<ContentBlockResponse> vos = List.of(vo1, vo2);
 
         doReturn(b1).when(contentBlockService).getById("r-001");
         doReturn(b2).when(contentBlockService).getById("r-002");
-        when(convertor.toVOList(List.of(b1, b2))).thenReturn(vos);
+        when(convertor.toResponseList(List.of(b1, b2))).thenReturn(vos);
 
-        List<ContentBlockVO> result = contentBlockService.getByResourceIds(List.of("r-001", "r-002"));
+        List<ContentBlockResponse> result = contentBlockService.getByResourceIds(List.of("r-001", "r-002"));
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0)).isSameAs(vo1);
@@ -259,9 +259,9 @@ class ContentBlockServiceTest {
     @Test
     @DisplayName("getByResourceIds 传入空列表返回空列表")
     void getByResourceIdsEmptyListReturnsEmpty() {
-        when(convertor.toVOList(Collections.emptyList())).thenReturn(Collections.emptyList());
+        when(convertor.toResponseList(Collections.emptyList())).thenReturn(Collections.emptyList());
 
-        List<ContentBlockVO> result = contentBlockService.getByResourceIds(Collections.emptyList());
+        List<ContentBlockResponse> result = contentBlockService.getByResourceIds(Collections.emptyList());
 
         assertThat(result).isEmpty();
     }
@@ -270,13 +270,13 @@ class ContentBlockServiceTest {
     @DisplayName("getByResourceIds 部分 ID 对应的内容块为 null")
     void getByResourceIdsHandlesNullBlocks() {
         ContentBlock b1 = ContentBlock.builder().id("r-001").textContent("资源1").build();
-        ContentBlockVO vo1 = mock(ContentBlockVO.class);
+        ContentBlockResponse vo1 = mock(ContentBlockResponse.class);
 
         doReturn(b1).when(contentBlockService).getById("r-001");
         doReturn(null).when(contentBlockService).getById("r-missing");
-        when(convertor.toVOList(Arrays.asList(b1, null))).thenReturn(Arrays.asList(vo1, null));
+        when(convertor.toResponseList(Arrays.asList(b1, null))).thenReturn(Arrays.asList(vo1, null));
 
-        List<ContentBlockVO> result = contentBlockService.getByResourceIds(List.of("r-001", "r-missing"));
+        List<ContentBlockResponse> result = contentBlockService.getByResourceIds(List.of("r-001", "r-missing"));
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0)).isSameAs(vo1);

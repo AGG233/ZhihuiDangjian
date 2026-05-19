@@ -12,7 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.rauio.smartdangjian.server.learning.pojo.vo.UserChapterProgressVO;
+import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
 import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,7 +28,7 @@ class AdminChapterProgressControllerTest {
     @DisplayName("getByChapterId 委托 service 获取章节进度")
     void getByChapterId() {
         when(progressService.getByChapterId("ch-1"))
-                .thenReturn(List.of(UserChapterProgressVO.builder().id("p-1").build()));
+                .thenReturn(List.of(UserChapterProgressResponse.builder().id("p-1").build()));
 
         var result = controller.getByChapterId("ch-1");
 

@@ -22,11 +22,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterConvertor;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ContentBlockConvertor;
-import com.rauio.smartdangjian.server.content.pojo.dto.ChapterDto;
 import com.rauio.smartdangjian.server.content.pojo.dto.ContentBlockDto;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
-import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
+import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
+import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.service.ContentBlockService;
 import com.rauio.smartdangjian.server.content.spec.ParentType;
 
@@ -51,14 +51,14 @@ class ChapterServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("get 根据章节 ID 返回 ChapterVO")
-    void getReturnsChapterVO() {
+    @DisplayName("get 根据章节 ID 返回 ChapterResponse")
+    void getReturnsChapterResponse() {
         Chapter chapter = Chapter.builder().id("ch-001").title("第一章").build();
-        ChapterVO vo = ChapterVO.builder().id("ch-001").title("第一章").build();
+        ChapterResponse vo = ChapterResponse.builder().id("ch-001").title("第一章").build();
         doReturn(chapter).when(chapterService).getById("ch-001");
-        when(chapterConvertor.toVO(chapter)).thenReturn(vo);
+        when(chapterConvertor.toResponse(chapter)).thenReturn(vo);
 
-        ChapterVO result = chapterService.get("ch-001");
+        ChapterResponse result = chapterService.get("ch-001");
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo("ch-001");
@@ -82,7 +82,7 @@ class ChapterServiceTest {
     @Test
     @DisplayName("create 创建章节及其内容块成功返回 true")
     void createChapterSuccessfully() {
-        ChapterDto dto = ChapterDto.builder()
+        ChapterRequest dto = ChapterRequest.builder()
                 .courseId("course-001")
                 .title("新章节")
                 .description("描述")
@@ -114,7 +114,7 @@ class ChapterServiceTest {
     @Test
     @DisplayName("create 章节已存在时抛出 BusinessException")
     void createThrowsExceptionWhenChapterExists() {
-        ChapterDto dto = ChapterDto.builder()
+        ChapterRequest dto = ChapterRequest.builder()
                 .courseId("course-001")
                 .title("重复章节")
                 .description("描述")
@@ -133,7 +133,7 @@ class ChapterServiceTest {
     @Test
     @DisplayName("create 保存章节失败时抛出 BusinessException")
     void createThrowsExceptionWhenSaveFails() {
-        ChapterDto dto = ChapterDto.builder()
+        ChapterRequest dto = ChapterRequest.builder()
                 .courseId("course-001")
                 .title("失败章节")
                 .description("描述")
@@ -154,7 +154,7 @@ class ChapterServiceTest {
     @Test
     @DisplayName("create content 为 null 时抛出 BusinessException")
     void createThrowsExceptionWhenContentIsNull() {
-        ChapterDto dto = ChapterDto.builder()
+        ChapterRequest dto = ChapterRequest.builder()
                 .courseId("course-001")
                 .title("无内容章节")
                 .description("描述")
@@ -175,7 +175,7 @@ class ChapterServiceTest {
     @Test
     @DisplayName("create content 为空列表时抛出 BusinessException")
     void createThrowsExceptionWhenContentIsEmpty() {
-        ChapterDto dto = ChapterDto.builder()
+        ChapterRequest dto = ChapterRequest.builder()
                 .courseId("course-001")
                 .title("空内容章节")
                 .description("描述")
@@ -200,7 +200,7 @@ class ChapterServiceTest {
     @Test
     @DisplayName("update 更新章节成功返回 true")
     void updateChapterSuccessfully() {
-        ChapterDto dto = ChapterDto.builder().title("更新章节").description("更新描述").build();
+        ChapterRequest dto = ChapterRequest.builder().title("更新章节").description("更新描述").build();
         Chapter entity = Chapter.builder().id("ch-001").title("更新章节").build();
         when(chapterConvertor.toEntity(dto)).thenReturn(entity);
         doReturn(true).when(chapterService).updateById(entity);
@@ -213,7 +213,7 @@ class ChapterServiceTest {
     @Test
     @DisplayName("update 更新失败时返回 false")
     void updateReturnsFalseWhenUpdateFails() {
-        ChapterDto dto = ChapterDto.builder().title("失败更新").build();
+        ChapterRequest dto = ChapterRequest.builder().title("失败更新").build();
         Chapter entity = Chapter.builder().id("ch-001").title("失败更新").build();
         when(chapterConvertor.toEntity(dto)).thenReturn(entity);
         doReturn(false).when(chapterService).updateById(entity);
@@ -229,7 +229,7 @@ class ChapterServiceTest {
 
     @Test
     @DisplayName("getByCourseId 根据课程 ID 返回章节列表")
-    void getByCourseIdReturnsChapterVOList() {
+    void getByCourseIdReturnsChapterResponseList() {
         List<Chapter> chapters = List.of(
                 Chapter.builder()
                         .id("ch-001")
@@ -241,13 +241,13 @@ class ChapterServiceTest {
                         .courseId("course-001")
                         .title("第二章")
                         .build());
-        List<ChapterVO> vos = List.of(
-                ChapterVO.builder().id("ch-001").title("第一章").build(),
-                ChapterVO.builder().id("ch-002").title("第二章").build());
+        List<ChapterResponse> vos = List.of(
+                ChapterResponse.builder().id("ch-001").title("第一章").build(),
+                ChapterResponse.builder().id("ch-002").title("第二章").build());
         doReturn(chapters).when(chapterService).list(any(LambdaQueryWrapper.class));
-        when(chapterConvertor.toVOList(chapters)).thenReturn(vos);
+        when(chapterConvertor.toResponseList(chapters)).thenReturn(vos);
 
-        List<ChapterVO> result = chapterService.getByCourseId("course-001");
+        List<ChapterResponse> result = chapterService.getByCourseId("course-001");
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getTitle()).isEqualTo("第一章");
@@ -257,9 +257,9 @@ class ChapterServiceTest {
     @DisplayName("getByCourseId 课程无章节时返回空列表")
     void getByCourseIdReturnsEmptyListWhenNoChapters() {
         doReturn(Collections.emptyList()).when(chapterService).list(any(LambdaQueryWrapper.class));
-        when(chapterConvertor.toVOList(Collections.emptyList())).thenReturn(Collections.emptyList());
+        when(chapterConvertor.toResponseList(Collections.emptyList())).thenReturn(Collections.emptyList());
 
-        List<ChapterVO> result = chapterService.getByCourseId("empty-course");
+        List<ChapterResponse> result = chapterService.getByCourseId("empty-course");
 
         assertThat(result).isEmpty();
     }

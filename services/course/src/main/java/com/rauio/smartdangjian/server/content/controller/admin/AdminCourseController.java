@@ -10,7 +10,7 @@ import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.content.pojo.dto.CourseDto;
+import com.rauio.smartdangjian.server.content.pojo.request.CourseRequest;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
@@ -34,7 +34,7 @@ public class AdminCourseController {
             action = DataScopeAction.UPDATE,
             id = "#id",
             body = "#course")
-    public Result<Boolean> update(@RequestBody @Valid CourseDto course, @PathVariable String id)
+    public Result<Boolean> update(@RequestBody @Valid CourseRequest course, @PathVariable String id)
             throws JsonProcessingException {
         Boolean result = courseService.update(course, id);
         return Result.ok(result);
@@ -43,7 +43,7 @@ public class AdminCourseController {
     @Operation(summary = "创建课程", description = "创建一个新的课程")
     @PostMapping
     @DataScopeAccess(resource = DataScopeResources.COURSE_ADMIN, action = DataScopeAction.CREATE, body = "#course")
-    public Result<Boolean> create(@RequestBody @Valid CourseDto course) throws JsonProcessingException {
+    public Result<Boolean> create(@RequestBody @Valid CourseRequest course) throws JsonProcessingException {
         Boolean result = courseService.create(course);
         return Result.ok(result);
     }

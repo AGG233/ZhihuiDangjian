@@ -12,7 +12,7 @@ import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.content.pojo.dto.CategoryDto;
+import com.rauio.smartdangjian.server.content.pojo.request.CategoryRequest;
 import com.rauio.smartdangjian.server.content.service.category.CategoryService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
@@ -34,7 +34,7 @@ public class AdminCategoryController {
             description = "系统管理员调用时默认创建公共分类；高校管理员调用时会根据当前登录用户的 JWT 载荷自动绑定本校。该接口不会接收学校ID，如需代某学校建分类应使用专门管理接口。")
     @PostMapping("/root")
     @DataScopeAccess(resource = DataScopeResources.CATEGORY, action = DataScopeAction.CREATE, body = "#dto")
-    public Result<Boolean> create(@Valid @RequestBody CategoryDto dto) {
+    public Result<Boolean> create(@Valid @RequestBody CategoryRequest dto) {
         Boolean result = categoryService.create(dto);
         return Result.ok(result);
     }
@@ -47,7 +47,7 @@ public class AdminCategoryController {
             id = "#id",
             query = "#children")
     public Result<Boolean> createByParentId(
-            @Valid @RequestBody List<@Valid CategoryDto> children, @PathVariable String id) {
+            @Valid @RequestBody List<@Valid CategoryRequest> children, @PathVariable String id) {
         Boolean result = categoryService.createByParentId(children, id);
         return Result.ok(result);
     }
@@ -55,7 +55,7 @@ public class AdminCategoryController {
     @Operation(summary = "修改目录", description = "仅允许修改名称、描述和排序。分类归属不会从请求体读取，而是保留原有归属；公共分类仅系统管理员可维护，高校管理员仅可修改本校分类。")
     @PutMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.CATEGORY, action = DataScopeAction.UPDATE, id = "#id", body = "#dto")
-    public Result<Boolean> update(@Valid @RequestBody CategoryDto dto, @PathVariable String id) {
+    public Result<Boolean> update(@Valid @RequestBody CategoryRequest dto, @PathVariable String id) {
         Boolean result = categoryService.update(dto, id);
         return Result.ok(result);
     }

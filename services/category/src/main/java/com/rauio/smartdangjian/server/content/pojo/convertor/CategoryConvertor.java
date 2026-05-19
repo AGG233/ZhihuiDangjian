@@ -5,17 +5,17 @@ import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
-import com.rauio.smartdangjian.server.content.pojo.dto.CategoryDto;
 import com.rauio.smartdangjian.server.content.pojo.entity.Category;
-import com.rauio.smartdangjian.server.content.pojo.vo.CategoryVO;
+import com.rauio.smartdangjian.server.content.pojo.request.CategoryRequest;
+import com.rauio.smartdangjian.server.content.pojo.response.CategoryResponse;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CategoryConvertor {
-    Category toEntity(CategoryDto categoryDto);
+    Category toEntity(CategoryRequest categoryRequest);
 
-    CategoryDto toCourseCategoryDto(Category category);
+    CategoryRequest toCourseCategoryRequest(Category category);
 
-    CategoryVO toVO(Category categoryDto);
+    CategoryResponse toResponse(Category category);
 
-    List<CategoryVO> toVOList(List<Category> categoryList);
+    List<CategoryResponse> toResponseList(List<Category> categoryList);
 }

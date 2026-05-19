@@ -9,7 +9,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.rauio.smartdangjian.search.pojo.vo.UserProfileVO;
+import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
@@ -43,8 +43,8 @@ public class UserProfileService {
     private final UserService userService;
 
     @Cacheable(value = USER_PROFILE_CACHE_PREFIX, key = "#userId")
-    public UserProfileVO getProfile(String userId) {
-        return UserProfileVO.builder()
+    public UserProfileResponse getProfile(String userId) {
+        return UserProfileResponse.builder()
                 .userId(userId)
                 .learning(buildLearningStats(userId))
                 .knowledge(buildKnowledgeStats(userId))
@@ -53,12 +53,12 @@ public class UserProfileService {
                 .build();
     }
 
-    public UserProfileVO getCurrentUserProfile() {
+    public UserProfileResponse getCurrentUserProfile() {
         String userId = userService.getCurrentUserId();
         return getProfile(userId);
     }
 
-    private UserProfileVO.LearningStats buildLearningStats(String userId) {
+    private UserProfileResponse.LearningStats buildLearningStats(String userId) {
         List<UserLearningRecord> records = learningRecordMapper.selectList(
                 new LambdaQueryWrapper<UserLearningRecord>().eq(UserLearningRecord::getUserId, userId));
 
@@ -83,7 +83,7 @@ public class UserProfileService {
                 .eq(UserChapterProgress::getUserId, userId)
                 .eq(UserChapterProgress::getStatus, "completed"));
 
-        return UserProfileVO.LearningStats.builder()
+        return UserProfileResponse.LearningStats.builder()
                 .totalDuration(totalDuration)
                 .avgDuration(avgDuration)
                 .totalRecords(records.size())
@@ -92,7 +92,7 @@ public class UserProfileService {
                 .build();
     }
 
-    private UserProfileVO.KnowledgeStats buildKnowledgeStats(String userId) {
+    private UserProfileResponse.KnowledgeStats buildKnowledgeStats(String userId) {
         List<UserChapterProgress> progresses = chapterProgressMapper.selectList(
                 new LambdaQueryWrapper<UserChapterProgress>().eq(UserChapterProgress::getUserId, userId));
 
@@ -113,7 +113,7 @@ public class UserProfileService {
                 .map(UserChapterProgress::getChapterId)
                 .toList();
 
-        return UserProfileVO.KnowledgeStats.builder()
+        return UserProfileResponse.KnowledgeStats.builder()
                 .avgProgress(avgProgress)
                 .completionRate(completionRate)
                 .weakChapterIds(weakChapterIds)
@@ -161,7 +161,7 @@ public class UserProfileService {
                 .toList();
     }
 
-    private UserProfileVO.QuizStats buildQuizStats(String userId) {
+    private UserProfileResponse.QuizStats buildQuizStats(String userId) {
         List<UserQuizAnswer> answers = quizAnswerMapper.selectList(
                 new LambdaQueryWrapper<UserQuizAnswer>().eq(UserQuizAnswer::getUserId, userId));
 
@@ -205,7 +205,7 @@ public class UserProfileService {
             }
         }
 
-        return UserProfileVO.QuizStats.builder()
+        return UserProfileResponse.QuizStats.builder()
                 .totalAnswers(totalAnswers)
                 .correctCount(correctCount)
                 .correctRate(correctRate)
