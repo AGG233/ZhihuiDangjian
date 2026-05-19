@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.search.service;
+package com.rauio.smartdangjian.server.search.service;
 
 import static com.rauio.smartdangjian.constants.RedisConstants.USER_PROFILE_CACHE_PREFIX;
 

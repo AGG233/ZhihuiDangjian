@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.search.controller;
+package com.rauio.smartdangjian.server.search.controller;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -6,9 +6,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
-import com.rauio.smartdangjian.search.service.RecommendService;
-import com.rauio.smartdangjian.search.service.SearchService;
-import com.rauio.smartdangjian.search.service.UserProfileService;
+import com.rauio.smartdangjian.server.search.service.RecommendService;
+import com.rauio.smartdangjian.server.search.service.SearchService;
+import com.rauio.smartdangjian.server.search.service.UserProfileService;
 import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.utils.spec.UserType;
 

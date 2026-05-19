@@ -6,7 +6,7 @@ import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.search.service.RecommendService;
+import com.rauio.smartdangjian.server.search.service.RecommendService;
 import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
 import com.rauio.smartdangjian.server.user.service.UserService;
 

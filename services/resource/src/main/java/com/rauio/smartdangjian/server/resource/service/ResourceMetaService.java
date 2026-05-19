@@ -10,7 +10,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.resource.Constant.ResourceStatusConstants;
+import com.rauio.smartdangjian.server.resource.constants.ResourceStatusConstants;
 import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 import com.rauio.smartdangjian.server.resource.mapper.ResourceMetaMapper;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;

@@ -22,7 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.resource.Constant.ResourceStatusConstants;
+import com.rauio.smartdangjian.server.resource.constants.ResourceStatusConstants;
 import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.UploadFileRequest;

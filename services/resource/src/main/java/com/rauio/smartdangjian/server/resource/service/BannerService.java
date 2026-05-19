@@ -1,7 +1,7 @@
 package com.rauio.smartdangjian.server.resource.service;
 
-import static com.rauio.smartdangjian.server.resource.Constant.ResourceConstant.BANNER_MAX_SIZE;
-import static com.rauio.smartdangjian.server.resource.Constant.ResourceConstant.BANNER_PREFIX;
+import static com.rauio.smartdangjian.server.resource.constants.ResourceConstant.BANNER_MAX_SIZE;
+import static com.rauio.smartdangjian.server.resource.constants.ResourceConstant.BANNER_PREFIX;
 
 import java.util.ArrayList;
 import java.util.Collections;

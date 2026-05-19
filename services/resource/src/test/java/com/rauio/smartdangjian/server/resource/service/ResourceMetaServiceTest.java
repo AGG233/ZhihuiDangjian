@@ -17,7 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.resource.Constant.ResourceStatusConstants;
+import com.rauio.smartdangjian.server.resource.constants.ResourceStatusConstants;
 import com.rauio.smartdangjian.server.resource.mapper.ResourceMetaMapper;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaCreateRequest;

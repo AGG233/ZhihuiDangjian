@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.search.service;
+package com.rauio.smartdangjian.server.search.service;
 
 import java.util.*;
 import java.util.stream.Collectors;

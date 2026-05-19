@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.search.service;
+package com.rauio.smartdangjian.server.search.service;
 
 import java.math.BigDecimal;
 import java.util.*;

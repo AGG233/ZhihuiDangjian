@@ -8,7 +8,7 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Component;
 
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
-import com.rauio.smartdangjian.search.service.UserProfileService;
+import com.rauio.smartdangjian.server.search.service.UserProfileService;
 import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
 import com.rauio.smartdangjian.server.user.service.UserService;
 

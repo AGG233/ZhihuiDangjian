@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.resource.Constant;
+package com.rauio.smartdangjian.server.resource.constants;
 
 public class ResourceConstant {
     public static final String BANNER_PREFIX = "BANNER:";

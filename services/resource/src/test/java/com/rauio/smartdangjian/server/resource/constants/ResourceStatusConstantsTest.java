@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.resource.Constant;
+package com.rauio.smartdangjian.server.resource.constants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

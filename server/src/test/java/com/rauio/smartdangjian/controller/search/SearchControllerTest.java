@@ -24,11 +24,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.search.controller.SearchController;
+import com.rauio.smartdangjian.server.search.controller.SearchController;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
-import com.rauio.smartdangjian.search.service.RecommendService;
-import com.rauio.smartdangjian.search.service.SearchService;
-import com.rauio.smartdangjian.search.service.UserProfileService;
+import com.rauio.smartdangjian.server.search.service.RecommendService;
+import com.rauio.smartdangjian.server.search.service.SearchService;
+import com.rauio.smartdangjian.server.search.service.UserProfileService;
 import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = SearchControllerTest.TestConfig.class)

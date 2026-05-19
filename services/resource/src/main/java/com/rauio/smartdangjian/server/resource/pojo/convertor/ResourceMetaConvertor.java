@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.resource.pojo.conventor;
+package com.rauio.smartdangjian.server.resource.pojo.convertor;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
