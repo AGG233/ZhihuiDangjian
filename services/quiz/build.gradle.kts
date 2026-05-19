@@ -14,4 +14,6 @@ dependencies {
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.mapstruct.processor)
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
 }

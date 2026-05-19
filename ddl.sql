@@ -1,6 +1,6 @@
 create table zhdj.ai_prompts
 (
-    id         int auto_increment
+    id         bigint unsigned auto_increment
         primary key,
     agent_type varchar(32) default 'COMMON'          not null,
     category   varchar(50) default '通用'            null comment '提示词类别，如：翻译、周报、绘图',
@@ -240,7 +240,7 @@ create table zhdj.category_couse
 
 create table zhdj.chapter
 (
-    id             bigint unsigned auto_increment comment '章节唯一ID'
+    id             bigint unsigned auto_increment comment '提示词ID'
         primary key,
     course_id      bigint unsigned                                                   not null comment '章节所属课程',
     title          varchar(100)                                                      not null comment '章节标题',
@@ -301,7 +301,7 @@ create table zhdj.quiz_option
     quiz_id     bigint unsigned      not null comment '所属试题ID',
     option_text text                 not null comment '选项内容',
     is_correct  tinyint(1) default 0 not null comment '是否为正确答案（0:否, 1:是）',
-    order_index char                 null comment '选项标签（A, B, C...）',
+    order_index varchar(10)            null comment '选项标签（A, B, C...）',
     constraint fk_quiz_option_quiz_id
         foreign key (quiz_id) references zhdj.quiz (id)
 )
@@ -378,13 +378,13 @@ create table zhdj.user_permission
 
 create table zhdj.user_quiz_answer
 (
-    id             bigint unsigned auto_increment comment '答题记录ID'
+    id             bigint unsigned auto_increment comment '提示词ID'
         primary key,
     user_id        bigint unsigned              not null comment '用户ID',
     option_id      bigint unsigned              not null comment '选项ID',
     quiz_id        bigint unsigned              not null comment '所属试题ID',
-    user_answer    json                         not null comment '用户答案（JSON格式, 存储选项ID列表）',
-    is_correct     tinyint(1)                   not null comment '是否完全答对（0:错, 1:对,2不完全对）',
+    user_answer    json                         null comment '用户答案（JSON格式, 存储选项ID列表）',
+    is_correct     tinyint(1)                   default 0 not null comment '是否完全答对（0:错, 1:对,2不完全对）',
     score_obtained tinyint unsigned default '0' null comment '获得分数',
     time_spent     int unsigned     default '0' null comment '答题耗时（秒）',
     session_id     varchar(64)                  null comment '答题会话ID（用于关联一次完整的测验）',
