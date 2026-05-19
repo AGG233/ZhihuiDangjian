@@ -1,10 +1,13 @@
 package com.rauio.smartdangjian.controller.publicapi;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.common.controller.publicapi.ApiController;
-import com.rauio.smartdangjian.common.pojo.Universities;
-import com.rauio.smartdangjian.common.service.UniversitiesService;
-import com.rauio.smartdangjian.exception.BusinessException;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -13,18 +16,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.List;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.common.controller.publicapi.ApiController;
+import com.rauio.smartdangjian.common.pojo.response.SchoolResponse;
+import com.rauio.smartdangjian.common.service.UniversitiesService;
+import com.rauio.smartdangjian.exception.BusinessException;
 
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = ApiControllerTest.TestConfig.class
-)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ApiControllerTest.TestConfig.class)
 @DisplayName("公共API接口测试")
 class ApiControllerTest extends BaseControllerTest {
 
@@ -46,10 +44,7 @@ class ApiControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /school/all - 获取学校列表成功")
         void getSchoolListSuccess() throws Exception {
-            List<Universities> list = List.of(
-                    createUniversity("1", "北京大学"),
-                    createUniversity("2", "清华大学")
-            );
+            List<SchoolResponse> list = List.of(createSchoolResponse("1", "北京大学"), createSchoolResponse("2", "清华大学"));
             when(universitiesService.getList()).thenReturn(list);
 
             mockMvc.perform(get("/api/school/all"))
@@ -67,8 +62,7 @@ class ApiControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 400")
         void serviceThrowsBusinessException() throws Exception {
-            when(universitiesService.getList())
-                    .thenThrow(new BusinessException(4000, "获取学校列表失败"));
+            when(universitiesService.getList()).thenThrow(new BusinessException(4000, "获取学校列表失败"));
 
             mockMvc.perform(get("/api/school/all"))
                     .andExpect(status().isBadRequest())
@@ -79,8 +73,7 @@ class ApiControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 RuntimeException 返回 500")
         void serviceThrowsRuntimeException() throws Exception {
-            when(universitiesService.getList())
-                    .thenThrow(new RuntimeException("数据库异常"));
+            when(universitiesService.getList()).thenThrow(new RuntimeException("数据库异常"));
 
             mockMvc.perform(get("/api/school/all"))
                     .andExpect(status().isInternalServerError())
@@ -106,7 +99,7 @@ class ApiControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /school/all - 单个学校")
         void getSchoolListSingle() throws Exception {
-            List<Universities> list = List.of(createUniversity("1", "浙江大学"));
+            List<SchoolResponse> list = List.of(createSchoolResponse("1", "浙江大学"));
             when(universitiesService.getList()).thenReturn(list);
 
             mockMvc.perform(get("/api/school/all"))
@@ -119,7 +112,7 @@ class ApiControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /school/all - 学校名含特殊字符")
         void getSchoolListWithSpecialChars() throws Exception {
-            List<Universities> list = List.of(createUniversity("3", "测试·大学（海淀）"));
+            List<SchoolResponse> list = List.of(createSchoolResponse("3", "测试·大学（海淀）"));
             when(universitiesService.getList()).thenReturn(list);
 
             mockMvc.perform(get("/api/school/all"))
@@ -136,8 +129,7 @@ class ApiControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST 请求学校列表接口返回 405")
         void getSchoolListWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/school/all"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/school/all")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
@@ -148,10 +140,7 @@ class ApiControllerTest extends BaseControllerTest {
         }
     }
 
-    private Universities createUniversity(String id, String name) {
-        Universities u = new Universities();
-        u.setId(id);
-        u.setName(name);
-        return u;
+    private SchoolResponse createSchoolResponse(String id, String name) {
+        return SchoolResponse.builder().id(id).name(name).build();
     }
 }

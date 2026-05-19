@@ -1,10 +1,11 @@
 package com.rauio.smartdangjian.aop.annotation;
 
-import com.rauio.smartdangjian.aop.support.DataScopeAction;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.rauio.smartdangjian.aop.support.DataScopeAction;
 
 class DataScopeAccessAnnotationTest {
 
@@ -38,8 +39,7 @@ class DataScopeAccessAnnotationTest {
                 action = DataScopeAction.READ,
                 id = "#id",
                 body = "#user",
-                query = "#query"
-        )
+                query = "#query")
         public void method() {}
 
         @DataScopeAccess(resource = "USER_MANAGEMENT", action = DataScopeAction.READ)

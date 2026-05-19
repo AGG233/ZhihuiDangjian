@@ -1,9 +1,9 @@
 package com.rauio.smartdangjian.server.resource.constants;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("ResourceErrorConstants 资源模块错误码常量")
 class ResourceErrorConstantsTest {

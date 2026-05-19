@@ -1,23 +1,5 @@
 package com.rauio.smartdangjian.controller.admin;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.BannerTestDataFactory;
-import com.rauio.smartdangjian.controller.factory.ResourceMetaTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.resource.controller.admin.AdminResourceMetaController;
-import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
-import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
-import java.util.List;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -29,10 +11,28 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.BannerTestDataFactory;
+import com.rauio.smartdangjian.controller.factory.ResourceMetaTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.resource.controller.admin.AdminResourceMetaController;
+import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
+import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
+
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminResourceMetaControllerTest.TestConfig.class
-)
+        classes = AdminResourceMetaControllerTest.TestConfig.class)
 @DisplayName("管理员资源元数据接口测试")
 class AdminResourceMetaControllerTest extends BaseControllerTest {
 
@@ -58,7 +58,8 @@ class AdminResourceMetaControllerTest extends BaseControllerTest {
 
             mockMvc.perform(post("/api/admin/resource/files")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(ResourceMetaTestDataFactory.toJson(ResourceMetaTestDataFactory.createResourceMetaCreateRequest())))
+                            .content(ResourceMetaTestDataFactory.toJson(
+                                    ResourceMetaTestDataFactory.createResourceMetaCreateRequest())))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.id").value("r-1"));
@@ -79,9 +80,7 @@ class AdminResourceMetaControllerTest extends BaseControllerTest {
         @DisplayName("GET / - 查询资源元数据列表成功")
         void listResourceMetaSuccess() throws Exception {
             List<ResourceMeta> list = List.of(
-                    BannerTestDataFactory.createResourceMeta("r-1"),
-                    BannerTestDataFactory.createResourceMeta("r-2")
-            );
+                    BannerTestDataFactory.createResourceMeta("r-1"), BannerTestDataFactory.createResourceMeta("r-2"));
             when(resourceMetaService.list(any(), any(), any(), any(), any())).thenReturn(list);
 
             mockMvc.perform(get("/api/admin/resource/files"))
@@ -97,7 +96,8 @@ class AdminResourceMetaControllerTest extends BaseControllerTest {
 
             mockMvc.perform(put("/api/admin/resource/files/r-1")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(ResourceMetaTestDataFactory.toJson(ResourceMetaTestDataFactory.createResourceMetaUpdateRequest())))
+                            .content(ResourceMetaTestDataFactory.toJson(
+                                    ResourceMetaTestDataFactory.createResourceMetaUpdateRequest())))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(true));
@@ -130,8 +130,7 @@ class AdminResourceMetaControllerTest extends BaseControllerTest {
         void batchDeleteSuccess() throws Exception {
             when(resourceMetaService.deleteByHashes(any())).thenReturn(true);
 
-            mockMvc.perform(delete("/api/admin/resource/files")
-                            .param("hash", "hash-1", "hash-2"))
+            mockMvc.perform(delete("/api/admin/resource/files").param("hash", "hash-1", "hash-2"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(true));
@@ -145,8 +144,7 @@ class AdminResourceMetaControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 400")
         void serviceThrowsBusinessException() throws Exception {
-            when(resourceMetaService.get("nonexistent"))
-                    .thenThrow(new BusinessException(4000, "资源不存在"));
+            when(resourceMetaService.get("nonexistent")).thenThrow(new BusinessException(4000, "资源不存在"));
 
             mockMvc.perform(get("/api/admin/resource/files/nonexistent"))
                     .andExpect(status().isBadRequest())
@@ -157,8 +155,7 @@ class AdminResourceMetaControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 RuntimeException 返回 500")
         void serviceThrowsRuntimeException() throws Exception {
-            when(resourceMetaService.list(any(), any(), any(), any(), any()))
-                    .thenThrow(new RuntimeException("数据库异常"));
+            when(resourceMetaService.list(any(), any(), any(), any(), any())).thenThrow(new RuntimeException("数据库异常"));
 
             mockMvc.perform(get("/api/admin/resource/files"))
                     .andExpect(status().isInternalServerError())
@@ -213,7 +210,8 @@ class AdminResourceMetaControllerTest extends BaseControllerTest {
         @DisplayName("GET / - 带查询参数筛选")
         void listWithQueryParams() throws Exception {
             List<ResourceMeta> list = List.of(BannerTestDataFactory.createResourceMeta("r-1"));
-            when(resourceMetaService.list(eq("admin1"), any(), any(), any(), any())).thenReturn(list);
+            when(resourceMetaService.list(eq("admin1"), any(), any(), any(), any()))
+                    .thenReturn(list);
 
             mockMvc.perform(get("/api/admin/resource/files")
                             .param("uploaderId", "admin1")
@@ -230,7 +228,8 @@ class AdminResourceMetaControllerTest extends BaseControllerTest {
 
             mockMvc.perform(put("/api/admin/resource/files/r-1")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(ResourceMetaTestDataFactory.toJson(ResourceMetaTestDataFactory.createEmptyUpdateRequest())))
+                            .content(ResourceMetaTestDataFactory.toJson(
+                                    ResourceMetaTestDataFactory.createEmptyUpdateRequest())))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(true));
@@ -246,7 +245,8 @@ class AdminResourceMetaControllerTest extends BaseControllerTest {
         void xssInOriginalName() throws Exception {
             when(resourceMetaService.create(any())).thenReturn(BannerTestDataFactory.createResourceMeta("r-1"));
 
-            String json = "{\"uploaderId\":\"admin1\",\"originalName\":\"<script>alert('xss')</script>\",\"hash\":\"h1\",\"objectKey\":\"ok\",\"resourceType\":0}";
+            String json =
+                    "{\"uploaderId\":\"admin1\",\"originalName\":\"<script>alert('xss')</script>\",\"hash\":\"h1\",\"objectKey\":\"ok\",\"resourceType\":0}";
             mockMvc.perform(post("/api/admin/resource/files")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(json))
@@ -267,15 +267,13 @@ class AdminResourceMetaControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST 请求查询接口返回 400")
         void listWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/admin/resource/files"))
-                    .andExpect(status().isBadRequest());
+            mockMvc.perform(post("/api/admin/resource/files")).andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("PUT 请求创建接口返回 405")
         void createWithWrongMethod() throws Exception {
-            mockMvc.perform(put("/api/admin/resource/files"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(put("/api/admin/resource/files")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

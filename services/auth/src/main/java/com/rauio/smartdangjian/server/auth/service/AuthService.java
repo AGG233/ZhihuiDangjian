@@ -1,26 +1,28 @@
 package com.rauio.smartdangjian.server.auth.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
-import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
-import com.rauio.smartdangjian.server.auth.pojo.request.RegisterRequest;
-import com.rauio.smartdangjian.server.auth.pojo.response.LoginResponse;
-import com.rauio.smartdangjian.server.user.mapper.UserMapper;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
-import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
-import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
-import com.rauio.smartdangjian.utils.SecurityUtils;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
+import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
+import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
+import com.rauio.smartdangjian.server.auth.pojo.request.RegisterRequest;
+import com.rauio.smartdangjian.server.auth.pojo.response.LoginResponse;
+import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
+import com.rauio.smartdangjian.server.user.mapper.UserMapper;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
+import com.rauio.smartdangjian.utils.SecurityUtils;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -38,22 +40,15 @@ public class AuthService {
         }
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginRequest.getPassport(),
-                            loginRequest.getPassword()
-                    )
-            );
+                    new UsernamePasswordAuthenticationToken(loginRequest.getPassport(), loginRequest.getPassword()));
 
             User user = (User) authentication.getPrincipal();
             String accessToken = jwtService.generateAccessToken(user, loginRequest.getPlatform());
 
             return LoginResponse.builder().accessToken(accessToken).build();
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new BusinessException(AuthErrorConstants.PASSWORD_ERROR, "密码错误");
         }
-
-
-
     }
 
     public void logout(String token) {
@@ -92,7 +87,7 @@ public class AuthService {
         return Result.ok("注册成功！");
     }
 
-    public Boolean changePassword(ChangePasswordRequest request) {
+    public void changePassword(ChangePasswordRequest request) {
         String userId = SecurityUtils.getCurrentUserId();
         if (userId == null) {
             throw new BusinessException(AuthErrorConstants.UNAUTHORIZED, "未登录或登录已过期");
@@ -110,7 +105,9 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         user.setUpdatedAt(LocalDateTime.now());
         jwtService.clearUserCache(userId);
-        return userMapper.updateById(user) > 0;
+        if (userMapper.updateById(user) <= 0) {
+            throw new BusinessException(AuthErrorConstants.PASSWORD_CHANGE_ERROR, "密码修改失败");
+        }
     }
 
     private void checkEmailRegistered(String email) {

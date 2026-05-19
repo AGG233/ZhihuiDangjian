@@ -1,10 +1,12 @@
 package com.rauio.smartdangjian.server.resource.aop;
 
+import org.springframework.stereotype.Component;
+
 import com.rauio.smartdangjian.aop.resolver.ResourceOwnerResolver;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor

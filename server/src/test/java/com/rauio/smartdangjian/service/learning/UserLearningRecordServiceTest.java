@@ -1,26 +1,27 @@
 package com.rauio.smartdangjian.service.learning;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
-import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
-import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
-import com.rauio.smartdangjian.server.learning.pojo.convertor.UserLearningRecordConvertor;
-import com.rauio.smartdangjian.server.learning.pojo.dto.UserLearningRecordDto;
-import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
-import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.apache.ibatis.session.Configuration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
+import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
+import com.rauio.smartdangjian.server.learning.pojo.convertor.UserLearningRecordConvertor;
+import com.rauio.smartdangjian.server.learning.pojo.request.UserLearningRecordRequest;
+import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
+import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
 
 @DisplayName("UserLearningRecordService 单元测试")
 class UserLearningRecordServiceTest {
@@ -31,9 +32,7 @@ class UserLearningRecordServiceTest {
         TableInfoHelper.initTableInfo(new MapperBuilderAssistant(new Configuration(), ""), UserLearningRecord.class);
         UserLearningRecordMapper mapper = mock(UserLearningRecordMapper.class);
         UserLearningRecordService service = new UserLearningRecordService(
-                mock(UserLearningRecordConvertor.class),
-                mock(KnowledgeGraphService.class)
-        );
+                mock(UserLearningRecordConvertor.class), mock(KnowledgeGraphService.class));
         ReflectionTestUtils.setField(service, "baseMapper", mapper);
 
         when(mapper.selectPage(any(Page.class), any(Wrapper.class))).thenAnswer(invocation -> {
@@ -43,9 +42,8 @@ class UserLearningRecordServiceTest {
             return page;
         });
 
-        UserLearningRecordDto dto = UserLearningRecordDto.builder()
-                .userId("user-001")
-                .build();
+        UserLearningRecordRequest dto =
+                UserLearningRecordRequest.builder().userId("user-001").build();
         service.getPage(dto, 1, 10);
 
         org.mockito.ArgumentCaptor<Wrapper<UserLearningRecord>> captor =

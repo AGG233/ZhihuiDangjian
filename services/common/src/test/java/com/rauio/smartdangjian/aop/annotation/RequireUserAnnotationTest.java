@@ -1,13 +1,11 @@
 package com.rauio.smartdangjian.aop.annotation;
 
-import com.rauio.smartdangjian.utils.spec.UserType;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class RequireUserAnnotationTest {
 

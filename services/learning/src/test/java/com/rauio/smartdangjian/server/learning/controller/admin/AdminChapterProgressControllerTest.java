@@ -1,7 +1,10 @@
 package com.rauio.smartdangjian.server.learning.controller.admin;
 
-import com.rauio.smartdangjian.server.learning.pojo.vo.UserChapterProgressVO;
-import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,10 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
+import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
 
 @ExtendWith(MockitoExtension.class)
 class AdminChapterProgressControllerTest {
@@ -26,9 +27,9 @@ class AdminChapterProgressControllerTest {
     @Test
     @DisplayName("getByChapterId 委托 service 获取章节进度")
     void getByChapterId() {
-        when(progressService.getByChapterId("ch-1")).thenReturn(List.of(
-                UserChapterProgressVO.builder().id("p-1").build()
-        ));
+        when(progressService.getByChapterId("ch-1"))
+                .thenReturn(
+                        List.of(UserChapterProgressResponse.builder().id("p-1").build()));
 
         var result = controller.getByChapterId("ch-1");
 

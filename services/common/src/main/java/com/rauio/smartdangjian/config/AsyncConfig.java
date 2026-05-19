@@ -1,14 +1,14 @@
 package com.rauio.smartdangjian.config;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadPoolExecutor;
+
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import java.util.concurrent.Executor;
-import java.util.concurrent.ThreadPoolExecutor;
 
 @AutoConfiguration
 @EnableAsync
@@ -19,11 +19,10 @@ public class AsyncConfig implements WebMvcConfigurer {
 
         configurer.setTaskExecutor(mvcTaskExecutor());
         configurer.setDefaultTimeout(10_000);
-
     }
 
     @Bean("ioTaskExecutor")
-    public Executor ioTaskExecutor(){
+    public Executor ioTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
         int processors = Runtime.getRuntime().availableProcessors();
@@ -37,7 +36,7 @@ public class AsyncConfig implements WebMvcConfigurer {
     }
 
     @Bean("cpuTaskExecutor")
-    public Executor cpuTaskExecutor(){
+    public Executor cpuTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
         int processors = Runtime.getRuntime().availableProcessors();
@@ -73,6 +72,4 @@ public class AsyncConfig implements WebMvcConfigurer {
         executor.initialize();
         return executor;
     }
-
-
 }

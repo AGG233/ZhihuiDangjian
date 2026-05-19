@@ -1,10 +1,7 @@
 package com.rauio.smartdangjian.server.learning.aop;
 
-import com.rauio.smartdangjian.aop.support.DataScopeResources;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
-import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
-import com.rauio.smartdangjian.server.user.mapper.UserMapper;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,7 +9,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.rauio.smartdangjian.aop.support.DataScopeResources;
+import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
+import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
+import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 
 @ExtendWith(MockitoExtension.class)
 class LearningResourceAccessAspectTest {

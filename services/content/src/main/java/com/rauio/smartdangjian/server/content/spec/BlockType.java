@@ -12,6 +12,7 @@ public enum BlockType {
     Audio("audio");
 
     private final String type;
+
     BlockType(String type) {
         this.type = type;
     }

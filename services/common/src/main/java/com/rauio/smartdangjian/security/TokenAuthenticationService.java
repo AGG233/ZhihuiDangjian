@@ -1,4 +1,3 @@
 package com.rauio.smartdangjian.security;
 
-public interface TokenAuthenticationService {
-}
+public interface TokenAuthenticationService {}

@@ -10,16 +10,18 @@ public enum UserType {
 
     @EnumValue
     private final String Type;
+
     UserType(String type) {
         this.Type = type;
     }
+
     @JsonValue
     public String getType() {
         return Type;
     }
+
     @Override
     public String toString() {
         return Type;
     }
-
 }

@@ -1,19 +1,19 @@
-//package com.rauio.smartdangjian.common.utils;
+// package com.rauio.smartdangjian.common.utils;
 //
-//import com.qcloud.cos.model.ObjectMetadata;
-//import com.tencent.cloud.CosStsClient;
-//import com.tencent.cloud.Response;
-//import org.springframework.beans.factory.annotation.Value;
-//import org.springframework.stereotype.Component;
-//import org.springframework.web.multipart.MultipartFile;
+// import com.qcloud.cos.model.ObjectMetadata;
+// import com.tencent.cloud.CosStsClient;
+// import com.tencent.cloud.Response;
+// import org.springframework.beans.factory.annotation.Value;
+// import org.springframework.stereotype.Component;
+// import org.springframework.web.multipart.MultipartFile;
 //
-//import java.util.HashMap;
-//import java.util.Map;
-//import java.util.TreeMap;
+// import java.util.HashMap;
+// import java.util.Map;
+// import java.util.TreeMap;
 //
 //
-//@Component
-//public class CosUtils {
+// @Component
+// public class CosUtils {
 //
 //    @Value("${tencent.cloud.cos.secret-id}")
 //    private String secretId;
@@ -68,4 +68,4 @@
 //
 //        return metadata;
 //    }
-//}
+// }

@@ -1,9 +1,9 @@
 package com.rauio.smartdangjian.server.resource.pojo.entity;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("ResourceMeta 资源元数据实体")
 class ResourceMetaTest {

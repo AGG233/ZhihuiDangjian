@@ -1,16 +1,18 @@
 package com.rauio.smartdangjian.server.content.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.server.content.mapper.ContentBlockMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ContentBlockConvertor;
 import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
-import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -69,8 +71,8 @@ public class ContentBlockService extends ServiceImpl<ContentBlockMapper, Content
      * @param id 内容块ID
      * @return 内容块
      */
-    public ContentBlockVO get(String id) {
-        return convertor.toVO(this.getById(id));
+    public ContentBlockResponse get(String id) {
+        return convertor.toResponse(this.getById(id));
     }
 
     /**
@@ -79,9 +81,9 @@ public class ContentBlockService extends ServiceImpl<ContentBlockMapper, Content
      * @param parentId 章节或文章的ID
      * @return 该章节或文章的所有内容块
      */
-    public List<ContentBlockVO> getByParentId(String parentId) {
-        return convertor.toVOList(this.list(new LambdaQueryWrapper<ContentBlock>()
-                .eq(ContentBlock::getParentId, parentId)));
+    public List<ContentBlockResponse> getByParentId(String parentId) {
+        return convertor.toResponseList(
+                this.list(new LambdaQueryWrapper<ContentBlock>().eq(ContentBlock::getParentId, parentId)));
     }
 
     /**
@@ -90,13 +92,8 @@ public class ContentBlockService extends ServiceImpl<ContentBlockMapper, Content
      * @param Ids 内容块ID集合
      * @return 所有内容块
      */
-    public List<ContentBlockVO> getByResourceIds(List<String> Ids) {
-        return convertor.toVOList(Ids.stream()
-                .toList()
-                .stream()
-                .map(this::getById)
-                .collect(Collectors.toList()
-                )
-        );
+    public List<ContentBlockResponse> getByResourceIds(List<String> Ids) {
+        return convertor.toResponseList(
+                Ids.stream().toList().stream().map(this::getById).collect(Collectors.toList()));
     }
 }

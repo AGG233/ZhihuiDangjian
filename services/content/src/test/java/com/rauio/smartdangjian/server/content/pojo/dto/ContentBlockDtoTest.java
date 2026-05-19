@@ -1,10 +1,11 @@
 package com.rauio.smartdangjian.server.content.pojo.dto;
 
-import com.rauio.smartdangjian.server.content.spec.BlockType;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.rauio.smartdangjian.server.content.spec.BlockType;
 
 class ContentBlockDtoTest {
 
@@ -52,9 +53,8 @@ class ContentBlockDtoTest {
     @Test
     @DisplayName("setter 修改 blockType 后 getter 返回新值")
     void setterAndGetterWorkForBlockType() {
-        ContentBlockDto dto = ContentBlockDto.builder()
-                .blockType(BlockType.Paragraph)
-                .build();
+        ContentBlockDto dto =
+                ContentBlockDto.builder().blockType(BlockType.Paragraph).build();
 
         dto.setBlockType(BlockType.Heading);
 

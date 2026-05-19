@@ -1,20 +1,21 @@
 package com.rauio.smartdangjian.server.content.controller.admin;
 
+import jakarta.validation.Valid;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import org.springframework.web.bind.annotation.*;
+
 import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.content.pojo.dto.CourseDto;
+import com.rauio.smartdangjian.server.content.pojo.request.CourseRequest;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
 import com.rauio.smartdangjian.utils.spec.UserType;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "管理员课程接口", description = "提供课程的管理功能")
 @RestController
@@ -23,29 +24,33 @@ import org.springframework.web.bind.annotation.*;
 @PermissionAccess(UserType.SCHOOL)
 public class AdminCourseController {
 
-    private final CourseService     courseService;
+    private final CourseService courseService;
 
     @Operation(summary = "更新课程信息", description = "根据课程ID更新课程信息")
     @PutMapping("/{id}")
-    @DataScopeAccess(resource = DataScopeResources.COURSE_ADMIN, action = DataScopeAction.UPDATE, id = "#id", body = "#course")
-    public Result<Boolean> update(@RequestBody @Valid CourseDto course, @PathVariable String id) throws JsonProcessingException {
-        Boolean result = courseService.update(course,id);
-        return Result.ok(result);
+    @DataScopeAccess(
+            resource = DataScopeResources.COURSE_ADMIN,
+            action = DataScopeAction.UPDATE,
+            id = "#id",
+            body = "#course")
+    public Result<Void> update(@RequestBody @Valid CourseRequest course, @PathVariable String id) {
+        courseService.update(course, id);
+        return Result.ok();
     }
 
     @Operation(summary = "创建课程", description = "创建一个新的课程")
-    @PostMapping("/")
+    @PostMapping
     @DataScopeAccess(resource = DataScopeResources.COURSE_ADMIN, action = DataScopeAction.CREATE, body = "#course")
-    public Result<Boolean> create(@RequestBody @Valid CourseDto course) throws JsonProcessingException {
-        Boolean result = courseService.create(course);
-        return Result.ok(result);
+    public Result<Void> create(@RequestBody @Valid CourseRequest course) {
+        courseService.create(course);
+        return Result.ok();
     }
 
     @Operation(summary = "删除课程", description = "根据课程ID删除指定课程")
     @DeleteMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.COURSE_ADMIN, action = DataScopeAction.DELETE, id = "#id")
-    public Result<Boolean> delete(@PathVariable String id) throws JsonProcessingException {
-        Boolean result = courseService.delete(id);
-        return Result.ok(result);
+    public Result<Void> delete(@PathVariable String id) {
+        courseService.delete(id);
+        return Result.ok();
     }
 }

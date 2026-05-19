@@ -1,12 +1,12 @@
 package com.rauio.smartdangjian.controller.factory;
 
+import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
-
-import java.time.LocalDateTime;
 
 /**
  * Static factory for quiz test data — produces Quiz, QuizOption, UserQuizAnswer
@@ -15,11 +15,9 @@ import java.time.LocalDateTime;
  */
 public final class QuizTestDataFactory {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-            .registerModule(new JavaTimeModule());
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    private QuizTestDataFactory() {
-    }
+    private QuizTestDataFactory() {}
 
     // ── Quiz ────────────────────────────────────────────────────────
 
@@ -54,7 +52,8 @@ public final class QuizTestDataFactory {
                 .build();
     }
 
-    public static QuizOption createQuizOption(String id, String quizId, String optionText, Boolean isCorrect, String orderIndex) {
+    public static QuizOption createQuizOption(
+            String id, String quizId, String optionText, Boolean isCorrect, String orderIndex) {
         return QuizOption.builder()
                 .id(id)
                 .quizId(quizId)

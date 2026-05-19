@@ -1,22 +1,5 @@
 package com.rauio.smartdangjian.controller.user;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.ContentTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.controller.user.UserContentController;
-import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
-import com.rauio.smartdangjian.server.content.service.ContentBlockService;
-import com.rauio.smartdangjian.server.content.spec.BlockType;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
-import java.util.List;
-
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -25,10 +8,27 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.ContentTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.controller.user.UserContentController;
+import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
+import com.rauio.smartdangjian.server.content.service.ContentBlockService;
+import com.rauio.smartdangjian.server.content.spec.BlockType;
+
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = UserContentControllerTest.TestConfig.class
-)
+        classes = UserContentControllerTest.TestConfig.class)
 @DisplayName("用户内容块接口测试")
 class UserContentControllerTest extends BaseControllerTest {
 
@@ -56,7 +56,7 @@ class UserContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /carousel - 获取轮播图列表成功")
         void getCarouselSuccess() throws Exception {
-            List<ContentBlockVO> voList = ContentTestDataFactory.createContentBlockVOList(3);
+            List<ContentBlockResponse> voList = ContentTestDataFactory.createContentBlockResponseList(3);
             when(contentBlockService.getByParentId("1145141919810")).thenReturn(voList);
 
             mockMvc.perform(get(CAROUSEL_URL))
@@ -68,7 +68,7 @@ class UserContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /carousel - 返回的 VO 包含正确字段")
         void getCarouselContainsAllFields() throws Exception {
-            ContentBlockVO vo = ContentTestDataFactory.createCarouselVO("1145141919810", BlockType.Image);
+            ContentBlockResponse vo = ContentTestDataFactory.createCarouselResponse("1145141919810", BlockType.Image);
             when(contentBlockService.getByParentId("1145141919810")).thenReturn(List.of(vo));
 
             mockMvc.perform(get(CAROUSEL_URL))
@@ -89,8 +89,7 @@ class UserContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 400")
         void getCarouselThrowsBusinessException() throws Exception {
-            when(contentBlockService.getByParentId("1145141919810"))
-                    .thenThrow(new BusinessException(4000, "轮播图查询失败"));
+            when(contentBlockService.getByParentId("1145141919810")).thenThrow(new BusinessException(4000, "轮播图查询失败"));
 
             mockMvc.perform(get(CAROUSEL_URL))
                     .andExpect(status().isBadRequest())
@@ -101,8 +100,7 @@ class UserContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 RuntimeException 返回 500")
         void getCarouselThrowsRuntimeException() throws Exception {
-            when(contentBlockService.getByParentId("1145141919810"))
-                    .thenThrow(new RuntimeException("数据库连接失败"));
+            when(contentBlockService.getByParentId("1145141919810")).thenThrow(new RuntimeException("数据库连接失败"));
 
             mockMvc.perform(get(CAROUSEL_URL))
                     .andExpect(status().isInternalServerError())
@@ -143,7 +141,7 @@ class UserContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("大量轮播图（10 个）正常返回")
         void getCarouselWithManyItems() throws Exception {
-            List<ContentBlockVO> voList = ContentTestDataFactory.createContentBlockVOList(10);
+            List<ContentBlockResponse> voList = ContentTestDataFactory.createContentBlockResponseList(10);
             when(contentBlockService.getByParentId("1145141919810")).thenReturn(voList);
 
             mockMvc.perform(get(CAROUSEL_URL))
@@ -165,7 +163,7 @@ class UserContentControllerTest extends BaseControllerTest {
         @DisplayName("STUDENT 用户可正常访问 GET /carousel")
         void studentCanAccessCarousel() throws Exception {
             // Default context is SCHOOL; no @PermissionAccess on UserContentController
-            List<ContentBlockVO> voList = ContentTestDataFactory.createContentBlockVOList(1);
+            List<ContentBlockResponse> voList = ContentTestDataFactory.createContentBlockResponseList(1);
             when(contentBlockService.getByParentId("1145141919810")).thenReturn(voList);
 
             mockMvc.perform(get(CAROUSEL_URL))
@@ -176,22 +174,19 @@ class UserContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST 请求获取接口返回 405")
         void getWithWrongMethod() throws Exception {
-            mockMvc.perform(post(CAROUSEL_URL))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post(CAROUSEL_URL)).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("PUT 请求获取接口返回 405")
         void getWithPutMethod() throws Exception {
-            mockMvc.perform(put(CAROUSEL_URL))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(put(CAROUSEL_URL)).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("DELETE 请求获取接口返回 405")
         void getWithDeleteMethod() throws Exception {
-            mockMvc.perform(delete(CAROUSEL_URL))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(delete(CAROUSEL_URL)).andExpect(status().isMethodNotAllowed());
         }
     }
 }

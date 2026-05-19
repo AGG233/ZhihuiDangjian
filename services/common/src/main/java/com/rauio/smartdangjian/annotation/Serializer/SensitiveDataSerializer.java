@@ -1,5 +1,7 @@
 package com.rauio.smartdangjian.annotation.Serializer;
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -8,11 +10,10 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import com.rauio.smartdangjian.annotation.validation.Sensitive;
 
-import java.io.IOException;
-
 public class SensitiveDataSerializer extends JsonSerializer<String> implements ContextualSerializer {
 
     private Sensitive.SensitiveType type;
+
     public SensitiveDataSerializer() {}
 
     public SensitiveDataSerializer(final Sensitive.SensitiveType type) {
@@ -47,7 +48,8 @@ public class SensitiveDataSerializer extends JsonSerializer<String> implements C
     }
 
     @Override
-    public JsonSerializer<?> createContextual(SerializerProvider prov, BeanProperty property) throws JsonMappingException {
+    public JsonSerializer<?> createContextual(SerializerProvider prov, BeanProperty property)
+            throws JsonMappingException {
         if (property == null) {
             return prov.findNullValueSerializer(null);
         }
@@ -97,7 +99,7 @@ public class SensitiveDataSerializer extends JsonSerializer<String> implements C
     private String desensitizePassword(String password) {
         return "";
     }
-    
+
     /**
      * 邮箱脱敏：保留用户名的前两位和后一位，以及完整的域名
      * 例如：<EMAIL> -> <EMAIL>
@@ -108,7 +110,7 @@ public class SensitiveDataSerializer extends JsonSerializer<String> implements C
 
         String username = email.substring(0, atIndex);
         String domain = email.substring(atIndex);
-        
+
         if (username.length() <= 2) {
             return username.charAt(0) + "*" + domain;
         } else if (username.length() == 3) {

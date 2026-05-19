@@ -1,16 +1,12 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
-import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
-import com.rauio.smartdangjian.server.content.service.ContentBlockService;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
-import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
-import com.rauio.smartdangjian.server.quiz.service.QuizService;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,12 +14,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
+import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
+import com.rauio.smartdangjian.server.content.service.ContentBlockService;
+import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
+import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
+import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
+import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
+import com.rauio.smartdangjian.server.quiz.service.QuizService;
 
 @ExtendWith(MockitoExtension.class)
 class ContentReviewToolTest {
@@ -55,13 +56,13 @@ class ContentReviewToolTest {
                 .description("课程描述")
                 .difficulty("easy")
                 .build();
-        ChapterVO chapter = ChapterVO.builder()
+        ChapterResponse chapter = ChapterResponse.builder()
                 .id("ch-1")
                 .title("第一章")
                 .description("章节描述")
                 .orderIndex(1)
                 .build();
-        ContentBlockVO block = new ContentBlockVO();
+        ContentBlockResponse block = new ContentBlockResponse();
 
         when(courseService.getById("course-1")).thenReturn(course);
         when(chapterService.getByCourseId("course-1")).thenReturn(List.of(chapter));

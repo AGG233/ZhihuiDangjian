@@ -1,17 +1,13 @@
 package com.rauio.smartdangjian.security;
 
-import com.rauio.smartdangjian.aop.UserAspect;
-import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
-import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
-import com.rauio.smartdangjian.aop.support.DataScopeAction;
-import com.rauio.smartdangjian.aop.support.DataScopeContext;
-import com.rauio.smartdangjian.aop.support.DataScopeResources;
-import com.rauio.smartdangjian.constants.ErrorConstants;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.user.aop.UserManagementAspect;
-import com.rauio.smartdangjian.server.user.mapper.UserMapper;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
-import com.rauio.smartdangjian.utils.spec.UserType;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+
+import java.lang.reflect.Method;
+import java.util.Collections;
+
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -26,15 +22,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.rauio.smartdangjian.aop.UserAspect;
+import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
+import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
+import com.rauio.smartdangjian.aop.support.DataScopeAction;
+import com.rauio.smartdangjian.aop.support.DataScopeContext;
+import com.rauio.smartdangjian.aop.support.DataScopeResources;
+import com.rauio.smartdangjian.constants.ErrorConstants;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.user.aop.UserManagementAspect;
+import com.rauio.smartdangjian.server.user.mapper.UserMapper;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("管理端用户安全切面单元测试")
@@ -61,12 +60,23 @@ class AdminUserSecurityTest {
 
     private void setSecurityContext(String id, UserType userType, String universityId) {
         CurrentUserPrincipal principal = new CurrentUserPrincipal() {
-            @Override public String getId() { return id; }
-            @Override public UserType getUserType() { return userType; }
-            @Override public String getUniversityId() { return universityId; }
+            @Override
+            public String getId() {
+                return id;
+            }
+
+            @Override
+            public UserType getUserType() {
+                return userType;
+            }
+
+            @Override
+            public String getUniversityId() {
+                return universityId;
+            }
         };
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList()));
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList()));
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -82,8 +92,11 @@ class AdminUserSecurityTest {
         void manageEndpoint();
 
         // Method with parameters matching SpEL expressions used in annotations
-        @DataScopeAccess(resource = DataScopeResources.USER_MANAGEMENT, action = DataScopeAction.SEARCH, query = "#userDto")
-        Object searchUsers(UserDto userDto, int pageNum, int pageSize);
+        @DataScopeAccess(
+                resource = DataScopeResources.USER_MANAGEMENT,
+                action = DataScopeAction.SEARCH,
+                query = "#userDto")
+        Object searchUsers(UserRequest userDto, int pageNum, int pageSize);
 
         @DataScopeAccess(resource = DataScopeResources.USER_MANAGEMENT, action = DataScopeAction.CREATE, body = "#user")
         Object createUser(com.rauio.smartdangjian.server.user.pojo.entity.User user);
@@ -109,7 +122,8 @@ class AdminUserSecurityTest {
         return joinPoint;
     }
 
-    private ProceedingJoinPoint mockProceedingJoinPointWithArgs(Class<?> controllerClass, String methodName, Object[] args) {
+    private ProceedingJoinPoint mockProceedingJoinPointWithArgs(
+            Class<?> controllerClass, String methodName, Object[] args) {
         Method method = findMethod(controllerClass, methodName);
         MethodSignature signature = mock(MethodSignature.class);
         lenient().when(signature.getMethod()).thenReturn(method);
@@ -175,8 +189,7 @@ class AdminUserSecurityTest {
             setSecurityContext("mgr-001", UserType.MANAGER, null);
             JoinPoint jp = mockJoinPointForControllerMethod(TestAdminController.class, "searchEndpoint");
 
-            assertThatCode(() -> userAspect.checkPermissionAccess(jp))
-                    .doesNotThrowAnyException();
+            assertThatCode(() -> userAspect.checkPermissionAccess(jp)).doesNotThrowAnyException();
         }
 
         @Test
@@ -185,8 +198,7 @@ class AdminUserSecurityTest {
             setSecurityContext("sch-001", UserType.SCHOOL, "uni-001");
             JoinPoint jp = mockJoinPointForControllerMethod(TestAdminController.class, "searchEndpoint");
 
-            assertThatCode(() -> userAspect.checkPermissionAccess(jp))
-                    .doesNotThrowAnyException();
+            assertThatCode(() -> userAspect.checkPermissionAccess(jp)).doesNotThrowAnyException();
         }
     }
 
@@ -203,17 +215,17 @@ class AdminUserSecurityTest {
         void schoolSearchInjectsUniversityId() throws Exception {
             setSecurityContext("sch-001", UserType.SCHOOL, "uni-sch-001");
 
-            UserDto queryDto = new UserDto();
+            UserRequest queryDto = new UserRequest();
             queryDto.setUsername("test");
 
             ProceedingJoinPoint jp = mockProceedingJoinPointWithArgs(
-                    TestAdminController.class, "searchUsers",
-                    new Object[]{queryDto, 1, 10});
+                    TestAdminController.class, "searchUsers", new Object[] {queryDto, 1, 10});
 
-            DataScopeContext ctx = new DataScopeContext(jp, getDataScopeAnnotation(
-                    TestAdminController.class, "searchUsers"),
-                    (CurrentUserPrincipal) SecurityContextHolder.getContext()
-                            .getAuthentication().getPrincipal());
+            DataScopeContext ctx = new DataScopeContext(
+                    jp, getDataScopeAnnotation(TestAdminController.class, "searchUsers"), (CurrentUserPrincipal)
+                            SecurityContextHolder.getContext()
+                                    .getAuthentication()
+                                    .getPrincipal());
 
             // Resolver.before → handleSearch injects universityId
             userManagementAspect.before(ctx);
@@ -227,21 +239,20 @@ class AdminUserSecurityTest {
         void managerSearchHasNoRestrictions() throws Exception {
             setSecurityContext("mgr-001", UserType.MANAGER, null);
 
-            UserDto queryDto = new UserDto();
+            UserRequest queryDto = new UserRequest();
             queryDto.setUserType(UserType.MANAGER);
 
             ProceedingJoinPoint jp = mockProceedingJoinPointWithArgs(
-                    TestAdminController.class, "searchUsers",
-                    new Object[]{queryDto, 1, 10});
+                    TestAdminController.class, "searchUsers", new Object[] {queryDto, 1, 10});
 
-            DataScopeContext ctx = new DataScopeContext(jp, getDataScopeAnnotation(
-                    TestAdminController.class, "searchUsers"),
-                    (CurrentUserPrincipal) SecurityContextHolder.getContext()
-                            .getAuthentication().getPrincipal());
+            DataScopeContext ctx = new DataScopeContext(
+                    jp, getDataScopeAnnotation(TestAdminController.class, "searchUsers"), (CurrentUserPrincipal)
+                            SecurityContextHolder.getContext()
+                                    .getAuthentication()
+                                    .getPrincipal());
 
             // MANAGER: returns early, no modifications
-            assertThatCode(() -> userManagementAspect.before(ctx))
-                    .doesNotThrowAnyException();
+            assertThatCode(() -> userManagementAspect.before(ctx)).doesNotThrowAnyException();
         }
 
         @Test
@@ -249,17 +260,17 @@ class AdminUserSecurityTest {
         void schoolCannotSearchManagerType() throws Exception {
             setSecurityContext("sch-001", UserType.SCHOOL, "uni-sch-001");
 
-            UserDto queryDto = new UserDto();
+            UserRequest queryDto = new UserRequest();
             queryDto.setUserType(UserType.MANAGER);
 
             ProceedingJoinPoint jp = mockProceedingJoinPointWithArgs(
-                    TestAdminController.class, "searchUsers",
-                    new Object[]{queryDto, 1, 10});
+                    TestAdminController.class, "searchUsers", new Object[] {queryDto, 1, 10});
 
-            DataScopeContext ctx = new DataScopeContext(jp, getDataScopeAnnotation(
-                    TestAdminController.class, "searchUsers"),
-                    (CurrentUserPrincipal) SecurityContextHolder.getContext()
-                            .getAuthentication().getPrincipal());
+            DataScopeContext ctx = new DataScopeContext(
+                    jp, getDataScopeAnnotation(TestAdminController.class, "searchUsers"), (CurrentUserPrincipal)
+                            SecurityContextHolder.getContext()
+                                    .getAuthentication()
+                                    .getPrincipal());
 
             assertThatThrownBy(() -> userManagementAspect.before(ctx))
                     .isInstanceOf(BusinessException.class)
@@ -272,16 +283,16 @@ class AdminUserSecurityTest {
         void schoolWithoutUniversityIdRejected() throws Exception {
             setSecurityContext("sch-001", UserType.SCHOOL, null);
 
-            UserDto queryDto = new UserDto();
+            UserRequest queryDto = new UserRequest();
 
             ProceedingJoinPoint jp = mockProceedingJoinPointWithArgs(
-                    TestAdminController.class, "searchUsers",
-                    new Object[]{queryDto, 1, 10});
+                    TestAdminController.class, "searchUsers", new Object[] {queryDto, 1, 10});
 
-            DataScopeContext ctx = new DataScopeContext(jp, getDataScopeAnnotation(
-                    TestAdminController.class, "searchUsers"),
-                    (CurrentUserPrincipal) SecurityContextHolder.getContext()
-                            .getAuthentication().getPrincipal());
+            DataScopeContext ctx = new DataScopeContext(
+                    jp, getDataScopeAnnotation(TestAdminController.class, "searchUsers"), (CurrentUserPrincipal)
+                            SecurityContextHolder.getContext()
+                                    .getAuthentication()
+                                    .getPrincipal());
 
             assertThatThrownBy(() -> userManagementAspect.before(ctx))
                     .isInstanceOf(BusinessException.class)
@@ -294,21 +305,20 @@ class AdminUserSecurityTest {
         void studentSearchLimitedToOwnData() throws Exception {
             setSecurityContext("stu-001", UserType.STUDENT, "uni-001");
 
-            UserDto queryDto = new UserDto();
+            UserRequest queryDto = new UserRequest();
 
             ProceedingJoinPoint jp = mockProceedingJoinPointWithArgs(
-                    TestAdminController.class, "searchUsers",
-                    new Object[]{queryDto, 1, 10});
+                    TestAdminController.class, "searchUsers", new Object[] {queryDto, 1, 10});
 
-            DataScopeContext ctx = new DataScopeContext(jp, getDataScopeAnnotation(
-                    TestAdminController.class, "searchUsers"),
-                    (CurrentUserPrincipal) SecurityContextHolder.getContext()
-                            .getAuthentication().getPrincipal());
+            DataScopeContext ctx = new DataScopeContext(
+                    jp, getDataScopeAnnotation(TestAdminController.class, "searchUsers"), (CurrentUserPrincipal)
+                            SecurityContextHolder.getContext()
+                                    .getAuthentication()
+                                    .getPrincipal());
 
             userManagementAspect.before(ctx);
 
-            org.assertj.core.api.Assertions.assertThat(queryDto.getUserId())
-                    .isEqualTo("stu-001");
+            org.assertj.core.api.Assertions.assertThat(queryDto.getUserId()).isEqualTo("stu-001");
             org.assertj.core.api.Assertions.assertThat(queryDto.getUniversityId())
                     .isEqualTo("uni-001");
         }
@@ -316,7 +326,8 @@ class AdminUserSecurityTest {
         @Test
         @DisplayName("supports: 仅响应 USER_MANAGEMENT 资源类型")
         void supportsOnlyUserManagement() {
-            org.assertj.core.api.Assertions.assertThat(userManagementAspect.supports(DataScopeResources.USER_MANAGEMENT))
+            org.assertj.core.api.Assertions.assertThat(
+                            userManagementAspect.supports(DataScopeResources.USER_MANAGEMENT))
                     .isTrue();
             org.assertj.core.api.Assertions.assertThat(userManagementAspect.supports("OTHER_RESOURCE"))
                     .isFalse();
@@ -342,14 +353,14 @@ class AdminUserSecurityTest {
                             .userType(UserType.STUDENT)
                             .build();
 
-            ProceedingJoinPoint jp = mockProceedingJoinPointWithArgs(
-                    TestAdminController.class, "createUser",
-                    new Object[]{newUser});
+            ProceedingJoinPoint jp =
+                    mockProceedingJoinPointWithArgs(TestAdminController.class, "createUser", new Object[] {newUser});
 
-            DataScopeContext ctx = new DataScopeContext(jp, getDataScopeAnnotation(
-                    TestAdminController.class, "createUser"),
-                    (CurrentUserPrincipal) SecurityContextHolder.getContext()
-                            .getAuthentication().getPrincipal());
+            DataScopeContext ctx = new DataScopeContext(
+                    jp, getDataScopeAnnotation(TestAdminController.class, "createUser"), (CurrentUserPrincipal)
+                            SecurityContextHolder.getContext()
+                                    .getAuthentication()
+                                    .getPrincipal());
 
             assertThatThrownBy(() -> userManagementAspect.before(ctx))
                     .isInstanceOf(BusinessException.class)
@@ -368,14 +379,14 @@ class AdminUserSecurityTest {
                             .userType(UserType.MANAGER)
                             .build();
 
-            ProceedingJoinPoint jp = mockProceedingJoinPointWithArgs(
-                    TestAdminController.class, "createUser",
-                    new Object[]{newUser});
+            ProceedingJoinPoint jp =
+                    mockProceedingJoinPointWithArgs(TestAdminController.class, "createUser", new Object[] {newUser});
 
-            DataScopeContext ctx = new DataScopeContext(jp, getDataScopeAnnotation(
-                    TestAdminController.class, "createUser"),
-                    (CurrentUserPrincipal) SecurityContextHolder.getContext()
-                            .getAuthentication().getPrincipal());
+            DataScopeContext ctx = new DataScopeContext(
+                    jp, getDataScopeAnnotation(TestAdminController.class, "createUser"), (CurrentUserPrincipal)
+                            SecurityContextHolder.getContext()
+                                    .getAuthentication()
+                                    .getPrincipal());
 
             assertThatThrownBy(() -> userManagementAspect.before(ctx))
                     .isInstanceOf(BusinessException.class)

@@ -1,9 +1,9 @@
 package com.rauio.smartdangjian.server.auth.pojo.response;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class LoginResponseTest {
 
@@ -34,9 +34,8 @@ class LoginResponseTest {
     @Test
     @DisplayName("refreshToken 标注 @Deprecated 但仍可使用")
     void refreshTokenIsDeprecated() {
-        LoginResponse response = LoginResponse.builder()
-                .refreshToken("deprecated-token")
-                .build();
+        LoginResponse response =
+                LoginResponse.builder().refreshToken("deprecated-token").build();
 
         assertThat(response.getRefreshToken()).isEqualTo("deprecated-token");
     }

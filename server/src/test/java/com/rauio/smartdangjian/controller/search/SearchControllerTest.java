@@ -1,25 +1,5 @@
 package com.rauio.smartdangjian.controller.search;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.search.controller.SearchController;
-import com.rauio.smartdangjian.search.pojo.vo.UserProfileVO;
-import com.rauio.smartdangjian.search.service.RecommendService;
-import com.rauio.smartdangjian.search.service.SearchService;
-import com.rauio.smartdangjian.search.service.UserProfileService;
-import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
-import java.util.List;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -30,19 +10,36 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = SearchControllerTest.TestConfig.class
-)
+import java.util.List;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.search.controller.SearchController;
+import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
+import com.rauio.smartdangjian.server.search.service.RecommendService;
+import com.rauio.smartdangjian.server.search.service.SearchService;
+import com.rauio.smartdangjian.server.search.service.UserProfileService;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = SearchControllerTest.TestConfig.class)
 @DisplayName("搜索与推荐接口测试")
 class SearchControllerTest extends BaseControllerTest {
 
     @SpringBootConfiguration
     static class TestConfig extends CommonTestConfig {
         @Bean
-        public SearchController searchController(SearchService searchService,
-                                                 RecommendService recommendService,
-                                                 UserProfileService userProfileService) {
+        public SearchController searchController(
+                SearchService searchService, RecommendService recommendService, UserProfileService userProfileService) {
             return new SearchController(searchService, recommendService, userProfileService);
         }
     }
@@ -56,10 +53,10 @@ class SearchControllerTest extends BaseControllerTest {
     @MockitoBean
     private UserProfileService userProfileService;
 
-    private Page<CourseVO> createCoursePage(int count) {
-        Page<CourseVO> page = new Page<>(1, 10, count);
+    private Page<CourseResponse> createCoursePage(int count) {
+        Page<CourseResponse> page = new Page<>(1, 10, count);
         if (count > 0) {
-            page.setRecords(List.of(CourseTestDataFactory.createCourseVO("course-1")));
+            page.setRecords(List.of(CourseTestDataFactory.createCourseResponse("course-1")));
         } else {
             page.setRecords(List.of());
         }
@@ -88,8 +85,7 @@ class SearchControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /hybrid - 混合搜索成功")
         void hybridSearchSuccess() throws Exception {
-            when(searchService.hybridSearch(anyString(), anyInt(), anyInt()))
-                    .thenReturn(createCoursePage(1));
+            when(searchService.hybridSearch(anyString(), anyInt(), anyInt())).thenReturn(createCoursePage(1));
 
             mockMvc.perform(get("/api/search/hybrid")
                             .param("keyword", "党建")
@@ -103,19 +99,15 @@ class SearchControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /recommend - 个性化推荐成功")
         void recommendSuccess() throws Exception {
-            UserProfileVO profile = UserProfileVO.builder()
-                    .userId("stu-001")
-                    .build();
+            UserProfileResponse profile =
+                    UserProfileResponse.builder().userId("stu-001").build();
             when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
 
             Page<String> recommendPage = new Page<>(1, 10, 2);
             recommendPage.setRecords(List.of("course-1", "course-2"));
-            when(recommendService.recommend(eq("stu-001"), anyInt(), anyInt()))
-                    .thenReturn(recommendPage);
+            when(recommendService.recommend(eq("stu-001"), anyInt(), anyInt())).thenReturn(recommendPage);
 
-            mockMvc.perform(get("/api/search/recommend")
-                            .param("pageNum", "1")
-                            .param("pageSize", "10"))
+            mockMvc.perform(get("/api/search/recommend").param("pageNum", "1").param("pageSize", "10"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.records.length()").value(2));
@@ -124,9 +116,9 @@ class SearchControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /profile - 获取用户画像成功")
         void getProfileSuccess() throws Exception {
-            UserProfileVO profile = UserProfileVO.builder()
+            UserProfileResponse profile = UserProfileResponse.builder()
                     .userId("stu-001")
-                    .learning(UserProfileVO.LearningStats.builder()
+                    .learning(UserProfileResponse.LearningStats.builder()
                             .totalDuration(3600)
                             .avgDuration(600)
                             .totalRecords(6)
@@ -153,8 +145,7 @@ class SearchControllerTest extends BaseControllerTest {
             when(searchService.searchCourses(anyString(), any(), any(), anyInt(), anyInt()))
                     .thenThrow(new BusinessException(4000, "搜索服务异常"));
 
-            mockMvc.perform(get("/api/search/courses")
-                            .param("keyword", "test"))
+            mockMvc.perform(get("/api/search/courses").param("keyword", "test"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("搜索服务异常"));
@@ -163,8 +154,7 @@ class SearchControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 RuntimeException 返回 500")
         void serviceThrowsRuntimeException() throws Exception {
-            when(userProfileService.getCurrentUserProfile())
-                    .thenThrow(new RuntimeException("数据库异常"));
+            when(userProfileService.getCurrentUserProfile()).thenThrow(new RuntimeException("数据库异常"));
 
             mockMvc.perform(get("/api/search/profile"))
                     .andExpect(status().isInternalServerError())
@@ -207,15 +197,13 @@ class SearchControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /recommend - 推荐结果为空")
         void recommendEmpty() throws Exception {
-            UserProfileVO profile = UserProfileVO.builder()
-                    .userId("stu-001")
-                    .build();
+            UserProfileResponse profile =
+                    UserProfileResponse.builder().userId("stu-001").build();
             when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
 
             Page<String> emptyPage = new Page<>(1, 10, 0);
             emptyPage.setRecords(List.of());
-            when(recommendService.recommend(anyString(), anyInt(), anyInt()))
-                    .thenReturn(emptyPage);
+            when(recommendService.recommend(anyString(), anyInt(), anyInt())).thenReturn(emptyPage);
 
             mockMvc.perform(get("/api/search/recommend"))
                     .andExpect(status().isOk())
@@ -234,8 +222,7 @@ class SearchControllerTest extends BaseControllerTest {
             when(searchService.searchCourses(anyString(), any(), any(), anyInt(), anyInt()))
                     .thenReturn(createCoursePage(0));
 
-            mockMvc.perform(get("/api/search/courses")
-                            .param("keyword", "<script>alert('xss')</script>"))
+            mockMvc.perform(get("/api/search/courses").param("keyword", "<script>alert('xss')</script>"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));
         }
@@ -246,8 +233,7 @@ class SearchControllerTest extends BaseControllerTest {
             when(searchService.searchCourses(anyString(), any(), any(), anyInt(), anyInt()))
                     .thenReturn(createCoursePage(0));
 
-            mockMvc.perform(get("/api/search/courses")
-                            .param("keyword", "' OR '1'='1"))
+            mockMvc.perform(get("/api/search/courses").param("keyword", "' OR '1'='1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));
         }
@@ -255,15 +241,13 @@ class SearchControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST 请求搜索接口返回 405")
         void searchWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/search/courses"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/search/courses")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("POST 请求推荐接口返回 405")
         void recommendWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/search/recommend"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/search/recommend")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

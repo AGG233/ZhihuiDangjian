@@ -8,6 +8,7 @@ public enum ParentType {
     article("article");
 
     private final String type;
+
     ParentType(String type) {
         this.type = type;
     }

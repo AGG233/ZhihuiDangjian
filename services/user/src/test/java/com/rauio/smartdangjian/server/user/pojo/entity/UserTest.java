@@ -1,15 +1,16 @@
 package com.rauio.smartdangjian.server.user.pojo.entity;
 
-import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
-import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
-import com.rauio.smartdangjian.utils.spec.UserType;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.LocalDateTime;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.time.LocalDateTime;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
+import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 class UserTest {
 
@@ -63,9 +64,7 @@ class UserTest {
                 .userType(UserType.STUDENT)
                 .build();
 
-        assertThat(user.getAuthorities())
-                .singleElement()
-                .isEqualTo(new SimpleGrantedAuthority("ROLE_STUDENT"));
+        assertThat(user.getAuthorities()).singleElement().isEqualTo(new SimpleGrantedAuthority("ROLE_STUDENT"));
     }
 
     @Test
@@ -77,9 +76,7 @@ class UserTest {
                 .userType(UserType.SCHOOL)
                 .build();
 
-        assertThat(user.getAuthorities())
-                .singleElement()
-                .isEqualTo(new SimpleGrantedAuthority("ROLE_SCHOOL"));
+        assertThat(user.getAuthorities()).singleElement().isEqualTo(new SimpleGrantedAuthority("ROLE_SCHOOL"));
     }
 
     @Test
@@ -91,9 +88,7 @@ class UserTest {
                 .userType(UserType.MANAGER)
                 .build();
 
-        assertThat(user.getAuthorities())
-                .singleElement()
-                .isEqualTo(new SimpleGrantedAuthority("ROLE_MANAGER"));
+        assertThat(user.getAuthorities()).singleElement().isEqualTo(new SimpleGrantedAuthority("ROLE_MANAGER"));
     }
 
     @Test
@@ -147,7 +142,11 @@ class UserTest {
     @Test
     @DisplayName("CurrentUserPrincipal getUniversityId 返回 universityId 字段值")
     void getPrincipalUniversityIdReturnsUniversityId() {
-        User user = User.builder().id("u123").universityId("univ-1").userType(UserType.SCHOOL).build();
+        User user = User.builder()
+                .id("u123")
+                .universityId("univ-1")
+                .userType(UserType.SCHOOL)
+                .build();
 
         assertThat(user.getUniversityId()).isEqualTo("univ-1");
     }
@@ -156,9 +155,23 @@ class UserTest {
     @DisplayName("全参构造器创建 User 所有字段正确")
     void allArgsConstructorWorks() {
         LocalDateTime now = LocalDateTime.of(2025, 6, 1, 10, 0);
-        User user = new User("u1", "univ-1", "testuser", "pass", "张三", "idcard",
-                "pm-1", now.minusYears(2), PartyStatus.FORMAL_MEMBER, "支部",
-                UserType.STUDENT, AccountStatus.ACTIVE, "test@test.com", "138", now, now);
+        User user = new User(
+                "u1",
+                "univ-1",
+                "testuser",
+                "pass",
+                "张三",
+                "idcard",
+                "pm-1",
+                now.minusYears(2),
+                PartyStatus.FORMAL_MEMBER,
+                "支部",
+                UserType.STUDENT,
+                AccountStatus.ACTIVE,
+                "test@test.com",
+                "138",
+                now,
+                now);
 
         assertThat(user.getId()).isEqualTo("u1");
         assertThat(user.getUsername()).isEqualTo("testuser");
@@ -169,7 +182,11 @@ class UserTest {
     @Test
     @DisplayName("setter 修改 username 字段后 getter 返回新值")
     void setterAndGetterWork() {
-        User user = User.builder().id("u1").username("oldname").userType(UserType.STUDENT).build();
+        User user = User.builder()
+                .id("u1")
+                .username("oldname")
+                .userType(UserType.STUDENT)
+                .build();
 
         user.setUsername("newname");
 

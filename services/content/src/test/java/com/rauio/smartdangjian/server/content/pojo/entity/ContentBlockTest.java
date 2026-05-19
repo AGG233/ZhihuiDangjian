@@ -1,13 +1,14 @@
 package com.rauio.smartdangjian.server.content.pojo.entity;
 
-import com.rauio.smartdangjian.server.content.spec.BlockType;
-import com.rauio.smartdangjian.server.content.spec.ParentType;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import com.rauio.smartdangjian.server.content.spec.BlockType;
+import com.rauio.smartdangjian.server.content.spec.ParentType;
 
 class ContentBlockTest {
 
@@ -106,7 +107,8 @@ class ContentBlockTest {
     @Test
     @DisplayName("setter 修改 textContent 后 getter 返回新值")
     void setterAndGetterWorkForTextContent() {
-        ContentBlock block = ContentBlock.builder().id("cb-001").textContent("旧内容").build();
+        ContentBlock block =
+                ContentBlock.builder().id("cb-001").textContent("旧内容").build();
 
         block.setTextContent("新内容");
 
@@ -116,8 +118,16 @@ class ContentBlockTest {
     @Test
     @DisplayName("两个相同字段的 ContentBlock equals 和 hashCode 行为符合 @Data 预期")
     void equalsAndHashCodeBehavior() {
-        ContentBlock b1 = ContentBlock.builder().id("cb-001").textContent("内容").blockType(BlockType.Paragraph).build();
-        ContentBlock b2 = ContentBlock.builder().id("cb-001").textContent("内容").blockType(BlockType.Paragraph).build();
+        ContentBlock b1 = ContentBlock.builder()
+                .id("cb-001")
+                .textContent("内容")
+                .blockType(BlockType.Paragraph)
+                .build();
+        ContentBlock b2 = ContentBlock.builder()
+                .id("cb-001")
+                .textContent("内容")
+                .blockType(BlockType.Paragraph)
+                .build();
 
         assertThat(b1).isEqualTo(b2);
         assertThat(b1.hashCode()).isEqualTo(b2.hashCode());

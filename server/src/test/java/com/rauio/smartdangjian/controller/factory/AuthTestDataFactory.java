@@ -17,8 +17,7 @@ public final class AuthTestDataFactory {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private AuthTestDataFactory() {
-    }
+    private AuthTestDataFactory() {}
 
     // ── Captcha ────────────────────────────────────────────────────
 
@@ -26,7 +25,8 @@ public final class AuthTestDataFactory {
         return Captcha.builder()
                 .uuid("captcha-uuid-001")
                 .code("captcha-code-001")
-                .base64("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==")
+                .base64(
+                        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==")
                 .build();
     }
 

@@ -8,6 +8,7 @@ import lombok.Data;
 public class DownloadFileRequest {
     @Schema(description = "文件名")
     private String fileName;
+
     private String mimeType;
     private String hash;
 }

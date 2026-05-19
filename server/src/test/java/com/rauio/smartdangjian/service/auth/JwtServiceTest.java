@@ -1,16 +1,5 @@
 package com.rauio.smartdangjian.service.auth;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.auth.service.JwtService;
-import com.rauio.smartdangjian.server.user.mapper.UserMapper;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.utils.spec.UserType;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -19,6 +8,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.auth.service.JwtService;
+import com.rauio.smartdangjian.server.user.mapper.UserMapper;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 @DisplayName("JwtService 单元测试")
 class JwtServiceTest {

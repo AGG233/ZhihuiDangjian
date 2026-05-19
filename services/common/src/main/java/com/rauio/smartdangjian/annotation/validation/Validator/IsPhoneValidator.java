@@ -1,9 +1,10 @@
 package com.rauio.smartdangjian.annotation.validation.Validator;
 
-import com.rauio.smartdangjian.annotation.validation.IsPhone;
-import com.rauio.smartdangjian.constants.ValidationConstants;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+
+import com.rauio.smartdangjian.annotation.validation.IsPhone;
+import com.rauio.smartdangjian.constants.ValidationConstants;
 
 public class IsPhoneValidator implements ConstraintValidator<IsPhone, String> {
 

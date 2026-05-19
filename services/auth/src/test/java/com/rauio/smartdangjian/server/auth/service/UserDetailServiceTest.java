@@ -1,8 +1,10 @@
 package com.rauio.smartdangjian.server.auth.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.rauio.smartdangjian.server.user.mapper.UserMapper;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,10 +14,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.rauio.smartdangjian.server.user.mapper.UserMapper;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
 
 @ExtendWith(MockitoExtension.class)
 class UserDetailServiceTest {
@@ -59,10 +60,7 @@ class UserDetailServiceTest {
     @Test
     @DisplayName("loadUserByUsername passport 为普通字符串时按用户名查询并返回 User")
     void loadUserByUsernameWithUsernamePassport() {
-        User expectedUser = User.builder()
-                .id("u1")
-                .username("testuser")
-                .build();
+        User expectedUser = User.builder().id("u1").username("testuser").build();
         when(userMapper.selectOne(any(LambdaQueryWrapper.class))).thenReturn(expectedUser);
 
         UserDetails result = userDetailService.loadUserByUsername("testuser");

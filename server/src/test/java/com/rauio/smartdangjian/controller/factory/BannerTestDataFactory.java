@@ -14,8 +14,7 @@ public final class BannerTestDataFactory {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private BannerTestDataFactory() {
-    }
+    private BannerTestDataFactory() {}
 
     // ── BannerCreateRequest ─────────────────────────────────────────
 
@@ -62,8 +61,7 @@ public final class BannerTestDataFactory {
                 "image/hash-" + order + ".png",
                 0,
                 1,
-                "https://example.com/download/resource-" + order
-        );
+                "https://example.com/download/resource-" + order);
     }
 
     // ── JSON helper ─────────────────────────────────────────────────

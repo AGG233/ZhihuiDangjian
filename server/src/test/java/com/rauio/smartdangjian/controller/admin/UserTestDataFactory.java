@@ -1,29 +1,27 @@
 package com.rauio.smartdangjian.controller.admin;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
-import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
-import com.rauio.smartdangjian.utils.spec.UserType;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
+import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
+import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
+import com.rauio.smartdangjian.utils.spec.UserType;
+
 /**
- * Static factory for test data — produces User, Page, UserDto, and JSON helpers.
+ * Static factory for test data — produces User, Page, UserRequest, and JSON helpers.
  * All IDs are deterministic strings so jsonPath assertions are predictable.
  */
 public final class UserTestDataFactory {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-            .registerModule(new JavaTimeModule());
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    private UserTestDataFactory() {
-    }
+    private UserTestDataFactory() {}
 
     // ── Single-user builders ──────────────────────────────────────
 
@@ -132,17 +130,17 @@ public final class UserTestDataFactory {
         return page;
     }
 
-    // ── UserDto helpers ───────────────────────────────────────────
+    // ── UserRequest helpers ──────────────────────────────────────────
 
-    public static UserDto createSearchDto() {
-        return new UserDto();
+    public static UserRequest createSearchDto() {
+        return new UserRequest();
     }
 
-    public static String toJson(UserDto dto) {
+    public static String toJson(UserRequest request) {
         try {
-            return OBJECT_MAPPER.writeValueAsString(dto);
+            return OBJECT_MAPPER.writeValueAsString(request);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize UserDto to JSON", e);
+            throw new RuntimeException("Failed to serialize UserRequest to JSON", e);
         }
     }
 
@@ -151,13 +149,19 @@ public final class UserTestDataFactory {
      * enum @JsonValue representations (e.g. MANAGER → "管理员").
      */
     public static String buildSearchJson(
-            String userId, String username, String realName,
-            String partyMemberId, PartyStatus partyStatus,
-            String branchName, UserType userType,
-            AccountStatus status, String universityId,
-            String email, String phone, String idCard
-    ) {
-        UserDto dto = new UserDto();
+            String userId,
+            String username,
+            String realName,
+            String partyMemberId,
+            PartyStatus partyStatus,
+            String branchName,
+            UserType userType,
+            AccountStatus status,
+            String universityId,
+            String email,
+            String phone,
+            String idCard) {
+        UserRequest dto = new UserRequest();
         dto.setUserId(userId);
         dto.setUsername(username);
         dto.setRealName(realName);

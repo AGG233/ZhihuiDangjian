@@ -1,14 +1,15 @@
 package com.rauio.smartdangjian.server.ai.agent;
 
+import java.util.Map;
+
+import org.springframework.ai.chat.messages.SystemMessage;
+
 import com.alibaba.cloud.ai.graph.agent.interceptor.ModelCallHandler;
 import com.alibaba.cloud.ai.graph.agent.interceptor.ModelInterceptor;
 import com.alibaba.cloud.ai.graph.agent.interceptor.ModelRequest;
 import com.alibaba.cloud.ai.graph.agent.interceptor.ModelResponse;
 import com.rauio.smartdangjian.server.ai.service.AiMemoryService;
 import com.rauio.smartdangjian.server.ai.service.PromptService;
-import org.springframework.ai.chat.messages.SystemMessage;
-
-import java.util.Map;
 
 public class DynamicSystemPromptInterceptor extends ModelInterceptor {
 
@@ -16,9 +17,8 @@ public class DynamicSystemPromptInterceptor extends ModelInterceptor {
     private final PromptService promptService;
     private final AiMemoryService aiMemoryService;
 
-    public DynamicSystemPromptInterceptor(AiAgentType agentType,
-                                          PromptService promptService,
-                                          AiMemoryService aiMemoryService) {
+    public DynamicSystemPromptInterceptor(
+            AiAgentType agentType, PromptService promptService, AiMemoryService aiMemoryService) {
         this.agentType = agentType;
         this.promptService = promptService;
         this.aiMemoryService = aiMemoryService;
@@ -27,8 +27,11 @@ public class DynamicSystemPromptInterceptor extends ModelInterceptor {
     @Override
     public ModelResponse interceptModel(ModelRequest request, ModelCallHandler handler) {
         Map<String, Object> context = request.getContext();
-        String userId = context.get("userId") == null ? null : context.get("userId").toString();
-        String sessionId = context.get("sessionId") == null ? null : context.get("sessionId").toString();
+        String userId =
+                context.get("userId") == null ? null : context.get("userId").toString();
+        String sessionId = context.get("sessionId") == null
+                ? null
+                : context.get("sessionId").toString();
 
         StringBuilder promptBuilder = new StringBuilder(promptService.buildSystemPrompt(agentType.code()));
         String memory = aiMemoryService.buildLongTermMemory(userId, sessionId, 12);
@@ -37,7 +40,9 @@ public class DynamicSystemPromptInterceptor extends ModelInterceptor {
         }
 
         SystemMessage existing = request.getSystemMessage();
-        String finalPrompt = existing == null || existing.getText() == null || existing.getText().isBlank()
+        String finalPrompt = existing == null
+                        || existing.getText() == null
+                        || existing.getText().isBlank()
                 ? promptBuilder.toString()
                 : existing.getText() + "\n\n" + promptBuilder;
 

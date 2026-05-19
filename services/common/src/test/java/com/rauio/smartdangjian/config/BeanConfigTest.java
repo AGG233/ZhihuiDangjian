@@ -1,11 +1,11 @@
 package com.rauio.smartdangjian.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.apache.tika.Tika;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class BeanConfigTest {
 

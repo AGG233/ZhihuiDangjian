@@ -1,20 +1,18 @@
 package com.rauio.smartdangjian.security;
 
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.exception.GlobalExceptionHandler;
-import com.rauio.smartdangjian.config.SecurityCoreAutoConfiguration;
-import com.rauio.smartdangjian.config.SecuritySupportAutoConfiguration;
-import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.auth.config.SecurityConfig;
-import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
-import com.rauio.smartdangjian.server.auth.service.JwtService;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.utils.spec.UserType;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -29,27 +27,26 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.rauio.smartdangjian.config.SecurityCoreAutoConfiguration;
+import com.rauio.smartdangjian.config.SecuritySupportAutoConfiguration;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.exception.GlobalExceptionHandler;
+import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.server.auth.config.SecurityConfig;
+import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
+import com.rauio.smartdangjian.server.auth.service.JwtService;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = SecurityFilterChainIntegrationTest.TestConfig.class
-)
+        classes = SecurityFilterChainIntegrationTest.TestConfig.class)
 @AutoConfigureMockMvc
-@TestPropertySource(properties = {
-        "app.security.enabled=true",
-        "REDIS_HOST=localhost",
-        "REDIS_PORT=6379",
-        "REDIS_DATABASE=0",
-        "DATABASE_URL=jdbc:h2:mem:security-filter-chain;DB_CLOSE_DELAY=-1",
-        "DATABASE_USERNAME=sa",
-        "DATABASE_PASSWORD="
-})
+@TestPropertySource(
+        properties = {
+            "app.security.enabled=true"
+        })
 @DisplayName("真实 Security Filter Chain 集成测试")
 class SecurityFilterChainIntegrationTest {
 
@@ -66,7 +63,7 @@ class SecurityFilterChainIntegrationTest {
         @Test
         @DisplayName("permitAll 接口无需 token")
         void publicEndpointAllowsAnonymousAccess() throws Exception {
-            mockMvc.perform(get("/auth/captcha"))
+            mockMvc.perform(get("/api/auth/captcha"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value("captcha-ok"));
@@ -80,21 +77,16 @@ class SecurityFilterChainIntegrationTest {
         @Test
         @DisplayName("缺少 token 被 Spring Security 拒绝")
         void protectedEndpointRejectsMissingToken() throws Exception {
-            mockMvc.perform(get("/api/security-test/protected"))
-                    .andExpect(status().isForbidden());
+            mockMvc.perform(get("/api/security-test/protected")).andExpect(status().isForbidden());
         }
 
         @Test
         @DisplayName("伪造 token 被 JwtAuthenticationFilter 拒绝")
         void protectedEndpointRejectsInvalidToken() throws Exception {
             when(jwtService.validateToken("forged-token"))
-                    .thenThrow(new BusinessException(
-                            AuthErrorConstants.TOKEN_VERIFICATION_FAILED,
-                            "身份验证失败，请重新登录"
-                    ));
+                    .thenThrow(new BusinessException(AuthErrorConstants.TOKEN_VERIFICATION_FAILED, "身份验证失败，请重新登录"));
 
-            mockMvc.perform(get("/api/security-test/protected")
-                            .header("Authorization", "Bearer forged-token"))
+            mockMvc.perform(get("/api/security-test/protected").header("Authorization", "Bearer forged-token"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value(String.valueOf(AuthErrorConstants.TOKEN_VERIFICATION_FAILED)));
         }
@@ -103,13 +95,9 @@ class SecurityFilterChainIntegrationTest {
         @DisplayName("黑名单 token 被 JwtAuthenticationFilter 拒绝")
         void protectedEndpointRejectsBlacklistedToken() throws Exception {
             when(jwtService.validateToken("blacklisted-token"))
-                    .thenThrow(new BusinessException(
-                            AuthErrorConstants.TOKEN_VERIFICATION_FAILED,
-                            "令牌已失效，请重新登录"
-                    ));
+                    .thenThrow(new BusinessException(AuthErrorConstants.TOKEN_VERIFICATION_FAILED, "令牌已失效，请重新登录"));
 
-            mockMvc.perform(get("/api/security-test/protected")
-                            .header("Authorization", "Bearer blacklisted-token"))
+            mockMvc.perform(get("/api/security-test/protected").header("Authorization", "Bearer blacklisted-token"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value(String.valueOf(AuthErrorConstants.TOKEN_VERIFICATION_FAILED)))
                     .andExpect(jsonPath("$.message").value("令牌已失效，请重新登录"));
@@ -120,8 +108,7 @@ class SecurityFilterChainIntegrationTest {
         void protectedEndpointAcceptsValidToken() throws Exception {
             when(jwtService.validateToken("valid-token")).thenReturn(testUser());
 
-            mockMvc.perform(get("/api/security-test/protected")
-                            .header("Authorization", "Bearer valid-token"))
+            mockMvc.perform(get("/api/security-test/protected").header("Authorization", "Bearer valid-token"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value("protected-ok"));
@@ -138,18 +125,34 @@ class SecurityFilterChainIntegrationTest {
     }
 
     @SpringBootConfiguration
-    @EnableAutoConfiguration(exclude = {
-            SecurityAutoConfiguration.class,
-            UserDetailsServiceAutoConfiguration.class,
-            SecurityCoreAutoConfiguration.class,
-            SecuritySupportAutoConfiguration.class
-    })
+    @EnableAutoConfiguration(
+            exclude = {
+                SecurityAutoConfiguration.class,
+                UserDetailsServiceAutoConfiguration.class,
+                SecurityCoreAutoConfiguration.class,
+                SecuritySupportAutoConfiguration.class,
+                DataSourceAutoConfiguration.class,
+                FlywayAutoConfiguration.class,
+                com.rauio.smartdangjian.config.MybatisConfig.class,
+                com.rauio.smartdangjian.config.RedisConfig.class,
+                com.rauio.smartdangjian.config.TransactionConfig.class,
+                com.rauio.smartdangjian.config.AsyncConfig.class,
+                com.rauio.smartdangjian.config.OpenApiConfig.class,
+                com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.neo4j.Neo4jAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.neo4j.Neo4jDataAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.neo4j.Neo4jReactiveDataAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.neo4j.Neo4jRepositoriesAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.neo4j.Neo4jReactiveRepositoriesAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration.class,
+                org.redisson.spring.starter.RedissonAutoConfigurationV2.class,
+                org.redisson.spring.starter.RedissonAutoConfigurationV4.class
+            })
     @EnableMethodSecurity
-    @Import({
-            SecurityConfig.class,
-            GlobalExceptionHandler.class,
-            TestController.class
-    })
+    @Import({SecurityConfig.class, GlobalExceptionHandler.class, TestController.class})
     static class TestConfig {
 
         @Bean
@@ -169,7 +172,7 @@ class SecurityFilterChainIntegrationTest {
     }
 
     @RestController
-    @RequestMapping("/auth")
+    @RequestMapping("/api/auth")
     static class SecurityTestAuthController {
 
         @GetMapping(value = "/captcha", produces = MediaType.APPLICATION_JSON_VALUE)

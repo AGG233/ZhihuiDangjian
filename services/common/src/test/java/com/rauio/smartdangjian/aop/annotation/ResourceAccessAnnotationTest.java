@@ -1,9 +1,9 @@
 package com.rauio.smartdangjian.aop.annotation;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class ResourceAccessAnnotationTest {
 
@@ -24,7 +24,8 @@ class ResourceAccessAnnotationTest {
     @Test
     @DisplayName("ResourceAccess 注解 type 可自定义")
     void customType() throws Exception {
-        ResourceAccess annotation = TestClass.class.getMethod("customTypeMethod").getAnnotation(ResourceAccess.class);
+        ResourceAccess annotation =
+                TestClass.class.getMethod("customTypeMethod").getAnnotation(ResourceAccess.class);
         assertThat(annotation.id()).isEqualTo("#courseId");
         assertThat(annotation.type()).isEqualTo("COURSE");
     }

@@ -1,10 +1,11 @@
 package com.rauio.smartdangjian.server.ai.pojo.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Min;
-import lombok.Data;
-
 import java.util.List;
+
+import jakarta.validation.constraints.Min;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
 
 @Data
 @Schema(description = "AI技能更新请求")

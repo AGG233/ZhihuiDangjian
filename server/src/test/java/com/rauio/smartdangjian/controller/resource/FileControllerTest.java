@@ -1,32 +1,5 @@
 package com.rauio.smartdangjian.controller.resource;
 
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
-import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
-import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
-import com.rauio.smartdangjian.server.resource.service.FileService;
-import com.rauio.smartdangjian.utils.spec.UserType;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-
-import java.util.Collections;
-import java.util.List;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doNothing;
@@ -39,44 +12,71 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
+import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
+import com.rauio.smartdangjian.server.resource.controller.user.FileController;
+import com.rauio.smartdangjian.server.resource.service.FileService;
+import com.rauio.smartdangjian.utils.spec.UserType;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = FileControllerTest.TestConfig.class)
 @AutoConfigureMockMvc(addFilters = false)
 @TestPropertySource(
         locations = "classpath:application-test.yaml",
         properties = {
-                "REDIS_HOST=localhost",
-                "REDIS_PORT=6379",
-                "REDIS_DATABASE=0",
-                "DATABASE_URL=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
-                "DATABASE_USERNAME=sa",
-                "DATABASE_PASSWORD=",
-                "NEO4J_URI=bolt://localhost:7687",
-                "NEO4J_USERNAME=neo4j",
-                "NEO4J_PASSWORD=password"
-        }
-)
+            "REDIS_HOST=localhost",
+            "REDIS_PORT=6379",
+            "REDIS_DATABASE=0",
+            "DATABASE_URL=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
+            "DATABASE_USERNAME=sa",
+            "DATABASE_PASSWORD=",
+            "NEO4J_URI=bolt://localhost:7687",
+            "NEO4J_USERNAME=neo4j",
+            "NEO4J_PASSWORD=password"
+        })
 @DisplayName("文件资源接口测试 (FileController)")
 class FileControllerTest {
 
     @SpringBootConfiguration
-    @EnableAutoConfiguration(exclude = {
-            DataSourceAutoConfiguration.class,
-            HibernateJpaAutoConfiguration.class,
-            org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
-            org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration.class,
-            com.rauio.smartdangjian.config.SecurityCoreAutoConfiguration.class,
-            com.rauio.smartdangjian.config.SecuritySupportAutoConfiguration.class,
-            com.rauio.smartdangjian.config.TransactionConfig.class
-    })
+    @EnableAutoConfiguration(
+            exclude = {
+                DataSourceAutoConfiguration.class,
+                HibernateJpaAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration.class,
+                com.rauio.smartdangjian.config.SecurityCoreAutoConfiguration.class,
+                com.rauio.smartdangjian.config.SecuritySupportAutoConfiguration.class,
+                com.rauio.smartdangjian.config.TransactionConfig.class
+            })
     @EnableWebMvc
-    @ComponentScan(
-            basePackages = "com.rauio.smartdangjian.server.resource.controller.user",
-            excludeFilters = @ComponentScan.Filter(
-                    type = org.springframework.context.annotation.FilterType.REGEX,
-                    pattern = ".*Banner.*"
-            )
-    )
     static class TestConfig {
+        @Bean
+        public FileController fileController(FileService fileService) {
+            return new FileController(fileService);
+        }
     }
 
     @Autowired
@@ -103,11 +103,9 @@ class FileControllerTest {
                 return "uni-001";
             }
         };
-        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(
-                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                        principal, null, Collections.emptyList()
-                )
-        );
+        org.springframework.security.core.context.SecurityContextHolder.getContext()
+                .setAuthentication(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                        principal, null, Collections.emptyList()));
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -155,8 +153,7 @@ class FileControllerTest {
         @Test
         @DisplayName("POST /confirm/{id} — 确认上传成功，返回状态为 PUBLIC")
         void confirmUploadReturnsUpdatedMeta() throws Exception {
-            when(fileService.confirmUpload("file-res-001"))
-                    .thenReturn(FileTestDataFactory.createPublicResourceMeta());
+            when(fileService.confirmUpload("file-res-001")).thenReturn(FileTestDataFactory.createPublicResourceMeta());
 
             mockMvc.perform(post("/api/resource/files/confirm/file-res-001"))
                     .andExpect(status().isOk())
@@ -168,8 +165,7 @@ class FileControllerTest {
         @Test
         @DisplayName("POST /confirm/{id} — 已确认的资源再次确认仍返回 PUBLIC（幂等）")
         void confirmAlreadyPublicUploadReturnsMetaUnchanged() throws Exception {
-            when(fileService.confirmUpload("file-res-001"))
-                    .thenReturn(FileTestDataFactory.createPublicResourceMeta());
+            when(fileService.confirmUpload("file-res-001")).thenReturn(FileTestDataFactory.createPublicResourceMeta());
 
             mockMvc.perform(post("/api/resource/files/confirm/file-res-001"))
                     .andExpect(status().isOk())
@@ -224,10 +220,8 @@ class FileControllerTest {
         void fullUploadLifecycle() throws Exception {
             FileUploadResponse uploadResp = FileTestDataFactory.createUploadResponse();
             when(fileService.upload(any())).thenReturn(uploadResp);
-            when(fileService.confirmUpload("file-res-001"))
-                    .thenReturn(FileTestDataFactory.createPublicResourceMeta());
-            when(fileService.getFileInfo("file-res-001"))
-                    .thenReturn(FileTestDataFactory.createFileInfoResponse());
+            when(fileService.confirmUpload("file-res-001")).thenReturn(FileTestDataFactory.createPublicResourceMeta());
+            when(fileService.getFileInfo("file-res-001")).thenReturn(FileTestDataFactory.createFileInfoResponse());
             when(fileService.getDownloadUrl("file-res-001"))
                     .thenReturn("https://cos.example.com/image/uuid-test.png?sign=xyz");
 
@@ -267,9 +261,8 @@ class FileControllerTest {
         @Test
         @DisplayName("POST /batch/id — 批量根据资源 ID 获取下载链接")
         void getBatchByIdsReturnsUrlList() throws Exception {
-            when(fileService.getBatchByIds(any())).thenReturn(List.of(
-                    "https://cos.example.com/dl/file-1",
-                    "https://cos.example.com/dl/file-2"));
+            when(fileService.getBatchByIds(any()))
+                    .thenReturn(List.of("https://cos.example.com/dl/file-1", "https://cos.example.com/dl/file-2"));
 
             mockMvc.perform(post("/api/resource/files/batch/id")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -284,9 +277,8 @@ class FileControllerTest {
         @Test
         @DisplayName("POST /batch/hash — 批量根据文件哈希获取下载链接")
         void getBatchByHashesReturnsUrlList() throws Exception {
-            when(fileService.getBatchByHashes(any())).thenReturn(List.of(
-                    "https://cos.example.com/dl/hash-1",
-                    "https://cos.example.com/dl/hash-2"));
+            when(fileService.getBatchByHashes(any()))
+                    .thenReturn(List.of("https://cos.example.com/dl/hash-1", "https://cos.example.com/dl/hash-2"));
 
             mockMvc.perform(post("/api/resource/files/batch/hash")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -346,8 +338,7 @@ class FileControllerTest {
         void deleteCallsServiceDelete() throws Exception {
             doNothing().when(fileService).delete("file-res-001");
 
-            mockMvc.perform(delete("/api/resource/files/file-res-001"))
-                    .andExpect(status().isOk());
+            mockMvc.perform(delete("/api/resource/files/file-res-001")).andExpect(status().isOk());
 
             verify(fileService).delete("file-res-001");
         }
@@ -355,8 +346,7 @@ class FileControllerTest {
         @Test
         @DisplayName("DELETE /{id} — 删除不存在的资源返回 400")
         void deleteNonExistentResource() throws Exception {
-            doThrow(new BusinessException(4000, "资源不存在"))
-                    .when(fileService).delete("ghost-id");
+            doThrow(new BusinessException(4000, "资源不存在")).when(fileService).delete("ghost-id");
 
             mockMvc.perform(delete("/api/resource/files/ghost-id"))
                     .andExpect(status().isBadRequest())
@@ -397,8 +387,7 @@ class FileControllerTest {
         @Test
         @DisplayName("POST /confirm/{id} — 确认不存在的资源返回 400")
         void confirmUploadResourceNotFound() throws Exception {
-            when(fileService.confirmUpload("ghost"))
-                    .thenThrow(new BusinessException(4000, "资源不存在"));
+            when(fileService.confirmUpload("ghost")).thenThrow(new BusinessException(4000, "资源不存在"));
 
             mockMvc.perform(post("/api/resource/files/confirm/ghost"))
                     .andExpect(status().isBadRequest())
@@ -409,8 +398,7 @@ class FileControllerTest {
         @Test
         @DisplayName("GET /by-id/{id} — 根据不存在的 ID 查询返回 400")
         void getByIdResourceNotFound() throws Exception {
-            when(fileService.getFileInfo("ghost"))
-                    .thenThrow(new BusinessException(4000, "资源不存在"));
+            when(fileService.getFileInfo("ghost")).thenThrow(new BusinessException(4000, "资源不存在"));
 
             mockMvc.perform(get("/api/resource/files/by-id/ghost"))
                     .andExpect(status().isBadRequest())
@@ -421,8 +409,7 @@ class FileControllerTest {
         @Test
         @DisplayName("GET /by-hash/{hash} — 根据不存在的哈希查询返回 400")
         void getByHashResourceNotFound() throws Exception {
-            when(fileService.getFileInfoByHash("ghost-hash"))
-                    .thenThrow(new BusinessException(4000, "资源不存在"));
+            when(fileService.getFileInfoByHash("ghost-hash")).thenThrow(new BusinessException(4000, "资源不存在"));
 
             mockMvc.perform(get("/api/resource/files/by-hash/ghost-hash"))
                     .andExpect(status().isBadRequest())
@@ -433,8 +420,7 @@ class FileControllerTest {
         @Test
         @DisplayName("GET /{id}/download — 不存在的资源下载返回 400")
         void getDownloadUrlResourceNotFound() throws Exception {
-            when(fileService.getDownloadUrl("ghost"))
-                    .thenThrow(new BusinessException(4000, "资源不存在"));
+            when(fileService.getDownloadUrl("ghost")).thenThrow(new BusinessException(4000, "资源不存在"));
 
             mockMvc.perform(get("/api/resource/files/ghost/download"))
                     .andExpect(status().isBadRequest())
@@ -445,8 +431,7 @@ class FileControllerTest {
         @Test
         @DisplayName("Service 抛出 RuntimeException 返回 500")
         void serviceThrowsRuntimeException() throws Exception {
-            when(fileService.getDownloadUrl("boom"))
-                    .thenThrow(new RuntimeException("数据库连接失败"));
+            when(fileService.getDownloadUrl("boom")).thenThrow(new RuntimeException("数据库连接失败"));
 
             mockMvc.perform(get("/api/resource/files/boom/download"))
                     .andExpect(status().isInternalServerError())
@@ -465,8 +450,7 @@ class FileControllerTest {
         @Test
         @DisplayName("错误 HTTP Method 返回 405")
         void wrongEndpointMethod() throws Exception {
-            mockMvc.perform(post("/api/resource/files/by-id/test"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/resource/files/by-id/test")).andExpect(status().isMethodNotAllowed());
         }
     }
 
@@ -519,9 +503,7 @@ class FileControllerTest {
         @DisplayName("GET /by-id/{id} — FileInfoResponse 中 size=null 时正常返回")
         void getByIdReturnsFileInfoWithNullSize() throws Exception {
             FileInfoResponse info = FileTestDataFactory.createFileInfoResponse(
-                    "file-res-001", "test.png", "abc123",
-                    "image/test.png", 0, 1,
-                    "https://cos.example.com/dl", null);
+                    "file-res-001", "test.png", "abc123", "image/test.png", 0, 1, "https://cos.example.com/dl", null);
             when(fileService.getFileInfo("file-res-001")).thenReturn(info);
 
             mockMvc.perform(get("/api/resource/files/by-id/file-res-001"))
@@ -532,9 +514,8 @@ class FileControllerTest {
         @Test
         @DisplayName("POST /batch/id — 列表中含空字符串正常处理")
         void batchByIdWithEmptyStringInList() throws Exception {
-            when(fileService.getBatchByIds(anyList())).thenReturn(List.of(
-                    "https://cos.example.com/dl/real-id",
-                    "https://cos.example.com/dl/"));
+            when(fileService.getBatchByIds(anyList()))
+                    .thenReturn(List.of("https://cos.example.com/dl/real-id", "https://cos.example.com/dl/"));
 
             mockMvc.perform(post("/api/resource/files/batch/id")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -567,11 +548,9 @@ class FileControllerTest {
         @Test
         @DisplayName("GET /by-hash/{hash} — SQL 注入在 hash 参数中被当作字面量处理")
         void sqlInjectionInHash() throws Exception {
-            when(fileService.getFileInfoByHash(any()))
-                    .thenThrow(new BusinessException(4000, "资源不存在"));
+            when(fileService.getFileInfoByHash(any())).thenThrow(new BusinessException(4000, "资源不存在"));
 
-            mockMvc.perform(get("/api/resource/files/by-hash/'%20OR%20'1'='1"))
-                    .andExpect(status().isBadRequest());
+            mockMvc.perform(get("/api/resource/files/by-hash/'%20OR%20'1'='1")).andExpect(status().isBadRequest());
         }
 
         @Test

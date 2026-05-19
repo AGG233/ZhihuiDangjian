@@ -1,13 +1,13 @@
 package com.rauio.smartdangjian.controller.admin;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.controller.admin.AdminChapterController;
-import com.rauio.smartdangjian.server.content.pojo.dto.ChapterDto;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,16 +17,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.controller.admin.AdminChapterController;
+import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
+import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminChapterControllerTest.TestConfig.class
-)
+        classes = AdminChapterControllerTest.TestConfig.class)
 @DisplayName("管理员章节接口测试")
 class AdminChapterControllerTest extends BaseControllerTest {
 
@@ -48,22 +48,22 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("创建章节返回成功")
         void createChapterSuccess() throws Exception {
-            when(chapterService.create(any(ChapterDto.class))).thenReturn(true);
+            when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
 
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterDto())))
+                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterRequest())))
                     .andExpect(status().is5xxServerError());
         }
 
         @Test
         @DisplayName("更新章节返回成功")
         void updateChapterSuccess() throws Exception {
-            when(chapterService.update(any(ChapterDto.class))).thenReturn(true);
+            when(chapterService.update(any(ChapterRequest.class))).thenReturn(true);
 
             mockMvc.perform(put("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterDto())))
+                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterRequest())))
                     .andExpect(status().is5xxServerError());
         }
 
@@ -81,7 +81,7 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET 根据章节 ID 获取章节详情成功")
         void getByIdSuccess() throws Exception {
-            var vo = CourseTestDataFactory.createChapterVO("ch-1");
+            var vo = CourseTestDataFactory.createChapterResponse("ch-1");
             when(chapterService.get("ch-1")).thenReturn(vo);
 
             mockMvc.perform(get("/api/admin/content/chapters/ch-1"))
@@ -95,8 +95,8 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET 根据课程 ID 获取章节列表成功")
         void getByCourseIdSuccess() throws Exception {
-            var vo1 = CourseTestDataFactory.createChapterVO("ch-1");
-            var vo2 = CourseTestDataFactory.createChapterVO("ch-2");
+            var vo1 = CourseTestDataFactory.createChapterResponse("ch-1");
+            var vo2 = CourseTestDataFactory.createChapterResponse("ch-2");
             when(chapterService.getByCourseId("course-1")).thenReturn(List.of(vo1, vo2));
 
             mockMvc.perform(get("/api/admin/content/chapters/by-course/course-1"))
@@ -127,24 +127,22 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 500")
         void createThrowsBusinessException() throws Exception {
-            when(chapterService.create(any(ChapterDto.class)))
-                    .thenThrow(new BusinessException(4000, "课程至少需要一个章节"));
+            when(chapterService.create(any(ChapterRequest.class))).thenThrow(new BusinessException(4000, "课程至少需要一个章节"));
 
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterDto())))
+                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterRequest())))
                     .andExpect(status().is5xxServerError());
         }
 
         @Test
         @DisplayName("Service 抛出 RuntimeException 返回 500")
         void createThrowsRuntimeException() throws Exception {
-            when(chapterService.create(any(ChapterDto.class)))
-                    .thenThrow(new RuntimeException("数据库连接失败"));
+            when(chapterService.create(any(ChapterRequest.class))).thenThrow(new RuntimeException("数据库连接失败"));
 
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterDto())))
+                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterRequest())))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("500"));
         }
@@ -152,11 +150,11 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("更新章节时 Service 返回 false 则 code 为 500")
         void updateReturnsFalse() throws Exception {
-            when(chapterService.update(any(ChapterDto.class))).thenReturn(false);
+            when(chapterService.update(any(ChapterRequest.class))).thenReturn(false);
 
             mockMvc.perform(put("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterDto())))
+                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterRequest())))
                     .andExpect(status().is5xxServerError());
         }
 
@@ -189,8 +187,8 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("标题含中文正常处理")
         void createWithChineseTitle() throws Exception {
-            when(chapterService.create(any(ChapterDto.class))).thenReturn(true);
-            ChapterDto dto = ChapterDto.builder()
+            when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
+            ChapterRequest dto = ChapterRequest.builder()
                     .courseId("course-1")
                     .title("党的二十大报告解读")
                     .description("test-description")
@@ -208,8 +206,8 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("标题含特殊字符正常处理")
         void createWithSpecialChars() throws Exception {
-            when(chapterService.create(any(ChapterDto.class))).thenReturn(true);
-            ChapterDto dto = ChapterDto.builder()
+            when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
+            ChapterRequest dto = ChapterRequest.builder()
                     .courseId("course-1")
                     .title("test_@#$%^&*()")
                     .description("test-description")
@@ -227,8 +225,8 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("标题超长字符串（1000 字符）正常处理")
         void createWithLongTitle() throws Exception {
-            when(chapterService.create(any(ChapterDto.class))).thenReturn(true);
-            ChapterDto dto = ChapterDto.builder()
+            when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
+            ChapterRequest dto = ChapterRequest.builder()
                     .courseId("course-1")
                     .title("a".repeat(1000))
                     .description("test-description")
@@ -258,8 +256,8 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 注入在标题字段")
         void xssInTitle() throws Exception {
-            when(chapterService.create(any(ChapterDto.class))).thenReturn(true);
-            ChapterDto dto = ChapterDto.builder()
+            when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
+            ChapterRequest dto = ChapterRequest.builder()
                     .courseId("course-1")
                     .title("<script>alert('xss')</script>")
                     .description("test")
@@ -277,8 +275,8 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入在标题字段")
         void sqlInjectionInTitle() throws Exception {
-            when(chapterService.create(any(ChapterDto.class))).thenReturn(true);
-            ChapterDto dto = ChapterDto.builder()
+            when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
+            ChapterRequest dto = ChapterRequest.builder()
                     .courseId("course-1")
                     .title("' OR '1'='1")
                     .description("test")
@@ -296,15 +294,13 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET 请求创建接口返回 405")
         void createWithWrongMethod() throws Exception {
-            mockMvc.perform(get("/api/admin/content/chapters"))
-                    .andExpect(status().is4xxClientError());
+            mockMvc.perform(get("/api/admin/content/chapters")).andExpect(status().is4xxClientError());
         }
 
         @Test
         @DisplayName("POST 请求删除接口返回 405")
         void deleteWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/admin/content/chapters/ch-1"))
-                    .andExpect(status().is4xxClientError());
+            mockMvc.perform(post("/api/admin/content/chapters/ch-1")).andExpect(status().is4xxClientError());
         }
 
         private com.rauio.smartdangjian.server.content.pojo.dto.ContentBlockDto createSimpleContentBlock() {

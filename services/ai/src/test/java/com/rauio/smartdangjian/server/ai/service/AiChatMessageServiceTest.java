@@ -1,7 +1,7 @@
 package com.rauio.smartdangjian.server.ai.service;
 
-import com.rauio.smartdangjian.server.ai.mapper.AiChatMessageMapper;
-import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,7 +10,8 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.rauio.smartdangjian.server.ai.mapper.AiChatMessageMapper;
+import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
 
 @ExtendWith(MockitoExtension.class)
 class AiChatMessageServiceTest {

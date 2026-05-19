@@ -1,22 +1,24 @@
 package com.rauio.smartdangjian.server.user.controller.user;
 
+import org.springframework.web.bind.annotation.*;
+
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserPublicVO;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
+import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
+import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.utils.spec.UserType;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "用户管理接口", description = "提供用户信息操作，搜索仅返回基本公开信息，不包含邮箱、手机等敏感数据")
 @RestController
@@ -30,26 +32,30 @@ public class UserController {
     @Operation(summary = "获取用户信息", description = "通过ID获取用户信息，返回含脱敏联系方式的用户详情")
     @GetMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.USER_MANAGEMENT, action = DataScopeAction.READ, id = "#id")
-    public Result<UserVO> get(@Parameter(name = "id", description = "用户ID") @PathVariable String id) {
+    public Result<UserResponse> get(@Parameter(name = "id", description = "用户ID") @PathVariable String id) {
         return Result.ok(userService.get(id));
     }
 
     @Operation(summary = "用户分页搜索", description = "按条件分页查询用户，仅返回基本公开信息（用户名、姓名、党员信息等），不包含邮箱、手机等敏感数据")
     @PostMapping("/search")
     @DataScopeAccess(resource = DataScopeResources.USER_MANAGEMENT, action = DataScopeAction.SEARCH, query = "#userDto")
-    public Result<Page<UserPublicVO>> getPage(
-            @RequestBody UserDto userDto,
+    public Result<Page<UserPublicResponse>> getPage(
+            @RequestBody UserRequest userDto,
             @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
-            @Parameter(name = "pageSize", description = "页大小") @RequestParam(defaultValue = "10") int pageSize
-    ) {
+            @Parameter(name = "pageSize", description = "页大小") @RequestParam(defaultValue = "10") int pageSize) {
         return Result.ok(userService.getPage(userDto, pageNum, pageSize));
     }
 
     @Operation(summary = "更新用户信息", description = "通过ID更新用户信息")
     @PutMapping("/{id}")
-    @DataScopeAccess(resource = DataScopeResources.USER_MANAGEMENT, action = DataScopeAction.UPDATE, id = "#id", body = "#user")
-    public Result<Boolean> update(@PathVariable String id, @RequestBody User user) {
-        return Result.ok(userService.update(id, user));
+    @DataScopeAccess(
+            resource = DataScopeResources.USER_MANAGEMENT,
+            action = DataScopeAction.UPDATE,
+            id = "#id",
+            body = "#user")
+    public Result<Void> update(@PathVariable String id, @RequestBody User user) {
+        userService.update(id, user);
+        return Result.ok(null);
     }
 
     @Operation(summary = "删除用户（已经弃用）", description = "通过ID删除用户")

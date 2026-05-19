@@ -1,9 +1,12 @@
 package com.rauio.smartdangjian.server.ai.agent;
 
-import com.alibaba.cloud.ai.graph.skills.SkillMetadata;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.ai.pojo.entity.AiSkill;
-import com.rauio.smartdangjian.server.ai.service.SkillService;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,12 +14,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
+import com.alibaba.cloud.ai.graph.skills.SkillMetadata;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.ai.pojo.entity.AiSkill;
+import com.rauio.smartdangjian.server.ai.service.SkillService;
 
 @ExtendWith(MockitoExtension.class)
 class DatabaseSkillRegistryTest {

@@ -1,11 +1,13 @@
 package com.rauio.smartdangjian.controller.admin;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.controller.admin.AdminCourseController;
-import com.rauio.smartdangjian.server.content.pojo.dto.CourseDto;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -15,17 +17,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.controller.admin.AdminCourseController;
+import com.rauio.smartdangjian.server.content.pojo.request.CourseRequest;
+import com.rauio.smartdangjian.server.content.service.course.CourseService;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminCourseControllerTest.TestConfig.class
-)
+        classes = AdminCourseControllerTest.TestConfig.class)
 @DisplayName("管理员课程接口测试")
 class AdminCourseControllerTest extends BaseControllerTest {
 
@@ -47,38 +48,35 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("创建课程返回成功")
         void createCourseSuccess() throws Exception {
-            when(courseService.create(any(CourseDto.class))).thenReturn(true);
+            doNothing().when(courseService).create(any(CourseRequest.class));
 
-            mockMvc.perform(post("/api/admin/content/courses/")
+            mockMvc.perform(post("/api/admin/content/courses")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createCourseDto())))
+                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createCourseRequest())))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value(true));
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test
         @DisplayName("更新课程返回成功")
         void updateCourseSuccess() throws Exception {
-            when(courseService.update(any(CourseDto.class), eq("course-1"))).thenReturn(true);
+            doNothing().when(courseService).update(any(CourseRequest.class), eq("course-1"));
 
             mockMvc.perform(put("/api/admin/content/courses/course-1")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createCourseDto())))
+                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createCourseRequest())))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value(true));
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test
         @DisplayName("删除课程返回成功")
         void deleteCourseSuccess() throws Exception {
-            when(courseService.delete("course-1")).thenReturn(true);
+            doNothing().when(courseService).delete("course-1");
 
             mockMvc.perform(delete("/api/admin/content/courses/course-1"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value(true));
+                    .andExpect(jsonPath("$.code").value("200"));
         }
     }
 
@@ -89,12 +87,11 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 400 并携带错误码")
         void createThrowsBusinessException() throws Exception {
-            when(courseService.create(any(CourseDto.class)))
-                    .thenThrow(new BusinessException(4000, "课程创建失败"));
+            doThrow(new BusinessException(4000, "课程创建失败")).when(courseService).create(any(CourseRequest.class));
 
-            mockMvc.perform(post("/api/admin/content/courses/")
+            mockMvc.perform(post("/api/admin/content/courses")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createCourseDto())))
+                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createCourseRequest())))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("课程创建失败"));
@@ -103,46 +100,45 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 RuntimeException 返回 500")
         void createThrowsRuntimeException() throws Exception {
-            when(courseService.create(any(CourseDto.class)))
-                    .thenThrow(new RuntimeException("数据库连接失败"));
+            doThrow(new RuntimeException("数据库连接失败")).when(courseService).create(any(CourseRequest.class));
 
-            mockMvc.perform(post("/api/admin/content/courses/")
+            mockMvc.perform(post("/api/admin/content/courses")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createCourseDto())))
+                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createCourseRequest())))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("500"));
         }
 
         @Test
-        @DisplayName("更新课程时 Service 返回 false 则 code 为 400")
-        void updateReturnsFalse() throws Exception {
-            when(courseService.update(any(CourseDto.class), eq("nonexistent"))).thenReturn(false);
+        @DisplayName("更新课程时 Service 抛出 BusinessException 返回 400")
+        void updateThrowsBusinessException() throws Exception {
+            doThrow(new BusinessException(4000, "课程不存在"))
+                    .when(courseService)
+                    .update(any(CourseRequest.class), eq("nonexistent"));
 
             mockMvc.perform(put("/api/admin/content/courses/nonexistent")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createCourseDto())))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value(false))
-                    .andExpect(jsonPath("$.message").value("OK"));
+                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createCourseRequest())))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.message").value("课程不存在"));
         }
 
         @Test
-        @DisplayName("删除课程时 Service 返回 false 则 code 为 400")
-        void deleteReturnsFalse() throws Exception {
-            when(courseService.delete("nonexistent")).thenReturn(false);
+        @DisplayName("删除课程时 Service 抛出 BusinessException 返回 400")
+        void deleteThrowsBusinessException() throws Exception {
+            doThrow(new BusinessException(4000, "课程不存在")).when(courseService).delete("nonexistent");
 
             mockMvc.perform(delete("/api/admin/content/courses/nonexistent"))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value(false))
-                    .andExpect(jsonPath("$.message").value("OK"));
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.message").value("课程不存在"));
         }
 
         @Test
         @DisplayName("非法 JSON 请求体返回 400")
         void malformedJson() throws Exception {
-            mockMvc.perform(post("/api/admin/content/courses/")
+            mockMvc.perform(post("/api/admin/content/courses")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{invalid json"))
                     .andExpect(status().isBadRequest());
@@ -156,14 +152,14 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("标题含中文正常处理")
         void createWithChineseTitle() throws Exception {
-            when(courseService.create(any(CourseDto.class))).thenReturn(true);
-            CourseDto dto = CourseDto.builder()
+            doNothing().when(courseService).create(any(CourseRequest.class));
+            CourseRequest dto = CourseRequest.builder()
                     .title("习近平新时代中国特色社会主义思想")
                     .description("test-description")
                     .categoryId("cat-1")
                     .build();
 
-            mockMvc.perform(post("/api/admin/content/courses/")
+            mockMvc.perform(post("/api/admin/content/courses")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
                     .andExpect(status().isOk())
@@ -173,14 +169,14 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("标题含特殊字符正常处理")
         void createWithSpecialChars() throws Exception {
-            when(courseService.create(any(CourseDto.class))).thenReturn(true);
-            CourseDto dto = CourseDto.builder()
+            doNothing().when(courseService).create(any(CourseRequest.class));
+            CourseRequest dto = CourseRequest.builder()
                     .title("test_@#$%^&*()")
                     .description("test-description")
                     .categoryId("cat-1")
                     .build();
 
-            mockMvc.perform(post("/api/admin/content/courses/")
+            mockMvc.perform(post("/api/admin/content/courses")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
                     .andExpect(status().isOk())
@@ -190,14 +186,14 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("标题超长字符串（1000 字符）正常处理")
         void createWithLongTitle() throws Exception {
-            when(courseService.create(any(CourseDto.class))).thenReturn(true);
-            CourseDto dto = CourseDto.builder()
+            doNothing().when(courseService).create(any(CourseRequest.class));
+            CourseRequest dto = CourseRequest.builder()
                     .title("a".repeat(1000))
                     .description("test-description")
                     .categoryId("cat-1")
                     .build();
 
-            mockMvc.perform(post("/api/admin/content/courses/")
+            mockMvc.perform(post("/api/admin/content/courses")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
                     .andExpect(status().isOk())
@@ -207,14 +203,14 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("描述为空字符串时正常处理（description 为可选字段）")
         void createWithEmptyDescription() throws Exception {
-            when(courseService.create(any(CourseDto.class))).thenReturn(true);
-            CourseDto dto = CourseDto.builder()
+            doNothing().when(courseService).create(any(CourseRequest.class));
+            CourseRequest dto = CourseRequest.builder()
                     .title("test-course")
                     .description("")
                     .categoryId("cat-1")
                     .build();
 
-            mockMvc.perform(post("/api/admin/content/courses/")
+            mockMvc.perform(post("/api/admin/content/courses")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
                     .andExpect(status().isOk())
@@ -229,14 +225,14 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 注入在标题字段")
         void xssInTitle() throws Exception {
-            when(courseService.create(any(CourseDto.class))).thenReturn(true);
-            CourseDto dto = CourseDto.builder()
+            doNothing().when(courseService).create(any(CourseRequest.class));
+            CourseRequest dto = CourseRequest.builder()
                     .title("<script>alert('xss')</script>")
                     .description("test")
                     .categoryId("cat-1")
                     .build();
 
-            mockMvc.perform(post("/api/admin/content/courses/")
+            mockMvc.perform(post("/api/admin/content/courses")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
                     .andExpect(status().isOk());
@@ -245,14 +241,14 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入在标题字段")
         void sqlInjectionInTitle() throws Exception {
-            when(courseService.create(any(CourseDto.class))).thenReturn(true);
-            CourseDto dto = CourseDto.builder()
+            doNothing().when(courseService).create(any(CourseRequest.class));
+            CourseRequest dto = CourseRequest.builder()
                     .title("' OR '1'='1")
                     .description("test")
                     .categoryId("cat-1")
                     .build();
 
-            mockMvc.perform(post("/api/admin/content/courses/")
+            mockMvc.perform(post("/api/admin/content/courses")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
                     .andExpect(status().isOk());
@@ -261,15 +257,13 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET 请求创建接口返回 405")
         void createWithWrongMethod() throws Exception {
-            mockMvc.perform(get("/api/admin/content/courses/"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(get("/api/admin/content/courses")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("POST 请求删除接口返回 405")
         void deleteWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/admin/content/courses/course-1"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/admin/content/courses/course-1")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

@@ -1,11 +1,11 @@
 package com.rauio.smartdangjian.aop.annotation;
 
-import com.rauio.smartdangjian.aop.support.DataScopeAction;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import com.rauio.smartdangjian.aop.support.DataScopeAction;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

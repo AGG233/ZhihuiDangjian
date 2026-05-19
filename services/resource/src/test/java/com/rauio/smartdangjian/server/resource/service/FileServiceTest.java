@@ -1,13 +1,14 @@
 package com.rauio.smartdangjian.server.resource.service;
 
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.resource.Constant.ResourceConstant;
-import com.rauio.smartdangjian.server.resource.Constant.ResourceStatusConstants;
-import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
-import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
-import com.rauio.smartdangjian.server.resource.pojo.request.UploadFileRequest;
-import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
-import com.rauio.smartdangjian.server.user.service.UserService;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.dromara.x.file.storage.core.FileStorageService;
 import org.dromara.x.file.storage.core.presigned.GeneratePresignedUrlPretreatment;
 import org.dromara.x.file.storage.core.presigned.GeneratePresignedUrlResult;
@@ -20,15 +21,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
+import com.rauio.smartdangjian.server.resource.constants.ResourceStatusConstants;
+import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
+import com.rauio.smartdangjian.server.resource.pojo.request.UploadFileRequest;
+import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
+import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 class FileServiceTest {

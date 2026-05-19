@@ -1,20 +1,22 @@
 package com.rauio.smartdangjian.server.user.aop;
 
+import org.springframework.stereotype.Component;
+
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeContext;
 import com.rauio.smartdangjian.aop.support.DataScopeResolver;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.constants.ErrorConstants;
-import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.utils.spec.UserType;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -37,13 +39,12 @@ public class UserManagementAspect implements DataScopeResolver {
             case CREATE -> handleCreate(context, currentUser);
             case UPDATE -> handleUpdate(context, currentUser);
             case DELETE -> handleDelete(context, currentUser);
-            default -> {
-            }
+            default -> {}
         }
     }
 
     private void handleSearch(DataScopeContext context, CurrentUserPrincipal currentUser) {
-        UserDto query = context.require(context.getAccess().query(), UserDto.class, "查询参数不能为空");
+        UserRequest query = context.require(context.getAccess().query(), UserRequest.class, "查询参数不能为空");
         switch (currentUser.getUserType()) {
             case MANAGER -> {
                 return;

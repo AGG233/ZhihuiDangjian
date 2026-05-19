@@ -1,12 +1,14 @@
 package com.rauio.smartdangjian.server.auth.pojo.request;
 
+import java.time.LocalDateTime;
+
+import jakarta.validation.constraints.*;
+
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.*;
-import lombok.Data;
 
-import java.time.LocalDateTime;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
 
 @Data
 @Schema(description = "注册请求体")
@@ -23,8 +25,7 @@ public class RegisterRequest {
     @Size(min = 8, max = 20, message = "密码长度必须在8-20个字符之间")
     @Pattern(
             regexp = "^(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,20}$",
-            message = "密码必须包含大写字母、数字和特殊符号"
-    )
+            message = "密码必须包含大写字母、数字和特殊符号")
     @Schema(description = "密码")
     private String password;
 

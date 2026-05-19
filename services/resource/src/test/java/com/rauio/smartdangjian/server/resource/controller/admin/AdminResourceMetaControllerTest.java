@@ -1,9 +1,10 @@
 package com.rauio.smartdangjian.server.resource.controller.admin;
 
-import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
-import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaCreateRequest;
-import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaUpdateRequest;
-import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,10 +12,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
+import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaCreateRequest;
+import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaUpdateRequest;
+import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
 
 @ExtendWith(MockitoExtension.class)
 class AdminResourceMetaControllerTest {
@@ -35,9 +36,8 @@ class AdminResourceMetaControllerTest {
         request.setObjectKey("image/test.png");
         request.setResourceType(0);
 
-        when(resourceMetaService.create(request)).thenReturn(
-                ResourceMeta.builder().id("r-1").build()
-        );
+        when(resourceMetaService.create(request))
+                .thenReturn(ResourceMeta.builder().id("r-1").build());
 
         var result = controller.create(request);
 
@@ -47,9 +47,8 @@ class AdminResourceMetaControllerTest {
     @Test
     @DisplayName("get 委托 service 获取资源元数据")
     void get() {
-        when(resourceMetaService.get("r-1")).thenReturn(
-                ResourceMeta.builder().id("r-1").build()
-        );
+        when(resourceMetaService.get("r-1"))
+                .thenReturn(ResourceMeta.builder().id("r-1").build());
 
         var result = controller.get("r-1");
 
@@ -59,9 +58,8 @@ class AdminResourceMetaControllerTest {
     @Test
     @DisplayName("list 委托 service 查询资源列表")
     void list() {
-        when(resourceMetaService.list("user-1", null, null, null, null)).thenReturn(
-                List.of(ResourceMeta.builder().id("r-1").build())
-        );
+        when(resourceMetaService.list("user-1", null, null, null, null))
+                .thenReturn(List.of(ResourceMeta.builder().id("r-1").build()));
 
         var result = controller.list("user-1", null, null, null, null);
 
@@ -104,7 +102,7 @@ class AdminResourceMetaControllerTest {
     void deleteByHashes() {
         when(resourceMetaService.deleteByHashes(List.of("h1", "h2"))).thenReturn(true);
 
-        var result = controller.delete(new String[]{"h1", "h2"});
+        var result = controller.delete(new String[] {"h1", "h2"});
 
         assertThat(result.getData()).isTrue();
     }

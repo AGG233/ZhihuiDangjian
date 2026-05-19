@@ -1,9 +1,9 @@
 package com.rauio.smartdangjian.server.resource.pojo.response;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("FileInfoResponse 文件信息响应")
 class FileInfoResponseTest {

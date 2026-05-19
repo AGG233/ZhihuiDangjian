@@ -1,11 +1,11 @@
 package com.rauio.smartdangjian.common.utils;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.apache.tika.Tika;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 @Component
 public class MediaTypeUtil {
@@ -16,7 +16,7 @@ public class MediaTypeUtil {
     }
 
     public static String detect(MultipartFile file) throws IOException {
-        try(InputStream inputStream = file.getInputStream()){
+        try (InputStream inputStream = file.getInputStream()) {
             return detect(inputStream);
         }
     }

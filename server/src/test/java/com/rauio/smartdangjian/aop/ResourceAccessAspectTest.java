@@ -1,10 +1,16 @@
 package com.rauio.smartdangjian.aop;
 
-import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
-import com.rauio.smartdangjian.aop.resolver.ResourceOwnerResolver;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
-import com.rauio.smartdangjian.utils.spec.UserType;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.junit.jupiter.api.AfterEach;
@@ -13,16 +19,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
+import com.rauio.smartdangjian.aop.resolver.ResourceOwnerResolver;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 @DisplayName("ResourceAccessAspect 单元测试")
 class ResourceAccessAspectTest {
@@ -38,7 +39,7 @@ class ResourceAccessAspectTest {
     @DisplayName("当前用户访问自己的资源时放行")
     void allowsOwnerAccess() throws Throwable {
         setSecurityContext("user-001", UserType.STUDENT);
-        ProceedingJoinPoint joinPoint = joinPoint("byUserId", new Object[]{"user-001"});
+        ProceedingJoinPoint joinPoint = joinPoint("byUserId", new Object[] {"user-001"});
         when(joinPoint.proceed()).thenReturn("ok");
 
         assertThatCode(() -> aspect.checkResourceAccess(joinPoint)).doesNotThrowAnyException();
@@ -48,7 +49,7 @@ class ResourceAccessAspectTest {
     @DisplayName("当前用户访问他人资源时拒绝")
     void rejectsOtherUserAccess() {
         setSecurityContext("user-001", UserType.STUDENT);
-        ProceedingJoinPoint joinPoint = joinPoint("byUserId", new Object[]{"user-002"});
+        ProceedingJoinPoint joinPoint = joinPoint("byUserId", new Object[] {"user-002"});
 
         assertThatThrownBy(() -> aspect.checkResourceAccess(joinPoint))
                 .isInstanceOf(BusinessException.class)
@@ -59,7 +60,7 @@ class ResourceAccessAspectTest {
     @DisplayName("资源表达式解析为空时返回业务错误而不是 NPE")
     void missingTargetIdThrowsBusinessException() {
         setSecurityContext("user-001", UserType.STUDENT);
-        ProceedingJoinPoint joinPoint = joinPoint("byDto", new Object[]{new TestDto(null)});
+        ProceedingJoinPoint joinPoint = joinPoint("byDto", new Object[] {new TestDto(null)});
 
         assertThatThrownBy(() -> aspect.checkResourceAccess(joinPoint))
                 .isInstanceOf(BusinessException.class)
@@ -72,7 +73,7 @@ class ResourceAccessAspectTest {
         setSecurityContext("user-001", UserType.STUDENT);
         ResourceOwnerResolver resolver = resourceOwnerResolver("RESOURCE_META", "user-001");
         ResourceAccessAspect resourceAspect = new ResourceAccessAspect(List.of(resolver));
-        ProceedingJoinPoint joinPoint = joinPoint("byResourceMeta", new Object[]{"resource-001"});
+        ProceedingJoinPoint joinPoint = joinPoint("byResourceMeta", new Object[] {"resource-001"});
         when(joinPoint.proceed()).thenReturn("ok");
 
         Object result = resourceAspect.checkResourceAccess(joinPoint);
@@ -87,7 +88,7 @@ class ResourceAccessAspectTest {
         setSecurityContext("user-001", UserType.STUDENT);
         ResourceOwnerResolver resolver = resourceOwnerResolver("RESOURCE_META", "user-002");
         ResourceAccessAspect resourceAspect = new ResourceAccessAspect(List.of(resolver));
-        ProceedingJoinPoint joinPoint = joinPoint("byResourceMeta", new Object[]{"resource-001"});
+        ProceedingJoinPoint joinPoint = joinPoint("byResourceMeta", new Object[] {"resource-001"});
 
         assertThatThrownBy(() -> resourceAspect.checkResourceAccess(joinPoint))
                 .isInstanceOf(BusinessException.class)
@@ -99,7 +100,7 @@ class ResourceAccessAspectTest {
     @DisplayName("非用户资源无法解析归属时拒绝访问")
     void rejectsResourceWhenOwnerCannotBeResolved() {
         setSecurityContext("user-001", UserType.STUDENT);
-        ProceedingJoinPoint joinPoint = joinPoint("byResourceMeta", new Object[]{"resource-001"});
+        ProceedingJoinPoint joinPoint = joinPoint("byResourceMeta", new Object[] {"resource-001"});
 
         assertThatThrownBy(() -> aspect.checkResourceAccess(joinPoint))
                 .isInstanceOf(BusinessException.class)
@@ -107,16 +108,13 @@ class ResourceAccessAspectTest {
     }
 
     @ResourceAccess(id = "#userId")
-    void byUserId(String userId) {
-    }
+    void byUserId(String userId) {}
 
     @ResourceAccess(id = "#dto.userId")
-    void byDto(TestDto dto) {
-    }
+    void byDto(TestDto dto) {}
 
     @ResourceAccess(id = "#resourceId", type = "RESOURCE_META")
-    void byResourceMeta(String resourceId) {
-    }
+    void byResourceMeta(String resourceId) {}
 
     private ProceedingJoinPoint joinPoint(String methodName, Object[] args) {
         Method method = findMethod(methodName);
@@ -155,9 +153,8 @@ class ResourceAccessAspectTest {
                 return "uni-001";
             }
         };
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList())
-        );
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList()));
     }
 
     private ResourceOwnerResolver resourceOwnerResolver(String resourceType, String ownerId) {
@@ -167,6 +164,5 @@ class ResourceAccessAspectTest {
         return resolver;
     }
 
-    private record TestDto(String userId) {
-    }
+    private record TestDto(String userId) {}
 }

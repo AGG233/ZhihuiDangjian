@@ -1,11 +1,14 @@
 package com.rauio.smartdangjian.aop;
 
-import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
-import com.rauio.smartdangjian.aop.resolver.ResourceOwnerResolver;
-import com.rauio.smartdangjian.constants.ErrorConstants;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.utils.SecurityUtils;
-import com.rauio.smartdangjian.utils.spec.UserType;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Method;
+import java.util.List;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.junit.jupiter.api.AfterEach;
@@ -13,16 +16,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
-import java.lang.reflect.Method;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
+import com.rauio.smartdangjian.aop.resolver.ResourceOwnerResolver;
+import com.rauio.smartdangjian.constants.ErrorConstants;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.utils.SecurityUtils;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 class ResourceAccessAspectTest {
 
@@ -81,9 +81,9 @@ class ResourceAccessAspectTest {
     void managerBypassesCheck() throws Throwable {
         Method method = TestTarget.class.getMethod("methodWithIdParam", String.class);
         when(signature.getMethod()).thenReturn(method);
-        when(signature.getParameterNames()).thenReturn(new String[]{"userId"});
+        when(signature.getParameterNames()).thenReturn(new String[] {"userId"});
         when(joinPoint.getSignature()).thenReturn(signature);
-        when(joinPoint.getArgs()).thenReturn(new Object[]{"target-user"});
+        when(joinPoint.getArgs()).thenReturn(new Object[] {"target-user"});
         when(joinPoint.proceed()).thenReturn("proceed-result");
 
         securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("admin-user");
@@ -100,9 +100,9 @@ class ResourceAccessAspectTest {
     void userTypeMatchProceeds() throws Throwable {
         Method method = TestTarget.class.getMethod("methodWithIdParam", String.class);
         when(signature.getMethod()).thenReturn(method);
-        when(signature.getParameterNames()).thenReturn(new String[]{"userId"});
+        when(signature.getParameterNames()).thenReturn(new String[] {"userId"});
         when(joinPoint.getSignature()).thenReturn(signature);
-        when(joinPoint.getArgs()).thenReturn(new Object[]{"current-user"});
+        when(joinPoint.getArgs()).thenReturn(new Object[] {"current-user"});
         when(joinPoint.proceed()).thenReturn("proceed-result");
 
         securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("current-user");
@@ -119,9 +119,9 @@ class ResourceAccessAspectTest {
     void userTypeMismatchThrows() throws Throwable {
         Method method = TestTarget.class.getMethod("methodWithIdParam", String.class);
         when(signature.getMethod()).thenReturn(method);
-        when(signature.getParameterNames()).thenReturn(new String[]{"userId"});
+        when(signature.getParameterNames()).thenReturn(new String[] {"userId"});
         when(joinPoint.getSignature()).thenReturn(signature);
-        when(joinPoint.getArgs()).thenReturn(new Object[]{"other-user"});
+        when(joinPoint.getArgs()).thenReturn(new Object[] {"other-user"});
 
         securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("current-user");
         securityUtilsMock.when(SecurityUtils::getCurrentUserType).thenReturn(UserType.STUDENT);
@@ -138,9 +138,9 @@ class ResourceAccessAspectTest {
     void customResourceTypeMatchProceeds() throws Throwable {
         Method method = TestTarget.class.getMethod("methodWithCourseParam", String.class);
         when(signature.getMethod()).thenReturn(method);
-        when(signature.getParameterNames()).thenReturn(new String[]{"courseId"});
+        when(signature.getParameterNames()).thenReturn(new String[] {"courseId"});
         when(joinPoint.getSignature()).thenReturn(signature);
-        when(joinPoint.getArgs()).thenReturn(new Object[]{"course-1"});
+        when(joinPoint.getArgs()).thenReturn(new Object[] {"course-1"});
         when(joinPoint.proceed()).thenReturn("proceed-result");
 
         securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("current-user");
@@ -159,9 +159,9 @@ class ResourceAccessAspectTest {
     void customResourceTypeNoResolverThrows() throws Throwable {
         Method method = TestTarget.class.getMethod("methodWithCourseParam", String.class);
         when(signature.getMethod()).thenReturn(method);
-        when(signature.getParameterNames()).thenReturn(new String[]{"courseId"});
+        when(signature.getParameterNames()).thenReturn(new String[] {"courseId"});
         when(joinPoint.getSignature()).thenReturn(signature);
-        when(joinPoint.getArgs()).thenReturn(new Object[]{"course-1"});
+        when(joinPoint.getArgs()).thenReturn(new Object[] {"course-1"});
 
         securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("current-user");
         securityUtilsMock.when(SecurityUtils::getCurrentUserType).thenReturn(UserType.STUDENT);

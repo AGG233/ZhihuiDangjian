@@ -1,5 +1,14 @@
 package com.rauio.smartdangjian.server.auth.service;
 
+import static com.rauio.smartdangjian.constants.RedisConstants.USER_VO_CACHE_PREFIX;
+
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -13,29 +22,22 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
-
-import static com.rauio.smartdangjian.constants.RedisConstants.USER_VO_CACHE_PREFIX;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class JwtService{
+public class JwtService {
 
     private final StringRedisTemplate stringRedisTemplate;
     private final UserMapper userMapper;
     private final ObjectMapper objectMapper;
 
     private static final String SECRET_KEY = "smartdangjian-jwt-scrert_key@test^&*";
-    private static final long DEFAULT_ACCESS_EXPIRATION = 3600000;  //  1 小时
-    private static final long THRESHOLD = 600000;                   //  15 分钟
+    private static final long DEFAULT_ACCESS_EXPIRATION = 3600000; //  1 小时
+    private static final long THRESHOLD = 600000; //  15 分钟
 
     public static final String PLATFORM_WEB = "web";
     public static final String PLATFORM_APP = "app";
@@ -111,12 +113,13 @@ public class JwtService{
         User user = userMapper.selectById(userId);
 
         if (user != null) {
-            stringRedisTemplate.opsForValue().set(
-                    redisKey,
-                    objectMapper.writeValueAsString(user),
-                    DEFAULT_ACCESS_EXPIRATION,
-                    TimeUnit.MILLISECONDS
-            );
+            stringRedisTemplate
+                    .opsForValue()
+                    .set(
+                            redisKey,
+                            objectMapper.writeValueAsString(user),
+                            DEFAULT_ACCESS_EXPIRATION,
+                            TimeUnit.MILLISECONDS);
         }
 
         return user;
@@ -128,7 +131,7 @@ public class JwtService{
     public void clearUserCache(String userId) {
         stringRedisTemplate.delete(USER_VO_CACHE_PREFIX + userId);
     }
-    
+
     /**
      * 从用户的 Token 中获取剩余过期时间
      * @param userId 用户 ID
@@ -189,7 +192,7 @@ public class JwtService{
      */
     private long getExpirationByPlatform(String platform) {
         return switch (platform.toLowerCase()) {
-            case PLATFORM_WEB -> 3600000L * 2;       // Web 2小时
+            case PLATFORM_WEB -> 3600000L * 2; // Web 2小时
             case PLATFORM_APP -> 3600000L * 24 * 30; // App 30天
             default -> DEFAULT_ACCESS_EXPIRATION;
         };
@@ -204,8 +207,8 @@ public class JwtService{
     public DecodedJWT decodeToken(String token) {
         try {
             return JWT.decode(token);
-        }catch (Exception e){
-            throw new BusinessException(AuthErrorConstants.TOKEN_DECODE_ERROR,"令牌错误，请重新登录");
+        } catch (Exception e) {
+            throw new BusinessException(AuthErrorConstants.TOKEN_DECODE_ERROR, "令牌错误，请重新登录");
         }
     }
 

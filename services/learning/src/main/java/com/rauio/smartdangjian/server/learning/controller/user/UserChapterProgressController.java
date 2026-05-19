@@ -1,23 +1,26 @@
 package com.rauio.smartdangjian.server.learning.controller.user;
 
+import java.util.List;
+
+import jakarta.validation.Valid;
+
+import org.springframework.web.bind.annotation.*;
+
 import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.learning.pojo.dto.UserChapterProgressDto;
-import com.rauio.smartdangjian.server.learning.pojo.vo.UserChapterProgressVO;
+import com.rauio.smartdangjian.server.learning.pojo.request.UserChapterProgressRequest;
+import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
 import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
 import com.rauio.smartdangjian.utils.spec.UserType;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "用户章节进度接口", description = "用户章节学习进度管理接口")
 @RestController
@@ -31,47 +34,48 @@ public class UserChapterProgressController {
     @GetMapping("/{id}")
     @PermissionAccess(UserType.STUDENT)
     @DataScopeAccess(resource = DataScopeResources.CHAPTER_PROGRESS, action = DataScopeAction.READ, id = "#id")
-    public Result<UserChapterProgressVO> get(@Parameter(name = "id", description = "进度ID") @PathVariable String id) {
-        UserChapterProgressVO result = progressService.get(id);
+    public Result<UserChapterProgressResponse> get(
+            @Parameter(name = "id", description = "进度ID") @PathVariable String id) {
+        UserChapterProgressResponse result = progressService.get(id);
         return Result.ok(result);
     }
 
     @Operation(summary = "获取用户所有进度", description = "根据用户ID获取该用户的所有章节进度")
-    @GetMapping("/user/{userId}")
+    @GetMapping("/users/{userId}")
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#userId")
-    public Result<List<UserChapterProgressVO>> getByUserId(@Parameter(name = "userId", description = "用户ID") @PathVariable String userId) {
-        List<UserChapterProgressVO> result = progressService.getByUserId(userId);
+    public Result<List<UserChapterProgressResponse>> getByUserId(
+            @Parameter(name = "userId", description = "用户ID") @PathVariable String userId) {
+        List<UserChapterProgressResponse> result = progressService.getByUserId(userId);
         return Result.ok(result);
     }
 
     @Operation(summary = "获取用户章节进度", description = "获取指定用户在指定章节的学习进度")
-    @GetMapping("/user/{userId}/chapter/{chapterId}")
+    @GetMapping("/users/{userId}/chapters/{chapterId}")
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#userId")
-    public Result<UserChapterProgressVO> getByUserIdAndChapterId(
+    public Result<UserChapterProgressResponse> getByUserIdAndChapterId(
             @Parameter(name = "userId", description = "用户ID") @PathVariable String userId,
             @Parameter(name = "chapterId", description = "章节ID") @PathVariable String chapterId) {
-        UserChapterProgressVO result = progressService.getByUserIdAndChapterId(userId, chapterId);
+        UserChapterProgressResponse result = progressService.getByUserIdAndChapterId(userId, chapterId);
         return Result.ok(result);
     }
 
     @Operation(summary = "创建进度记录", description = "创建新的用户章节进度记录")
-    @PostMapping("/")
+    @PostMapping
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#dto.userId")
-    public Result<Boolean> create(@RequestBody @Valid UserChapterProgressDto dto) {
+    public Result<Boolean> create(@RequestBody @Valid UserChapterProgressRequest dto) {
         Boolean result = progressService.create(dto);
         return Result.ok(result);
     }
 
     @Operation(summary = "更新进度记录", description = "更新用户章节进度记录")
-    @PutMapping("/")
+    @PutMapping
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#dto.userId")
-    public Result<Boolean> update(@RequestBody @Valid UserChapterProgressDto dto) {
+    public Result<Boolean> update(@RequestBody @Valid UserChapterProgressRequest dto) {
         Boolean result = progressService.update(dto);
         return Result.ok(result);
     }
-
 }

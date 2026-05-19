@@ -1,12 +1,12 @@
 package com.rauio.smartdangjian.server.user.pojo.entity;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class UserSimilarityTest {
 
@@ -84,11 +84,15 @@ class UserSimilarityTest {
     @DisplayName("equals 相同 id 和字段值的两个对象相等")
     void equalsWithSameFields() {
         UserSimilarity sim1 = UserSimilarity.builder()
-                .id("sim-001").userId1("u1").userId2("u2")
+                .id("sim-001")
+                .userId1("u1")
+                .userId2("u2")
                 .similarityScore(new BigDecimal("0.50"))
                 .build();
         UserSimilarity sim2 = UserSimilarity.builder()
-                .id("sim-001").userId1("u1").userId2("u2")
+                .id("sim-001")
+                .userId1("u1")
+                .userId2("u2")
                 .similarityScore(new BigDecimal("0.50"))
                 .build();
 

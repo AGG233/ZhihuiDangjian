@@ -1,19 +1,7 @@
 package com.rauio.smartdangjian.server.user.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.rauio.smartdangjian.aop.annotation.RequireUser;
-import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.user.mapper.UserMapper;
-import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserPublicVO;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
-import lombok.RequiredArgsConstructor;
+import static com.rauio.smartdangjian.constants.RedisConstants.USER_VO_CACHE_PREFIX;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -22,15 +10,28 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import static com.rauio.smartdangjian.constants.RedisConstants.USER_VO_CACHE_PREFIX;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.rauio.smartdangjian.aop.annotation.RequireUser;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
+import com.rauio.smartdangjian.server.user.mapper.UserMapper;
+import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
+import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
+import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class UserService extends ServiceImpl<UserMapper, User> {
 
-    private final PasswordEncoder   passwordEncoder;
-    private final UserConvertor     convertor;
+    private final PasswordEncoder passwordEncoder;
+    private final UserConvertor convertor;
 
     @Value("${app.dev.default-user-id:}")
     private String defaultDevUserId;
@@ -40,18 +41,19 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      *
      * @param passport 用户名、邮箱或手机号
      * @return 用户实体
+     * @throws BusinessException 如果通行凭证为空
      */
     @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#passport")
-    public User getByPassport(String passport){
+    public User getByPassport(String passport) {
         if (passport == null || passport.isEmpty()) {
-            return null;
+            throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "通行凭证不能为空");
         }
-        if (passport.contains("@")){
+        if (passport.contains("@")) {
             return getByEmail(passport);
         }
-        if (passport.contains("+")){
+        if (passport.contains("+")) {
             return getByPhone(passport);
-        }else{
+        } else {
             return getByUsername(passport);
         }
     }
@@ -63,8 +65,8 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @return 用户视图对象
      */
     @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#id")
-    public UserVO get(String id) {
-        return convertor.toVO(this.getById(id));
+    public UserResponse get(String id) {
+        return convertor.toResponse(this.getById(id));
     }
 
     /**
@@ -152,40 +154,46 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      *
      * @param id 用户 ID
      * @param user 用户实体
-     * @return 是否更新成功
+     * @throws BusinessException 如果更新失败
      */
     @CachePut(value = USER_VO_CACHE_PREFIX, key = "#id")
-    public Boolean update(String id,User user) {
+    public void update(String id, User user) {
         user.setId(id);
         if (StringUtils.isNotBlank(user.getPassword())) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
-        return this.updateById(user);
+        if (!this.updateById(user)) {
+            throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户更新失败");
+        }
     }
 
     /**
      * 删除用户。
      *
      * @param id 用户 ID
-     * @return 是否删除成功
+     * @throws BusinessException 如果删除失败
      */
-    public Boolean delete(String id) {
-        return this.removeById(id);
+    public void delete(String id) {
+        if (!this.removeById(id)) {
+            throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户删除失败");
+        }
     }
 
     /**
      * 注册新用户。
      *
      * @param user 用户实体
-     * @return 是否注册成功
+     * @throws BusinessException 如果注册失败
      */
-    public Boolean register(User user) {
+    public void register(User user) {
         checkEmailRegistered(user.getEmail());
         checkPhoneRegistered(user.getPhone());
         checkUsernameOccupied(user.getUsername());
         checkPartyMemberId(String.valueOf(user.getPartyMemberId()));
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return this.save(user);
+        if (!this.save(user)) {
+            throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户注册失败");
+        }
     }
 
     /**
@@ -193,18 +201,21 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      *
      * @param oldPassword 旧密码
      * @param newPassword 新密码
-     * @return 是否修改成功
+     * @throws BusinessException 如果修改失败
      */
-    public Boolean changePassword(String oldPassword, String newPassword) {
-        if (oldPassword == null || oldPassword.isEmpty()){
-            throw new BusinessException(UserErrorConstants.EMPTY_ARGS,"有空参数");
+    public void changePassword(String oldPassword, String newPassword) {
+        if (oldPassword == null || oldPassword.isEmpty()) {
+            throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "有空参数");
         }
         User user = getCurrentUser();
-        if (passwordEncoder.matches(oldPassword, user.getPassword())){
+        if (passwordEncoder.matches(oldPassword, user.getPassword())) {
             user.setPassword(passwordEncoder.encode(newPassword));
-            return this.updateById(user);
+            if (!this.updateById(user)) {
+                throw new BusinessException(UserErrorConstants.PASSWORD_CHANGE_ERROR, "修改密码时出现错误");
+            }
+        } else {
+            throw new BusinessException(UserErrorConstants.PASSWORD_CHANGE_ERROR, "修改密码时出现错误");
         }
-        throw new BusinessException(UserErrorConstants.PASSWORD_CHANGE_ERROR, "修改密码时出现错误");
     }
 
     /**
@@ -214,7 +225,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      */
     public Boolean isUserBelongsSchool(String id, String schoolId) {
         if (schoolId == null) {
-            throw new BusinessException(UserErrorConstants.EMPTY_ARGS,"有空参数");
+            throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "有空参数");
         }
         User targetUser = this.getById(id);
         return targetUser != null
@@ -230,12 +241,12 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param pageSize 每页条数
      * @return 用户公开信息分页结果
      */
-    public Page<UserPublicVO> getPage(UserDto dto, int pageNum, int pageSize) {
+    public Page<UserPublicResponse> getPage(UserRequest request, int pageNum, int pageSize) {
         Page<User> pageInfo = new Page<>(pageNum, pageSize);
-        LambdaQueryWrapper<User> wrapper = buildQueryWrapper(dto);
+        LambdaQueryWrapper<User> wrapper = buildQueryWrapper(request);
         Page<User> result = this.page(pageInfo, wrapper);
-        Page<UserPublicVO> voPage = new Page<>(result.getCurrent(), result.getSize(), result.getTotal());
-        voPage.setRecords(convertor.toPublicVO(result.getRecords()));
+        Page<UserPublicResponse> voPage = new Page<>(result.getCurrent(), result.getSize(), result.getTotal());
+        voPage.setRecords(convertor.toPublicResponse(result.getRecords()));
         return voPage;
     }
 
@@ -247,25 +258,27 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param pageSize 每页条数
      * @return 用户完整信息分页结果
      */
-    public Page<User> getAdminPage(UserDto dto, int pageNum, int pageSize) {
+    public Page<User> getAdminPage(UserRequest request, int pageNum, int pageSize) {
         Page<User> pageInfo = new Page<>(pageNum, pageSize);
-        LambdaQueryWrapper<User> wrapper = buildQueryWrapper(dto);
+        LambdaQueryWrapper<User> wrapper = buildQueryWrapper(request);
         return this.page(pageInfo, wrapper);
     }
 
-    private LambdaQueryWrapper<User> buildQueryWrapper(UserDto dto) {
+    private LambdaQueryWrapper<User> buildQueryWrapper(UserRequest request) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper
-                .like(StringUtils.isNotBlank(dto.getUserId()), User::getId, dto.getUserId())
-                .like(StringUtils.isNotBlank(dto.getUsername()), User::getUsername, dto.getUsername())
-                .like(StringUtils.isNotBlank(dto.getRealName()), User::getRealName, dto.getRealName())
-                .like(StringUtils.isNotBlank(dto.getPartyMemberId()), User::getPartyMemberId, dto.getPartyMemberId())
-                .like(StringUtils.isNotBlank(dto.getEmail()), User::getEmail, dto.getEmail())
-                .like(StringUtils.isNotBlank(dto.getPhone()), User::getPhone, dto.getPhone())
-                .eq(dto.getUserType() != null, User::getUserType, dto.getUserType())
-                .eq(dto.getPartyStatus() != null, User::getPartyStatus, dto.getPartyStatus())
-                .eq(StringUtils.isNotBlank(dto.getUniversityId()), User::getUniversityId, dto.getUniversityId())
-                .like(StringUtils.isNotBlank(dto.getBranchName()), User::getBranchName, dto.getBranchName());
+        wrapper.like(StringUtils.isNotBlank(request.getUserId()), User::getId, request.getUserId())
+                .like(StringUtils.isNotBlank(request.getUsername()), User::getUsername, request.getUsername())
+                .like(StringUtils.isNotBlank(request.getRealName()), User::getRealName, request.getRealName())
+                .like(
+                        StringUtils.isNotBlank(request.getPartyMemberId()),
+                        User::getPartyMemberId,
+                        request.getPartyMemberId())
+                .like(StringUtils.isNotBlank(request.getEmail()), User::getEmail, request.getEmail())
+                .like(StringUtils.isNotBlank(request.getPhone()), User::getPhone, request.getPhone())
+                .eq(request.getUserType() != null, User::getUserType, request.getUserType())
+                .eq(request.getPartyStatus() != null, User::getPartyStatus, request.getPartyStatus())
+                .eq(StringUtils.isNotBlank(request.getUniversityId()), User::getUniversityId, request.getUniversityId())
+                .like(StringUtils.isNotBlank(request.getBranchName()), User::getBranchName, request.getBranchName());
         return wrapper;
     }
 
@@ -277,7 +290,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     private void checkEmailRegistered(String email) {
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<User>().eq(User::getEmail, email);
         if (this.exists(queryWrapper)) {
-            throw new BusinessException(UserErrorConstants.EMAIL_EXISTS,"该邮箱已被注册");
+            throw new BusinessException(UserErrorConstants.EMAIL_EXISTS, "该邮箱已被注册");
         }
     }
 
@@ -311,7 +324,8 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param partyMemberId 党员编号
      */
     private void checkPartyMemberId(String partyMemberId) {
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<User>().eq(User::getPartyMemberId, partyMemberId);
+        LambdaQueryWrapper<User> queryWrapper =
+                new LambdaQueryWrapper<User>().eq(User::getPartyMemberId, partyMemberId);
         if (this.exists(queryWrapper)) {
             throw new BusinessException(UserErrorConstants.PARTY_MEMBER_ID_EXISTS, "党员编号已存在");
         }

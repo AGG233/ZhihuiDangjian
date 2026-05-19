@@ -1,11 +1,13 @@
 package com.rauio.smartdangjian.controller.user;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.BannerTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.resource.controller.user.UserBannerController;
-import com.rauio.smartdangjian.server.resource.pojo.response.BannerResourceResponse;
-import com.rauio.smartdangjian.server.resource.service.BannerService;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -14,18 +16,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.List;
-
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.BannerTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.resource.controller.user.UserBannerController;
+import com.rauio.smartdangjian.server.resource.pojo.response.BannerResourceResponse;
+import com.rauio.smartdangjian.server.resource.service.BannerService;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = UserBannerControllerTest.TestConfig.class
-)
+        classes = UserBannerControllerTest.TestConfig.class)
 @DisplayName("用户轮播图接口测试")
 class UserBannerControllerTest extends BaseControllerTest {
 
@@ -49,8 +49,7 @@ class UserBannerControllerTest extends BaseControllerTest {
         void listBannersSuccess() throws Exception {
             List<BannerResourceResponse> list = List.of(
                     BannerTestDataFactory.createBannerResourceResponse(0),
-                    BannerTestDataFactory.createBannerResourceResponse(1)
-            );
+                    BannerTestDataFactory.createBannerResourceResponse(1));
             when(bannerService.getUserList()).thenReturn(list);
 
             mockMvc.perform(get("/api/resource/banners"))
@@ -78,8 +77,7 @@ class UserBannerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 400")
         void serviceThrowsBusinessException() throws Exception {
-            when(bannerService.getUser(999))
-                    .thenThrow(new BusinessException(4000, "轮播图不存在"));
+            when(bannerService.getUser(999)).thenThrow(new BusinessException(4000, "轮播图不存在"));
 
             mockMvc.perform(get("/api/resource/banners/999"))
                     .andExpect(status().isBadRequest())
@@ -116,8 +114,7 @@ class UserBannerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{order} - 负数 order 返回 BusinessException")
         void getBannerNegativeOrder() throws Exception {
-            when(bannerService.getUser(-1))
-                    .thenThrow(new BusinessException(4000, "轮播图不存在"));
+            when(bannerService.getUser(-1)).thenThrow(new BusinessException(4000, "轮播图不存在"));
 
             mockMvc.perform(get("/api/resource/banners/-1"))
                     .andExpect(status().isBadRequest())
@@ -132,8 +129,7 @@ class UserBannerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST 请求查询接口返回 405")
         void postBannerReturns405() throws Exception {
-            mockMvc.perform(post("/api/resource/banners"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/resource/banners")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

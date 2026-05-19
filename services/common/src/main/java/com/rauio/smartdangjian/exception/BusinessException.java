@@ -1,8 +1,8 @@
 package com.rauio.smartdangjian.exception;
 
-import lombok.Getter;
-
 import static com.rauio.smartdangjian.constants.ErrorConstants.NOT_FOUND;
+
+import lombok.Getter;
 
 @Getter
 public class BusinessException extends RuntimeException {

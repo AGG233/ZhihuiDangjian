@@ -1,14 +1,19 @@
 package com.rauio.smartdangjian.server.user.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
-import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserPublicVO;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,19 +29,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
+import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
+import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
+import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -75,17 +76,21 @@ class UserServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("getByPassport passport为null时返回null")
-    void getByPassportNullReturnsNull() {
-        User result = userService.getByPassport(null);
-        assertThat(result).isNull();
+    @DisplayName("getByPassport passport为null时抛出BusinessException(EMPTY_ARGS)")
+    void getByPassportNullThrows() {
+        assertThatThrownBy(() -> userService.getByPassport(null))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(UserErrorConstants.EMPTY_ARGS);
     }
 
     @Test
-    @DisplayName("getByPassport passport为空字符串时返回null")
-    void getByPassportEmptyReturnsNull() {
-        User result = userService.getByPassport("");
-        assertThat(result).isNull();
+    @DisplayName("getByPassport passport为空字符串时抛出BusinessException(EMPTY_ARGS)")
+    void getByPassportEmptyThrows() {
+        assertThatThrownBy(() -> userService.getByPassport(""))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(UserErrorConstants.EMPTY_ARGS);
     }
 
     @Test
@@ -126,20 +131,20 @@ class UserServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("get 根据ID调用getById并转换为UserVO返回")
+    @DisplayName("get 根据ID调用getById并转换为UserResponse返回")
     void getByIdConvertsToVO() {
         User user = createUser("u1", "testuser", "test@example.com", "13800138000");
-        UserVO expectedVO = new UserVO();
+        UserResponse expectedVO = new UserResponse();
         expectedVO.setId("u1");
         expectedVO.setUsername("testuser");
 
         doReturn(user).when(userService).getById("u1");
-        when(convertor.toVO(user)).thenReturn(expectedVO);
+        when(convertor.toResponse(user)).thenReturn(expectedVO);
 
-        UserVO result = userService.get("u1");
+        UserResponse result = userService.get("u1");
 
         assertThat(result).isEqualTo(expectedVO);
-        verify(convertor).toVO(user);
+        verify(convertor).toResponse(user);
     }
 
     // ================================================================
@@ -310,9 +315,8 @@ class UserServiceTest {
 
         doReturn(true).when(userService).updateById(any(User.class));
 
-        Boolean result = userService.update("u1", user);
+        userService.update("u1", user);
 
-        assertThat(result).isTrue();
         assertThat(user.getId()).isEqualTo("u1");
         verify(passwordEncoder, never()).encode(anyString());
         verify(userService).updateById(user);
@@ -327,9 +331,8 @@ class UserServiceTest {
         when(passwordEncoder.encode("plainPassword")).thenReturn("encodedNewPassword");
         doReturn(true).when(userService).updateById(any(User.class));
 
-        Boolean result = userService.update("u1", user);
+        userService.update("u1", user);
 
-        assertThat(result).isTrue();
         assertThat(user.getId()).isEqualTo("u1");
         assertThat(user.getPassword()).isEqualTo("encodedNewPassword");
         verify(passwordEncoder).encode("plainPassword");
@@ -344,9 +347,8 @@ class UserServiceTest {
 
         doReturn(true).when(userService).updateById(any(User.class));
 
-        Boolean result = userService.update("u1", user);
+        userService.update("u1", user);
 
-        assertThat(result).isTrue();
         verify(passwordEncoder, never()).encode(anyString());
     }
 
@@ -355,24 +357,24 @@ class UserServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("delete 调用removeById删除并返回结果")
+    @DisplayName("delete 调用removeById删除")
     void deleteCallsRemoveById() {
         doReturn(true).when(userService).removeById("u1");
 
-        Boolean result = userService.delete("u1");
+        userService.delete("u1");
 
-        assertThat(result).isTrue();
         verify(userService).removeById("u1");
     }
 
     @Test
-    @DisplayName("delete 删除不存在的用户返回false")
-    void deleteNonExistentReturnsFalse() {
+    @DisplayName("delete 删除不存在的用户时抛出 BusinessException")
+    void deleteNonExistentThrows() {
         doReturn(false).when(userService).removeById("nonexistent");
 
-        Boolean result = userService.delete("nonexistent");
-
-        assertThat(result).isFalse();
+        assertThatThrownBy(() -> userService.delete("nonexistent"))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(UserErrorConstants.USER_NOT_EXISTS);
     }
 
     // ================================================================
@@ -389,9 +391,8 @@ class UserServiceTest {
         when(passwordEncoder.encode("plainPassword")).thenReturn("encodedPassword");
         doReturn(true).when(userService).save(any(User.class));
 
-        Boolean result = userService.register(user);
+        userService.register(user);
 
-        assertThat(result).isTrue();
         assertThat(user.getPassword()).isEqualTo("encodedPassword");
         verify(passwordEncoder).encode("plainPassword");
         verify(userService).save(user);
@@ -487,9 +488,8 @@ class UserServiceTest {
         when(passwordEncoder.encode("newPassword")).thenReturn("encodedNewPassword");
         doReturn(true).when(userService).updateById(any(User.class));
 
-        Boolean result = userService.changePassword("oldPassword", "newPassword");
+        userService.changePassword("oldPassword", "newPassword");
 
-        assertThat(result).isTrue();
         assertThat(user.getPassword()).isEqualTo("encodedNewPassword");
         verify(passwordEncoder).matches("oldPassword", "encodedOldPassword");
         verify(passwordEncoder).encode("newPassword");
@@ -581,39 +581,39 @@ class UserServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("getPage 按条件分页查询并转换为 UserPublicVO")
+    @DisplayName("getPage 按条件分页查询并转换为 UserPublicResponse")
     void getPageCallsConvertor() {
-        UserDto dto = new UserDto();
-        dto.setUsername("test");
+        UserRequest request = new UserRequest();
+        request.setUsername("test");
 
         List<User> userList = List.of(createUser("u1", "testuser", "test@example.com", "13800138000"));
         Page<User> userPage = new Page<>(1, 10, 1);
         userPage.setRecords(userList);
 
-        List<UserPublicVO> voList = List.of(new UserPublicVO());
+        List<UserPublicResponse> responseList = List.of(new UserPublicResponse());
         doReturn(userPage).when(userService).page(any(Page.class), any(LambdaQueryWrapper.class));
-        when(convertor.toPublicVO(userList)).thenReturn(voList);
+        when(convertor.toPublicResponse(userList)).thenReturn(responseList);
 
-        Page<UserPublicVO> result = userService.getPage(dto, 1, 10);
+        Page<UserPublicResponse> result = userService.getPage(request, 1, 10);
 
         assertThat(result).isNotNull();
-        assertThat(result.getRecords()).isEqualTo(voList);
-        verify(convertor).toPublicVO(userList);
+        assertThat(result.getRecords()).isEqualTo(responseList);
+        verify(convertor).toPublicResponse(userList);
     }
 
     @Test
     @DisplayName("getPage 空条件时返回全部用户")
     void getPageWithEmptyDto() {
-        UserDto dto = new UserDto();
+        UserRequest request = new UserRequest();
 
         Page<User> userPage = new Page<>(1, 10);
         doReturn(userPage).when(userService).page(any(Page.class), any(LambdaQueryWrapper.class));
-        when(convertor.toPublicVO(anyList())).thenReturn(List.of());
+        when(convertor.toPublicResponse(anyList())).thenReturn(List.of());
 
-        Page<UserPublicVO> result = userService.getPage(dto, 1, 10);
+        Page<UserPublicResponse> result = userService.getPage(request, 1, 10);
 
         assertThat(result).isNotNull();
-        verify(convertor).toPublicVO(anyList());
+        verify(convertor).toPublicResponse(anyList());
     }
 
     // ================================================================
@@ -623,15 +623,15 @@ class UserServiceTest {
     @Test
     @DisplayName("getAdminPage 按条件分页查询返回用户实体")
     void getAdminPageReturnsUserPage() {
-        UserDto dto = new UserDto();
-        dto.setRealName("张三");
+        UserRequest request = new UserRequest();
+        request.setRealName("张三");
 
         List<User> userList = List.of(createUser("u1", "testuser", "test@example.com", "13800138000"));
         Page<User> userPage = new Page<>(1, 10, 1);
         userPage.setRecords(userList);
         doReturn(userPage).when(userService).page(any(Page.class), any(LambdaQueryWrapper.class));
 
-        Page<User> result = userService.getAdminPage(dto, 1, 10);
+        Page<User> result = userService.getAdminPage(request, 1, 10);
 
         assertThat(result).isNotNull();
         assertThat(result.getRecords()).hasSize(1);
@@ -640,12 +640,12 @@ class UserServiceTest {
     @Test
     @DisplayName("getAdminPage 空条件时返回所有用户")
     void getAdminPageWithEmptyDto() {
-        UserDto dto = new UserDto();
+        UserRequest request = new UserRequest();
 
         Page<User> userPage = new Page<>(1, 10);
         doReturn(userPage).when(userService).page(any(Page.class), any(LambdaQueryWrapper.class));
 
-        Page<User> result = userService.getAdminPage(dto, 1, 10);
+        Page<User> result = userService.getAdminPage(request, 1, 10);
 
         assertThat(result).isNotNull();
     }

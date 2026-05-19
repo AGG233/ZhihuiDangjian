@@ -1,10 +1,11 @@
 package com.rauio.smartdangjian.aop.annotation;
 
-import com.rauio.smartdangjian.utils.spec.UserType;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 class PermissionAccessAnnotationTest {
 

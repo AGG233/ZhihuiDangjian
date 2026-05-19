@@ -1,26 +1,30 @@
 package com.rauio.smartdangjian.server.user.pojo.convertor;
 
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserPublicVO;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
+import java.util.List;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
-import java.util.List;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
+import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
+import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 
-@Mapper(componentModel = "spring",unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserConvertor {
-    UserVO toVO(User user);
+    UserResponse toResponse(User user);
 
-    UserPublicVO toPublicVO(User user);
+    UserPublicResponse toPublicResponse(User user);
 
-    User toEntity(UserDto userDto);
-    User toEntity(UserVO userVO);
+    User toEntity(UserRequest userRequest);
 
-    UserDto toDto(User user);
+    User toEntity(UserResponse userResponse);
 
-    List<UserVO> toVO(List<User> userList);
-    List<UserPublicVO> toPublicVO(List<User> userList);
-    List<User> toEntityList(List<UserDto> userList);
+    UserRequest toRequest(User user);
+
+    List<UserResponse> toResponse(List<User> userList);
+
+    List<UserPublicResponse> toPublicResponse(List<User> userList);
+
+    List<User> toEntityList(List<UserRequest> userList);
 }

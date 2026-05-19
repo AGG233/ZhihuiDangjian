@@ -1,5 +1,10 @@
 package com.rauio.smartdangjian.server.ai.config;
 
+import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.ai.tool.method.MethodToolCallbackProvider;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import com.rauio.smartdangjian.server.ai.tool.AiQuizGeneratorTool;
 import com.rauio.smartdangjian.server.ai.tool.ArticleDetailTool;
 import com.rauio.smartdangjian.server.ai.tool.ContentReviewTool;
@@ -13,26 +18,18 @@ import com.rauio.smartdangjian.server.ai.tool.RecommendTool;
 import com.rauio.smartdangjian.server.ai.tool.UserInfoTool;
 import com.rauio.smartdangjian.server.ai.tool.UserProfileTool;
 import com.rauio.smartdangjian.server.ai.tool.UserQuizAnswerTool;
-import org.springframework.ai.tool.ToolCallbackProvider;
-import org.springframework.ai.tool.method.MethodToolCallbackProvider;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ToolProviderConfig {
 
     @Bean
     public ToolCallbackProvider userInfoToolProvider(UserInfoTool userInfoTool) {
-        return MethodToolCallbackProvider.builder()
-                .toolObjects(userInfoTool)
-                .build();
+        return MethodToolCallbackProvider.builder().toolObjects(userInfoTool).build();
     }
 
     @Bean
     public ToolCallbackProvider learningToolProvider(LearningTool learningTool) {
-        return MethodToolCallbackProvider.builder()
-                .toolObjects(learningTool)
-                .build();
+        return MethodToolCallbackProvider.builder().toolObjects(learningTool).build();
     }
 
     @Bean
@@ -44,30 +41,22 @@ public class ToolProviderConfig {
 
     @Bean
     public ToolCallbackProvider quizToolProvider(QuizTool quizTool) {
-        return MethodToolCallbackProvider.builder()
-                .toolObjects(quizTool)
-                .build();
+        return MethodToolCallbackProvider.builder().toolObjects(quizTool).build();
     }
 
     @Bean
     public ToolCallbackProvider recommendToolProvider(RecommendTool recommendTool) {
-        return MethodToolCallbackProvider.builder()
-                .toolObjects(recommendTool)
-                .build();
+        return MethodToolCallbackProvider.builder().toolObjects(recommendTool).build();
     }
 
     @Bean
     public ToolCallbackProvider userProfileToolProvider(UserProfileTool userProfileTool) {
-        return MethodToolCallbackProvider.builder()
-                .toolObjects(userProfileTool)
-                .build();
+        return MethodToolCallbackProvider.builder().toolObjects(userProfileTool).build();
     }
 
     @Bean
     public ToolCallbackProvider quizManageToolProvider(QuizManageTool quizManageTool) {
-        return MethodToolCallbackProvider.builder()
-                .toolObjects(quizManageTool)
-                .build();
+        return MethodToolCallbackProvider.builder().toolObjects(quizManageTool).build();
     }
 
     @Bean

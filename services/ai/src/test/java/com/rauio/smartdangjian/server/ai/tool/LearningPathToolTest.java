@@ -1,9 +1,12 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
-import com.rauio.smartdangjian.search.pojo.vo.UserProfileVO;
-import com.rauio.smartdangjian.search.service.UserProfileService;
-import com.rauio.smartdangjian.server.user.service.UserService;
-import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,12 +15,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.model.ToolContext;
 
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
+import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
+import com.rauio.smartdangjian.server.search.service.UserProfileService;
+import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 class LearningPathToolTest {
@@ -37,24 +38,24 @@ class LearningPathToolTest {
         ToolContext toolContext = mock(ToolContext.class);
         when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-1");
 
-        UserProfileVO.LearningStats learning = UserProfileVO.LearningStats.builder()
+        UserProfileResponse.LearningStats learning = UserProfileResponse.LearningStats.builder()
                 .totalDuration(3600)
                 .totalRecords(12)
                 .completedChapters(8)
                 .build();
 
-        UserProfileVO.KnowledgeStats knowledge = UserProfileVO.KnowledgeStats.builder()
+        UserProfileResponse.KnowledgeStats knowledge = UserProfileResponse.KnowledgeStats.builder()
                 .avgProgress(76.5)
                 .completionRate(0.8)
                 .build();
 
-        UserProfileVO.QuizStats quiz = UserProfileVO.QuizStats.builder()
+        UserProfileResponse.QuizStats quiz = UserProfileResponse.QuizStats.builder()
                 .totalAnswers(50)
                 .correctCount(42)
                 .correctRate(0.84)
                 .build();
 
-        UserProfileVO profile = UserProfileVO.builder()
+        UserProfileResponse profile = UserProfileResponse.builder()
                 .userId("user-1")
                 .learning(learning)
                 .knowledge(knowledge)

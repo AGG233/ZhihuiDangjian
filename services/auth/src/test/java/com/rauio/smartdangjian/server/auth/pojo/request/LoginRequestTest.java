@@ -1,9 +1,9 @@
 package com.rauio.smartdangjian.server.auth.pojo.request;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class LoginRequestTest {
 
@@ -18,13 +18,7 @@ class LoginRequestTest {
     @Test
     @DisplayName("全参构造设置所有字段")
     void allArgsConstructorSetsAllFields() {
-        LoginRequest request = new LoginRequest(
-                "admin",
-                "password123",
-                "app",
-                "captcha-uuid-123",
-                "ABCD"
-        );
+        LoginRequest request = new LoginRequest("admin", "password123", "app", "captcha-uuid-123", "ABCD");
 
         assertThat(request.getPassport()).isEqualTo("admin");
         assertThat(request.getPassword()).isEqualTo("password123");

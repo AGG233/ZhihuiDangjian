@@ -1,5 +1,10 @@
 package com.rauio.smartdangjian.server.resource.aop;
 
+import java.util.List;
+import java.util.Objects;
+
+import org.springframework.stereotype.Component;
+
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeContext;
@@ -15,11 +20,8 @@ import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.utils.spec.UserType;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Objects;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -46,13 +48,13 @@ public class ResourceMetaAccessAspect implements DataScopeResolver {
 
         switch (context.getAccess().action()) {
             case CREATE -> {
-                ResourceMetaCreateRequest request = context.require(context.getAccess().body(), ResourceMetaCreateRequest.class, "资源信息不能为空");
+                ResourceMetaCreateRequest request =
+                        context.require(context.getAccess().body(), ResourceMetaCreateRequest.class, "资源信息不能为空");
                 request.setUploaderId(currentUser.getId());
             }
             case READ, UPDATE -> assertMetaInSameUniversity(currentUser, resolveMeta(context));
             case DELETE -> assertDeleteAllowed(currentUser, context);
-            default -> {
-            }
+            default -> {}
         }
     }
 

@@ -1,39 +1,45 @@
 package com.rauio.smartdangjian.controller.user;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserPublicVO;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
-import com.rauio.smartdangjian.server.user.service.UserService;
-import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
+import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
+import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
+import com.rauio.smartdangjian.server.user.controller.user.UserController;
+import com.rauio.smartdangjian.server.user.service.UserService;
+import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = UserControllerTest.TestConfig.class)
 @DisplayName("用户管理接口测试")
 class UserControllerTest extends BaseControllerTest {
 
     @SpringBootConfiguration
-    @ComponentScan(basePackages = "com.rauio.smartdangjian.server.user.controller")
     static class TestConfig extends CommonTestConfig {
+        @Bean
+        public UserController userController(UserService userService) {
+            return new UserController(userService);
+        }
     }
 
     @MockitoBean
@@ -50,7 +56,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 获取用户信息成功")
         void getSuccess() throws Exception {
-            UserVO vo = new UserVO();
+            UserResponse vo = new UserResponse();
             vo.setId("user-001");
             vo.setUsername("zhangsan");
             vo.setRealName("张三");
@@ -68,17 +74,17 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /search - 用户分页搜索成功")
         void searchSuccess() throws Exception {
-            UserPublicVO publicVO = new UserPublicVO();
+            UserPublicResponse publicVO = new UserPublicResponse();
             publicVO.setId("user-001");
             publicVO.setUsername("zhangsan");
             publicVO.setRealName("张三");
             publicVO.setPartyStatus(PartyStatus.FORMAL_MEMBER);
-            Page<UserPublicVO> page = new Page<>(1, 10, 1);
+            Page<UserPublicResponse> page = new Page<>(1, 10, 1);
             page.setRecords(List.of(publicVO));
 
-            when(userService.getPage(any(UserDto.class), eq(1), eq(10))).thenReturn(page);
+            when(userService.getPage(any(UserRequest.class), eq(1), eq(10))).thenReturn(page);
 
-            UserDto dto = new UserDto();
+            UserRequest dto = new UserRequest();
             dto.setUsername("zhang");
             mockMvc.perform(post("/api/user/users/search")
                             .param("pageNum", "1")
@@ -94,15 +100,14 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - 更新用户成功")
         void updateSuccess() throws Exception {
-            when(userService.update(eq("user-001"), any())).thenReturn(true);
+            doNothing().when(userService).update(eq("user-001"), any());
 
             String json = "{\"realName\":\"张三丰\"}";
             mockMvc.perform(put("/api/user/users/user-001")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(json))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value(true));
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test
@@ -126,8 +131,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 BusinessException 返回 400")
         void getThrowsBusinessException() throws Exception {
-            when(userService.get("user-001"))
-                    .thenThrow(new BusinessException(4000, "用户不存在"));
+            when(userService.get("user-001")).thenThrow(new BusinessException(4000, "用户不存在"));
 
             mockMvc.perform(get("/api/user/users/user-001"))
                     .andExpect(status().isBadRequest())
@@ -138,8 +142,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 RuntimeException 返回 500")
         void getThrowsRuntimeException() throws Exception {
-            when(userService.get("user-001"))
-                    .thenThrow(new RuntimeException("数据库异常"));
+            when(userService.get("user-001")).thenThrow(new RuntimeException("数据库异常"));
 
             mockMvc.perform(get("/api/user/users/user-001"))
                     .andExpect(status().isInternalServerError())
@@ -149,7 +152,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /search - Service 抛出 BusinessException 返回 400")
         void searchThrowsBusinessException() throws Exception {
-            when(userService.getPage(any(UserDto.class), anyInt(), anyInt()))
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
                     .thenThrow(new BusinessException(1005, "用户不存在"));
 
             mockMvc.perform(post("/api/user/users/search")
@@ -163,7 +166,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /search - Service 抛出 RuntimeException 返回 500")
         void searchThrowsRuntimeException() throws Exception {
-            when(userService.getPage(any(UserDto.class), anyInt(), anyInt()))
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
                     .thenThrow(new RuntimeException("数据库连接失败"));
 
             mockMvc.perform(post("/api/user/users/search")
@@ -176,8 +179,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - Service 抛出 BusinessException 返回 400")
         void updateThrowsBusinessException() throws Exception {
-            when(userService.update(eq("user-001"), any()))
-                    .thenThrow(new BusinessException(4000, "更新用户失败"));
+            doThrow(new BusinessException(4000, "更新用户失败")).when(userService).update(eq("user-001"), any());
 
             mockMvc.perform(put("/api/user/users/user-001")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -190,8 +192,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - Service 抛出 RuntimeException 返回 500")
         void updateThrowsRuntimeException() throws Exception {
-            when(userService.update(eq("user-001"), any()))
-                    .thenThrow(new RuntimeException("数据库异常"));
+            doThrow(new RuntimeException("数据库异常")).when(userService).update(eq("user-001"), any());
 
             mockMvc.perform(put("/api/user/users/user-001")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -201,16 +202,15 @@ class UserControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("PUT /{id} - Service 返回 false 时 code 为 400")
-        void updateReturnsFalse() throws Exception {
-            when(userService.update(eq("user-001"), any())).thenReturn(false);
+        @DisplayName("PUT /{id} - Service 正常返回 200 OK")
+        void updateNormalSuccess() throws Exception {
+            doNothing().when(userService).update(eq("user-001"), any());
 
             mockMvc.perform(put("/api/user/users/user-001")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"realName\":\"新名称\"}"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value(false))
                     .andExpect(jsonPath("$.message").value("OK"));
         }
 
@@ -246,9 +246,10 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /search - 空结果集返回空列表")
         void searchEmptyResults() throws Exception {
-            Page<UserPublicVO> emptyPage = new Page<>(1, 10, 0);
+            Page<UserPublicResponse> emptyPage = new Page<>(1, 10, 0);
             emptyPage.setRecords(List.of());
-            when(userService.getPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(emptyPage);
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
+                    .thenReturn(emptyPage);
 
             mockMvc.perform(post("/api/user/users/search")
                             .param("pageNum", "1")
@@ -264,9 +265,9 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /search - 空请求体 {} 正常处理")
         void searchWithEmptyBody() throws Exception {
-            Page<UserPublicVO> page = new Page<>(1, 10, 0);
+            Page<UserPublicResponse> page = new Page<>(1, 10, 0);
             page.setRecords(List.of());
-            when(userService.getPage(any(UserDto.class), eq(1), eq(10))).thenReturn(page);
+            when(userService.getPage(any(UserRequest.class), eq(1), eq(10))).thenReturn(page);
 
             mockMvc.perform(post("/api/user/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -278,11 +279,12 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /search - 搜索字段含特殊字符")
         void searchWithSpecialChars() throws Exception {
-            Page<UserPublicVO> page = new Page<>(1, 10, 0);
+            Page<UserPublicResponse> page = new Page<>(1, 10, 0);
             page.setRecords(List.of());
-            when(userService.getPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
-            UserDto dto = new UserDto();
+            UserRequest dto = new UserRequest();
             dto.setUsername("user_@#$%");
             mockMvc.perform(post("/api/user/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -294,11 +296,12 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /search - 搜索字段超长字符串")
         void searchWithLongField() throws Exception {
-            Page<UserPublicVO> page = new Page<>(1, 10, 0);
+            Page<UserPublicResponse> page = new Page<>(1, 10, 0);
             page.setRecords(List.of());
-            when(userService.getPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
-            UserDto dto = new UserDto();
+            UserRequest dto = new UserRequest();
             dto.setUsername("a".repeat(1000));
             mockMvc.perform(post("/api/user/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -310,9 +313,9 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /search - 默认分页参数")
         void searchWithDefaultPagination() throws Exception {
-            Page<UserPublicVO> page = new Page<>(1, 10, 0);
+            Page<UserPublicResponse> page = new Page<>(1, 10, 0);
             page.setRecords(List.of());
-            when(userService.getPage(any(UserDto.class), eq(1), eq(10))).thenReturn(page);
+            when(userService.getPage(any(UserRequest.class), eq(1), eq(10))).thenReturn(page);
 
             mockMvc.perform(post("/api/user/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -343,11 +346,12 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 注入在搜索字段中")
         void xssInSearch() throws Exception {
-            Page<UserPublicVO> page = new Page<>(1, 10, 0);
+            Page<UserPublicResponse> page = new Page<>(1, 10, 0);
             page.setRecords(List.of());
-            when(userService.getPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
-            UserDto dto = new UserDto();
+            UserRequest dto = new UserRequest();
             dto.setUsername("<script>alert('xss')</script>");
             mockMvc.perform(post("/api/user/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -358,11 +362,12 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入在搜索字段中")
         void sqlInjectionInSearch() throws Exception {
-            Page<UserPublicVO> page = new Page<>(1, 10, 0);
+            Page<UserPublicResponse> page = new Page<>(1, 10, 0);
             page.setRecords(List.of());
-            when(userService.getPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
-            UserDto dto = new UserDto();
+            UserRequest dto = new UserRequest();
             dto.setUsername("' OR '1'='1");
             mockMvc.perform(post("/api/user/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -373,22 +378,19 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST 请求获取接口返回 405")
         void getWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/user/users/user-001"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/user/users/user-001")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("GET 请求搜索接口路径匹配 GET /{id} 返回 200")
         void searchWithWrongMethod() throws Exception {
-            mockMvc.perform(get("/api/user/users/search"))
-                    .andExpect(status().isOk());
+            mockMvc.perform(get("/api/user/users/search")).andExpect(status().isOk());
         }
 
         @Test
         @DisplayName("DELETE 请求搜索接口路径匹配 DELETE /{id} 返回 200")
         void searchWithDeleteMethod() throws Exception {
-            mockMvc.perform(delete("/api/user/users/search"))
-                    .andExpect(status().isOk());
+            mockMvc.perform(delete("/api/user/users/search")).andExpect(status().isOk());
         }
     }
 }

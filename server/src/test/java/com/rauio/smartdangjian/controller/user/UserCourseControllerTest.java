@@ -1,13 +1,13 @@
 package com.rauio.smartdangjian.controller.user;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.controller.user.UserCourseController;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
-import com.rauio.smartdangjian.server.content.pojo.vo.PageVO;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -16,19 +16,18 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.controller.user.UserCourseController;
+import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.content.pojo.response.PageResponse;
+import com.rauio.smartdangjian.server.content.service.course.CourseService;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = UserCourseControllerTest.TestConfig.class
-)
+        classes = UserCourseControllerTest.TestConfig.class)
 @DisplayName("用户课程接口测试")
 class UserCourseControllerTest extends BaseControllerTest {
 
@@ -50,7 +49,7 @@ class UserCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 获取课程详情成功")
         void getCourseDetailSuccess() throws Exception {
-            CourseVO vo = CourseTestDataFactory.createCourseVO("course-1");
+            CourseResponse vo = CourseTestDataFactory.createCourseResponse("course-1");
             when(courseService.get("course-1")).thenReturn(vo);
 
             mockMvc.perform(get("/api/content/courses/course-1"))
@@ -67,13 +66,11 @@ class UserCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET / - 分页获取课程列表成功")
         void getPageSuccess() throws Exception {
-            CourseVO vo = CourseTestDataFactory.createCourseVO("course-1");
-            PageVO<Object> pageVO = CourseTestDataFactory.createPageVO(List.of(vo), 1, 1, 10);
+            CourseResponse vo = CourseTestDataFactory.createCourseResponse("course-1");
+            PageResponse<Object> pageVO = CourseTestDataFactory.createPageResponse(List.of(vo), 1, 1, 10);
             when(courseService.getPage(1, 10)).thenReturn(pageVO);
 
-            mockMvc.perform(get("/api/content/courses")
-                            .param("pageNum", "1")
-                            .param("pageSize", "10"))
+            mockMvc.perform(get("/api/content/courses").param("pageNum", "1").param("pageSize", "10"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.total").value(1))
@@ -84,7 +81,7 @@ class UserCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET / - 不传分页参数时使用默认值")
         void getPageWithDefaults() throws Exception {
-            PageVO<Object> emptyPage = CourseTestDataFactory.createEmptyPageVO(1, 10);
+            PageResponse<Object> emptyPage = CourseTestDataFactory.createEmptyPageResponse(1, 10);
             when(courseService.getPage(1, 10)).thenReturn(emptyPage);
 
             mockMvc.perform(get("/api/content/courses"))
@@ -127,8 +124,7 @@ class UserCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 BusinessException 返回 400")
         void getThrowsBusinessException() throws Exception {
-            when(courseService.get("course-1"))
-                    .thenThrow(new BusinessException(4001, "资源不存在"));
+            when(courseService.get("course-1")).thenThrow(new BusinessException(4001, "资源不存在"));
 
             mockMvc.perform(get("/api/content/courses/course-1"))
                     .andExpect(status().isBadRequest())
@@ -139,8 +135,7 @@ class UserCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET / - Service 抛出 RuntimeException 返回 500")
         void getPageThrowsRuntimeException() throws Exception {
-            when(courseService.getPage(anyInt(), anyInt()))
-                    .thenThrow(new RuntimeException("数据库连接失败"));
+            when(courseService.getPage(anyInt(), anyInt())).thenThrow(new RuntimeException("数据库连接失败"));
 
             mockMvc.perform(get("/api/content/courses"))
                     .andExpect(status().isInternalServerError())
@@ -150,8 +145,7 @@ class UserCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /learned/{id} - Service 抛出 BusinessException 返回 400")
         void getLearnedThrowsBusinessException() throws Exception {
-            when(courseService.getByUserId("user-1"))
-                    .thenThrow(new BusinessException(4000, "用户不存在"));
+            when(courseService.getByUserId("user-1")).thenThrow(new BusinessException(4000, "用户不存在"));
 
             mockMvc.perform(get("/api/content/courses/learned/user-1"))
                     .andExpect(status().isBadRequest())
@@ -167,12 +161,10 @@ class UserCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET / - 空分页结果返回空列表")
         void getPageEmptyResult() throws Exception {
-            PageVO<Object> emptyPage = CourseTestDataFactory.createEmptyPageVO(1, 10);
+            PageResponse<Object> emptyPage = CourseTestDataFactory.createEmptyPageResponse(1, 10);
             when(courseService.getPage(1, 10)).thenReturn(emptyPage);
 
-            mockMvc.perform(get("/api/content/courses")
-                            .param("pageNum", "1")
-                            .param("pageSize", "10"))
+            mockMvc.perform(get("/api/content/courses").param("pageNum", "1").param("pageSize", "10"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.total").value(0))
@@ -194,7 +186,7 @@ class UserCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 路径含中文正常处理")
         void getWithChineseId() throws Exception {
-            CourseVO vo = CourseTestDataFactory.createCourseVO("c-1");
+            CourseResponse vo = CourseTestDataFactory.createCourseResponse("c-1");
             when(courseService.get("课程")).thenReturn(vo);
 
             mockMvc.perform(get("/api/content/courses/课程"))
@@ -221,22 +213,19 @@ class UserCourseControllerTest extends BaseControllerTest {
         void sqlInjectionInPath() throws Exception {
             when(courseService.get("' OR '1'='1")).thenReturn(null);
 
-            mockMvc.perform(get("/api/content/courses/{id}", "' OR '1'='1"))
-                    .andExpect(status().isOk());
+            mockMvc.perform(get("/api/content/courses/{id}", "' OR '1'='1")).andExpect(status().isOk());
         }
 
         @Test
         @DisplayName("POST 请求获取接口返回 405")
         void getWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/content/courses/course-1"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/content/courses/course-1")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("DELETE 请求分页接口返回 405")
         void getPageWithWrongMethod() throws Exception {
-            mockMvc.perform(delete("/api/content/courses"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(delete("/api/content/courses")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

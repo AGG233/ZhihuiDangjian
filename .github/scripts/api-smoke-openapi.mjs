@@ -227,8 +227,8 @@ function shouldSkip(pathName, method, operation) {
 
 function authScopeForPath(pathName) {
     if (
-        pathName.startsWith("/auth/captcha") ||
-        pathName === "/auth/login" ||
+        pathName.startsWith("/api/auth/captcha") ||
+        pathName === "/api/auth/login" ||
         pathName.startsWith("/api/school/") ||
         pathName.startsWith("/api/resource/") ||
         pathName.startsWith("/api/ai/")
@@ -294,7 +294,7 @@ async function requestJson(url, options = {}) {
 }
 
 async function login(passport) {
-    const {response, body} = await requestJson(new URL("/auth/login", BASE_URL), {
+    const {response, body} = await requestJson(new URL("/api/auth/login", BASE_URL), {
         method: "POST",
         headers: {
             Accept: "application/json",

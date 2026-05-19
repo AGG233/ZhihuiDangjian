@@ -27,7 +27,9 @@ public class FileInfoResponse {
     @Schema(description = "资源状态：0表示上传中，1表示公开可用，2表示隐藏", example = "1")
     private Integer status;
 
-    @Schema(description = "预签名下载链接，具有时效性", example = "https://bucket.cos.ap-guangzhou.myqcloud.com/image/uuid.png?sign=...")
+    @Schema(
+            description = "预签名下载链接，具有时效性",
+            example = "https://bucket.cos.ap-guangzhou.myqcloud.com/image/uuid.png?sign=...")
     private String downloadUrl;
 
     @Schema(description = "文件大小（字节），COS端获取，可能为null", example = "1048576")

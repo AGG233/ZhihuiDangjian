@@ -1,22 +1,5 @@
 package com.rauio.smartdangjian.controller.user;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.QuizTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.quiz.controller.user.UserQuizAnswerController;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
-import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
-import java.util.List;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -24,10 +7,26 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.QuizTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.quiz.controller.user.UserQuizAnswerController;
+import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
+import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
+
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = UserQuizAnswerControllerTest.TestConfig.class
-)
+        classes = UserQuizAnswerControllerTest.TestConfig.class)
 @DisplayName("用户答题记录接口测试")
 class UserQuizAnswerControllerTest extends BaseControllerTest {
 
@@ -65,8 +64,7 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @DisplayName("GET /api/quiz/answers/users/{id}/quizzes/{quizId} - 获取用户某题答题记录成功")
         void getByQuizIdSuccess() throws Exception {
             UserQuizAnswer answer1 = QuizTestDataFactory.createUserQuizAnswer("answer-1", "user-1", "quiz-1", "opt-1");
-            when(userQuizAnswerService.getByUserIdAndQuizId("user-1", "quiz-1"))
-                    .thenReturn(List.of(answer1));
+            when(userQuizAnswerService.getByUserIdAndQuizId("user-1", "quiz-1")).thenReturn(List.of(answer1));
 
             mockMvc.perform(get("/api/quiz/answers/users/user-1/quizzes/quiz-1"))
                     .andExpect(status().isOk())
@@ -125,8 +123,7 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /users/{id} - Service 抛出 BusinessException 返回 400")
         void getByUserIdThrowsBusinessException() throws Exception {
-            when(userQuizAnswerService.getByUserId("user-1"))
-                    .thenThrow(new BusinessException(4001, "用户不存在"));
+            when(userQuizAnswerService.getByUserId("user-1")).thenThrow(new BusinessException(4001, "用户不存在"));
 
             mockMvc.perform(get("/api/quiz/answers/users/user-1"))
                     .andExpect(status().isBadRequest())
@@ -265,7 +262,8 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 尝试在路径参数中")
         void xssInPath() throws Exception {
-            when(userQuizAnswerService.getByUserId("<script>alert('xss')</script>")).thenReturn(null);
+            when(userQuizAnswerService.getByUserId("<script>alert('xss')</script>"))
+                    .thenReturn(null);
 
             mockMvc.perform(get("/api/quiz/answers/users/%3Cscript%3Ealert('xss')%3C%2Fscript%3E"))
                     .andExpect(status().isOk());
@@ -274,31 +272,29 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入尝试在路径参数中")
         void sqlInjectionInPath() throws Exception {
-            when(userQuizAnswerService.getByUserId("' OR '1'='1")).thenReturn(null);
+            when(userQuizAnswerService.getByUserId("' OR '1'='1")).thenReturn(List.of());
 
             mockMvc.perform(get("/api/quiz/answers/users/{id}", "' OR '1'='1"))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test
         @DisplayName("POST 请求获取答题记录接口返回 405")
         void getWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/quiz/answers/users/user-1"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/quiz/answers/users/user-1")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("PUT 请求获取答题记录接口返回 405")
         void getByUserIdWithWrongMethod() throws Exception {
-            mockMvc.perform(put("/api/quiz/answers/users/user-1"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(put("/api/quiz/answers/users/user-1")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("DELETE 请求获取答题记录接口返回 405")
         void getByUserIdWithDeleteMethod() throws Exception {
-            mockMvc.perform(delete("/api/quiz/answers/users/user-1"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(delete("/api/quiz/answers/users/user-1")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test

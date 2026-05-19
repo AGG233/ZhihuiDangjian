@@ -11,13 +11,13 @@ import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
  */
 public final class FileTestDataFactory {
 
-    private FileTestDataFactory() {
-    }
+    private FileTestDataFactory() {}
 
     // ── FileUploadResponse builders ────────────────────────────────
 
     public static FileUploadResponse createUploadResponse() {
-        return createUploadResponse("file-res-001",
+        return createUploadResponse(
+                "file-res-001",
                 "https://cos.example.com/image/uuid-test.png?sign=abc",
                 "image/uuid-test.png",
                 System.currentTimeMillis() + 600_000L);
@@ -42,16 +42,21 @@ public final class FileTestDataFactory {
                 .hash("abc123def456")
                 .objectKey("image/uuid-test.png")
                 .resourceType(0) // IMAGE
-                .status(1)       // PUBLIC
+                .status(1) // PUBLIC
                 .downloadUrl("https://cos.example.com/image/uuid-test.png?sign=xyz")
                 .size(1048576L)
                 .build();
     }
 
     public static FileInfoResponse createFileInfoResponse(
-            String resourceId, String originalName, String hash,
-            String objectKey, Integer resourceType, Integer status,
-            String downloadUrl, Long size) {
+            String resourceId,
+            String originalName,
+            String hash,
+            String objectKey,
+            Integer resourceType,
+            Integer status,
+            String downloadUrl,
+            Long size) {
         return FileInfoResponse.builder()
                 .resourceId(resourceId)
                 .originalName(originalName)

@@ -1,24 +1,6 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
-import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
-import com.rauio.smartdangjian.server.content.service.ContentBlockService;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
-import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
-import com.rauio.smartdangjian.server.quiz.service.QuizService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.ai.tool.annotation.ToolParam;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.stereotype.Component;
+import static com.rauio.smartdangjian.constants.ErrorConstants.RESOURCE_NOT_EXISTS;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -26,7 +8,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.rauio.smartdangjian.constants.ErrorConstants.RESOURCE_NOT_EXISTS;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
+import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
+import com.rauio.smartdangjian.server.content.service.ContentBlockService;
+import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
+import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
+import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
+import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
+import com.rauio.smartdangjian.server.quiz.service.QuizService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -44,21 +46,22 @@ public class AiQuizGeneratorTool {
     public Map<String, Object> generateMiniQuiz(
             @ToolParam(description = "章节ID，若提供则基于该章节内容生成") String chapterId,
             @ToolParam(description = "主题/知识点，若未提供chapterId则基于主题生成") String topic,
-            @ToolParam(description = "题目类型：single_choice / multiple_choice / true_false，默认single_choice") String questionType,
-            @ToolParam(description = "难度：easy / medium / hard，默认medium") String difficulty
-    ) {
-        String effectiveQuestionType = (questionType == null || questionType.isBlank()) ? "single_choice" : questionType;
+            @ToolParam(description = "题目类型：single_choice / multiple_choice / true_false，默认single_choice")
+                    String questionType,
+            @ToolParam(description = "难度：easy / medium / hard，默认medium") String difficulty) {
+        String effectiveQuestionType =
+                (questionType == null || questionType.isBlank()) ? "single_choice" : questionType;
         String effectiveDifficulty = (difficulty == null || difficulty.isBlank()) ? "medium" : difficulty;
 
         String content;
         String effectiveChapterId = chapterId;
 
         if (chapterId != null && !chapterId.isBlank()) {
-            ChapterVO chapter = chapterService.get(chapterId);
+            ChapterResponse chapter = chapterService.get(chapterId);
             if (chapter == null) {
                 throw new BusinessException(RESOURCE_NOT_EXISTS, "章节不存在");
             }
-            List<ContentBlockVO> blocks = contentBlockService.getByParentId(chapterId);
+            List<ContentBlockResponse> blocks = contentBlockService.getByParentId(chapterId);
             StringBuilder sb = new StringBuilder();
             sb.append("章节标题：").append(chapter.getTitle()).append("\n");
             if (chapter.getDescription() != null) {
@@ -66,7 +69,7 @@ public class AiQuizGeneratorTool {
             }
             if (blocks != null && !blocks.isEmpty()) {
                 sb.append("章节内容：\n");
-                for (ContentBlockVO block : blocks) {
+                for (ContentBlockResponse block : blocks) {
                     String text = getFieldValue(block, "textContent");
                     if (text != null && !text.isBlank()) {
                         sb.append(text).append("\n");
@@ -84,7 +87,12 @@ public class AiQuizGeneratorTool {
         String prompt = buildPrompt(content, effectiveQuestionType, effectiveDifficulty);
         String llmResponse;
         try {
-            llmResponse = chatModelProvider.getObject().call(new Prompt(prompt)).getResult().getOutput().getText();
+            llmResponse = chatModelProvider
+                    .getObject()
+                    .call(new Prompt(prompt))
+                    .getResult()
+                    .getOutput()
+                    .getText();
         } catch (Exception e) {
             log.error("LLM调用失败", e);
             throw new BusinessException(RESOURCE_NOT_EXISTS, "AI生成题目失败：" + e.getMessage());
@@ -128,7 +136,8 @@ public class AiQuizGeneratorTool {
         if (optionsNode != null && optionsNode.isArray()) {
             for (JsonNode optNode : optionsNode) {
                 String optionText = optNode.path("optionText").asText(null);
-                Boolean isCorrect = optNode.has("isCorrect") ? optNode.path("isCorrect").asBoolean() : null;
+                Boolean isCorrect =
+                        optNode.has("isCorrect") ? optNode.path("isCorrect").asBoolean() : null;
                 String orderIndex = optNode.path("orderIndex").asText(null);
 
                 if (optionText == null || optionText.isBlank()) {
@@ -186,7 +195,8 @@ public class AiQuizGeneratorTool {
                     {"optionText": "选项B", "isCorrect": false, "orderIndex": "B"}
                   ]
                 }
-                """.formatted(difficulty, translateQuestionType(questionType), content);
+                """
+                .formatted(difficulty, translateQuestionType(questionType), content);
     }
 
     private String translateQuestionType(String questionType) {
@@ -213,14 +223,14 @@ public class AiQuizGeneratorTool {
         return cleaned.trim();
     }
 
-    private String getFieldValue(ContentBlockVO block, String fieldName) {
+    private String getFieldValue(ContentBlockResponse block, String fieldName) {
         try {
-            java.lang.reflect.Field field = ContentBlockVO.class.getDeclaredField(fieldName);
+            java.lang.reflect.Field field = ContentBlockResponse.class.getDeclaredField(fieldName);
             field.setAccessible(true);
             Object value = field.get(block);
             return value != null ? value.toString() : null;
         } catch (Exception e) {
-            log.warn("无法读取ContentBlockVO字段 {}", fieldName, e);
+            log.warn("无法读取ContentBlockResponse字段 {}", fieldName, e);
             return null;
         }
     }

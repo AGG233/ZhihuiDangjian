@@ -1,20 +1,22 @@
 package com.rauio.smartdangjian.server.learning.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.learning.constants.LearningErrorConstants;
 import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
 import com.rauio.smartdangjian.server.learning.pojo.convertor.UserChapterProgressConvertor;
-import com.rauio.smartdangjian.server.learning.pojo.dto.UserChapterProgressDto;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserChapterProgress;
-import com.rauio.smartdangjian.server.learning.pojo.vo.UserChapterProgressVO;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import com.rauio.smartdangjian.server.learning.pojo.request.UserChapterProgressRequest;
+import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
@@ -29,12 +31,12 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      * @param id 进度记录 ID
      * @return 进度记录视图对象
      */
-    public UserChapterProgressVO get(String id) {
+    public UserChapterProgressResponse get(String id) {
         UserChapterProgress progress = this.getById(id);
         if (progress == null) {
             throw new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在");
         }
-        return convertor.toVO(progress);
+        return convertor.toResponse(progress);
     }
 
     /**
@@ -43,11 +45,11 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      * @param userId 用户 ID
      * @return 进度记录列表
      */
-    public List<UserChapterProgressVO> getByUserId(String userId) {
+    public List<UserChapterProgressResponse> getByUserId(String userId) {
         QueryWrapper<UserChapterProgress> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId);
         List<UserChapterProgress> list = this.list(wrapper);
-        return convertor.toVOList(list);
+        return convertor.toResponseList(list);
     }
 
     /**
@@ -56,11 +58,11 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      * @param chapterId 章节 ID
      * @return 进度记录列表
      */
-    public List<UserChapterProgressVO> getByChapterId(String chapterId) {
+    public List<UserChapterProgressResponse> getByChapterId(String chapterId) {
         QueryWrapper<UserChapterProgress> wrapper = new QueryWrapper<>();
         wrapper.eq("chapter_id", chapterId);
         List<UserChapterProgress> list = this.list(wrapper);
-        return convertor.toVOList(list);
+        return convertor.toResponseList(list);
     }
 
     /**
@@ -70,14 +72,14 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      * @param chapterId 章节 ID
      * @return 进度记录视图对象
      */
-    public UserChapterProgressVO getByUserIdAndChapterId(String userId, String chapterId) {
+    public UserChapterProgressResponse getByUserIdAndChapterId(String userId, String chapterId) {
         QueryWrapper<UserChapterProgress> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId).eq("chapter_id", chapterId);
         UserChapterProgress progress = this.getOne(wrapper);
         if (progress == null) {
             throw new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在");
         }
-        return convertor.toVO(progress);
+        return convertor.toResponse(progress);
     }
 
     /**
@@ -86,19 +88,19 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      * @param dto 进度记录创建参数
      * @return 是否创建成功
      */
-    public Boolean create(UserChapterProgressDto dto) {
+    public Boolean create(UserChapterProgressRequest dto) {
 
         QueryWrapper<UserChapterProgress> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", dto.getUserId()).eq("chapter_id", dto.getChapterId());
         UserChapterProgress existing = this.getOne(wrapper);
-        
+
         if (existing != null) {
             throw new BusinessException(LearningErrorConstants.PROGRESS_ALREADY_EXISTS, "该用户的章节进度记录已存在");
         }
 
         UserChapterProgress progress = convertor.toEntity(dto);
         progress.setUpdatedAt(LocalDateTime.now());
-        
+
         if (progress.getFirstViewedAt() == null) {
             progress.setFirstViewedAt(LocalDateTime.now());
         }
@@ -115,7 +117,7 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      * @param dto 进度记录更新参数
      * @return 是否更新成功
      */
-    public Boolean update(UserChapterProgressDto dto) {
+    public Boolean update(UserChapterProgressRequest dto) {
         if (dto.getId() == null) {
             throw new BusinessException(LearningErrorConstants.PROGRESS_ID_REQUIRED, "更新时必须提供进度ID");
         }

@@ -1,13 +1,13 @@
 package com.rauio.smartdangjian.annotation.validation;
 
-import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.rauio.smartdangjian.annotation.Serializer.SensitiveDataSerializer;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.rauio.smartdangjian.annotation.Serializer.SensitiveDataSerializer;
 
 /**
  * 自定义注解，用于数据脱敏

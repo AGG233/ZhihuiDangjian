@@ -12,8 +12,10 @@ import lombok.Data;
 public class Captcha {
     @Schema(description = "验证码唯一标识")
     private String uuid;
+
     @Schema(description = "验证码文本")
     private String code;
+
     @Schema(description = "验证码图片Base64")
     private String base64;
 }

@@ -1,8 +1,14 @@
 package com.rauio.smartdangjian.server.ai.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,14 +18,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
+import com.rauio.smartdangjian.server.ai.pojo.response.AiChatMessageResponse;
 
 @ExtendWith(MockitoExtension.class)
 class AiMemoryServiceTest {
@@ -139,7 +140,7 @@ class AiMemoryServiceTest {
         AiChatMessage msg2 = AiChatMessage.builder().content("msg2").build();
         doReturn(List.of(msg1, msg2)).when(aiChatMessageService).list(any(LambdaQueryWrapper.class));
 
-        List<AiChatMessage> messages = aiMemoryService.listSessionMessages("user-1", "session-1");
+        List<AiChatMessageResponse> messages = aiMemoryService.listSessionMessages("user-1", "session-1");
 
         assertThat(messages).hasSize(2);
     }

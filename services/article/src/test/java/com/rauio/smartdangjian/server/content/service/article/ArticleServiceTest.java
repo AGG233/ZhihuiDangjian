@@ -1,15 +1,15 @@
 package com.rauio.smartdangjian.server.content.service.article;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.server.content.mapper.CategoryArticleMapper;
-import com.rauio.smartdangjian.server.content.pojo.convertor.ArticleConvertor;
-import com.rauio.smartdangjian.server.content.pojo.dto.ArticleDto;
-import com.rauio.smartdangjian.server.content.pojo.entity.Article;
-import com.rauio.smartdangjian.server.content.pojo.entity.CategoryArticle;
-import com.rauio.smartdangjian.server.content.spec.ArticleStatus;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.server.user.service.UserService;
-import com.rauio.smartdangjian.utils.spec.UserType;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,15 +18,18 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Collections;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.constants.ArticleErrorConstants;
+import com.rauio.smartdangjian.server.content.mapper.CategoryArticleMapper;
+import com.rauio.smartdangjian.server.content.pojo.convertor.ArticleConvertor;
+import com.rauio.smartdangjian.server.content.pojo.request.ArticleRequest;
+import com.rauio.smartdangjian.server.content.pojo.entity.Article;
+import com.rauio.smartdangjian.server.content.pojo.entity.CategoryArticle;
+import com.rauio.smartdangjian.server.content.spec.ArticleStatus;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.service.UserService;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 @ExtendWith(MockitoExtension.class)
 class ArticleServiceTest {
@@ -62,13 +65,14 @@ class ArticleServiceTest {
     }
 
     @Test
-    @DisplayName("get 文章不存在时返回 null")
-    void getReturnsNullWhenArticleNotFound() {
+    @DisplayName("get 文章不存在时抛出 BusinessException")
+    void getThrowsWhenArticleNotFound() {
         doReturn(null).when(articleService).getById("non-existent");
 
-        Article result = articleService.get("non-existent");
-
-        assertThat(result).isNull();
+        assertThatThrownBy(() -> articleService.get("non-existent"))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(ArticleErrorConstants.ARTICLE_NOT_FOUND);
     }
 
     // ================================================================
@@ -110,8 +114,7 @@ class ArticleServiceTest {
         Page<Article> page = new Page<>(1, 10);
         page.setRecords(List.of(
                 Article.builder().id("art-001").title("文章1").build(),
-                Article.builder().id("art-002").title("文章2").build()
-        ));
+                Article.builder().id("art-002").title("文章2").build()));
         doReturn(page).when(articleService).page(any(Page.class));
 
         List<Article> result = articleService.getPage(1, 10);
@@ -138,32 +141,39 @@ class ArticleServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("create 创建文章成功返回 true")
+    @DisplayName("create 创建文章成功")
     void createArticleSuccessfully() {
-        User user = User.builder().id("user-001").username("testuser").userType(UserType.SCHOOL).build();
+        User user = User.builder()
+                .id("user-001")
+                .username("testuser")
+                .userType(UserType.SCHOOL)
+                .build();
         when(userService.getCurrentUser()).thenReturn(user);
         doReturn(true).when(articleService).save(any(Article.class));
 
-        ArticleDto dto = ArticleDto.builder()
+        ArticleRequest dto = ArticleRequest.builder()
                 .title("新文章")
                 .summary("摘要")
                 .status(ArticleStatus.Draft)
                 .build();
 
-        Boolean result = articleService.create(dto);
+        articleService.create(dto);
 
-        assertThat(result).isTrue();
         verify(userService).getCurrentUser();
     }
 
     @Test
     @DisplayName("create 创建文章时 authorId 设置为当前用户 ID")
     void createSetsAuthorIdToCurrentUser() {
-        User user = User.builder().id("user-001").username("author").userType(UserType.SCHOOL).build();
+        User user = User.builder()
+                .id("user-001")
+                .username("author")
+                .userType(UserType.SCHOOL)
+                .build();
         when(userService.getCurrentUser()).thenReturn(user);
         doReturn(true).when(articleService).save(any(Article.class));
 
-        ArticleDto dto = ArticleDto.builder()
+        ArticleRequest dto = ArticleRequest.builder()
                 .title("新文章")
                 .status(ArticleStatus.Published)
                 .build();
@@ -173,20 +183,19 @@ class ArticleServiceTest {
     }
 
     @Test
-    @DisplayName("create 保存失败时返回 false")
-    void createReturnsFalseWhenSaveFails() {
+    @DisplayName("create 保存失败时抛出 BusinessException")
+    void createThrowsWhenSaveFails() {
         User user = User.builder().id("user-001").userType(UserType.SCHOOL).build();
         when(userService.getCurrentUser()).thenReturn(user);
         doReturn(false).when(articleService).save(any(Article.class));
 
-        ArticleDto dto = ArticleDto.builder()
-                .title("失败文章")
-                .status(ArticleStatus.Draft)
-                .build();
+        ArticleRequest dto =
+                ArticleRequest.builder().title("失败文章").status(ArticleStatus.Draft).build();
 
-        Boolean result = articleService.create(dto);
-
-        assertThat(result).isFalse();
+        assertThatThrownBy(() -> articleService.create(dto))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(ArticleErrorConstants.ARTICLE_SAVE_FAILED);
     }
 
     // ================================================================
@@ -194,32 +203,32 @@ class ArticleServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("update 更新文章成功返回 true")
+    @DisplayName("update 更新文章成功")
     void updateArticleSuccessfully() {
         Article entity = Article.builder().id("art-001").title("更新标题").build();
-        when(convertor.toEntity(any(ArticleDto.class))).thenReturn(entity);
+        when(convertor.toEntity(any(ArticleRequest.class))).thenReturn(entity);
         doReturn(true).when(articleService).updateById(entity);
 
-        ArticleDto dto = ArticleDto.builder().id("art-001").title("更新标题").build();
+        ArticleRequest dto = ArticleRequest.builder().id("art-001").title("更新标题").build();
 
-        Boolean result = articleService.update(dto);
+        articleService.update(dto);
 
-        assertThat(result).isTrue();
         verify(convertor).toEntity(dto);
     }
 
     @Test
-    @DisplayName("update 更新失败时返回 false")
-    void updateReturnsFalseWhenUpdateFails() {
+    @DisplayName("update 更新失败时抛出 BusinessException")
+    void updateThrowsWhenUpdateFails() {
         Article entity = Article.builder().id("art-001").title("错误更新").build();
-        when(convertor.toEntity(any(ArticleDto.class))).thenReturn(entity);
+        when(convertor.toEntity(any(ArticleRequest.class))).thenReturn(entity);
         doReturn(false).when(articleService).updateById(entity);
 
-        ArticleDto dto = ArticleDto.builder().id("art-001").title("错误更新").build();
+        ArticleRequest dto = ArticleRequest.builder().id("art-001").title("错误更新").build();
 
-        Boolean result = articleService.update(dto);
-
-        assertThat(result).isFalse();
+        assertThatThrownBy(() -> articleService.update(dto))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(ArticleErrorConstants.ARTICLE_UPDATE_FAILED);
     }
 
     // ================================================================
@@ -227,22 +236,21 @@ class ArticleServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("delete 删除文章成功返回 true")
+    @DisplayName("delete 删除文章成功")
     void deleteArticleSuccessfully() {
         doReturn(true).when(articleService).removeById("art-001");
 
-        Boolean result = articleService.delete("art-001");
-
-        assertThat(result).isTrue();
+        articleService.delete("art-001");
     }
 
     @Test
-    @DisplayName("delete 删除不存在文章返回 false")
-    void deleteReturnsFalseWhenArticleNotFound() {
+    @DisplayName("delete 删除不存在文章时抛出 BusinessException")
+    void deleteThrowsWhenArticleNotFound() {
         doReturn(false).when(articleService).removeById("non-existent");
 
-        Boolean result = articleService.delete("non-existent");
-
-        assertThat(result).isFalse();
+        assertThatThrownBy(() -> articleService.delete("non-existent"))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(ArticleErrorConstants.ARTICLE_DELETE_FAILED);
     }
 }

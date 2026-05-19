@@ -1,12 +1,14 @@
 package com.rauio.smartdangjian.annotation.validation.Validator;
 
-import com.rauio.smartdangjian.annotation.validation.IsPhone;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+
 import jakarta.validation.ConstraintValidatorContext;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
+import com.rauio.smartdangjian.annotation.validation.IsPhone;
 
 class IsPhoneValidatorTest {
 
