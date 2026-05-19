@@ -40,7 +40,7 @@ public class UserLearningRecordController {
     }
 
     @Operation(summary = "获取用户所有学习记录", description = "根据用户ID获取该用户的所有学习记录")
-    @GetMapping("/user/{userId}")
+    @GetMapping("/users/{userId}")
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#userId")
     public Result<List<UserLearningRecordVO>> getByUserId(
@@ -50,7 +50,7 @@ public class UserLearningRecordController {
     }
 
     @Operation(summary = "获取用户章节学习记录", description = "获取指定用户在指定章节的所有学习记录")
-    @GetMapping("/user/{userId}/chapter/{chapterId}")
+    @GetMapping("/users/{userId}/chapters/{chapterId}")
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#userId")
     public Result<List<UserLearningRecordVO>> getByUserIdAndChapterId(
@@ -61,7 +61,7 @@ public class UserLearningRecordController {
     }
 
     @Operation(summary = "创建学习记录", description = "创建新的学习记录")
-    @PostMapping("/")
+    @PostMapping
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#dto.userId")
     public Result<Boolean> create(@RequestBody @Valid UserLearningRecordDto dto) {
@@ -70,7 +70,7 @@ public class UserLearningRecordController {
     }
 
     @Operation(summary = "更新学习记录", description = "更新学习记录")
-    @PutMapping("/")
+    @PutMapping
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#dto.userId")
     public Result<Boolean> update(@RequestBody @Valid UserLearningRecordDto dto) {

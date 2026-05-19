@@ -25,7 +25,7 @@ public class UserLearningGraphSyncController {
     private final UserLearningRecordService userLearningRecordService;
 
     @Operation(summary = "同步用户学习图谱", description = "将用户已学习内容同步到Neo4j图谱")
-    @PostMapping("/user/{userId}/sync")
+    @PostMapping("/users/{userId}/sync")
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#userId")
     public Result<Integer> syncUserGraph(

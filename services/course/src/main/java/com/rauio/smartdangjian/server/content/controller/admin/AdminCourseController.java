@@ -41,7 +41,7 @@ public class AdminCourseController {
     }
 
     @Operation(summary = "创建课程", description = "创建一个新的课程")
-    @PostMapping("/")
+    @PostMapping
     @DataScopeAccess(resource = DataScopeResources.COURSE_ADMIN, action = DataScopeAction.CREATE, body = "#course")
     public Result<Boolean> create(@RequestBody @Valid CourseDto course) throws JsonProcessingException {
         Boolean result = courseService.create(course);

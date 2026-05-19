@@ -40,7 +40,7 @@ public class UserChapterProgressController {
     }
 
     @Operation(summary = "获取用户所有进度", description = "根据用户ID获取该用户的所有章节进度")
-    @GetMapping("/user/{userId}")
+    @GetMapping("/users/{userId}")
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#userId")
     public Result<List<UserChapterProgressVO>> getByUserId(
@@ -50,7 +50,7 @@ public class UserChapterProgressController {
     }
 
     @Operation(summary = "获取用户章节进度", description = "获取指定用户在指定章节的学习进度")
-    @GetMapping("/user/{userId}/chapter/{chapterId}")
+    @GetMapping("/users/{userId}/chapters/{chapterId}")
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#userId")
     public Result<UserChapterProgressVO> getByUserIdAndChapterId(
@@ -61,7 +61,7 @@ public class UserChapterProgressController {
     }
 
     @Operation(summary = "创建进度记录", description = "创建新的用户章节进度记录")
-    @PostMapping("/")
+    @PostMapping
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#dto.userId")
     public Result<Boolean> create(@RequestBody @Valid UserChapterProgressDto dto) {
@@ -70,7 +70,7 @@ public class UserChapterProgressController {
     }
 
     @Operation(summary = "更新进度记录", description = "更新用户章节进度记录")
-    @PutMapping("/")
+    @PutMapping
     @PermissionAccess(UserType.STUDENT)
     @ResourceAccess(id = "#dto.userId")
     public Result<Boolean> update(@RequestBody @Valid UserChapterProgressDto dto) {
