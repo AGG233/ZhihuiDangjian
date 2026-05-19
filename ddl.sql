@@ -301,7 +301,7 @@ create table zhdj.quiz_option
     quiz_id     bigint unsigned      not null comment '所属试题ID',
     option_text text                 not null comment '选项内容',
     is_correct  tinyint(1) default 0 not null comment '是否为正确答案（0:否, 1:是）',
-    order_index char                 null comment '选项标签（A, B, C...）',
+    order_index varchar(10)            null comment '选项标签（A, B, C...）',
     constraint fk_quiz_option_quiz_id
         foreign key (quiz_id) references zhdj.quiz (id)
 )
@@ -383,7 +383,7 @@ create table zhdj.user_quiz_answer
     user_id        bigint unsigned              not null comment '用户ID',
     option_id      bigint unsigned              not null comment '选项ID',
     quiz_id        bigint unsigned              not null comment '所属试题ID',
-    user_answer    json                         not null comment '用户答案（JSON格式, 存储选项ID列表）',
+    user_answer    json                         null comment '用户答案（JSON格式, 存储选项ID列表）',
     is_correct     tinyint(1)                   not null comment '是否完全答对（0:错, 1:对,2不完全对）',
     score_obtained tinyint unsigned default '0' null comment '获得分数',
     time_spent     int unsigned     default '0' null comment '答题耗时（秒）',

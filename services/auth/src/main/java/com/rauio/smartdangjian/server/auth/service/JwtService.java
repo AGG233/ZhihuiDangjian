@@ -215,10 +215,14 @@ public class JwtService{
      * @param token JWT Token
      */
     public void logout(String token) {
-        String id = getIdFromToken(token);
-        long expireTime = JWT.decode(token).getExpiresAt().getTime() - System.currentTimeMillis();
-        if (expireTime > 0) {
-            stringRedisTemplate.opsForValue().set("blacklist:" + token, "1", expireTime, TimeUnit.MILLISECONDS);
+        try {
+            String id = getIdFromToken(token);
+            long expireTime = JWT.decode(token).getExpiresAt().getTime() - System.currentTimeMillis();
+            if (expireTime > 0) {
+                stringRedisTemplate.opsForValue().set("blacklist:" + token, "1", expireTime, TimeUnit.MILLISECONDS);
+            }
+        } catch (Exception e) {
+            log.warn("注销时解析token失败，忽略: {}", e.getMessage());
         }
     }
 }

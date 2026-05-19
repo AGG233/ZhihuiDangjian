@@ -1,5 +1,6 @@
 package com.rauio.smartdangjian.server.content.pojo.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -28,6 +29,7 @@ public class Course {
     @Schema(description = "课程描述")
     private String description;
 
+    @TableField("cover_image_hash")
     @Schema(description = "课程封面资源ID")
     private String coverImageId;
 
