@@ -100,8 +100,7 @@ IGNORE INTO zhdj.user (
     'ci_smoke_manager@example.com',
     '13800138002'
 );
-INSERT IGNORE INTO `user` (`id`, `username`, `user_type`, `status`, `password`) VALUES (1, 'ci_user', 'STUDENT', 'ACTIVE', '$2a$10$dummy');
-  INSERT IGNORE INTO `category` (`id`, `name`, `level`) VALUES (1, 'ci-category', 0);
-  INSERT IGNORE INTO `course` (`id`, `title`, `creator_id`) VALUES (1, 'ci-course', 1);
-  INSERT IGNORE INTO `chapter` (`id`, `course_id`, `title`) VALUES (1, 1, 'ci-chapter');
-  INSERT IGNORE INTO `resource_meta` (`id`, `hash`, `uploader_id`) VALUES (1, 'ci-hash', 1);
+INSERT IGNORE INTO `category` (`id`, `name`, `level`) VALUES (1, 'ci-category', 0);
+INSERT IGNORE INTO `course` (`id`, `title`, `creator_id`) VALUES (1, 'ci-course', 10001);
+INSERT IGNORE INTO `chapter` (`id`, `course_id`, `title`) VALUES (1, 1, 'ci-chapter');
+INSERT IGNORE INTO `resource_meta` (`id`, `hash`, `uploader_id`) VALUES (1, 'ci-hash', 10001);
