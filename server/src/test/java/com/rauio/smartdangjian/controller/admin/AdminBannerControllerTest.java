@@ -166,7 +166,7 @@ class AdminBannerControllerTest extends BaseControllerTest {
                             .content(""))
                     .andExpect(status().isBadRequest());
         }
-    }
+}
 
     @Nested
     @DisplayName("边界场景")
