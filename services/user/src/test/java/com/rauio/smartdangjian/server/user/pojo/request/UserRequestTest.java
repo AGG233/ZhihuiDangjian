@@ -3,7 +3,7 @@ package com.rauio.smartdangjian.server.user.pojo.request;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ class UserRequestTest {
     void settersAndGetters() {
         LocalDateTime joinDate = LocalDateTime.of(2025, 3, 15, 9, 30);
         UserRequest request = new UserRequest();
-        String testPassword = UUID.randomUUID().toString();
+        String testPassword = "pwd-" + ThreadLocalRandom.current().nextInt(100000, 999999);
 
         request.setUserId("user-1");
         request.setUsername("testuser");
