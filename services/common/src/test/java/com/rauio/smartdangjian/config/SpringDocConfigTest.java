@@ -1,10 +1,11 @@
 package com.rauio.smartdangjian.config;
 
-import io.swagger.v3.oas.models.OpenAPI;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import io.swagger.v3.oas.models.OpenAPI;
 
 class SpringDocConfigTest {
 

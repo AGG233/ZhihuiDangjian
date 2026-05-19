@@ -1,10 +1,11 @@
 package com.rauio.smartdangjian.server.content.pojo.dto;
 
-import com.rauio.smartdangjian.server.content.spec.ArticleStatus;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.rauio.smartdangjian.server.content.spec.ArticleStatus;
 
 class ArticleDtoTest {
 
@@ -29,10 +30,8 @@ class ArticleDtoTest {
     @Test
     @DisplayName("builder 构造 ArticleDto 状态为 Draft")
     void builderCreatesArticleDtoWithDraftStatus() {
-        ArticleDto dto = ArticleDto.builder()
-                .title("草稿文章")
-                .status(ArticleStatus.Draft)
-                .build();
+        ArticleDto dto =
+                ArticleDto.builder().title("草稿文章").status(ArticleStatus.Draft).build();
 
         assertThat(dto.getStatus()).isEqualTo(ArticleStatus.Draft);
     }

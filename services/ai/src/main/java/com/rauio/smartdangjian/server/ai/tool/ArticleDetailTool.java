@@ -1,22 +1,24 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.pojo.entity.Article;
-import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
-import com.rauio.smartdangjian.server.content.service.ContentBlockService;
-import com.rauio.smartdangjian.server.content.service.article.ArticleService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.ai.tool.annotation.ToolParam;
-import org.springframework.stereotype.Component;
+import static com.rauio.smartdangjian.constants.ErrorConstants.RESOURCE_NOT_EXISTS;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.rauio.smartdangjian.constants.ErrorConstants.RESOURCE_NOT_EXISTS;
+import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.stereotype.Component;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.pojo.entity.Article;
+import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
+import com.rauio.smartdangjian.server.content.service.ContentBlockService;
+import com.rauio.smartdangjian.server.content.service.article.ArticleService;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -27,10 +29,8 @@ public class ArticleDetailTool {
 
     @Tool(name = "searchArticles", description = "根据关键词搜索文章（匹配标题）")
     public List<Map<String, Object>> searchArticles(@ToolParam(description = "搜索关键词") String keyword) {
-        List<Article> articles = articleService.list(
-                new LambdaQueryWrapper<Article>()
-                        .like(Article::getTitle, keyword)
-        );
+        List<Article> articles =
+                articleService.list(new LambdaQueryWrapper<Article>().like(Article::getTitle, keyword));
         return articles.stream()
                 .map(article -> {
                     Map<String, Object> map = new HashMap<>();

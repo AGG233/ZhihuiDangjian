@@ -1,5 +1,12 @@
 package com.rauio.smartdangjian.security;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.lang.reflect.Method;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.server.content.controller.user.UserCourseController;
@@ -7,12 +14,6 @@ import com.rauio.smartdangjian.server.graph.controller.user.UserKnowledgeGraphCo
 import com.rauio.smartdangjian.server.learning.controller.user.UserLearningGraphSyncController;
 import com.rauio.smartdangjian.server.resource.controller.user.FileController;
 import com.rauio.smartdangjian.utils.spec.UserType;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
-import java.lang.reflect.Method;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("关键接口权限注解回归测试")
 class CriticalEndpointAnnotationTest {
@@ -43,7 +44,8 @@ class CriticalEndpointAnnotationTest {
         assertPermissionAndResource(UserLearningGraphSyncController.class, "syncUserGraph", "#userId", "USER");
     }
 
-    private void assertPermissionAndResource(Class<?> controllerClass, String methodName, String expectedSpel, String expectedType) {
+    private void assertPermissionAndResource(
+            Class<?> controllerClass, String methodName, String expectedSpel, String expectedType) {
         assertStudentPermission(controllerClass, methodName);
         Method method = findMethod(controllerClass, methodName);
 

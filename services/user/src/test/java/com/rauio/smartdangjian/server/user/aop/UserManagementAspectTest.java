@@ -1,5 +1,17 @@
 package com.rauio.smartdangjian.server.user.aop;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeContext;
@@ -11,19 +23,6 @@ import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.utils.spec.UserType;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserManagementAspectTest {
@@ -158,7 +157,11 @@ class UserManagementAspectTest {
     void readSchoolSameUniversityPasses() {
         stubAction(DataScopeAction.READ);
         stubSchoolUser("univ-1");
-        User target = User.builder().id("target-id").userType(UserType.STUDENT).universityId("univ-1").build();
+        User target = User.builder()
+                .id("target-id")
+                .userType(UserType.STUDENT)
+                .universityId("univ-1")
+                .build();
         when(access.id()).thenReturn("#id");
         when(context.require("#id", String.class, "用户ID不能为空")).thenReturn("target-id");
         when(userMapper.selectById("target-id")).thenReturn(target);
@@ -171,7 +174,11 @@ class UserManagementAspectTest {
     void readSchoolDifferentUniversityThrows() {
         stubAction(DataScopeAction.READ);
         stubSchoolUser("univ-1");
-        User target = User.builder().id("target-id").userType(UserType.STUDENT).universityId("univ-2").build();
+        User target = User.builder()
+                .id("target-id")
+                .userType(UserType.STUDENT)
+                .universityId("univ-2")
+                .build();
         when(access.id()).thenReturn("#id");
         when(context.require("#id", String.class, "用户ID不能为空")).thenReturn("target-id");
         when(userMapper.selectById("target-id")).thenReturn(target);
@@ -231,7 +238,8 @@ class UserManagementAspectTest {
     void createSchoolOwnStudentPasses() {
         stubAction(DataScopeAction.CREATE);
         stubSchoolUser("univ-1");
-        User payload = User.builder().userType(UserType.STUDENT).universityId("univ-1").build();
+        User payload =
+                User.builder().userType(UserType.STUDENT).universityId("univ-1").build();
         when(access.body()).thenReturn("#user");
         when(context.require("#user", User.class, "用户信息不能为空")).thenReturn(payload);
 
@@ -257,7 +265,8 @@ class UserManagementAspectTest {
     void createSchoolOtherUniversityThrows() {
         stubAction(DataScopeAction.CREATE);
         stubSchoolUser("univ-1");
-        User payload = User.builder().userType(UserType.STUDENT).universityId("univ-2").build();
+        User payload =
+                User.builder().userType(UserType.STUDENT).universityId("univ-2").build();
         when(access.body()).thenReturn("#user");
         when(context.require("#user", User.class, "用户信息不能为空")).thenReturn(payload);
 
@@ -409,7 +418,11 @@ class UserManagementAspectTest {
     void deleteSchoolOwnStudentPasses() {
         stubAction(DataScopeAction.DELETE);
         stubSchoolUser("univ-1");
-        User target = User.builder().id("target-id").userType(UserType.STUDENT).universityId("univ-1").build();
+        User target = User.builder()
+                .id("target-id")
+                .userType(UserType.STUDENT)
+                .universityId("univ-1")
+                .build();
         when(access.id()).thenReturn("#id");
         when(context.require("#id", String.class, "用户ID不能为空")).thenReturn("target-id");
         when(userMapper.selectById("target-id")).thenReturn(target);
@@ -422,7 +435,11 @@ class UserManagementAspectTest {
     void deleteSchoolOtherUniversityThrows() {
         stubAction(DataScopeAction.DELETE);
         stubSchoolUser("univ-1");
-        User target = User.builder().id("target-id").userType(UserType.STUDENT).universityId("univ-2").build();
+        User target = User.builder()
+                .id("target-id")
+                .userType(UserType.STUDENT)
+                .universityId("univ-2")
+                .build();
         when(access.id()).thenReturn("#id");
         when(context.require("#id", String.class, "用户ID不能为空")).thenReturn("target-id");
         when(userMapper.selectById("target-id")).thenReturn(target);

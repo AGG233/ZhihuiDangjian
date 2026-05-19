@@ -1,8 +1,11 @@
 package com.rauio.smartdangjian.server.quiz.service;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
-import com.rauio.smartdangjian.server.quiz.mapper.QuizMapper;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,11 +14,9 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.rauio.smartdangjian.server.quiz.mapper.QuizMapper;
+import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 
 @ExtendWith(MockitoExtension.class)
 class QuizServiceTest {
@@ -57,8 +58,16 @@ class QuizServiceTest {
     @Test
     @DisplayName("getByChapterId 根据章节 ID 返回测验列表")
     void getByChapterIdReturnsQuizList() {
-        Quiz quiz1 = Quiz.builder().id("quiz-1").chapterId("chapter-1").question("Q1").build();
-        Quiz quiz2 = Quiz.builder().id("quiz-2").chapterId("chapter-1").question("Q2").build();
+        Quiz quiz1 = Quiz.builder()
+                .id("quiz-1")
+                .chapterId("chapter-1")
+                .question("Q1")
+                .build();
+        Quiz quiz2 = Quiz.builder()
+                .id("quiz-2")
+                .chapterId("chapter-1")
+                .question("Q2")
+                .build();
         doReturn(List.of(quiz1, quiz2)).when(quizService).list(any(Wrapper.class));
 
         List<Quiz> result = quizService.getByChapterId("chapter-1");

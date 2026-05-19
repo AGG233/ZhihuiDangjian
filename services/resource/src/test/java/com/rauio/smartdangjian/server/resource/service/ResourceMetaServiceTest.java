@@ -1,12 +1,12 @@
 package com.rauio.smartdangjian.server.resource.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.resource.Constant.ResourceStatusConstants;
-import com.rauio.smartdangjian.server.resource.mapper.ResourceMetaMapper;
-import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
-import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaCreateRequest;
-import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaUpdateRequest;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,13 +15,13 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.resource.Constant.ResourceStatusConstants;
+import com.rauio.smartdangjian.server.resource.mapper.ResourceMetaMapper;
+import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
+import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaCreateRequest;
+import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaUpdateRequest;
 
 @ExtendWith(MockitoExtension.class)
 class ResourceMetaServiceTest {
@@ -89,7 +89,8 @@ class ResourceMetaServiceTest {
         request.setResourceType(0);
 
         doReturn(ResourceMeta.builder().id("existing").hash(HASH).build())
-                .when(resourceMetaService).getOne(any(LambdaQueryWrapper.class));
+                .when(resourceMetaService)
+                .getOne(any(LambdaQueryWrapper.class));
 
         assertThatThrownBy(() -> resourceMetaService.create(request))
                 .isInstanceOf(BusinessException.class)
@@ -120,7 +121,8 @@ class ResourceMetaServiceTest {
     @DisplayName("get 根据ID获取资源成功")
     void getSuccess() {
         doReturn(ResourceMeta.builder().id(RESOURCE_ID).hash(HASH).build())
-                .when(resourceMetaService).getById(RESOURCE_ID);
+                .when(resourceMetaService)
+                .getById(RESOURCE_ID);
 
         ResourceMeta result = resourceMetaService.get(RESOURCE_ID);
 
@@ -144,7 +146,8 @@ class ResourceMetaServiceTest {
     @DisplayName("getByHash 根据哈希获取资源成功")
     void getByHashSuccess() {
         doReturn(ResourceMeta.builder().id(RESOURCE_ID).hash(HASH).build())
-                .when(resourceMetaService).getOne(any(LambdaQueryWrapper.class));
+                .when(resourceMetaService)
+                .getOne(any(LambdaQueryWrapper.class));
 
         ResourceMeta result = resourceMetaService.getByHash(HASH);
 
@@ -193,8 +196,14 @@ class ResourceMetaServiceTest {
     @DisplayName("update 更新资源成功")
     void updateSuccess() {
         ResourceMeta existing = ResourceMeta.builder()
-                .id(RESOURCE_ID).uploaderId("user-1").hash(HASH).objectKey(OBJECT_KEY)
-                .originalName("old.png").resourceType(0).status(1).build();
+                .id(RESOURCE_ID)
+                .uploaderId("user-1")
+                .hash(HASH)
+                .objectKey(OBJECT_KEY)
+                .originalName("old.png")
+                .resourceType(0)
+                .status(1)
+                .build();
         doReturn(existing).when(resourceMetaService).getById(RESOURCE_ID);
         doReturn(null).when(resourceMetaService).getOne(any(LambdaQueryWrapper.class));
 
@@ -214,7 +223,9 @@ class ResourceMetaServiceTest {
     @Test
     @DisplayName("delete 删除资源成功")
     void deleteSuccess() {
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).build()).when(resourceMetaService).getById(RESOURCE_ID);
+        doReturn(ResourceMeta.builder().id(RESOURCE_ID).build())
+                .when(resourceMetaService)
+                .getById(RESOURCE_ID);
         doReturn(true).when(resourceMetaService).removeById(RESOURCE_ID);
 
         Boolean result = resourceMetaService.delete(RESOURCE_ID);
@@ -225,7 +236,9 @@ class ResourceMetaServiceTest {
     @Test
     @DisplayName("delete 删除失败抛出异常")
     void deleteFailed() {
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).build()).when(resourceMetaService).getById(RESOURCE_ID);
+        doReturn(ResourceMeta.builder().id(RESOURCE_ID).build())
+                .when(resourceMetaService)
+                .getById(RESOURCE_ID);
         doReturn(false).when(resourceMetaService).removeById(RESOURCE_ID);
 
         assertThatThrownBy(() -> resourceMetaService.delete(RESOURCE_ID))
@@ -239,8 +252,11 @@ class ResourceMetaServiceTest {
     @DisplayName("deleteByHash 按哈希删除资源成功")
     void deleteByHashSuccess() {
         doReturn(ResourceMeta.builder().id(RESOURCE_ID).hash(HASH).build())
-                .when(resourceMetaService).getOne(any(LambdaQueryWrapper.class));
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).build()).when(resourceMetaService).getById(RESOURCE_ID);
+                .when(resourceMetaService)
+                .getOne(any(LambdaQueryWrapper.class));
+        doReturn(ResourceMeta.builder().id(RESOURCE_ID).build())
+                .when(resourceMetaService)
+                .getById(RESOURCE_ID);
         doReturn(true).when(resourceMetaService).removeById(RESOURCE_ID);
 
         Boolean result = resourceMetaService.deleteByHash(HASH);
@@ -254,8 +270,11 @@ class ResourceMetaServiceTest {
     @DisplayName("deleteByHashes 批量按哈希删除")
     void deleteByHashes() {
         doReturn(ResourceMeta.builder().id(RESOURCE_ID).hash(HASH).build())
-                .when(resourceMetaService).getOne(any(LambdaQueryWrapper.class));
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).build()).when(resourceMetaService).getById(RESOURCE_ID);
+                .when(resourceMetaService)
+                .getOne(any(LambdaQueryWrapper.class));
+        doReturn(ResourceMeta.builder().id(RESOURCE_ID).build())
+                .when(resourceMetaService)
+                .getById(RESOURCE_ID);
         doReturn(true).when(resourceMetaService).removeById(RESOURCE_ID);
 
         Boolean result = resourceMetaService.deleteByHashes(List.of(HASH));

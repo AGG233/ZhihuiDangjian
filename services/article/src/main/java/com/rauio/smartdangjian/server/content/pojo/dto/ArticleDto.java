@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.server.content.pojo.dto;
 
 import com.rauio.smartdangjian.server.content.spec.ArticleStatus;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
@@ -10,8 +11,9 @@ import lombok.Data;
 @Schema(description = "文章请求体")
 public class ArticleDto {
 
-    @Schema(description = "文章ID，默认留空",hidden = true)
+    @Schema(description = "文章ID，默认留空", hidden = true)
     private String id;
+
     @Schema(description = "作者的用户ID")
     private String authorId;
 

@@ -1,6 +1,7 @@
 plugins {
     `java-library`
     id("io.spring.dependency-management")
+    id("com.diffplug.spotless")
     jacoco
 }
 
@@ -18,6 +19,19 @@ java {
 repositories {
     maven { url = uri("https://maven.aliyun.com/repository/public") }
     mavenCentral()
+}
+
+spotless {
+    java {
+        palantirJavaFormat()
+        importOrder("java", "javax", "jakarta", "org", "com", "")
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+tasks.named("check") {
+    dependsOn("spotlessCheck")
 }
 
 dependencyManagement {

@@ -1,5 +1,10 @@
 package com.rauio.smartdangjian.server.ai.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
@@ -9,12 +14,8 @@ import com.rauio.smartdangjian.server.ai.pojo.entity.AiPrompts;
 import com.rauio.smartdangjian.server.ai.pojo.enums.PromptRoleEnum;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptCreateRequest;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptUpdateRequest;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -65,7 +66,8 @@ public class PromptService extends ServiceImpl<AiPromptsMapper, AiPrompts> {
         return this.list(new LambdaQueryWrapper<AiPrompts>()
                 .eq(AiPrompts::getEnabled, true)
                 .eq(AiPrompts::getRole, PromptRoleEnum.SYSTEM)
-                .and(wrapper -> wrapper.eq(AiPrompts::getAgentType, "COMMON").or().eq(AiPrompts::getAgentType, agentType))
+                .and(wrapper ->
+                        wrapper.eq(AiPrompts::getAgentType, "COMMON").or().eq(AiPrompts::getAgentType, agentType))
                 .orderByAsc(AiPrompts::getSort, AiPrompts::getUpdatedAt));
     }
 

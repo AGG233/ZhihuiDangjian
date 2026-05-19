@@ -1,10 +1,10 @@
 package com.rauio.smartdangjian.server.graph.pojo.vo;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.List;
 
 @Data
 @Builder
@@ -12,6 +12,7 @@ import java.util.List;
 public class KnowledgeGraphVO {
     @Schema(description = "节点列表")
     private List<GraphNodeVO> nodes;
+
     @Schema(description = "边列表")
     private List<GraphEdgeVO> edges;
 }

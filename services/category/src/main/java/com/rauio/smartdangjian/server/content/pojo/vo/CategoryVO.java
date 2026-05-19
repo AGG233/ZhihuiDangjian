@@ -1,9 +1,9 @@
 package com.rauio.smartdangjian.server.content.pojo.vo;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
-import java.util.List;
 
 @Data
 @Schema(description = "分类视图对象，包含递归子分类树")

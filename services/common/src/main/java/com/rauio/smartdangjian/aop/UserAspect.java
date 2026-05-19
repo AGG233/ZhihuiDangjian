@@ -1,23 +1,24 @@
 package com.rauio.smartdangjian.aop;
 
-import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
-import com.rauio.smartdangjian.constants.ErrorConstants;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.utils.SecurityUtils;
-import com.rauio.smartdangjian.utils.spec.UserType;
+import java.lang.reflect.Method;
+
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.core.annotation.AnnotationUtils;
 
-import java.lang.reflect.Method;
+import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
+import com.rauio.smartdangjian.constants.ErrorConstants;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.utils.SecurityUtils;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 @Aspect
 public class UserAspect {
 
-    @Before("@annotation(com.rauio.smartdangjian.aop.annotation.PermissionAccess) || " +
-            "@within(com.rauio.smartdangjian.aop.annotation.PermissionAccess)")
+    @Before("@annotation(com.rauio.smartdangjian.aop.annotation.PermissionAccess) || "
+            + "@within(com.rauio.smartdangjian.aop.annotation.PermissionAccess)")
     public void checkPermissionAccess(JoinPoint joinPoint) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();

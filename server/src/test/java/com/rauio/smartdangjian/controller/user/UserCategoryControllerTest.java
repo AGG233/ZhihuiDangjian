@@ -1,17 +1,14 @@
 package com.rauio.smartdangjian.controller.user;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.CategoryTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
-import com.rauio.smartdangjian.server.content.pojo.entity.CategoryArticle;
-import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
-import com.rauio.smartdangjian.server.content.pojo.vo.CategoryVO;
-import com.rauio.smartdangjian.server.content.service.article.ArticleService;
-import com.rauio.smartdangjian.server.content.service.category.CategoryService;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
-import com.rauio.smartdangjian.server.content.controller.user.UserCategoryController;
-import com.rauio.smartdangjian.utils.spec.UserType;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -22,23 +19,30 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.net.URI;
-import java.util.Collections;
-import java.util.List;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.CategoryTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.server.content.controller.user.UserCategoryController;
+import com.rauio.smartdangjian.server.content.pojo.entity.CategoryArticle;
+import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
+import com.rauio.smartdangjian.server.content.pojo.vo.CategoryVO;
+import com.rauio.smartdangjian.server.content.service.article.ArticleService;
+import com.rauio.smartdangjian.server.content.service.category.CategoryService;
+import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = UserCategoryControllerTest.TestConfig.class)
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+        classes = UserCategoryControllerTest.TestConfig.class)
 @DisplayName("用户目录接口测试")
 class UserCategoryControllerTest extends BaseControllerTest {
 
     @SpringBootConfiguration
     static class TestConfig extends CommonTestConfig {
         @Bean
-        public UserCategoryController userCategoryController(CategoryService categoryService, CourseService courseService, ArticleService articleService) {
+        public UserCategoryController userCategoryController(
+                CategoryService categoryService, CourseService courseService, ArticleService articleService) {
             return new UserCategoryController(categoryService, courseService, articleService);
         }
     }
@@ -70,11 +74,9 @@ class UserCategoryControllerTest extends BaseControllerTest {
                 return "uni1";
             }
         };
-        SecurityContextHolder.getContext().setAuthentication(
-                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                        student, null, Collections.emptyList()
-                )
-        );
+        SecurityContextHolder.getContext()
+                .setAuthentication(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                        student, null, Collections.emptyList()));
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -208,8 +210,7 @@ class UserCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 BusinessException 返回 400")
         void getCategoryNotFound() throws Exception {
-            when(categoryService.get("nonexistent"))
-                    .thenThrow(new BusinessException(4001, "目录不存在"));
+            when(categoryService.get("nonexistent")).thenThrow(new BusinessException(4001, "目录不存在"));
 
             mockMvc.perform(get("/api/content/categories/nonexistent"))
                     .andExpect(status().isBadRequest())
@@ -220,8 +221,7 @@ class UserCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 RuntimeException 返回 500")
         void getCategoryRuntimeException() throws Exception {
-            when(categoryService.get("cat-001"))
-                    .thenThrow(new RuntimeException("数据库连接失败"));
+            when(categoryService.get("cat-001")).thenThrow(new RuntimeException("数据库连接失败"));
 
             mockMvc.perform(get("/api/content/categories/cat-001"))
                     .andExpect(status().isInternalServerError())
@@ -231,8 +231,7 @@ class UserCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id}/children - Service 抛出异常返回 400")
         void getChildrenServiceException() throws Exception {
-            when(categoryService.getByParentId("nonexistent"))
-                    .thenThrow(new BusinessException(4001, "目录不存在"));
+            when(categoryService.getByParentId("nonexistent")).thenThrow(new BusinessException(4001, "目录不存在"));
 
             mockMvc.perform(get("/api/content/categories/nonexistent/children"))
                     .andExpect(status().isBadRequest())
@@ -242,8 +241,7 @@ class UserCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{categoryId}/courses - Service 抛出 BusinessException 返回 400")
         void getCoursesServiceException() throws Exception {
-            when(courseService.getByCategoryId("invalid"))
-                    .thenThrow(new BusinessException(4001, "分类不存在"));
+            when(courseService.getByCategoryId("invalid")).thenThrow(new BusinessException(4001, "分类不存在"));
 
             mockMvc.perform(get("/api/content/categories/invalid/courses"))
                     .andExpect(status().isBadRequest())
@@ -253,8 +251,7 @@ class UserCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{categoryId}/articles - Service 抛出 BusinessException 返回 400")
         void getArticlesServiceException() throws Exception {
-            when(articleService.getByCategoryId("invalid"))
-                    .thenThrow(new BusinessException(4001, "分类不存在"));
+            when(articleService.getByCategoryId("invalid")).thenThrow(new BusinessException(4001, "分类不存在"));
 
             mockMvc.perform(get("/api/content/categories/invalid/articles"))
                     .andExpect(status().isBadRequest())
@@ -318,7 +315,8 @@ class UserCategoryControllerTest extends BaseControllerTest {
         @DisplayName("GET /{id} - 目录包含深层嵌套子节点")
         void getCategoryWithDeepNestedChildren() throws Exception {
             CategoryVO grandchild = CategoryTestDataFactory.createCategoryVO("grandchild-001", "孙节点", "child-001");
-            CategoryVO child = CategoryTestDataFactory.createCategoryVO("child-001", "子节点", "cat-001", List.of(grandchild));
+            CategoryVO child =
+                    CategoryTestDataFactory.createCategoryVO("child-001", "子节点", "cat-001", List.of(grandchild));
             CategoryVO parent = CategoryTestDataFactory.createCategoryVO("cat-001", "根节点", null, List.of(child));
 
             when(categoryService.get("cat-001")).thenReturn(parent);
@@ -363,8 +361,7 @@ class UserCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 注入尝试在 path 参数中 — 作为普通参数传递")
         void xssInPathParameter() throws Exception {
-            when(categoryService.get("<script>alert('xss')</script>"))
-                    .thenThrow(new BusinessException(4001, "目录不存在"));
+            when(categoryService.get("<script>alert('xss')</script>")).thenThrow(new BusinessException(4001, "目录不存在"));
 
             mockMvc.perform(get(URI.create("/api/content/categories/%3Cscript%3Ealert('xss')%3C%2Fscript%3E")))
                     .andExpect(status().isBadRequest())
@@ -374,8 +371,7 @@ class UserCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入尝试在 path 参数中 — 参数化查询防护")
         void sqlInjectionInPathParameter() throws Exception {
-            when(categoryService.get("' OR '1'='1"))
-                    .thenThrow(new BusinessException(4001, "目录不存在"));
+            when(categoryService.get("' OR '1'='1")).thenThrow(new BusinessException(4001, "目录不存在"));
 
             mockMvc.perform(get("/api/content/categories/{id}", "' OR '1'='1"))
                     .andExpect(status().isBadRequest())

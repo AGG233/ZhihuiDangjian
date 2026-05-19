@@ -1,22 +1,5 @@
 package com.rauio.smartdangjian.controller.admin;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.AiTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.ai.controller.admin.AdminSkillController;
-import com.rauio.smartdangjian.server.ai.pojo.entity.AiSkill;
-import com.rauio.smartdangjian.server.ai.service.SkillService;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
-import java.util.List;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -27,10 +10,27 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.AiTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.ai.controller.admin.AdminSkillController;
+import com.rauio.smartdangjian.server.ai.pojo.entity.AiSkill;
+import com.rauio.smartdangjian.server.ai.service.SkillService;
+
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminSkillControllerTest.TestConfig.class
-)
+        classes = AdminSkillControllerTest.TestConfig.class)
 @DisplayName("管理员AI技能接口测试")
 class AdminSkillControllerTest extends BaseControllerTest {
 
@@ -76,10 +76,8 @@ class AdminSkillControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET / - 查询技能列表成功")
         void listSkillsSuccess() throws Exception {
-            List<AiSkill> list = List.of(
-                    AiTestDataFactory.createAiSkill("skill-1"),
-                    AiTestDataFactory.createAiSkill("skill-2")
-            );
+            List<AiSkill> list =
+                    List.of(AiTestDataFactory.createAiSkill("skill-1"), AiTestDataFactory.createAiSkill("skill-2"));
             when(skillService.list()).thenReturn(list);
 
             mockMvc.perform(get("/api/admin/ai/skills"))
@@ -91,8 +89,7 @@ class AdminSkillControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - 更新技能成功")
         void updateSkillSuccess() throws Exception {
-            when(skillService.update(eq("skill-1"), any()))
-                    .thenReturn(AiTestDataFactory.createAiSkill("skill-1"));
+            when(skillService.update(eq("skill-1"), any())).thenReturn(AiTestDataFactory.createAiSkill("skill-1"));
 
             mockMvc.perform(put("/api/admin/ai/skills/skill-1")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -121,8 +118,7 @@ class AdminSkillControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 400")
         void serviceThrowsBusinessException() throws Exception {
-            when(skillService.getById("nonexistent"))
-                    .thenThrow(new BusinessException(4000, "技能不存在"));
+            when(skillService.getById("nonexistent")).thenThrow(new BusinessException(4000, "技能不存在"));
 
             mockMvc.perform(get("/api/admin/ai/skills/nonexistent"))
                     .andExpect(status().isBadRequest())
@@ -233,7 +229,8 @@ class AdminSkillControllerTest extends BaseControllerTest {
         void xssInName() throws Exception {
             when(skillService.create(any())).thenReturn(AiTestDataFactory.createAiSkill("skill-1"));
 
-            String json = "{\"agentType\":\"CHAT\",\"name\":\"<script>alert('xss')</script>\",\"description\":\"test\",\"content\":\"test\"}";
+            String json =
+                    "{\"agentType\":\"CHAT\",\"name\":\"<script>alert('xss')</script>\",\"description\":\"test\",\"content\":\"test\"}";
             mockMvc.perform(post("/api/admin/ai/skills")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(json))
@@ -245,7 +242,8 @@ class AdminSkillControllerTest extends BaseControllerTest {
         void sqlInjectionInDescription() throws Exception {
             when(skillService.create(any())).thenReturn(AiTestDataFactory.createAiSkill("skill-1"));
 
-            String json = "{\"agentType\":\"CHAT\",\"name\":\"test\",\"description\":\"' OR '1'='1\",\"content\":\"test\"}";
+            String json =
+                    "{\"agentType\":\"CHAT\",\"name\":\"test\",\"description\":\"' OR '1'='1\",\"content\":\"test\"}";
             mockMvc.perform(post("/api/admin/ai/skills")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(json))
@@ -264,8 +262,7 @@ class AdminSkillControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST 请求删除接口返回 405")
         void deleteWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/admin/ai/skills/skill-1"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/admin/ai/skills/skill-1")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

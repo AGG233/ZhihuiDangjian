@@ -1,5 +1,10 @@
 package com.rauio.smartdangjian.server.quiz.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.server.quiz.mapper.QuizOptionMapper;
@@ -7,12 +12,8 @@ import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.utils.spec.UserType;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-
 
 @Service
 @RequiredArgsConstructor
@@ -68,8 +69,10 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
         User user = userService.getCurrentUser();
         QuizOption quizOption = this.getById(id);
 
-        if (user.getUserType() == UserType.STUDENT &&
-                userQuizAnswerService.getByUserIdAndQuizId(user.getId(), quizOption.getQuizId()).isEmpty()) {
+        if (user.getUserType() == UserType.STUDENT
+                && userQuizAnswerService
+                        .getByUserIdAndQuizId(user.getId(), quizOption.getQuizId())
+                        .isEmpty()) {
             quizOption.setIsCorrect(null);
         }
         return quizOption;
@@ -84,5 +87,4 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
     public Boolean delete(String optionId) {
         return this.removeById(optionId);
     }
-
 }

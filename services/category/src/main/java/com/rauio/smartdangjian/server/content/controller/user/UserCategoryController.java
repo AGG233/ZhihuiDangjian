@@ -1,5 +1,12 @@
 package com.rauio.smartdangjian.server.content.controller.user;
 
+import java.util.List;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
@@ -12,15 +19,10 @@ import com.rauio.smartdangjian.server.content.service.article.ArticleService;
 import com.rauio.smartdangjian.server.content.service.category.CategoryService;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
 import com.rauio.smartdangjian.utils.spec.UserType;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @Tag(name = "用户目录接口", description = "普通用户和高校管理员可读取公共分类与本校分类；系统管理员可读取全部分类。学校范围由当前登录用户自动判定。")
 @RestController

@@ -1,11 +1,11 @@
 package com.rauio.smartdangjian.server.learning.pojo.vo;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Date;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 @DisplayName("UserLearningRecordVO 用户学习记录视图对象")
 class UserLearningRecordVOTest {

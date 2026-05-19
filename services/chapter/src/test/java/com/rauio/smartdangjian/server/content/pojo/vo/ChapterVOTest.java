@@ -1,12 +1,13 @@
 package com.rauio.smartdangjian.server.content.pojo.vo;
 
-import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
 
 class ChapterVOTest {
 
@@ -15,8 +16,7 @@ class ChapterVOTest {
     void builderCreatesChapterVOCorrectly() {
         List<ContentBlock> content = List.of(
                 ContentBlock.builder().id("cb-001").textContent("内容1").build(),
-                ContentBlock.builder().id("cb-002").textContent("内容2").build()
-        );
+                ContentBlock.builder().id("cb-002").textContent("内容2").build());
 
         ChapterVO vo = ChapterVO.builder()
                 .id("ch-001")
@@ -45,11 +45,8 @@ class ChapterVOTest {
     @Test
     @DisplayName("builder content 为 null 时正常工作")
     void builderWithNullContent() {
-        ChapterVO vo = ChapterVO.builder()
-                .id("ch-001")
-                .title("无内容章节")
-                .content(null)
-                .build();
+        ChapterVO vo =
+                ChapterVO.builder().id("ch-001").title("无内容章节").content(null).build();
 
         assertThat(vo.getContent()).isNull();
     }
@@ -57,10 +54,7 @@ class ChapterVOTest {
     @Test
     @DisplayName("isOptional 为 true 时正确返回")
     void isOptionalTrue() {
-        ChapterVO vo = ChapterVO.builder()
-                .id("ch-001")
-                .isOptional(true)
-                .build();
+        ChapterVO vo = ChapterVO.builder().id("ch-001").isOptional(true).build();
 
         assertThat(vo.getIsOptional()).isTrue();
     }

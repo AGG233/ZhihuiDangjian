@@ -1,5 +1,20 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
+import static com.rauio.smartdangjian.constants.ErrorConstants.RESOURCE_NOT_EXISTS;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rauio.smartdangjian.exception.BusinessException;
@@ -11,22 +26,9 @@ import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
 import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
 import com.rauio.smartdangjian.server.quiz.service.QuizService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.ai.tool.annotation.ToolParam;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.stereotype.Component;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static com.rauio.smartdangjian.constants.ErrorConstants.RESOURCE_NOT_EXISTS;
 
 @Slf4j
 @Component
@@ -44,10 +46,11 @@ public class AiQuizGeneratorTool {
     public Map<String, Object> generateMiniQuiz(
             @ToolParam(description = "章节ID，若提供则基于该章节内容生成") String chapterId,
             @ToolParam(description = "主题/知识点，若未提供chapterId则基于主题生成") String topic,
-            @ToolParam(description = "题目类型：single_choice / multiple_choice / true_false，默认single_choice") String questionType,
-            @ToolParam(description = "难度：easy / medium / hard，默认medium") String difficulty
-    ) {
-        String effectiveQuestionType = (questionType == null || questionType.isBlank()) ? "single_choice" : questionType;
+            @ToolParam(description = "题目类型：single_choice / multiple_choice / true_false，默认single_choice")
+                    String questionType,
+            @ToolParam(description = "难度：easy / medium / hard，默认medium") String difficulty) {
+        String effectiveQuestionType =
+                (questionType == null || questionType.isBlank()) ? "single_choice" : questionType;
         String effectiveDifficulty = (difficulty == null || difficulty.isBlank()) ? "medium" : difficulty;
 
         String content;
@@ -84,7 +87,12 @@ public class AiQuizGeneratorTool {
         String prompt = buildPrompt(content, effectiveQuestionType, effectiveDifficulty);
         String llmResponse;
         try {
-            llmResponse = chatModelProvider.getObject().call(new Prompt(prompt)).getResult().getOutput().getText();
+            llmResponse = chatModelProvider
+                    .getObject()
+                    .call(new Prompt(prompt))
+                    .getResult()
+                    .getOutput()
+                    .getText();
         } catch (Exception e) {
             log.error("LLM调用失败", e);
             throw new BusinessException(RESOURCE_NOT_EXISTS, "AI生成题目失败：" + e.getMessage());
@@ -128,7 +136,8 @@ public class AiQuizGeneratorTool {
         if (optionsNode != null && optionsNode.isArray()) {
             for (JsonNode optNode : optionsNode) {
                 String optionText = optNode.path("optionText").asText(null);
-                Boolean isCorrect = optNode.has("isCorrect") ? optNode.path("isCorrect").asBoolean() : null;
+                Boolean isCorrect =
+                        optNode.has("isCorrect") ? optNode.path("isCorrect").asBoolean() : null;
                 String orderIndex = optNode.path("orderIndex").asText(null);
 
                 if (optionText == null || optionText.isBlank()) {
@@ -186,7 +195,8 @@ public class AiQuizGeneratorTool {
                     {"optionText": "选项B", "isCorrect": false, "orderIndex": "B"}
                   ]
                 }
-                """.formatted(difficulty, translateQuestionType(questionType), content);
+                """
+                .formatted(difficulty, translateQuestionType(questionType), content);
     }
 
     private String translateQuestionType(String questionType) {

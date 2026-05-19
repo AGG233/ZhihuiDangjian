@@ -1,11 +1,11 @@
 package com.rauio.smartdangjian.server.content.pojo.entity;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class ChapterTest {
 
@@ -76,8 +76,16 @@ class ChapterTest {
     @Test
     @DisplayName("两个相同字段的 Chapter equals 和 hashCode 行为符合 @Data 预期")
     void equalsAndHashCodeBehavior() {
-        Chapter c1 = Chapter.builder().id("ch-001").courseId("course-001").title("章节").build();
-        Chapter c2 = Chapter.builder().id("ch-001").courseId("course-001").title("章节").build();
+        Chapter c1 = Chapter.builder()
+                .id("ch-001")
+                .courseId("course-001")
+                .title("章节")
+                .build();
+        Chapter c2 = Chapter.builder()
+                .id("ch-001")
+                .courseId("course-001")
+                .title("章节")
+                .build();
 
         assertThat(c1).isEqualTo(c2);
         assertThat(c1.hashCode()).isEqualTo(c2.hashCode());

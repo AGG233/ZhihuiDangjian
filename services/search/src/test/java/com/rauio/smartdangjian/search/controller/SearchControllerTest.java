@@ -1,11 +1,10 @@
 package com.rauio.smartdangjian.search.controller;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.search.pojo.vo.UserProfileVO;
-import com.rauio.smartdangjian.search.service.RecommendService;
-import com.rauio.smartdangjian.search.service.SearchService;
-import com.rauio.smartdangjian.search.service.UserProfileService;
-import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,10 +12,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.search.pojo.vo.UserProfileVO;
+import com.rauio.smartdangjian.search.service.RecommendService;
+import com.rauio.smartdangjian.search.service.SearchService;
+import com.rauio.smartdangjian.search.service.UserProfileService;
+import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
 
 @ExtendWith(MockitoExtension.class)
 class SearchControllerTest {

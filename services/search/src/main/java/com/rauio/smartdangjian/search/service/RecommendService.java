@@ -1,13 +1,23 @@
 package com.rauio.smartdangjian.search.service;
 
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
+import com.rauio.smartdangjian.search.pojo.vo.UserProfileVO;
 import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
+import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
-import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
+import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
 import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
@@ -17,18 +27,9 @@ import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
 import com.rauio.smartdangjian.server.user.mapper.UserSimilarityMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.UserSimilarity;
 import com.rauio.smartdangjian.server.user.service.UserSimilarityService;
-import com.rauio.smartdangjian.search.pojo.vo.UserProfileVO;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.neo4j.core.Neo4jClient;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -95,42 +96,40 @@ public class RecommendService {
                 new Page<>(1, neighborSize),
                 new LambdaQueryWrapper<UserSimilarity>()
                         .eq(UserSimilarity::getUserId1, userId)
-                        .orderByDesc(UserSimilarity::getSimilarityScore)
-        );
+                        .orderByDesc(UserSimilarity::getSimilarityScore));
 
         List<UserSimilarity> similarityList = similarityPage.getRecords();
         if (similarityList.isEmpty()) {
             return new Page<>(pageNum, pageSize);
         }
 
-        List<String> similarUserIds = similarityList.stream()
-                .map(UserSimilarity::getUserId2)
-                .collect(Collectors.toList());
+        List<String> similarUserIds =
+                similarityList.stream().map(UserSimilarity::getUserId2).collect(Collectors.toList());
 
         Set<String> userLearnedCourseIds = getLearnedCourseIdsByUserId(userId);
 
-        List<UserLearningRecord> records = userLearningRecordMapper.selectList(
-                new LambdaQueryWrapper<UserLearningRecord>()
+        List<UserLearningRecord> records =
+                userLearningRecordMapper.selectList(new LambdaQueryWrapper<UserLearningRecord>()
                         .in(UserLearningRecord::getUserId, similarUserIds)
-                        .select(UserLearningRecord::getChapterId, UserLearningRecord::getUserId)
-        );
-        List<UserChapterProgress> progresses = userChapterProgressMapper.selectList(
-                new LambdaQueryWrapper<UserChapterProgress>()
+                        .select(UserLearningRecord::getChapterId, UserLearningRecord::getUserId));
+        List<UserChapterProgress> progresses =
+                userChapterProgressMapper.selectList(new LambdaQueryWrapper<UserChapterProgress>()
                         .in(UserChapterProgress::getUserId, similarUserIds)
-                        .select(UserChapterProgress::getChapterId, UserChapterProgress::getUserId)
-        );
+                        .select(UserChapterProgress::getChapterId, UserChapterProgress::getUserId));
 
         Set<String> allInvolvedChapterIds = new HashSet<>();
-        allInvolvedChapterIds.addAll(records.stream().map(UserLearningRecord::getChapterId).toList());
-        allInvolvedChapterIds.addAll(progresses.stream().map(UserChapterProgress::getChapterId).toList());
+        allInvolvedChapterIds.addAll(
+                records.stream().map(UserLearningRecord::getChapterId).toList());
+        allInvolvedChapterIds.addAll(
+                progresses.stream().map(UserChapterProgress::getChapterId).toList());
 
         if (allInvolvedChapterIds.isEmpty()) {
             return new Page<>(pageNum, pageSize);
         }
 
         List<Chapter> chapters = chapterMapper.selectByIds(allInvolvedChapterIds);
-        Map<String, String> chapterToCourseMap = chapters.stream()
-                .collect(Collectors.toMap(Chapter::getId, Chapter::getCourseId));
+        Map<String, String> chapterToCourseMap =
+                chapters.stream().collect(Collectors.toMap(Chapter::getId, Chapter::getCourseId));
 
         Map<String, Double> courseScoreMap = new HashMap<>();
 
@@ -158,7 +157,8 @@ public class RecommendService {
      * 基于知识图谱推荐：查找相似用户学过但当前用户未学的课程
      */
     public Page<String> recommendByGraph(String userId, int pageNum, int pageSize) {
-        String cypher = """
+        String cypher =
+                """
                 MATCH (me:User {id: $userId})-[:LEARNED]->(c1:Course)
                 MATCH (other:User)-[:LEARNED]->(c1)
                 MATCH (other)-[:LEARNED]->(c2:Course)
@@ -167,8 +167,10 @@ public class RecommendService {
                 ORDER BY score DESC
                 """;
 
-        List<String> sorted = new ArrayList<>(neo4jClient.query(cypher)
-                .bind(userId).to("userId")
+        List<String> sorted = new ArrayList<>(neo4jClient
+                .query(cypher)
+                .bind(userId)
+                .to("userId")
                 .fetchAs(String.class)
                 .mappedBy((type, record) -> record.get("courseId").asString())
                 .all());
@@ -197,8 +199,8 @@ public class RecommendService {
         // 优先推荐兴趣分类
         List<String> interestIds = profile.getInterestCategoryIds();
         if (interestIds != null && !interestIds.isEmpty()) {
-            List<String> matchedCourseIds = categoryCourseMapper.selectList(new LambdaQueryWrapper<CategoryCourse>()
-                            .in(CategoryCourse::getCategoryId, interestIds))
+            List<String> matchedCourseIds = categoryCourseMapper
+                    .selectList(new LambdaQueryWrapper<CategoryCourse>().in(CategoryCourse::getCategoryId, interestIds))
                     .stream()
                     .map(CategoryCourse::getCourseId)
                     .filter(Objects::nonNull)
@@ -220,9 +222,8 @@ public class RecommendService {
         wrapper.orderByDesc(Course::getEnrollmentCount);
 
         Page<Course> coursePage = courseMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
-        List<String> courseIds = coursePage.getRecords().stream()
-                .map(Course::getId)
-                .toList();
+        List<String> courseIds =
+                coursePage.getRecords().stream().map(Course::getId).toList();
 
         Page<String> result = new Page<>(pageNum, pageSize);
         result.setTotal(coursePage.getTotal());
@@ -241,14 +242,12 @@ public class RecommendService {
         Map<String, Set<String>> userItemMap = allBehaviors.stream()
                 .collect(Collectors.groupingBy(
                         UserBehaviorDto::getUserId,
-                        Collectors.mapping(UserBehaviorDto::getChapterId, Collectors.toSet())
-                ));
+                        Collectors.mapping(UserBehaviorDto::getChapterId, Collectors.toSet())));
 
         Map<String, List<String>> itemUserMap = allBehaviors.stream()
                 .collect(Collectors.groupingBy(
                         UserBehaviorDto::getChapterId,
-                        Collectors.mapping(UserBehaviorDto::getUserId, Collectors.toList())
-                ));
+                        Collectors.mapping(UserBehaviorDto::getUserId, Collectors.toList())));
 
         Map<String, Map<String, Integer>> coOccurrenceMap = new HashMap<>();
 
@@ -260,10 +259,8 @@ public class RecommendService {
                 String u1 = userList.get(i);
                 for (int j = i + 1; j < userList.size(); j++) {
                     String u2 = userList.get(j);
-                    coOccurrenceMap.computeIfAbsent(u1, k -> new HashMap<>())
-                            .merge(u2, 1, Integer::sum);
-                    coOccurrenceMap.computeIfAbsent(u2, k -> new HashMap<>())
-                            .merge(u1, 1, Integer::sum);
+                    coOccurrenceMap.computeIfAbsent(u1, k -> new HashMap<>()).merge(u2, 1, Integer::sum);
+                    coOccurrenceMap.computeIfAbsent(u2, k -> new HashMap<>()).merge(u1, 1, Integer::sum);
                 }
             }
         }
@@ -277,14 +274,14 @@ public class RecommendService {
             Map<String, Integer> relatedUsers = entry.getValue();
             double userVectorLen = Math.sqrt(userItemMap.get(userId).size());
 
-            PriorityQueue<UserSimilarity> topQueue = new PriorityQueue<>(
-                    Comparator.comparing(UserSimilarity::getSimilarityScore)
-            );
+            PriorityQueue<UserSimilarity> topQueue =
+                    new PriorityQueue<>(Comparator.comparing(UserSimilarity::getSimilarityScore));
 
             for (Map.Entry<String, Integer> relatedEntry : relatedUsers.entrySet()) {
                 String relatedUserId = relatedEntry.getKey();
                 int count = relatedEntry.getValue();
-                double relatedUserVectorLen = Math.sqrt(userItemMap.get(relatedUserId).size());
+                double relatedUserVectorLen =
+                        Math.sqrt(userItemMap.get(relatedUserId).size());
                 double score = count / (userVectorLen * relatedUserVectorLen);
 
                 if (score < 0.1) continue;
@@ -319,11 +316,11 @@ public class RecommendService {
     // ==================== 工具方法 ====================
 
     private Set<String> getLearnedCourseIdsByUserId(String userId) {
-        List<String> chapterIds = userLearningRecordMapper.selectList(
-                        new LambdaQueryWrapper<UserLearningRecord>()
-                                .eq(UserLearningRecord::getUserId, userId)
-                                .select(UserLearningRecord::getChapterId)
-                ).stream()
+        List<String> chapterIds = userLearningRecordMapper
+                .selectList(new LambdaQueryWrapper<UserLearningRecord>()
+                        .eq(UserLearningRecord::getUserId, userId)
+                        .select(UserLearningRecord::getChapterId))
+                .stream()
                 .map(UserLearningRecord::getChapterId)
                 .filter(Objects::nonNull)
                 .distinct()
@@ -331,11 +328,11 @@ public class RecommendService {
         if (chapterIds.isEmpty()) {
             return Collections.emptySet();
         }
-        return chapterMapper.selectList(
-                        new LambdaQueryWrapper<Chapter>()
-                                .in(Chapter::getId, chapterIds)
-                                .select(Chapter::getCourseId)
-                ).stream()
+        return chapterMapper
+                .selectList(new LambdaQueryWrapper<Chapter>()
+                        .in(Chapter::getId, chapterIds)
+                        .select(Chapter::getCourseId))
+                .stream()
                 .map(Chapter::getCourseId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());

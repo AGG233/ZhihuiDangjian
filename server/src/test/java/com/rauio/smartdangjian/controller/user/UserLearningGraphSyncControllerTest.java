@@ -1,9 +1,13 @@
 package com.rauio.smartdangjian.controller.user;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.learning.controller.user.UserLearningGraphSyncController;
-import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.net.URI;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -12,21 +16,22 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.net.URI;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.learning.controller.user.UserLearningGraphSyncController;
+import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = UserLearningGraphSyncControllerTest.TestConfig.class)
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+        classes = UserLearningGraphSyncControllerTest.TestConfig.class)
 @DisplayName("学习图谱同步接口测试")
 class UserLearningGraphSyncControllerTest extends BaseControllerTest {
 
     @SpringBootConfiguration
     static class TestConfig extends CommonTestConfig {
         @Bean
-        public UserLearningGraphSyncController userLearningGraphSyncController(UserLearningRecordService userLearningRecordService) {
+        public UserLearningGraphSyncController userLearningGraphSyncController(
+                UserLearningRecordService userLearningRecordService) {
             return new UserLearningGraphSyncController(userLearningRecordService);
         }
     }
@@ -88,8 +93,7 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /user/{userId}/sync - Service 抛出 RuntimeException 返回 500")
         void syncThrowsRuntimeException() throws Exception {
-            when(userLearningRecordService.syncUserLearningGraph("user-001"))
-                    .thenThrow(new RuntimeException("图谱同步异常"));
+            when(userLearningRecordService.syncUserLearningGraph("user-001")).thenThrow(new RuntimeException("图谱同步异常"));
 
             mockMvc.perform(post("/api/learning/graph/user/user-001/sync"))
                     .andExpect(status().isInternalServerError())
@@ -108,8 +112,7 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /user/{userId}/sync - 用户 ID 含特殊字符")
         void syncWithSpecialCharsInUserId() throws Exception {
-            when(userLearningRecordService.syncUserLearningGraph("user_@#$%"))
-                    .thenReturn(0);
+            when(userLearningRecordService.syncUserLearningGraph("user_@#$%")).thenReturn(0);
 
             mockMvc.perform(post("/api/learning/graph/user/{userId}/sync", "user_@#$%"))
                     .andExpect(status().isOk())
@@ -119,8 +122,7 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /user/{userId}/sync - 大量记录同步返回大数字")
         void syncWithLargeNumberOfRecords() throws Exception {
-            when(userLearningRecordService.syncUserLearningGraph("user-busy"))
-                    .thenReturn(9999);
+            when(userLearningRecordService.syncUserLearningGraph("user-busy")).thenReturn(9999);
 
             mockMvc.perform(post("/api/learning/graph/user/user-busy/sync"))
                     .andExpect(status().isOk())
@@ -160,15 +162,14 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET 请求同步接口返回 405")
         void syncWithWrongMethod() throws Exception {
-            mockMvc.perform(get("/api/learning/graph/user/user-001/sync"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(get("/api/learning/graph/user/user-001/sync")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("DELETE 请求同步接口返回 405")
         void syncWithDeleteMethod() throws Exception {
-            mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                            .delete("/api/learning/graph/user/user-001/sync"))
+            mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete(
+                            "/api/learning/graph/user/user-001/sync"))
                     .andExpect(status().isMethodNotAllowed());
         }
     }

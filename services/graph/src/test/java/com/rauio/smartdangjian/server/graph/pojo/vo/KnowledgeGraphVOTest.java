@@ -1,11 +1,11 @@
 package com.rauio.smartdangjian.server.graph.pojo.vo;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 @DisplayName("KnowledgeGraphVO 知识图谱视图对象")
 class KnowledgeGraphVOTest {
@@ -13,8 +13,13 @@ class KnowledgeGraphVOTest {
     @Test
     @DisplayName("使用 builder 构造 KnowledgeGraphVO")
     void buildKnowledgeGraphVO() {
-        GraphNodeVO node = GraphNodeVO.builder().id("User:user-1").label("User").name("张三").build();
-        GraphEdgeVO edge = GraphEdgeVO.builder().source("User:user-1").target("Course:course-1").type("LEARNED").build();
+        GraphNodeVO node =
+                GraphNodeVO.builder().id("User:user-1").label("User").name("张三").build();
+        GraphEdgeVO edge = GraphEdgeVO.builder()
+                .source("User:user-1")
+                .target("Course:course-1")
+                .type("LEARNED")
+                .build();
 
         KnowledgeGraphVO graph = KnowledgeGraphVO.builder()
                 .nodes(List.of(node))

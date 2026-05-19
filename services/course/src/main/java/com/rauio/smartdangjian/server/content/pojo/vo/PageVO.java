@@ -1,11 +1,11 @@
 package com.rauio.smartdangjian.server.content.pojo.vo;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
-
-import java.util.List;
 
 @Data
 @ToString

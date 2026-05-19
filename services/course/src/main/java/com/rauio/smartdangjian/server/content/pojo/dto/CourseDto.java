@@ -1,8 +1,8 @@
 package com.rauio.smartdangjian.server.content.pojo.dto;
 
+import jakarta.validation.constraints.NotBlank;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
 
@@ -30,7 +30,7 @@ public class CourseDto {
 
     @Schema(description = "课程预计时长")
     private Integer estimatedDuration;
-    
+
     @Schema(description = "课程是否发布")
     private Boolean isPublished;
 }

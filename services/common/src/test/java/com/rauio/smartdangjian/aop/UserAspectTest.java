@@ -1,10 +1,13 @@
 package com.rauio.smartdangjian.aop;
 
-import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
-import com.rauio.smartdangjian.constants.ErrorConstants;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.utils.SecurityUtils;
-import com.rauio.smartdangjian.utils.spec.UserType;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Method;
+
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.junit.jupiter.api.AfterEach;
@@ -12,15 +15,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
-import java.lang.reflect.Method;
-
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
+import com.rauio.smartdangjian.constants.ErrorConstants;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.utils.SecurityUtils;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 class UserAspectTest {
 
@@ -89,8 +89,7 @@ class UserAspectTest {
 
         securityUtilsMock.when(SecurityUtils::getCurrentUserType).thenReturn(UserType.STUDENT);
 
-        assertThatCode(() -> aspect.checkPermissionAccess(joinPoint))
-                .doesNotThrowAnyException();
+        assertThatCode(() -> aspect.checkPermissionAccess(joinPoint)).doesNotThrowAnyException();
     }
 
     @Test
@@ -102,8 +101,7 @@ class UserAspectTest {
 
         securityUtilsMock.when(SecurityUtils::getCurrentUserType).thenReturn(UserType.MANAGER);
 
-        assertThatCode(() -> aspect.checkPermissionAccess(joinPoint))
-                .doesNotThrowAnyException();
+        assertThatCode(() -> aspect.checkPermissionAccess(joinPoint)).doesNotThrowAnyException();
     }
 
     @Test
@@ -115,8 +113,7 @@ class UserAspectTest {
 
         securityUtilsMock.when(SecurityUtils::getCurrentUserType).thenReturn(UserType.SCHOOL);
 
-        assertThatCode(() -> aspect.checkPermissionAccess(joinPoint))
-                .doesNotThrowAnyException();
+        assertThatCode(() -> aspect.checkPermissionAccess(joinPoint)).doesNotThrowAnyException();
     }
 
     private MethodSignature mockSignature(Method method) {

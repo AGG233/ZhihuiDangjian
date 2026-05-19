@@ -1,8 +1,25 @@
 package com.rauio.smartdangjian.server.content.service.chapter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+import java.util.List;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.constants.ChapterErrorConstants;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterConvertor;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ContentBlockConvertor;
 import com.rauio.smartdangjian.server.content.pojo.dto.ChapterDto;
@@ -12,25 +29,6 @@ import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
 import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
 import com.rauio.smartdangjian.server.content.service.ContentBlockService;
 import com.rauio.smartdangjian.server.content.spec.ParentType;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Collections;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ChapterServiceTest {
@@ -202,10 +200,7 @@ class ChapterServiceTest {
     @Test
     @DisplayName("update 更新章节成功返回 true")
     void updateChapterSuccessfully() {
-        ChapterDto dto = ChapterDto.builder()
-                .title("更新章节")
-                .description("更新描述")
-                .build();
+        ChapterDto dto = ChapterDto.builder().title("更新章节").description("更新描述").build();
         Chapter entity = Chapter.builder().id("ch-001").title("更新章节").build();
         when(chapterConvertor.toEntity(dto)).thenReturn(entity);
         doReturn(true).when(chapterService).updateById(entity);
@@ -236,13 +231,19 @@ class ChapterServiceTest {
     @DisplayName("getByCourseId 根据课程 ID 返回章节列表")
     void getByCourseIdReturnsChapterVOList() {
         List<Chapter> chapters = List.of(
-                Chapter.builder().id("ch-001").courseId("course-001").title("第一章").build(),
-                Chapter.builder().id("ch-002").courseId("course-001").title("第二章").build()
-        );
+                Chapter.builder()
+                        .id("ch-001")
+                        .courseId("course-001")
+                        .title("第一章")
+                        .build(),
+                Chapter.builder()
+                        .id("ch-002")
+                        .courseId("course-001")
+                        .title("第二章")
+                        .build());
         List<ChapterVO> vos = List.of(
                 ChapterVO.builder().id("ch-001").title("第一章").build(),
-                ChapterVO.builder().id("ch-002").title("第二章").build()
-        );
+                ChapterVO.builder().id("ch-002").title("第二章").build());
         doReturn(chapters).when(chapterService).list(any(LambdaQueryWrapper.class));
         when(chapterConvertor.toVOList(chapters)).thenReturn(vos);
 

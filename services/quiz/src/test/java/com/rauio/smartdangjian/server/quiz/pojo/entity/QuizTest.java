@@ -1,11 +1,11 @@
 package com.rauio.smartdangjian.server.quiz.pojo.entity;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class QuizTest {
 
@@ -81,10 +81,30 @@ class QuizTest {
     @Test
     @DisplayName("equals 比较所有字段相同的 Quiz 视为相等")
     void equalsComparesAllFields() {
-        Quiz quiz1 = Quiz.builder().id("quiz-1").question("Q1").chapterId("ch-1").score(5).build();
-        Quiz quiz2 = Quiz.builder().id("quiz-1").question("Q1").chapterId("ch-1").score(5).build();
-        Quiz quiz3 = Quiz.builder().id("quiz-2").question("Q1").chapterId("ch-1").score(5).build();
-        Quiz quiz4 = Quiz.builder().id("quiz-1").question("different").chapterId("ch-1").score(5).build();
+        Quiz quiz1 = Quiz.builder()
+                .id("quiz-1")
+                .question("Q1")
+                .chapterId("ch-1")
+                .score(5)
+                .build();
+        Quiz quiz2 = Quiz.builder()
+                .id("quiz-1")
+                .question("Q1")
+                .chapterId("ch-1")
+                .score(5)
+                .build();
+        Quiz quiz3 = Quiz.builder()
+                .id("quiz-2")
+                .question("Q1")
+                .chapterId("ch-1")
+                .score(5)
+                .build();
+        Quiz quiz4 = Quiz.builder()
+                .id("quiz-1")
+                .question("different")
+                .chapterId("ch-1")
+                .score(5)
+                .build();
 
         assertThat(quiz1).isEqualTo(quiz2);
         assertThat(quiz1).isNotEqualTo(quiz3);
@@ -94,8 +114,18 @@ class QuizTest {
     @Test
     @DisplayName("hashCode 所有字段相同时产生相同哈希值")
     void hashCodeBasedOnAllFields() {
-        Quiz quiz1 = Quiz.builder().id("qz-1").question("Q1").chapterId("ch-1").score(5).build();
-        Quiz quiz2 = Quiz.builder().id("qz-1").question("Q1").chapterId("ch-1").score(5).build();
+        Quiz quiz1 = Quiz.builder()
+                .id("qz-1")
+                .question("Q1")
+                .chapterId("ch-1")
+                .score(5)
+                .build();
+        Quiz quiz2 = Quiz.builder()
+                .id("qz-1")
+                .question("Q1")
+                .chapterId("ch-1")
+                .score(5)
+                .build();
 
         assertThat(quiz1.hashCode()).isEqualTo(quiz2.hashCode());
     }

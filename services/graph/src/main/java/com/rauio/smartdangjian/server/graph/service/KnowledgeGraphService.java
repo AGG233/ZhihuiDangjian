@@ -1,24 +1,26 @@
 package com.rauio.smartdangjian.server.graph.service;
 
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.graph.constants.GraphErrorConstants;
-import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
-import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
-import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.graph.pojo.vo.GraphEdgeVO;
-import com.rauio.smartdangjian.server.graph.pojo.vo.GraphNodeVO;
-import com.rauio.smartdangjian.server.graph.pojo.vo.KnowledgeGraphVO;
-import com.rauio.smartdangjian.server.user.mapper.UserMapper;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import lombok.RequiredArgsConstructor;
+import java.util.*;
+
 import org.neo4j.driver.Value;
 import org.neo4j.driver.types.Node;
 import org.neo4j.driver.types.Relationship;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
+import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
+import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
+import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.graph.constants.GraphErrorConstants;
+import com.rauio.smartdangjian.server.graph.pojo.vo.GraphEdgeVO;
+import com.rauio.smartdangjian.server.graph.pojo.vo.GraphNodeVO;
+import com.rauio.smartdangjian.server.graph.pojo.vo.KnowledgeGraphVO;
+import com.rauio.smartdangjian.server.user.mapper.UserMapper;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +52,8 @@ public class KnowledgeGraphService {
         }
 
         String userName = user.getRealName() != null ? user.getRealName() : user.getUsername();
-        String cypher = """
+        String cypher =
+                """
                 MERGE (u:User {id:$userId})
                 SET u.name = $userName
                 MERGE (c:Course {id:$courseId})
@@ -62,13 +65,20 @@ public class KnowledgeGraphService {
                 MERGE (u)-[:LEARNED_CHAPTER]->(ch)
                 """;
 
-        neo4jClient.query(cypher)
-                .bind(userId).to("userId")
-                .bind(userName).to("userName")
-                .bind(course.getId()).to("courseId")
-                .bind(course.getTitle()).to("courseTitle")
-                .bind(chapter.getId()).to("chapterId")
-                .bind(chapter.getTitle()).to("chapterTitle")
+        neo4jClient
+                .query(cypher)
+                .bind(userId)
+                .to("userId")
+                .bind(userName)
+                .to("userName")
+                .bind(course.getId())
+                .to("courseId")
+                .bind(course.getTitle())
+                .to("courseTitle")
+                .bind(chapter.getId())
+                .to("chapterId")
+                .bind(chapter.getTitle())
+                .to("chapterTitle")
                 .run();
     }
 
@@ -79,7 +89,8 @@ public class KnowledgeGraphService {
      * @return 知识图谱结果
      */
     public KnowledgeGraphVO getUserGraph(String userId) {
-        String cypher = """
+        String cypher =
+                """
                 MATCH (u:User {id:$userId})
                 OPTIONAL MATCH (u)-[r1:LEARNED]->(c:Course)
                 OPTIONAL MATCH (c)-[r2:HAS_CHAPTER]->(ch:Chapter)
@@ -87,10 +98,8 @@ public class KnowledgeGraphService {
                 RETURN u, c, ch, r1, r2, r3
                 """;
 
-        List<Map<String, Object>> rows = (List<Map<String, Object>>) neo4jClient.query(cypher)
-                .bind(userId).to("userId")
-                .fetch()
-                .all();
+        List<Map<String, Object>> rows = (List<Map<String, Object>>)
+                neo4jClient.query(cypher).bind(userId).to("userId").fetch().all();
 
         return buildGraph(rows);
     }
@@ -102,17 +111,16 @@ public class KnowledgeGraphService {
      * @return 知识图谱结果
      */
     public KnowledgeGraphVO getCourseGraph(String courseId) {
-        String cypher = """
+        String cypher =
+                """
                 MATCH (c:Course {id:$courseId})
                 OPTIONAL MATCH (c)<-[r1:LEARNED]-(u:User)
                 OPTIONAL MATCH (c)-[r2:HAS_CHAPTER]->(ch:Chapter)
                 RETURN c, u, ch, r1, r2
                 """;
 
-        List<Map<String, Object>> rows = (List<Map<String, Object>>) neo4jClient.query(cypher)
-                .bind(courseId).to("courseId")
-                .fetch()
-                .all();
+        List<Map<String, Object>> rows = (List<Map<String, Object>>)
+                neo4jClient.query(cypher).bind(courseId).to("courseId").fetch().all();
 
         return buildGraph(rows);
     }
@@ -195,15 +203,18 @@ public class KnowledgeGraphService {
         if (node == null) {
             return null;
         }
-        String label = node.labels().iterator().hasNext() ? node.labels().iterator().next() : "Node";
+        String label =
+                node.labels().iterator().hasNext() ? node.labels().iterator().next() : "Node";
         String id = readId(node);
         String key = label + ":" + id;
         if (!nodeMap.containsKey(key)) {
-            nodeMap.put(key, GraphNodeVO.builder()
-                    .id(key)
-                    .label(label)
-                    .name(readName(node, id))
-                    .build());
+            nodeMap.put(
+                    key,
+                    GraphNodeVO.builder()
+                            .id(key)
+                            .label(label)
+                            .name(readName(node, id))
+                            .build());
         }
         return key;
     }

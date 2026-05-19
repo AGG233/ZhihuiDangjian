@@ -1,5 +1,9 @@
 package com.rauio.smartdangjian.server.content.controller.user;
 
+import java.util.List;
+
+import org.springframework.web.bind.annotation.*;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
@@ -9,13 +13,11 @@ import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
 import com.rauio.smartdangjian.server.content.pojo.vo.PageVO;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
 import com.rauio.smartdangjian.utils.spec.UserType;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "用户课程接口", description = "从用户视角查询课程")
 @RestController

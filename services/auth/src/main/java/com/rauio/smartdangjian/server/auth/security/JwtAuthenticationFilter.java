@@ -1,11 +1,10 @@
 package com.rauio.smartdangjian.server.auth.security;
 
-import com.rauio.smartdangjian.server.auth.service.JwtService;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,6 +13,9 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
+import com.rauio.smartdangjian.server.auth.service.JwtService;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
+
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService tokenAuthenticationService;
@@ -21,8 +23,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     public JwtAuthenticationFilter(
             @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver,
-            JwtService tokenAuthenticationService
-    ) {
+            JwtService tokenAuthenticationService) {
         this.resolver = resolver;
         this.tokenAuthenticationService = tokenAuthenticationService;
     }
@@ -31,8 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             @NonNull @Valid HttpServletRequest request,
             @NonNull @Valid HttpServletResponse response,
-            @NonNull FilterChain filterChain
-    ) {
+            @NonNull FilterChain filterChain) {
         try {
             String authHeader = request.getHeader("Authorization");
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -43,11 +43,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
             User user = tokenAuthenticationService.validateToken(token);
 
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    user,
-                    null,
-                    user.getAuthorities()
-            );
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authToken);
             filterChain.doFilter(request, response);

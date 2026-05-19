@@ -1,5 +1,11 @@
 package com.rauio.smartdangjian.server.ai.service;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
@@ -8,12 +14,8 @@ import com.rauio.smartdangjian.server.ai.mapper.AiSkillMapper;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiSkill;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiSkillCreateRequest;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiSkillUpdateRequest;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

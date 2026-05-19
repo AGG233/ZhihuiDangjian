@@ -1,17 +1,19 @@
 package com.rauio.smartdangjian.server.resource.controller.user;
 
-import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.resource.pojo.response.BannerResourceResponse;
-import com.rauio.smartdangjian.server.resource.service.BannerService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.server.resource.pojo.response.BannerResourceResponse;
+import com.rauio.smartdangjian.server.resource.service.BannerService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 
 @Tag(name = "用户轮播图接口", description = "提供轮播图查询能力")
 @RestController

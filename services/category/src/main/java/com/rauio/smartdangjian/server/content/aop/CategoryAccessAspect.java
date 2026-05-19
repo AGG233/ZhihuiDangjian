@@ -1,5 +1,10 @@
 package com.rauio.smartdangjian.server.content.aop;
 
+import java.util.List;
+import java.util.Objects;
+
+import org.springframework.stereotype.Component;
+
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeContext;
@@ -7,19 +12,16 @@ import com.rauio.smartdangjian.aop.support.DataScopeResolver;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.constants.CategoryErrorConstants;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.server.content.constants.CategoryErrorConstants;
 import com.rauio.smartdangjian.server.content.pojo.dto.CategoryDto;
 import com.rauio.smartdangjian.server.content.pojo.entity.Category;
 import com.rauio.smartdangjian.server.content.pojo.vo.CategoryVO;
 import com.rauio.smartdangjian.server.content.service.category.CategoryService;
 import com.rauio.smartdangjian.utils.spec.UserType;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Objects;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -45,8 +47,7 @@ public class CategoryAccessAspect implements DataScopeResolver {
             case UPDATE -> handleUpdate(context, currentUser);
             case DELETE -> handleDelete(context, currentUser);
             case READ -> handleRead(context, currentUser);
-            default -> {
-            }
+            default -> {}
         }
     }
 

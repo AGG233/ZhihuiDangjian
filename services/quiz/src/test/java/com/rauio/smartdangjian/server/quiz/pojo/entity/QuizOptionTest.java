@@ -1,9 +1,9 @@
 package com.rauio.smartdangjian.server.quiz.pojo.entity;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class QuizOptionTest {
 
@@ -77,10 +77,34 @@ class QuizOptionTest {
     @Test
     @DisplayName("equals 比较所有字段相同的 QuizOption 视为相等")
     void equalsComparesAllFields() {
-        QuizOption opt1 = QuizOption.builder().id("opt-1").quizId("qz-1").optionText("选项A").isCorrect(true).orderIndex("A").build();
-        QuizOption opt2 = QuizOption.builder().id("opt-1").quizId("qz-1").optionText("选项A").isCorrect(true).orderIndex("A").build();
-        QuizOption opt3 = QuizOption.builder().id("opt-2").quizId("qz-1").optionText("选项A").isCorrect(true).orderIndex("A").build();
-        QuizOption opt4 = QuizOption.builder().id("opt-1").quizId("qz-2").optionText("选项A").isCorrect(true).orderIndex("A").build();
+        QuizOption opt1 = QuizOption.builder()
+                .id("opt-1")
+                .quizId("qz-1")
+                .optionText("选项A")
+                .isCorrect(true)
+                .orderIndex("A")
+                .build();
+        QuizOption opt2 = QuizOption.builder()
+                .id("opt-1")
+                .quizId("qz-1")
+                .optionText("选项A")
+                .isCorrect(true)
+                .orderIndex("A")
+                .build();
+        QuizOption opt3 = QuizOption.builder()
+                .id("opt-2")
+                .quizId("qz-1")
+                .optionText("选项A")
+                .isCorrect(true)
+                .orderIndex("A")
+                .build();
+        QuizOption opt4 = QuizOption.builder()
+                .id("opt-1")
+                .quizId("qz-2")
+                .optionText("选项A")
+                .isCorrect(true)
+                .orderIndex("A")
+                .build();
 
         assertThat(opt1).isEqualTo(opt2);
         assertThat(opt1).isNotEqualTo(opt3);

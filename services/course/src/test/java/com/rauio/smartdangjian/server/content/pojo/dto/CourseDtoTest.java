@@ -1,9 +1,9 @@
 package com.rauio.smartdangjian.server.content.pojo.dto;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class CourseDtoTest {
 
@@ -44,10 +44,7 @@ class CourseDtoTest {
     @Test
     @DisplayName("description 和 coverImageId 可为 null")
     void optionalFieldsCanBeNull() {
-        CourseDto dto = CourseDto.builder()
-                .title("最简课程")
-                .categoryId("cat-001")
-                .build();
+        CourseDto dto = CourseDto.builder().title("最简课程").categoryId("cat-001").build();
 
         assertThat(dto.getDescription()).isNull();
         assertThat(dto.getCoverImageId()).isNull();
@@ -57,10 +54,7 @@ class CourseDtoTest {
     @Test
     @DisplayName("setter 修改 title 后 getter 返回新值")
     void setterAndGetterWorkForTitle() {
-        CourseDto dto = CourseDto.builder()
-                .title("旧标题")
-                .categoryId("cat-001")
-                .build();
+        CourseDto dto = CourseDto.builder().title("旧标题").categoryId("cat-001").build();
 
         dto.setTitle("新标题");
 

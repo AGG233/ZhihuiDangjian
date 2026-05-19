@@ -1,5 +1,9 @@
 package com.rauio.smartdangjian.server.learning.controller.admin;
 
+import java.util.List;
+
+import org.springframework.web.bind.annotation.*;
+
 import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
@@ -8,13 +12,11 @@ import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.learning.pojo.vo.UserLearningRecordVO;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
 import com.rauio.smartdangjian.utils.spec.UserType;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "管理员学习记录接口")
 @RestController
@@ -28,7 +30,8 @@ public class AdminLearningRecordController {
     @Operation(summary = "获取章节所有学习记录")
     @GetMapping("/chapter/{chapterId}")
     @DataScopeAccess(resource = DataScopeResources.LEARNING_RECORD, action = DataScopeAction.FILTER, id = "#chapterId")
-    public Result<List<UserLearningRecordVO>> getByChapterId(@Parameter(name = "chapterId", description = "章节ID") @PathVariable String chapterId) {
+    public Result<List<UserLearningRecordVO>> getByChapterId(
+            @Parameter(name = "chapterId", description = "章节ID") @PathVariable String chapterId) {
         return Result.ok(recordService.getByChapterId(chapterId));
     }
 

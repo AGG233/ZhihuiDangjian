@@ -1,5 +1,9 @@
 package com.rauio.smartdangjian.server.content.aop;
 
+import java.util.Objects;
+
+import org.springframework.stereotype.Component;
+
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeContext;
@@ -7,18 +11,16 @@ import com.rauio.smartdangjian.aop.support.DataScopeResolver;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.constants.CourseErrorConstants;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.server.content.constants.CourseErrorConstants;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
 import com.rauio.smartdangjian.server.content.pojo.dto.CourseDto;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.utils.spec.UserType;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-import java.util.Objects;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -68,5 +70,4 @@ public class CourseAdminAccessAspect implements DataScopeResolver {
             throw new BusinessException(ErrorConstants.RESOURCE_NOT_AUTHORIZED, "当前高校管理员未绑定学校");
         }
     }
-
 }

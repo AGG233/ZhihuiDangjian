@@ -1,8 +1,10 @@
 package com.rauio.smartdangjian.server.learning.controller.user;
 
-import com.rauio.smartdangjian.server.learning.pojo.dto.UserChapterProgressDto;
-import com.rauio.smartdangjian.server.learning.pojo.vo.UserChapterProgressVO;
-import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,10 +12,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import com.rauio.smartdangjian.server.learning.pojo.dto.UserChapterProgressDto;
+import com.rauio.smartdangjian.server.learning.pojo.vo.UserChapterProgressVO;
+import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
 
 @ExtendWith(MockitoExtension.class)
 class UserChapterProgressControllerTest {
@@ -38,9 +39,8 @@ class UserChapterProgressControllerTest {
     @Test
     @DisplayName("getByUserId 委托 service 获取用户所有进度")
     void getByUserId() {
-        when(progressService.getByUserId("user-1")).thenReturn(List.of(
-                UserChapterProgressVO.builder().id("p-1").build()
-        ));
+        when(progressService.getByUserId("user-1"))
+                .thenReturn(List.of(UserChapterProgressVO.builder().id("p-1").build()));
 
         var result = controller.getByUserId("user-1");
 
@@ -61,7 +61,10 @@ class UserChapterProgressControllerTest {
     @Test
     @DisplayName("create 委托 service 创建进度")
     void create() {
-        UserChapterProgressDto dto = UserChapterProgressDto.builder().userId("user-1").chapterId("ch-1").build();
+        UserChapterProgressDto dto = UserChapterProgressDto.builder()
+                .userId("user-1")
+                .chapterId("ch-1")
+                .build();
         when(progressService.create(dto)).thenReturn(true);
 
         var result = controller.create(dto);
@@ -72,7 +75,8 @@ class UserChapterProgressControllerTest {
     @Test
     @DisplayName("update 委托 service 更新进度")
     void update() {
-        UserChapterProgressDto dto = UserChapterProgressDto.builder().id("p-1").progress(80).build();
+        UserChapterProgressDto dto =
+                UserChapterProgressDto.builder().id("p-1").progress(80).build();
         when(progressService.update(dto)).thenReturn(true);
 
         var result = controller.update(dto);

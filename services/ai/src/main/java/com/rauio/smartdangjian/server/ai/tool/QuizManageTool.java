@@ -1,21 +1,22 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
+import static com.rauio.smartdangjian.constants.ErrorConstants.RESOURCE_NOT_EXISTS;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.stereotype.Component;
+
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
 import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
 import com.rauio.smartdangjian.server.quiz.service.QuizService;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.ai.tool.annotation.ToolParam;
-import org.springframework.stereotype.Component;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static com.rauio.smartdangjian.constants.ErrorConstants.RESOURCE_NOT_EXISTS;
 
 @Component
 @RequiredArgsConstructor
@@ -41,8 +42,8 @@ public class QuizManageTool {
             @ToolParam(description = "分值") Integer score,
             @ToolParam(description = "难度：easy / medium / hard") String difficulty,
             @ToolParam(description = "题目解析") String explanation,
-            @ToolParam(description = "选项列表，每个选项包含 optionText / isCorrect / orderIndex") List<Map<String, Object>> options
-    ) {
+            @ToolParam(description = "选项列表，每个选项包含 optionText / isCorrect / orderIndex")
+                    List<Map<String, Object>> options) {
         Quiz quiz = Quiz.builder()
                 .chapterId(chapterId)
                 .question(question)
@@ -87,8 +88,7 @@ public class QuizManageTool {
             @ToolParam(description = "分值，可为空") Integer score,
             @ToolParam(description = "难度，可为空") String difficulty,
             @ToolParam(description = "解析，可为空") String explanation,
-            @ToolParam(description = "是否启用，可为空") Boolean isActive
-    ) {
+            @ToolParam(description = "是否启用，可为空") Boolean isActive) {
         Quiz existing = quizService.get(quizId);
         if (existing == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "测验不存在");

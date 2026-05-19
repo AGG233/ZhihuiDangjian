@@ -1,13 +1,13 @@
 package com.rauio.smartdangjian.controller.user;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.QuizTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.quiz.controller.user.UserQuizController;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
-import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
-import com.rauio.smartdangjian.server.quiz.service.QuizService;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -16,18 +16,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.List;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.QuizTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.quiz.controller.user.UserQuizController;
+import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
+import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
+import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
+import com.rauio.smartdangjian.server.quiz.service.QuizService;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = UserQuizControllerTest.TestConfig.class
-)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = UserQuizControllerTest.TestConfig.class)
 @DisplayName("用户试题接口测试")
 class UserQuizControllerTest extends BaseControllerTest {
 
@@ -129,8 +127,7 @@ class UserQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 BusinessException 返回 400")
         void getQuizThrowsBusinessException() throws Exception {
-            when(quizService.get("quiz-1"))
-                    .thenThrow(new BusinessException(4001, "试题不存在"));
+            when(quizService.get("quiz-1")).thenThrow(new BusinessException(4001, "试题不存在"));
 
             mockMvc.perform(get("/api/quiz/quizzes/quiz-1"))
                     .andExpect(status().isBadRequest())
@@ -141,8 +138,7 @@ class UserQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /by-chapter/{chapterId} - Service 抛出 RuntimeException 返回 500")
         void getQuizOfChapterThrowsRuntimeException() throws Exception {
-            when(quizService.getByChapterId(anyString()))
-                    .thenThrow(new RuntimeException("数据库连接失败"));
+            when(quizService.getByChapterId(anyString())).thenThrow(new RuntimeException("数据库连接失败"));
 
             mockMvc.perform(get("/api/quiz/quizzes/by-chapter/chapter-1"))
                     .andExpect(status().isInternalServerError())
@@ -175,8 +171,7 @@ class UserQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id}/options/{optionId} - Service 抛出 BusinessException 返回 400")
         void getByOptionIdThrowsBusinessException() throws Exception {
-            when(quizOptionService.get("opt-1"))
-                    .thenThrow(new BusinessException(4001, "选项不存在"));
+            when(quizOptionService.get("opt-1")).thenThrow(new BusinessException(4001, "选项不存在"));
 
             mockMvc.perform(get("/api/quiz/quizzes/quiz-1/options/opt-1"))
                     .andExpect(status().isBadRequest())
@@ -254,29 +249,25 @@ class UserQuizControllerTest extends BaseControllerTest {
         void sqlInjectionInPath() throws Exception {
             when(quizService.get("' OR '1'='1")).thenReturn(null);
 
-            mockMvc.perform(get("/api/quiz/quizzes/{id}", "' OR '1'='1"))
-                    .andExpect(status().isOk());
+            mockMvc.perform(get("/api/quiz/quizzes/{id}", "' OR '1'='1")).andExpect(status().isOk());
         }
 
         @Test
         @DisplayName("POST 请求获取试题详情接口返回 405")
         void getWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/quiz/quizzes/quiz-1"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/quiz/quizzes/quiz-1")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("DELETE 请求获取章节试题接口返回 405")
         void getByChapterWithWrongMethod() throws Exception {
-            mockMvc.perform(delete("/api/quiz/quizzes/by-chapter/chapter-1"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(delete("/api/quiz/quizzes/by-chapter/chapter-1")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("PUT 请求获取选项列表接口返回 405")
         void getOptionsWithWrongMethod() throws Exception {
-            mockMvc.perform(put("/api/quiz/quizzes/quiz-1/options"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(put("/api/quiz/quizzes/quiz-1/options")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

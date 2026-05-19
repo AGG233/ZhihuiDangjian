@@ -1,15 +1,16 @@
 package com.rauio.smartdangjian.server.learning.pojo.entity;
 
+import java.time.LocalDateTime;
+
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -41,12 +42,14 @@ public class UserLearningRecord {
     @Schema(description = "学习时长（秒）", example = "1800")
     private Integer duration;
 
-    @Schema(description = "设备类型", allowableValues = {"web", "mobile", "tablet"}, example = "web")
+    @Schema(
+            description = "设备类型",
+            allowableValues = {"web", "mobile", "tablet"},
+            example = "web")
     @TableField("device_type")
     private String deviceType;
 
     @Schema(description = "创建时间")
     @TableField("created_at")
     private LocalDateTime createdAt;
-
 }

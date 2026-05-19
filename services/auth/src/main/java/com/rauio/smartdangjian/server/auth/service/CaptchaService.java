@@ -1,24 +1,26 @@
 package com.rauio.smartdangjian.server.auth.service;
 
-import cn.hutool.captcha.CaptchaUtil;
-import cn.hutool.captcha.LineCaptcha;
-import cn.hutool.captcha.generator.RandomGenerator;
-import cn.hutool.core.lang.UUID;
-import com.rauio.smartdangjian.server.auth.pojo.Captcha;
-import lombok.RequiredArgsConstructor;
+import static com.rauio.smartdangjian.constants.SecurityConstants.CAPTCHA_EXPIRATION;
+
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.TimeUnit;
+import com.rauio.smartdangjian.server.auth.pojo.Captcha;
 
-import static com.rauio.smartdangjian.constants.SecurityConstants.CAPTCHA_EXPIRATION;
+import cn.hutool.captcha.CaptchaUtil;
+import cn.hutool.captcha.LineCaptcha;
+import cn.hutool.captcha.generator.RandomGenerator;
+import cn.hutool.core.lang.UUID;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class CaptchaService {
 
-    private final RedisTemplate<String,Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Value("${auth.captcha.test-code:}")
     private String testCode;
@@ -41,15 +43,15 @@ public class CaptchaService {
      */
     public Captcha generate() {
         RandomGenerator randomGenerator = new RandomGenerator("0123456789", 4);
-        LineCaptcha captcha = CaptchaUtil.createLineCaptcha(200, 100,4,500);
+        LineCaptcha captcha = CaptchaUtil.createLineCaptcha(200, 100, 4, 500);
         captcha.setGenerator(randomGenerator);
         captcha.createCode();
         captcha.setTextAlpha(0.2f);
         String code = captcha.getCode();
 
-        String uuid = UUID.randomUUID().toString().replace("-","");
+        String uuid = UUID.randomUUID().toString().replace("-", "");
         String base64 = captcha.getImageBase64();
-        redisTemplate.opsForValue().set("captcha:"+uuid, code, CAPTCHA_EXPIRATION, TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue().set("captcha:" + uuid, code, CAPTCHA_EXPIRATION, TimeUnit.MILLISECONDS);
 
         return Captcha.builder().uuid(uuid).code(code).base64(base64).build();
     }
@@ -65,6 +67,6 @@ public class CaptchaService {
         if (testCode != null && !testCode.isBlank() && testCode.equals(code)) {
             return true;
         }
-        return code != null && code.equals(redisTemplate.opsForValue().get("captcha:"+uuid));
+        return code != null && code.equals(redisTemplate.opsForValue().get("captcha:" + uuid));
     }
 }

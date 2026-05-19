@@ -1,9 +1,9 @@
 package com.rauio.smartdangjian.server.graph.pojo.vo;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("GraphEdgeVO 知识图谱边视图对象")
 class GraphEdgeVOTest {

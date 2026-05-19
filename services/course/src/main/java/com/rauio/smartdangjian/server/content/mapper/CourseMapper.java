@@ -1,18 +1,20 @@
 package com.rauio.smartdangjian.server.content.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.github.yulichang.base.MPJBaseMapper;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
-import java.util.List;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.github.yulichang.base.MPJBaseMapper;
+import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 
 @Mapper
 public interface CourseMapper extends BaseMapper<Course>, MPJBaseMapper<Course> {
 
-    @Select("""
+    @Select(
+            """
             SELECT DISTINCT c.*
             FROM course c
             JOIN chapter ch ON ch.course_id = c.id

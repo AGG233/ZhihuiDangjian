@@ -1,10 +1,9 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
-import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
-import com.rauio.smartdangjian.server.user.service.UserService;
-import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,9 +12,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.model.ToolContext;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
+import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
+import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 class UserInfoToolTest {

@@ -1,12 +1,13 @@
 package com.rauio.smartdangjian.annotation.validation.Validator;
 
-import com.rauio.smartdangjian.annotation.validation.IsPassword;
-import jakarta.validation.ConstraintValidator;
-import jakarta.validation.ConstraintValidatorContext;
+import static com.rauio.smartdangjian.constants.ValidationConstants.PASSWORD_PATTERN;
 
 import java.util.regex.Matcher;
 
-import static com.rauio.smartdangjian.constants.ValidationConstants.PASSWORD_PATTERN;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+
+import com.rauio.smartdangjian.annotation.validation.IsPassword;
 
 public class IsPasswordValidator implements ConstraintValidator<IsPassword, String> {
 

@@ -1,11 +1,17 @@
 package com.rauio.smartdangjian.controller.admin;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.BannerTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.resource.controller.admin.AdminBannerController;
-import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
-import com.rauio.smartdangjian.server.resource.service.BannerService;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -15,23 +21,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.BannerTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.resource.controller.admin.AdminBannerController;
+import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
+import com.rauio.smartdangjian.server.resource.service.BannerService;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminBannerControllerTest.TestConfig.class
-)
+        classes = AdminBannerControllerTest.TestConfig.class)
 @DisplayName("管理员轮播图接口测试")
 class AdminBannerControllerTest extends BaseControllerTest {
 
@@ -54,9 +53,7 @@ class AdminBannerControllerTest extends BaseControllerTest {
         @DisplayName("GET / - 获取轮播图列表成功")
         void listBannersSuccess() throws Exception {
             List<ResourceMeta> banners = List.of(
-                    BannerTestDataFactory.createResourceMeta("r-1"),
-                    BannerTestDataFactory.createResourceMeta("r-2")
-            );
+                    BannerTestDataFactory.createResourceMeta("r-1"), BannerTestDataFactory.createResourceMeta("r-2"));
             when(bannerService.getList()).thenReturn(banners);
 
             mockMvc.perform(get("/api/admin/resource/banners"))
@@ -166,7 +163,7 @@ class AdminBannerControllerTest extends BaseControllerTest {
                             .content(""))
                     .andExpect(status().isBadRequest());
         }
-}
+    }
 
     @Nested
     @DisplayName("边界场景")
@@ -191,7 +188,8 @@ class AdminBannerControllerTest extends BaseControllerTest {
 
             mockMvc.perform(post("/api/admin/resource/banners")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(BannerTestDataFactory.toJson(BannerTestDataFactory.createBannerCreateRequestByHash())))
+                            .content(BannerTestDataFactory.toJson(
+                                    BannerTestDataFactory.createBannerCreateRequestByHash())))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));
         }
@@ -204,7 +202,8 @@ class AdminBannerControllerTest extends BaseControllerTest {
 
             mockMvc.perform(put("/api/admin/resource/banners/0")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(BannerTestDataFactory.toJson(BannerTestDataFactory.createBannerUpdateRequestByHash())))
+                            .content(BannerTestDataFactory.toJson(
+                                    BannerTestDataFactory.createBannerUpdateRequestByHash())))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));
         }
@@ -217,8 +216,7 @@ class AdminBannerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 注入在 resourceId 字段")
         void xssInResourceId() throws Exception {
-            when(bannerService.create(any(String.class)))
-                    .thenReturn(BannerTestDataFactory.createResourceMeta("r-1"));
+            when(bannerService.create(any(String.class))).thenReturn(BannerTestDataFactory.createResourceMeta("r-1"));
 
             String json = "{\"resourceId\": \"<script>alert('xss')</script>\"}";
             mockMvc.perform(post("/api/admin/resource/banners")
@@ -230,8 +228,7 @@ class AdminBannerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入在 resourceId 字段")
         void sqlInjectionInResourceId() throws Exception {
-            when(bannerService.create(any(String.class)))
-                    .thenReturn(BannerTestDataFactory.createResourceMeta("r-1"));
+            when(bannerService.create(any(String.class))).thenReturn(BannerTestDataFactory.createResourceMeta("r-1"));
 
             String json = "{\"resourceId\": \"' OR '1'='1\"}";
             mockMvc.perform(post("/api/admin/resource/banners")
@@ -252,8 +249,7 @@ class AdminBannerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST 请求获取单个接口返回 405")
         void getWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/admin/resource/banners/0"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/admin/resource/banners/0")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

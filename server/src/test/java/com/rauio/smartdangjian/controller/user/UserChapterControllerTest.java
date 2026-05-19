@@ -1,11 +1,12 @@
 package com.rauio.smartdangjian.controller.user;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.controller.user.UserChapterController;
-import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -14,17 +15,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.List;
-
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.controller.user.UserChapterController;
+import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
+import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = UserChapterControllerTest.TestConfig.class
-)
+        classes = UserChapterControllerTest.TestConfig.class)
 @DisplayName("用户章节接口测试")
 class UserChapterControllerTest extends BaseControllerTest {
 
@@ -82,8 +82,7 @@ class UserChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 章节不存在返回 BusinessException（4000）")
         void getChapterNotExists() throws Exception {
-            when(chapterService.get("nonexistent"))
-                    .thenThrow(new BusinessException(4000, "章节不存在"));
+            when(chapterService.get("nonexistent")).thenThrow(new BusinessException(4000, "章节不存在"));
 
             mockMvc.perform(get("/api/content/chapters/nonexistent"))
                     .andExpect(status().isBadRequest())
@@ -94,8 +93,7 @@ class UserChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 RuntimeException 返回 500")
         void getThrowsRuntimeException() throws Exception {
-            when(chapterService.get("ch-1"))
-                    .thenThrow(new RuntimeException("数据库连接失败"));
+            when(chapterService.get("ch-1")).thenThrow(new RuntimeException("数据库连接失败"));
 
             mockMvc.perform(get("/api/content/chapters/ch-1"))
                     .andExpect(status().isInternalServerError())
@@ -105,8 +103,7 @@ class UserChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /by-course/{courseId} - Service 抛出 BusinessException 返回 400")
         void getByCourseIdThrowsBusinessException() throws Exception {
-            when(chapterService.getByCourseId("invalid-course"))
-                    .thenThrow(new BusinessException(4001, "课程不存在"));
+            when(chapterService.getByCourseId("invalid-course")).thenThrow(new BusinessException(4001, "课程不存在"));
 
             mockMvc.perform(get("/api/content/chapters/by-course/invalid-course"))
                     .andExpect(status().isBadRequest())
@@ -162,22 +159,19 @@ class UserChapterControllerTest extends BaseControllerTest {
         void sqlInjectionInPath() throws Exception {
             when(chapterService.get("' OR '1'='1")).thenReturn(null);
 
-            mockMvc.perform(get("/api/content/chapters/{id}", "' OR '1'='1"))
-                    .andExpect(status().isOk());
+            mockMvc.perform(get("/api/content/chapters/{id}", "' OR '1'='1")).andExpect(status().isOk());
         }
 
         @Test
         @DisplayName("POST 请求获取接口返回 405")
         void getWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/content/chapters/ch-1"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/content/chapters/ch-1")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("PUT 请求列表接口返回 405")
         void getByCourseWithWrongMethod() throws Exception {
-            mockMvc.perform(put("/api/content/chapters/by-course/course-1"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(put("/api/content/chapters/by-course/course-1")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

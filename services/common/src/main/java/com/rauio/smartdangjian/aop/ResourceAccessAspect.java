@@ -1,12 +1,10 @@
 package com.rauio.smartdangjian.aop;
 
-import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
-import com.rauio.smartdangjian.aop.resolver.ResourceOwnerResolver;
-import com.rauio.smartdangjian.constants.ErrorConstants;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.utils.SecurityUtils;
-import com.rauio.smartdangjian.utils.spec.UserType;
-import lombok.extern.slf4j.Slf4j;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Pattern;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -16,18 +14,21 @@ import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.List;
-import java.util.regex.Pattern;
+import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
+import com.rauio.smartdangjian.aop.resolver.ResourceOwnerResolver;
+import com.rauio.smartdangjian.constants.ErrorConstants;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.utils.SecurityUtils;
+import com.rauio.smartdangjian.utils.spec.UserType;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Aspect
 @Slf4j
 public class ResourceAccessAspect {
 
-    private static final Pattern SAFE_SPEL_PATTERN = Pattern.compile(
-            "^#[_a-zA-Z][_a-zA-Z0-9]*(\\.[_a-zA-Z][_a-zA-Z0-9]*)*$|^'[^']*'$"
-    );
+    private static final Pattern SAFE_SPEL_PATTERN =
+            Pattern.compile("^#[_a-zA-Z][_a-zA-Z0-9]*(\\.[_a-zA-Z][_a-zA-Z0-9]*)*$|^'[^']*'$");
 
     private final SpelExpressionParser parser = new SpelExpressionParser();
     private final DefaultParameterNameDiscoverer paramDiscoverer = new DefaultParameterNameDiscoverer();

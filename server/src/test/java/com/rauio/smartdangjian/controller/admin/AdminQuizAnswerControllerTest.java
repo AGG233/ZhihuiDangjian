@@ -1,11 +1,14 @@
 package com.rauio.smartdangjian.controller.admin;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
-import com.rauio.smartdangjian.server.quiz.controller.admin.AdminQuizAnswerController;
-import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
-import com.rauio.smartdangjian.utils.spec.UserType;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Collections;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,19 +20,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.Collections;
-
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.server.quiz.controller.admin.AdminQuizAnswerController;
+import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminQuizAnswerControllerTest.TestConfig.class
-)
+        classes = AdminQuizAnswerControllerTest.TestConfig.class)
 @DisplayName("管理员答题记录接口测试")
 class AdminQuizAnswerControllerTest extends BaseControllerTest {
 
@@ -135,7 +135,8 @@ class AdminQuizAnswerControllerTest extends BaseControllerTest {
             when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(longId, longId, longId))
                     .thenReturn(true);
 
-            mockMvc.perform(delete("/api/admin/quiz/answers/users/" + longId + "/quizzes/" + longId + "/options/" + longId))
+            mockMvc.perform(delete(
+                            "/api/admin/quiz/answers/users/" + longId + "/quizzes/" + longId + "/options/" + longId))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));
         }
@@ -148,15 +149,15 @@ class AdminQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 尝试在路径参数中返回 404（特殊字符导致 URL 不匹配）")
         void xssInPath() throws Exception {
-            mockMvc.perform(delete("/api/admin/quiz/answers/users/<script>alert('xss')</script>/quizzes/quiz-1/options/opt-1"))
+            mockMvc.perform(delete(
+                            "/api/admin/quiz/answers/users/<script>alert('xss')</script>/quizzes/quiz-1/options/opt-1"))
                     .andExpect(status().isNotFound());
         }
 
         @Test
         @DisplayName("SQL 注入尝试在路径参数中")
         void sqlInjectionInPath() throws Exception {
-            when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(
-                    "' OR '1'='1", "quiz-1", "opt-1"))
+            when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId("' OR '1'='1", "quiz-1", "opt-1"))
                     .thenReturn(true);
 
             mockMvc.perform(delete("/api/admin/quiz/answers/users/' OR '1'='1/quizzes/quiz-1/options/opt-1"))
@@ -176,19 +177,24 @@ class AdminQuizAnswerControllerTest extends BaseControllerTest {
             // Temporarily switch to SCHOOL (lower than MANAGER)
             CurrentUserPrincipal schoolUser = new CurrentUserPrincipal() {
                 @Override
-                public String getId() { return "school-admin"; }
+                public String getId() {
+                    return "school-admin";
+                }
 
                 @Override
-                public UserType getUserType() { return UserType.SCHOOL; }
+                public UserType getUserType() {
+                    return UserType.SCHOOL;
+                }
 
                 @Override
-                public String getUniversityId() { return "uni1"; }
+                public String getUniversityId() {
+                    return "uni1";
+                }
             };
-            SecurityContextHolder.getContext().setAuthentication(
-                    new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                            schoolUser, null, Collections.emptyList()
-                    )
-            );
+            SecurityContextHolder.getContext()
+                    .setAuthentication(
+                            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                                    schoolUser, null, Collections.emptyList()));
 
             when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId("user-1", "quiz-1", "opt-1"))
                     .thenReturn(true);

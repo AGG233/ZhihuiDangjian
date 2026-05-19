@@ -1,11 +1,11 @@
 package com.rauio.smartdangjian.server.user.controller.user;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserPublicVO;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
-import com.rauio.smartdangjian.server.user.service.UserService;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,11 +13,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.pojo.vo.UserPublicVO;
+import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
+import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 class UserControllerTest {

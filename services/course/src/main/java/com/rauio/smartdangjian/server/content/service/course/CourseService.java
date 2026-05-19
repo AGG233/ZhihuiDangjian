@@ -1,5 +1,15 @@
 package com.rauio.smartdangjian.server.content.service.course;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -13,16 +23,8 @@ import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
 import com.rauio.smartdangjian.server.content.pojo.vo.PageVO;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -31,11 +33,10 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
     private static final Map<String, String> DIFFICULTY_MAP = Map.of(
             "入门", "beginner",
             "中级", "intermediate",
-            "高级", "advanced"
-    );
+            "高级", "advanced");
 
-    private final UserService       userService;
-    private final CourseConvertor   courseConvertor;
+    private final UserService userService;
+    private final CourseConvertor courseConvertor;
     private final CategoryCourseMapper categoryCourseMapper;
 
     private void normalizeCourseFields(Course course) {
@@ -70,8 +71,8 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
      * @return 是否创建成功
      */
     public Boolean create(CourseDto courseDto) {
-        User    user        = userService.getCurrentUser();
-        Course  course      = courseConvertor.toCourse(courseDto);
+        User user = userService.getCurrentUser();
+        Course course = courseConvertor.toCourse(courseDto);
 
         course.setCreatorId(user.getId());
         normalizeCourseFields(course);
@@ -80,11 +81,10 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
             return false;
         }
         return categoryCourseMapper.insert(CategoryCourse.builder()
-                .courseId(course.getId())
-                .categoryId(courseDto.getCategoryId())
-                .build()
-        ) > 0;
-
+                        .courseId(course.getId())
+                        .categoryId(courseDto.getCategoryId())
+                        .build())
+                > 0;
     }
 
     /**
@@ -94,13 +94,13 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
      * @param id 课程 ID
      * @return 是否更新成功
      */
-    public Boolean update(CourseDto courseDto,String id) {
-        if (id == null){
+    public Boolean update(CourseDto courseDto, String id) {
+        if (id == null) {
             return false;
         }
 
-        Course  course = courseConvertor.toCourse(courseDto);
-        Course  target = this.getById(id);
+        Course course = courseConvertor.toCourse(courseDto);
+        Course target = this.getById(id);
         if (target == null) {
             return false;
         }
@@ -112,12 +112,12 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         }
 
         if (courseDto.getCategoryId() != null) {
-            categoryCourseMapper.delete(new LambdaQueryWrapper<CategoryCourse>()
-                    .eq(CategoryCourse::getCourseId, id));
+            categoryCourseMapper.delete(new LambdaQueryWrapper<CategoryCourse>().eq(CategoryCourse::getCourseId, id));
             return categoryCourseMapper.insert(CategoryCourse.builder()
-                    .courseId(id)
-                    .categoryId(courseDto.getCategoryId())
-                    .build()) > 0;
+                            .courseId(id)
+                            .categoryId(courseDto.getCategoryId())
+                            .build())
+                    > 0;
         }
         return true;
     }
@@ -129,8 +129,7 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
      * @return 是否删除成功
      */
     public Boolean delete(String courseId) {
-        categoryCourseMapper.delete(new LambdaQueryWrapper<CategoryCourse>()
-                .eq(CategoryCourse::getCourseId, courseId));
+        categoryCourseMapper.delete(new LambdaQueryWrapper<CategoryCourse>().eq(CategoryCourse::getCourseId, courseId));
         return this.removeById(courseId);
     }
 
@@ -150,8 +149,8 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
      * @return 分类课程关联列表
      */
     public List<CategoryCourse> getByCategoryId(String categoryId) {
-        return categoryCourseMapper.selectList(new LambdaQueryWrapper<CategoryCourse>()
-                .eq(CategoryCourse::getCategoryId, categoryId));
+        return categoryCourseMapper.selectList(
+                new LambdaQueryWrapper<CategoryCourse>().eq(CategoryCourse::getCategoryId, categoryId));
     }
 
     /**
@@ -172,7 +171,7 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
      * @return 课程分页结果
      */
     public PageVO<Object> getPage(int pageNum, int pageSize) {
-        Page<Course> page = this.page(new Page<>(pageNum,pageSize));
+        Page<Course> page = this.page(new Page<>(pageNum, pageSize));
         List<CourseVO> courseVOList = toCourseVOList(page.getRecords());
         return PageVO.builder()
                 .total(page.getTotal())
@@ -188,10 +187,8 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         }
 
         List<CourseVO> courseVOList = new ArrayList<>(courseConvertor.toVOList(courses));
-        Map<String, String> categoryIdMap = getCategoryIdMapByCourseIds(courses.stream()
-                .map(Course::getId)
-                .filter(Objects::nonNull)
-                .toList());
+        Map<String, String> categoryIdMap = getCategoryIdMapByCourseIds(
+                courses.stream().map(Course::getId).filter(Objects::nonNull).toList());
 
         for (CourseVO courseVO : courseVOList) {
             courseVO.setCategoryId(categoryIdMap.get(courseVO.getId()));
@@ -204,8 +201,8 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
             return Collections.emptyMap();
         }
 
-        List<CategoryCourse> relations = categoryCourseMapper.selectList(new LambdaQueryWrapper<CategoryCourse>()
-                .in(CategoryCourse::getCourseId, courseIds));
+        List<CategoryCourse> relations = categoryCourseMapper.selectList(
+                new LambdaQueryWrapper<CategoryCourse>().in(CategoryCourse::getCourseId, courseIds));
 
         Map<String, String> categoryIdMap = new HashMap<>();
         for (CategoryCourse relation : relations) {
@@ -228,8 +225,8 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         if (categoryIds == null || categoryIds.isEmpty()) {
             return Collections.emptyList();
         }
-        return categoryCourseMapper.selectList(new LambdaQueryWrapper<CategoryCourse>()
-                        .in(CategoryCourse::getCategoryId, categoryIds))
+        return categoryCourseMapper
+                .selectList(new LambdaQueryWrapper<CategoryCourse>().in(CategoryCourse::getCategoryId, categoryIds))
                 .stream()
                 .map(CategoryCourse::getCourseId)
                 .filter(Objects::nonNull)

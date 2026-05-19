@@ -1,17 +1,16 @@
 package com.rauio.smartdangjian.utils.spec;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class UserTypeTest {
 
     @Test
     @DisplayName("UserType 包含 STUDENT、SCHOOL、MANAGER 三个枚举值")
     void enumValues() {
-        assertThat(UserType.values())
-                .containsExactly(UserType.STUDENT, UserType.SCHOOL, UserType.MANAGER);
+        assertThat(UserType.values()).containsExactly(UserType.STUDENT, UserType.SCHOOL, UserType.MANAGER);
     }
 
     @Test

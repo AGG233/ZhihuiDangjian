@@ -1,5 +1,7 @@
 package com.rauio.smartdangjian.search.controller;
 
+import org.springframework.web.bind.annotation.*;
+
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
@@ -9,11 +11,11 @@ import com.rauio.smartdangjian.search.service.SearchService;
 import com.rauio.smartdangjian.search.service.UserProfileService;
 import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
 import com.rauio.smartdangjian.utils.spec.UserType;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "搜索与推荐接口", description = "课程搜索、个性化推荐、用户画像")
 @RestController

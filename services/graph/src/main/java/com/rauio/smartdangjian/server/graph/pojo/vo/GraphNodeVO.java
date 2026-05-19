@@ -10,8 +10,10 @@ import lombok.Data;
 public class GraphNodeVO {
     @Schema(description = "节点ID")
     private String id;
+
     @Schema(description = "节点标签")
     private String label;
+
     @Schema(description = "节点名称")
     private String name;
 }

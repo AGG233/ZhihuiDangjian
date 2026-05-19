@@ -1,5 +1,10 @@
 package com.rauio.smartdangjian.server.learning.aop;
 
+import java.util.List;
+import java.util.Objects;
+
+import org.springframework.stereotype.Component;
+
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeContext;
@@ -8,8 +13,8 @@ import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.learning.constants.LearningErrorConstants;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.server.learning.constants.LearningErrorConstants;
 import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
 import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserChapterProgress;
@@ -19,11 +24,8 @@ import com.rauio.smartdangjian.server.learning.pojo.vo.UserLearningRecordVO;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.utils.spec.UserType;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Objects;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -61,8 +63,7 @@ public class LearningResourceAccessAspect implements DataScopeResolver {
                 context.getAccess().resource(),
                 context.require(context.getAccess().id(), String.class, "章节ID不能为空"),
                 context.getCurrentUser(),
-                result
-        );
+                result);
     }
 
     private void assertReadById(String resource, String id, CurrentUserPrincipal currentUser) {
@@ -90,7 +91,8 @@ public class LearningResourceAccessAspect implements DataScopeResolver {
         throw new BusinessException(ErrorConstants.RESOURCE_NOT_AUTHORIZED, "无权删除该资源");
     }
 
-    private Object filterChapterResult(String resource, String chapterId, CurrentUserPrincipal currentUser, Object result) {
+    private Object filterChapterResult(
+            String resource, String chapterId, CurrentUserPrincipal currentUser, Object result) {
         if (currentUser.getUserType() == UserType.MANAGER || currentUser.getUserType() == UserType.STUDENT) {
             return result;
         }
@@ -162,5 +164,4 @@ public class LearningResourceAccessAspect implements DataScopeResolver {
     private void setResultData(Result<?> result, Object data) {
         ((Result) result).setData(data);
     }
-
 }

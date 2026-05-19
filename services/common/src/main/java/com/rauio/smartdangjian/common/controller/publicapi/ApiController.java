@@ -1,17 +1,19 @@
 package com.rauio.smartdangjian.common.controller.publicapi;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.rauio.smartdangjian.common.pojo.Universities;
-import com.rauio.smartdangjian.common.service.UniversitiesService;
-import com.rauio.smartdangjian.pojo.response.Result;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.rauio.smartdangjian.common.pojo.Universities;
+import com.rauio.smartdangjian.common.service.UniversitiesService;
+import com.rauio.smartdangjian.pojo.response.Result;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 
 @Tag(name = "公共API接口", description = "提供公共数据访问接口")
 @RestController

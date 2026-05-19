@@ -1,10 +1,10 @@
 package com.rauio.smartdangjian.server.learning.pojo.dto;
 
+import java.time.LocalDateTime;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -23,7 +23,10 @@ public class UserChapterProgressDto {
     @Schema(description = "学习进度（0-100）", example = "75")
     private Integer progress;
 
-    @Schema(description = "学习状态：not_started表示未开始，in_progress表示学习中，completed表示已完成", allowableValues = {"not_started", "in_progress", "completed"}, example = "in_progress")
+    @Schema(
+            description = "学习状态：not_started表示未开始，in_progress表示学习中，completed表示已完成",
+            allowableValues = {"not_started", "in_progress", "completed"},
+            example = "in_progress")
     private String status;
 
     @Schema(description = "首次观看时间")

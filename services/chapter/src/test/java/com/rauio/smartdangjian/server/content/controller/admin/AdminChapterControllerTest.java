@@ -1,9 +1,12 @@
 package com.rauio.smartdangjian.server.content.controller.admin;
 
-import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.content.pojo.dto.ChapterDto;
-import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,12 +14,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Collections;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.server.content.pojo.dto.ChapterDto;
+import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
+import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AdminChapterController 单元测试")
@@ -80,8 +81,7 @@ class AdminChapterControllerTest {
     void getByCourseIdShouldReturnChapterVOList() {
         List<ChapterVO> vos = List.of(
                 ChapterVO.builder().id("ch-001").title("第一章").build(),
-                ChapterVO.builder().id("ch-002").title("第二章").build()
-        );
+                ChapterVO.builder().id("ch-002").title("第二章").build());
         when(chapterService.getByCourseId("course-001")).thenReturn(vos);
 
         Result<List<ChapterVO>> result = controller.getByCourseId("course-001");
@@ -163,10 +163,7 @@ class AdminChapterControllerTest {
     @Test
     @DisplayName("update 更新章节成功时返回 true")
     void updateShouldReturnTrue() {
-        ChapterDto dto = ChapterDto.builder()
-                .title("更新章节")
-                .description("更新描述")
-                .build();
+        ChapterDto dto = ChapterDto.builder().title("更新章节").description("更新描述").build();
         when(chapterService.update(any(ChapterDto.class))).thenReturn(true);
 
         Result<Boolean> result = controller.update(dto);
@@ -179,10 +176,7 @@ class AdminChapterControllerTest {
     @Test
     @DisplayName("update 更新章节失败时返回 false")
     void updateShouldReturnFalseWhenServiceFails() {
-        ChapterDto dto = ChapterDto.builder()
-                .title("失败更新")
-                .description("描述")
-                .build();
+        ChapterDto dto = ChapterDto.builder().title("失败更新").description("描述").build();
         when(chapterService.update(any(ChapterDto.class))).thenReturn(false);
 
         Result<Boolean> result = controller.update(dto);

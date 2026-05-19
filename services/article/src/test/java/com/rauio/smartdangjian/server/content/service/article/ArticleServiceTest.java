@@ -1,5 +1,22 @@
 package com.rauio.smartdangjian.server.content.service.article;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+import java.util.List;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.server.content.mapper.CategoryArticleMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ArticleConvertor;
@@ -10,23 +27,6 @@ import com.rauio.smartdangjian.server.content.spec.ArticleStatus;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.utils.spec.UserType;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Collections;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ArticleServiceTest {
@@ -110,8 +110,7 @@ class ArticleServiceTest {
         Page<Article> page = new Page<>(1, 10);
         page.setRecords(List.of(
                 Article.builder().id("art-001").title("文章1").build(),
-                Article.builder().id("art-002").title("文章2").build()
-        ));
+                Article.builder().id("art-002").title("文章2").build()));
         doReturn(page).when(articleService).page(any(Page.class));
 
         List<Article> result = articleService.getPage(1, 10);
@@ -140,7 +139,11 @@ class ArticleServiceTest {
     @Test
     @DisplayName("create 创建文章成功返回 true")
     void createArticleSuccessfully() {
-        User user = User.builder().id("user-001").username("testuser").userType(UserType.SCHOOL).build();
+        User user = User.builder()
+                .id("user-001")
+                .username("testuser")
+                .userType(UserType.SCHOOL)
+                .build();
         when(userService.getCurrentUser()).thenReturn(user);
         doReturn(true).when(articleService).save(any(Article.class));
 
@@ -159,7 +162,11 @@ class ArticleServiceTest {
     @Test
     @DisplayName("create 创建文章时 authorId 设置为当前用户 ID")
     void createSetsAuthorIdToCurrentUser() {
-        User user = User.builder().id("user-001").username("author").userType(UserType.SCHOOL).build();
+        User user = User.builder()
+                .id("user-001")
+                .username("author")
+                .userType(UserType.SCHOOL)
+                .build();
         when(userService.getCurrentUser()).thenReturn(user);
         doReturn(true).when(articleService).save(any(Article.class));
 
@@ -179,10 +186,8 @@ class ArticleServiceTest {
         when(userService.getCurrentUser()).thenReturn(user);
         doReturn(false).when(articleService).save(any(Article.class));
 
-        ArticleDto dto = ArticleDto.builder()
-                .title("失败文章")
-                .status(ArticleStatus.Draft)
-                .build();
+        ArticleDto dto =
+                ArticleDto.builder().title("失败文章").status(ArticleStatus.Draft).build();
 
         Boolean result = articleService.create(dto);
 

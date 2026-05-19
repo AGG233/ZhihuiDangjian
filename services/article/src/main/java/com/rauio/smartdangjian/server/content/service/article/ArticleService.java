@@ -1,5 +1,9 @@
 package com.rauio.smartdangjian.server.content.service.article;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.server.content.mapper.ArticleMapper;
@@ -10,10 +14,8 @@ import com.rauio.smartdangjian.server.content.pojo.entity.Article;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryArticle;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -40,8 +42,8 @@ public class ArticleService extends ServiceImpl<ArticleMapper, Article> {
      * @return 分类文章关联列表
      */
     public List<CategoryArticle> getByCategoryId(String id) {
-        return categoryArticleMapper.selectList(new LambdaQueryWrapper<CategoryArticle>()
-                .eq(CategoryArticle::getCategoryId, id));
+        return categoryArticleMapper.selectList(
+                new LambdaQueryWrapper<CategoryArticle>().eq(CategoryArticle::getCategoryId, id));
     }
 
     /**
@@ -52,7 +54,8 @@ public class ArticleService extends ServiceImpl<ArticleMapper, Article> {
      * @return 当前页文章列表
      */
     public List<Article> getPage(int pageNum, int pageSize) {
-        return this.page(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize)).getRecords();
+        return this.page(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize))
+                .getRecords();
     }
 
     /**

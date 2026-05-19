@@ -1,10 +1,17 @@
 package com.rauio.smartdangjian.exception;
 
-import com.auth0.jwt.exceptions.TokenExpiredException;
-import com.rauio.smartdangjian.pojo.response.Result;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DuplicateKeyException;
@@ -13,13 +20,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.rauio.smartdangjian.pojo.response.Result;
 
 class GlobalExceptionHandlerTest {
 

@@ -1,9 +1,19 @@
 package com.rauio.smartdangjian.search.service;
 
+import static com.rauio.smartdangjian.constants.RedisConstants.USER_PROFILE_CACHE_PREFIX;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.search.pojo.vo.UserProfileVO;
 import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
+import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
+import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
 import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserChapterProgress;
@@ -12,18 +22,10 @@ import com.rauio.smartdangjian.server.quiz.mapper.QuizMapper;
 import com.rauio.smartdangjian.server.quiz.mapper.UserQuizAnswerMapper;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
-import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
-import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.user.service.UserService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static com.rauio.smartdangjian.constants.RedisConstants.USER_PROFILE_CACHE_PREFIX;
 
 @Slf4j
 @Service
@@ -58,9 +60,7 @@ public class UserProfileService {
 
     private UserProfileVO.LearningStats buildLearningStats(String userId) {
         List<UserLearningRecord> records = learningRecordMapper.selectList(
-                new LambdaQueryWrapper<UserLearningRecord>()
-                        .eq(UserLearningRecord::getUserId, userId)
-        );
+                new LambdaQueryWrapper<UserLearningRecord>().eq(UserLearningRecord::getUserId, userId));
 
         int totalDuration = records.stream()
                 .mapToInt(r -> r.getDuration() != null ? r.getDuration() : 0)
@@ -72,17 +72,16 @@ public class UserProfileService {
         String preferredDevice = records.stream()
                 .filter(r -> r.getDeviceType() != null)
                 .collect(Collectors.groupingBy(UserLearningRecord::getDeviceType, Collectors.counting()))
-                .entrySet().stream()
+                .entrySet()
+                .stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
                 .orElse(null);
 
         // 统计已完成章节数
-        Long completedCount = chapterProgressMapper.selectCount(
-                new LambdaQueryWrapper<UserChapterProgress>()
-                        .eq(UserChapterProgress::getUserId, userId)
-                        .eq(UserChapterProgress::getStatus, "completed")
-        );
+        Long completedCount = chapterProgressMapper.selectCount(new LambdaQueryWrapper<UserChapterProgress>()
+                .eq(UserChapterProgress::getUserId, userId)
+                .eq(UserChapterProgress::getStatus, "completed"));
 
         return UserProfileVO.LearningStats.builder()
                 .totalDuration(totalDuration)
@@ -95,13 +94,14 @@ public class UserProfileService {
 
     private UserProfileVO.KnowledgeStats buildKnowledgeStats(String userId) {
         List<UserChapterProgress> progresses = chapterProgressMapper.selectList(
-                new LambdaQueryWrapper<UserChapterProgress>()
-                        .eq(UserChapterProgress::getUserId, userId)
-        );
+                new LambdaQueryWrapper<UserChapterProgress>().eq(UserChapterProgress::getUserId, userId));
 
-        double avgProgress = progresses.isEmpty() ? 0 :
-                progresses.stream().mapToInt(p -> p.getProgress() != null ? p.getProgress() : 0)
-                        .average().orElse(0);
+        double avgProgress = progresses.isEmpty()
+                ? 0
+                : progresses.stream()
+                        .mapToInt(p -> p.getProgress() != null ? p.getProgress() : 0)
+                        .average()
+                        .orElse(0);
 
         long completedCount = progresses.stream()
                 .filter(p -> "completed".equals(p.getStatus()))
@@ -122,11 +122,9 @@ public class UserProfileService {
 
     private List<String> buildInterestCategoryIds(String userId) {
         // 获取用户学过的章节对应的课程分类
-        List<UserLearningRecord> records = learningRecordMapper.selectList(
-                new LambdaQueryWrapper<UserLearningRecord>()
-                        .eq(UserLearningRecord::getUserId, userId)
-                        .select(UserLearningRecord::getChapterId)
-        );
+        List<UserLearningRecord> records = learningRecordMapper.selectList(new LambdaQueryWrapper<UserLearningRecord>()
+                .eq(UserLearningRecord::getUserId, userId)
+                .select(UserLearningRecord::getChapterId));
 
         if (records.isEmpty()) return Collections.emptyList();
 
@@ -138,10 +136,7 @@ public class UserProfileService {
         if (chapterIds.isEmpty()) return Collections.emptyList();
 
         List<Chapter> chapters = chapterMapper.selectList(
-                new LambdaQueryWrapper<Chapter>()
-                        .in(Chapter::getId, chapterIds)
-                        .select(Chapter::getCourseId)
-        );
+                new LambdaQueryWrapper<Chapter>().in(Chapter::getId, chapterIds).select(Chapter::getCourseId));
 
         Set<String> courseIds = chapters.stream()
                 .map(Chapter::getCourseId)
@@ -151,16 +146,15 @@ public class UserProfileService {
         if (courseIds.isEmpty()) return Collections.emptyList();
 
         List<CategoryCourse> relations = categoryCourseMapper.selectList(
-                new LambdaQueryWrapper<CategoryCourse>()
-                        .in(CategoryCourse::getCourseId, courseIds)
-        );
+                new LambdaQueryWrapper<CategoryCourse>().in(CategoryCourse::getCourseId, courseIds));
 
         // 按分类出现频次排序
         return relations.stream()
                 .map(CategoryCourse::getCategoryId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.groupingBy(categoryId -> categoryId, Collectors.counting()))
-                .entrySet().stream()
+                .entrySet()
+                .stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
                 .map(Map.Entry::getKey)
                 .limit(5)
@@ -169,9 +163,7 @@ public class UserProfileService {
 
     private UserProfileVO.QuizStats buildQuizStats(String userId) {
         List<UserQuizAnswer> answers = quizAnswerMapper.selectList(
-                new LambdaQueryWrapper<UserQuizAnswer>()
-                        .eq(UserQuizAnswer::getUserId, userId)
-        );
+                new LambdaQueryWrapper<UserQuizAnswer>().eq(UserQuizAnswer::getUserId, userId));
 
         int totalAnswers = answers.size();
         int correctCount = (int) answers.stream()
@@ -181,7 +173,8 @@ public class UserProfileService {
         double avgTimeSpent = answers.stream()
                 .filter(a -> a.getTimeSpent() != null)
                 .mapToInt(UserQuizAnswer::getTimeSpent)
-                .average().orElse(0);
+                .average()
+                .orElse(0);
 
         // 按难度分组统计正确率
         Map<String, Double> byDifficulty = new HashMap<>();
@@ -191,11 +184,9 @@ public class UserProfileService {
                     .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
             if (!quizIds.isEmpty()) {
-                List<Quiz> quizzes = quizMapper.selectList(
-                        new LambdaQueryWrapper<Quiz>()
-                                .in(Quiz::getId, quizIds)
-                                .select(Quiz::getId, Quiz::getDifficulty)
-                );
+                List<Quiz> quizzes = quizMapper.selectList(new LambdaQueryWrapper<Quiz>()
+                        .in(Quiz::getId, quizIds)
+                        .select(Quiz::getId, Quiz::getDifficulty));
                 Map<String, String> quizDifficultyMap = quizzes.stream()
                         .filter(q -> q.getDifficulty() != null)
                         .collect(Collectors.toMap(Quiz::getId, Quiz::getDifficulty));

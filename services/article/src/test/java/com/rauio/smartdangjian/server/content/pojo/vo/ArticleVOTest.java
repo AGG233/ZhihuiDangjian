@@ -1,12 +1,13 @@
 package com.rauio.smartdangjian.server.content.pojo.vo;
 
-import com.rauio.smartdangjian.server.content.spec.ArticleStatus;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import com.rauio.smartdangjian.server.content.spec.ArticleStatus;
 
 class ArticleVOTest {
 

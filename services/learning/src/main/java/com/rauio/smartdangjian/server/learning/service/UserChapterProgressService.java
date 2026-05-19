@@ -1,5 +1,11 @@
 package com.rauio.smartdangjian.server.learning.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
@@ -9,12 +15,8 @@ import com.rauio.smartdangjian.server.learning.pojo.convertor.UserChapterProgres
 import com.rauio.smartdangjian.server.learning.pojo.dto.UserChapterProgressDto;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserChapterProgress;
 import com.rauio.smartdangjian.server.learning.pojo.vo.UserChapterProgressVO;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
@@ -91,14 +93,14 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
         QueryWrapper<UserChapterProgress> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", dto.getUserId()).eq("chapter_id", dto.getChapterId());
         UserChapterProgress existing = this.getOne(wrapper);
-        
+
         if (existing != null) {
             throw new BusinessException(LearningErrorConstants.PROGRESS_ALREADY_EXISTS, "该用户的章节进度记录已存在");
         }
 
         UserChapterProgress progress = convertor.toEntity(dto);
         progress.setUpdatedAt(LocalDateTime.now());
-        
+
         if (progress.getFirstViewedAt() == null) {
             progress.setFirstViewedAt(LocalDateTime.now());
         }

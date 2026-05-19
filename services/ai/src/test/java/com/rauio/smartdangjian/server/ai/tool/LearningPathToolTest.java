@@ -1,9 +1,12 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
-import com.rauio.smartdangjian.search.pojo.vo.UserProfileVO;
-import com.rauio.smartdangjian.search.service.UserProfileService;
-import com.rauio.smartdangjian.server.user.service.UserService;
-import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,12 +15,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.model.ToolContext;
 
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.rauio.smartdangjian.search.pojo.vo.UserProfileVO;
+import com.rauio.smartdangjian.search.service.UserProfileService;
+import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
+import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 class LearningPathToolTest {

@@ -1,14 +1,19 @@
 package com.rauio.smartdangjian.server.user.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
-import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserPublicVO;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,19 +29,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
+import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
+import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.pojo.vo.UserPublicVO;
+import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {

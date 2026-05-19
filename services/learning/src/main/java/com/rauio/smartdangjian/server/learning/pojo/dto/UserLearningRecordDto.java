@@ -1,10 +1,10 @@
 package com.rauio.smartdangjian.server.learning.pojo.dto;
 
+import java.time.LocalDateTime;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -29,7 +29,10 @@ public class UserLearningRecordDto {
     @Schema(description = "学习时长（秒）", example = "1800")
     private Integer duration;
 
-    @Schema(description = "设备类型", allowableValues = {"web", "mobile", "tablet"}, example = "web")
+    @Schema(
+            description = "设备类型",
+            allowableValues = {"web", "mobile", "tablet"},
+            example = "web")
     private String deviceType;
 
     @Schema(description = "创建时间")

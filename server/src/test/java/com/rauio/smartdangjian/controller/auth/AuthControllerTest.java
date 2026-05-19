@@ -1,25 +1,6 @@
 package com.rauio.smartdangjian.controller.auth;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.AuthTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
-import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
-import com.rauio.smartdangjian.server.auth.pojo.request.RegisterRequest;
-import com.rauio.smartdangjian.server.auth.service.AuthService;
-import com.rauio.smartdangjian.server.auth.service.CaptchaService;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -30,14 +11,32 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.AuthTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
+import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
+import com.rauio.smartdangjian.server.auth.pojo.request.RegisterRequest;
+import com.rauio.smartdangjian.server.auth.service.AuthService;
+import com.rauio.smartdangjian.server.auth.service.CaptchaService;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = AuthControllerTest.TestConfig.class)
 @DisplayName("认证接口测试")
 class AuthControllerTest extends BaseControllerTest {
 
     @SpringBootConfiguration
     @ComponentScan(basePackages = "com.rauio.smartdangjian.server.auth.controller")
-    static class TestConfig extends CommonTestConfig {
-    }
+    static class TestConfig extends CommonTestConfig {}
 
     @MockitoBean
     private AuthService authService;
@@ -70,9 +69,7 @@ class AuthControllerTest extends BaseControllerTest {
         void validateCaptchaSuccess() throws Exception {
             when(captchaService.validate("uuid-001", "valid-code")).thenReturn(true);
 
-            mockMvc.perform(post("/auth/captcha")
-                            .param("uuid", "uuid-001")
-                            .param("code", "valid-code"))
+            mockMvc.perform(post("/auth/captcha").param("uuid", "uuid-001").param("code", "valid-code"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(true));
@@ -81,8 +78,7 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/login - 登录成功")
         void loginSuccess() throws Exception {
-            when(authService.login(any(LoginRequest.class)))
-                    .thenReturn(AuthTestDataFactory.createLoginResponse());
+            when(authService.login(any(LoginRequest.class))).thenReturn(AuthTestDataFactory.createLoginResponse());
 
             mockMvc.perform(post("/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -95,8 +91,7 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/register - 注册成功")
         void registerSuccess() throws Exception {
-            when(authService.register(any(RegisterRequest.class)))
-                    .thenReturn(Result.ok("注册成功"));
+            when(authService.register(any(RegisterRequest.class))).thenReturn(Result.ok("注册成功"));
 
             mockMvc.perform(post("/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -124,8 +119,7 @@ class AuthControllerTest extends BaseControllerTest {
         void logoutSuccess() throws Exception {
             doNothing().when(authService).logout("test-token");
 
-            mockMvc.perform(post("/auth/logout")
-                            .param("token", "test-token"))
+            mockMvc.perform(post("/auth/logout").param("token", "test-token"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));
         }
@@ -169,8 +163,7 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/login - Service 抛出 BusinessException 返回 400")
         void loginThrowsBusinessException() throws Exception {
-            when(authService.login(any(LoginRequest.class)))
-                    .thenThrow(new BusinessException(4000, "验证码错误"));
+            when(authService.login(any(LoginRequest.class))).thenThrow(new BusinessException(4000, "验证码错误"));
 
             mockMvc.perform(post("/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -183,8 +176,7 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/login - Service 抛出 RuntimeException 返回 500")
         void loginThrowsRuntimeException() throws Exception {
-            when(authService.login(any(LoginRequest.class)))
-                    .thenThrow(new RuntimeException("认证服务异常"));
+            when(authService.login(any(LoginRequest.class))).thenThrow(new RuntimeException("认证服务异常"));
 
             mockMvc.perform(post("/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -196,8 +188,7 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/register - Service 抛出 BusinessException 返回 400")
         void registerThrowsBusinessException() throws Exception {
-            when(authService.register(any(RegisterRequest.class)))
-                    .thenThrow(new BusinessException(4000, "该手机号已被注册"));
+            when(authService.register(any(RegisterRequest.class))).thenThrow(new BusinessException(4000, "该手机号已被注册"));
 
             mockMvc.perform(post("/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -224,8 +215,7 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/register - Service 抛出 RuntimeException 返回 500")
         void registerThrowsRuntimeException() throws Exception {
-            when(authService.register(any(RegisterRequest.class)))
-                    .thenThrow(new RuntimeException("注册服务异常"));
+            when(authService.register(any(RegisterRequest.class))).thenThrow(new RuntimeException("注册服务异常"));
 
             mockMvc.perform(post("/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -237,11 +227,9 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/logout - Service 抛出 BusinessException 返回 400")
         void logoutThrowsBusinessException() throws Exception {
-            doThrow(new BusinessException(4000, "令牌无效"))
-                    .when(authService).logout("invalid-token");
+            doThrow(new BusinessException(4000, "令牌无效")).when(authService).logout("invalid-token");
 
-            mockMvc.perform(post("/auth/logout")
-                            .param("token", "invalid-token"))
+            mockMvc.perform(post("/auth/logout").param("token", "invalid-token"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("令牌无效"));
@@ -259,8 +247,7 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /auth/captcha - 验证码内容含特殊字符")
         void captchaWithSpecialChars() throws Exception {
-            when(captchaService.get())
-                    .thenReturn(AuthTestDataFactory.createCaptcha());
+            when(captchaService.get()).thenReturn(AuthTestDataFactory.createCaptcha());
 
             mockMvc.perform(get("/auth/captcha"))
                     .andExpect(status().isOk())
@@ -273,9 +260,7 @@ class AuthControllerTest extends BaseControllerTest {
         void captchaValidationFails() throws Exception {
             when(captchaService.validate("uuid-001", "wrong-code")).thenReturn(false);
 
-            mockMvc.perform(post("/auth/captcha")
-                            .param("uuid", "uuid-001")
-                            .param("code", "wrong-code"))
+            mockMvc.perform(post("/auth/captcha").param("uuid", "uuid-001").param("code", "wrong-code"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.message").value("OK"))
@@ -285,8 +270,7 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/login - 登录请求含超长字段")
         void loginWithLongFields() throws Exception {
-            when(authService.login(any(LoginRequest.class)))
-                    .thenThrow(new BusinessException(4000, "参数过长"));
+            when(authService.login(any(LoginRequest.class))).thenThrow(new BusinessException(4000, "参数过长"));
 
             String longPassport = "a".repeat(200);
             LoginRequest request = AuthTestDataFactory.createLoginRequest();
@@ -300,8 +284,7 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/register - 注册请求含特殊字符用户名")
         void registerWithSpecialChars() throws Exception {
-            when(authService.register(any(RegisterRequest.class)))
-                    .thenReturn(Result.ok("注册成功"));
+            when(authService.register(any(RegisterRequest.class))).thenReturn(Result.ok("注册成功"));
 
             RegisterRequest request = AuthTestDataFactory.createRegisterRequest();
             request.setUsername("test_@#$%^&");
@@ -326,8 +309,7 @@ class AuthControllerTest extends BaseControllerTest {
         void xssInLoginPassport() throws Exception {
             LoginRequest request = AuthTestDataFactory.createLoginRequest();
             request.setPassport("<script>alert('xss')</script>");
-            when(authService.login(any(LoginRequest.class)))
-                    .thenReturn(AuthTestDataFactory.createLoginResponse());
+            when(authService.login(any(LoginRequest.class))).thenReturn(AuthTestDataFactory.createLoginResponse());
 
             mockMvc.perform(post("/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -340,8 +322,7 @@ class AuthControllerTest extends BaseControllerTest {
         void sqlInjectionInLoginPassport() throws Exception {
             LoginRequest request = AuthTestDataFactory.createLoginRequest();
             request.setPassport("' OR '1'='1");
-            when(authService.login(any(LoginRequest.class)))
-                    .thenReturn(AuthTestDataFactory.createLoginResponse());
+            when(authService.login(any(LoginRequest.class))).thenReturn(AuthTestDataFactory.createLoginResponse());
 
             mockMvc.perform(post("/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -352,8 +333,7 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET 请求登录接口返回 405")
         void loginWithWrongMethod() throws Exception {
-            mockMvc.perform(get("/auth/login"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(get("/auth/login")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
@@ -368,8 +348,7 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("DELETE 请求验证码接口返回 405")
         void captchaWithWrongMethod() throws Exception {
-            mockMvc.perform(delete("/auth/captcha"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(delete("/auth/captcha")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

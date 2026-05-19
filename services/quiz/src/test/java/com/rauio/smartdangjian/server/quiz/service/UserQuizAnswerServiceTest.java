@@ -1,8 +1,13 @@
 package com.rauio.smartdangjian.server.quiz.service;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
-import com.rauio.smartdangjian.server.quiz.mapper.UserQuizAnswerMapper;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
+
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,13 +16,9 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Collections;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.rauio.smartdangjian.server.quiz.mapper.UserQuizAnswerMapper;
+import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
 
 @ExtendWith(MockitoExtension.class)
 class UserQuizAnswerServiceTest {
@@ -62,10 +63,8 @@ class UserQuizAnswerServiceTest {
     @Test
     @DisplayName("update 更新答题记录成功返回 true")
     void updateReturnsTrueOnSuccess() {
-        UserQuizAnswer answer = UserQuizAnswer.builder()
-                .id("answer-1")
-                .scoreObtained(5)
-                .build();
+        UserQuizAnswer answer =
+                UserQuizAnswer.builder().id("answer-1").scoreObtained(5).build();
         doReturn(true).when(userQuizAnswerService).updateById(answer);
 
         Boolean result = userQuizAnswerService.update(answer);
@@ -103,8 +102,7 @@ class UserQuizAnswerServiceTest {
                 .scoreObtained(5)
                 .build();
 
-        doReturn(existing).when(userQuizAnswerService)
-                .getByUserIdAndQuizIdAndOptionId("user-1", "quiz-1", "opt-1");
+        doReturn(existing).when(userQuizAnswerService).getByUserIdAndQuizIdAndOptionId("user-1", "quiz-1", "opt-1");
         // After setting id from existing, updateById is called with the input (now having id)
         doReturn(true).when(userQuizAnswerService).updateById(any(UserQuizAnswer.class));
 
@@ -124,8 +122,7 @@ class UserQuizAnswerServiceTest {
                 .optionId("opt-1")
                 .build();
 
-        doReturn(null).when(userQuizAnswerService)
-                .getByUserIdAndQuizIdAndOptionId("user-1", "quiz-1", "opt-1");
+        doReturn(null).when(userQuizAnswerService).getByUserIdAndQuizIdAndOptionId("user-1", "quiz-1", "opt-1");
 
         Boolean result = userQuizAnswerService.updateByUserIdAndQuizIdAndOptionId(input);
 
@@ -166,12 +163,10 @@ class UserQuizAnswerServiceTest {
                 .optionId("opt-1")
                 .build();
 
-        doReturn(existing).when(userQuizAnswerService)
-                .getByUserIdAndQuizIdAndOptionId("user-1", "quiz-1", "opt-1");
+        doReturn(existing).when(userQuizAnswerService).getByUserIdAndQuizIdAndOptionId("user-1", "quiz-1", "opt-1");
         doReturn(true).when(userQuizAnswerService).removeById("answer-1");
 
-        Boolean result = userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(
-                "user-1", "quiz-1", "opt-1");
+        Boolean result = userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId("user-1", "quiz-1", "opt-1");
 
         assertThat(result).isTrue();
         verify(userQuizAnswerService).removeById("answer-1");
@@ -180,11 +175,9 @@ class UserQuizAnswerServiceTest {
     @Test
     @DisplayName("deleteByUserIdAndQuizIdAndOptionId 记录不存在时返回 false")
     void deleteByCompositeKeyReturnsFalseWhenNotFound() {
-        doReturn(null).when(userQuizAnswerService)
-                .getByUserIdAndQuizIdAndOptionId("user-1", "quiz-1", "opt-1");
+        doReturn(null).when(userQuizAnswerService).getByUserIdAndQuizIdAndOptionId("user-1", "quiz-1", "opt-1");
 
-        Boolean result = userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(
-                "user-1", "quiz-1", "opt-1");
+        Boolean result = userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId("user-1", "quiz-1", "opt-1");
 
         assertThat(result).isFalse();
     }
@@ -218,10 +211,8 @@ class UserQuizAnswerServiceTest {
     @Test
     @DisplayName("getByOptionId 根据选项 ID 返回答题记录")
     void getByOptionIdReturnsAnswer() {
-        UserQuizAnswer answer = UserQuizAnswer.builder()
-                .id("a1")
-                .optionId("opt-1")
-                .build();
+        UserQuizAnswer answer =
+                UserQuizAnswer.builder().id("a1").optionId("opt-1").build();
         doReturn(answer).when(userQuizAnswerService).getOne(any(Wrapper.class));
 
         UserQuizAnswer result = userQuizAnswerService.getByOptionId("opt-1");
@@ -306,8 +297,7 @@ class UserQuizAnswerServiceTest {
                 .build();
         doReturn(answer).when(userQuizAnswerService).getOne(any(Wrapper.class));
 
-        UserQuizAnswer result = userQuizAnswerService.getByUserIdAndQuizIdAndOptionId(
-                "user-1", "quiz-1", "opt-1");
+        UserQuizAnswer result = userQuizAnswerService.getByUserIdAndQuizIdAndOptionId("user-1", "quiz-1", "opt-1");
 
         assertThat(result).isNotNull();
         assertThat(result.getUserId()).isEqualTo("user-1");
@@ -320,8 +310,7 @@ class UserQuizAnswerServiceTest {
     void getByThreeKeysReturnsNullWhenNotFound() {
         doReturn(null).when(userQuizAnswerService).getOne(any(Wrapper.class));
 
-        UserQuizAnswer result = userQuizAnswerService.getByUserIdAndQuizIdAndOptionId(
-                "user-1", "quiz-1", "opt-1");
+        UserQuizAnswer result = userQuizAnswerService.getByUserIdAndQuizIdAndOptionId("user-1", "quiz-1", "opt-1");
 
         assertThat(result).isNull();
     }

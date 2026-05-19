@@ -1,25 +1,27 @@
 package com.rauio.smartdangjian.server.learning.service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.learning.constants.LearningErrorConstants;
 import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
+import com.rauio.smartdangjian.server.learning.constants.LearningErrorConstants;
 import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
 import com.rauio.smartdangjian.server.learning.pojo.convertor.UserLearningRecordConvertor;
 import com.rauio.smartdangjian.server.learning.pojo.dto.UserLearningRecordDto;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
 import com.rauio.smartdangjian.server.learning.pojo.vo.UserLearningRecordVO;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -53,15 +55,15 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      */
     public Page<UserLearningRecord> getPage(UserLearningRecordDto dto, int pageNum, int pageSize) {
 
-        Page<UserLearningRecord> pageInfo = new Page<>(pageNum,pageSize);
+        Page<UserLearningRecord> pageInfo = new Page<>(pageNum, pageSize);
 
         LambdaQueryWrapper<UserLearningRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(StringUtils.isNotBlank(dto.getUserId()),UserLearningRecord::getUserId,dto.getUserId())
-                .like(StringUtils.isNotBlank(dto.getChapterId()),UserLearningRecord::getChapterId,dto.getChapterId())
-                .eq(StringUtils.isNotBlank(dto.getDeviceType()),UserLearningRecord::getDeviceType,dto.getDeviceType())
-                .like(dto.getCreatedAt() != null,UserLearningRecord::getCreatedAt,dto.getCreatedAt());
+        wrapper.eq(StringUtils.isNotBlank(dto.getUserId()), UserLearningRecord::getUserId, dto.getUserId())
+                .like(StringUtils.isNotBlank(dto.getChapterId()), UserLearningRecord::getChapterId, dto.getChapterId())
+                .eq(StringUtils.isNotBlank(dto.getDeviceType()), UserLearningRecord::getDeviceType, dto.getDeviceType())
+                .like(dto.getCreatedAt() != null, UserLearningRecord::getCreatedAt, dto.getCreatedAt());
 
-        return this.page(pageInfo,wrapper);
+        return this.page(pageInfo, wrapper);
     }
 
     /**
@@ -149,8 +151,10 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @param chapterId 章节 ID
      * @return 学习记录列表
      */
-    public List<UserLearningRecord> getByUserIdAndCourseIdAndChapterId(String userId, String courseId, String chapterId) {
-        if (org.apache.commons.lang3.StringUtils.isBlank(courseId) || org.apache.commons.lang3.StringUtils.isBlank(chapterId)) {
+    public List<UserLearningRecord> getByUserIdAndCourseIdAndChapterId(
+            String userId, String courseId, String chapterId) {
+        if (org.apache.commons.lang3.StringUtils.isBlank(courseId)
+                || org.apache.commons.lang3.StringUtils.isBlank(chapterId)) {
             return List.of();
         }
         String safeCourseId = courseId.replace("'", "''");
@@ -183,13 +187,14 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      */
     public Boolean create(UserLearningRecordDto dto) {
         UserLearningRecord record = convertor.toEntity(dto);
-        
+
         if (record.getCreatedAt() == null) {
             record.setCreatedAt(LocalDateTime.now());
         }
 
         if (record.getStartTime() != null && record.getEndTime() != null) {
-            long durationMillis = record.getEndTime().toInstant(ZoneOffset.UTC).toEpochMilli() - record.getStartTime().toInstant(ZoneOffset.UTC).toEpochMilli();
+            long durationMillis = record.getEndTime().toInstant(ZoneOffset.UTC).toEpochMilli()
+                    - record.getStartTime().toInstant(ZoneOffset.UTC).toEpochMilli();
             record.setDuration((int) (durationMillis / 1000)); // 转换为秒
         }
 
@@ -220,10 +225,11 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
         }
 
         UserLearningRecord record = convertor.toEntity(dto);
-        
+
         // 自动计算学习时长（如果提供了开始和结束时间）
         if (record.getStartTime() != null && record.getEndTime() != null) {
-            long durationMillis = record.getEndTime().toInstant(ZoneOffset.UTC).toEpochMilli() - record.getStartTime().toInstant(ZoneOffset.UTC).toEpochMilli();
+            long durationMillis = record.getEndTime().toInstant(ZoneOffset.UTC).toEpochMilli()
+                    - record.getStartTime().toInstant(ZoneOffset.UTC).toEpochMilli();
             record.setDuration((int) (durationMillis / 1000)); // 转换为秒
         }
 

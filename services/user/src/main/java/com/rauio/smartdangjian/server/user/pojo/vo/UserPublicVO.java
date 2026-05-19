@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.server.user.pojo.vo;
 
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 

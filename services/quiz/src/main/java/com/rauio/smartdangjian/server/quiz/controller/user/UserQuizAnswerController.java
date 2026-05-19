@@ -1,18 +1,20 @@
 package com.rauio.smartdangjian.server.quiz.controller.user;
 
+import java.util.List;
+
+import org.springframework.web.bind.annotation.*;
+
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
 import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
 import com.rauio.smartdangjian.utils.spec.UserType;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "用户答题记录接口", description = "用户查看和提交答题记录")
 @RestController

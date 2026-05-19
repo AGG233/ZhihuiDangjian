@@ -1,13 +1,13 @@
 package com.rauio.smartdangjian.controller.admin;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.controller.admin.AdminChapterController;
-import com.rauio.smartdangjian.server.content.pojo.dto.ChapterDto;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,16 +17,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.controller.admin.AdminChapterController;
+import com.rauio.smartdangjian.server.content.pojo.dto.ChapterDto;
+import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminChapterControllerTest.TestConfig.class
-)
+        classes = AdminChapterControllerTest.TestConfig.class)
 @DisplayName("管理员章节接口测试")
 class AdminChapterControllerTest extends BaseControllerTest {
 
@@ -127,8 +127,7 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 500")
         void createThrowsBusinessException() throws Exception {
-            when(chapterService.create(any(ChapterDto.class)))
-                    .thenThrow(new BusinessException(4000, "课程至少需要一个章节"));
+            when(chapterService.create(any(ChapterDto.class))).thenThrow(new BusinessException(4000, "课程至少需要一个章节"));
 
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -139,8 +138,7 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 RuntimeException 返回 500")
         void createThrowsRuntimeException() throws Exception {
-            when(chapterService.create(any(ChapterDto.class)))
-                    .thenThrow(new RuntimeException("数据库连接失败"));
+            when(chapterService.create(any(ChapterDto.class))).thenThrow(new RuntimeException("数据库连接失败"));
 
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -296,15 +294,13 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET 请求创建接口返回 405")
         void createWithWrongMethod() throws Exception {
-            mockMvc.perform(get("/api/admin/content/chapters"))
-                    .andExpect(status().is4xxClientError());
+            mockMvc.perform(get("/api/admin/content/chapters")).andExpect(status().is4xxClientError());
         }
 
         @Test
         @DisplayName("POST 请求删除接口返回 405")
         void deleteWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/admin/content/chapters/ch-1"))
-                    .andExpect(status().is4xxClientError());
+            mockMvc.perform(post("/api/admin/content/chapters/ch-1")).andExpect(status().is4xxClientError());
         }
 
         private com.rauio.smartdangjian.server.content.pojo.dto.ContentBlockDto createSimpleContentBlock() {

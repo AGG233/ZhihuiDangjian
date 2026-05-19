@@ -1,10 +1,10 @@
 package com.rauio.smartdangjian.exception;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import static com.rauio.smartdangjian.constants.ErrorConstants.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class BusinessExceptionTest {
 

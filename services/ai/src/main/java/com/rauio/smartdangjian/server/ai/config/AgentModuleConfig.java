@@ -1,5 +1,16 @@
 package com.rauio.smartdangjian.server.ai.config;
 
+import java.time.Duration;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import com.alibaba.cloud.ai.graph.agent.ReactAgent;
 import com.alibaba.cloud.ai.graph.agent.flow.agent.LlmRoutingAgent;
 import com.alibaba.cloud.ai.graph.agent.hook.skills.SkillsAgentHook;
@@ -12,21 +23,12 @@ import com.rauio.smartdangjian.server.ai.agent.DynamicSystemPromptInterceptor;
 import com.rauio.smartdangjian.server.ai.service.AiMemoryService;
 import com.rauio.smartdangjian.server.ai.service.PromptService;
 import com.rauio.smartdangjian.server.ai.service.SkillService;
-import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.tool.ToolCallbackProvider;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import java.time.Duration;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
 
 @Configuration
 public class AgentModuleConfig {
 
-    private static final String ROUTING_SYSTEM_PROMPT = """
+    private static final String ROUTING_SYSTEM_PROMPT =
+            """
             你是智慧党建平台的智能路由协调者。你的职责是根据用户输入，从以下专业Agent中选择最合适的来处理请求。
 
             可选Agent：
@@ -53,36 +55,37 @@ public class AgentModuleConfig {
     }
 
     @Bean
-    public AiAgentRegistry aiAgentRegistry(ChatModel chatModel,
-                                           RedisSaver redisSaver,
-                                           PromptService promptService,
-                                           AiMemoryService aiMemoryService,
-                                           SkillsAgentHook skillsAgentHook,
-                                           @Qualifier("userInfoToolProvider") ToolCallbackProvider userInfoToolProvider,
-                                           @Qualifier("learningToolProvider") ToolCallbackProvider learningToolProvider,
-                                           @Qualifier("userQuizAnswerToolProvider") ToolCallbackProvider userQuizAnswerToolProvider,
-                                           @Qualifier("quizToolProvider") ToolCallbackProvider quizToolProvider,
-                                           @Qualifier("recommendToolProvider") ToolCallbackProvider recommendToolProvider,
-                                           @Qualifier("userProfileToolProvider") ToolCallbackProvider userProfileToolProvider,
-                                           @Qualifier("quizManageToolProvider") ToolCallbackProvider quizManageToolProvider,
-                                           @Qualifier("contentSearchToolProvider") ToolCallbackProvider contentSearchToolProvider,
-                                           @Qualifier("aiQuizGeneratorToolProvider") ToolCallbackProvider aiQuizGeneratorToolProvider,
-                                           @Qualifier("articleDetailToolProvider") ToolCallbackProvider articleDetailToolProvider,
-                                           @Qualifier("contentReviewToolProvider") ToolCallbackProvider contentReviewToolProvider,
-                                           @Qualifier("contentSafetyToolProvider") ToolCallbackProvider contentSafetyToolProvider,
-                                           @Qualifier("learningPathToolProvider") ToolCallbackProvider learningPathToolProvider) {
+    public AiAgentRegistry aiAgentRegistry(
+            ChatModel chatModel,
+            RedisSaver redisSaver,
+            PromptService promptService,
+            AiMemoryService aiMemoryService,
+            SkillsAgentHook skillsAgentHook,
+            @Qualifier("userInfoToolProvider") ToolCallbackProvider userInfoToolProvider,
+            @Qualifier("learningToolProvider") ToolCallbackProvider learningToolProvider,
+            @Qualifier("userQuizAnswerToolProvider") ToolCallbackProvider userQuizAnswerToolProvider,
+            @Qualifier("quizToolProvider") ToolCallbackProvider quizToolProvider,
+            @Qualifier("recommendToolProvider") ToolCallbackProvider recommendToolProvider,
+            @Qualifier("userProfileToolProvider") ToolCallbackProvider userProfileToolProvider,
+            @Qualifier("quizManageToolProvider") ToolCallbackProvider quizManageToolProvider,
+            @Qualifier("contentSearchToolProvider") ToolCallbackProvider contentSearchToolProvider,
+            @Qualifier("aiQuizGeneratorToolProvider") ToolCallbackProvider aiQuizGeneratorToolProvider,
+            @Qualifier("articleDetailToolProvider") ToolCallbackProvider articleDetailToolProvider,
+            @Qualifier("contentReviewToolProvider") ToolCallbackProvider contentReviewToolProvider,
+            @Qualifier("contentSafetyToolProvider") ToolCallbackProvider contentSafetyToolProvider,
+            @Qualifier("learningPathToolProvider") ToolCallbackProvider learningPathToolProvider) {
 
         // 1. StudyAssistant Agent: 日常问答、知识讲解
         ReactAgent studyAssistant = ReactAgent.builder()
                 .name(AiAgentType.STUDY_ASSISTANT.agentName())
                 .description(AiAgentType.STUDY_ASSISTANT.description())
                 .model(chatModel)
-                .toolCallbackProviders(userInfoToolProvider, learningToolProvider,
-                        recommendToolProvider, userProfileToolProvider)
+                .toolCallbackProviders(
+                        userInfoToolProvider, learningToolProvider, recommendToolProvider, userProfileToolProvider)
                 .saver(redisSaver)
                 .hooks(skillsAgentHook)
-                .interceptors(new DynamicSystemPromptInterceptor(
-                        AiAgentType.STUDY_ASSISTANT, promptService, aiMemoryService))
+                .interceptors(
+                        new DynamicSystemPromptInterceptor(AiAgentType.STUDY_ASSISTANT, promptService, aiMemoryService))
                 .parallelToolExecution(true)
                 .maxParallelTools(4)
                 .toolExecutionTimeout(Duration.ofSeconds(30))
@@ -93,8 +96,7 @@ public class AgentModuleConfig {
                 .name(AiAgentType.CONTENT_DISCOVERY.agentName())
                 .description(AiAgentType.CONTENT_DISCOVERY.description())
                 .model(chatModel)
-                .toolCallbackProviders(contentSearchToolProvider, recommendToolProvider,
-                        articleDetailToolProvider)
+                .toolCallbackProviders(contentSearchToolProvider, recommendToolProvider, articleDetailToolProvider)
                 .saver(redisSaver)
                 .hooks(skillsAgentHook)
                 .interceptors(new DynamicSystemPromptInterceptor(
@@ -109,13 +111,18 @@ public class AgentModuleConfig {
                 .name(AiAgentType.ASSESSMENT.agentName())
                 .description(AiAgentType.ASSESSMENT.description())
                 .model(chatModel)
-                .toolCallbackProviders(quizManageToolProvider, aiQuizGeneratorToolProvider,
-                        contentSearchToolProvider, quizToolProvider,
-                        learningToolProvider, userQuizAnswerToolProvider, userProfileToolProvider)
+                .toolCallbackProviders(
+                        quizManageToolProvider,
+                        aiQuizGeneratorToolProvider,
+                        contentSearchToolProvider,
+                        quizToolProvider,
+                        learningToolProvider,
+                        userQuizAnswerToolProvider,
+                        userProfileToolProvider)
                 .saver(redisSaver)
                 .hooks(skillsAgentHook)
-                .interceptors(new DynamicSystemPromptInterceptor(
-                        AiAgentType.ASSESSMENT, promptService, aiMemoryService))
+                .interceptors(
+                        new DynamicSystemPromptInterceptor(AiAgentType.ASSESSMENT, promptService, aiMemoryService))
                 .parallelToolExecution(true)
                 .maxParallelTools(4)
                 .toolExecutionTimeout(Duration.ofSeconds(30))
@@ -126,12 +133,15 @@ public class AgentModuleConfig {
                 .name(AiAgentType.REVIEW.agentName())
                 .description(AiAgentType.REVIEW.description())
                 .model(chatModel)
-                .toolCallbackProviders(contentSearchToolProvider, quizManageToolProvider,
-                        articleDetailToolProvider, contentReviewToolProvider, contentSafetyToolProvider)
+                .toolCallbackProviders(
+                        contentSearchToolProvider,
+                        quizManageToolProvider,
+                        articleDetailToolProvider,
+                        contentReviewToolProvider,
+                        contentSafetyToolProvider)
                 .saver(redisSaver)
                 .hooks(skillsAgentHook)
-                .interceptors(new DynamicSystemPromptInterceptor(
-                        AiAgentType.REVIEW, promptService, aiMemoryService))
+                .interceptors(new DynamicSystemPromptInterceptor(AiAgentType.REVIEW, promptService, aiMemoryService))
                 .parallelToolExecution(true)
                 .maxParallelTools(4)
                 .toolExecutionTimeout(Duration.ofSeconds(30))
@@ -142,13 +152,16 @@ public class AgentModuleConfig {
                 .name(AiAgentType.PROFILE.agentName())
                 .description(AiAgentType.PROFILE.description())
                 .model(chatModel)
-                .toolCallbackProviders(userProfileToolProvider, learningToolProvider,
-                        userQuizAnswerToolProvider, userInfoToolProvider,
-                        recommendToolProvider, learningPathToolProvider)
+                .toolCallbackProviders(
+                        userProfileToolProvider,
+                        learningToolProvider,
+                        userQuizAnswerToolProvider,
+                        userInfoToolProvider,
+                        recommendToolProvider,
+                        learningPathToolProvider)
                 .saver(redisSaver)
                 .hooks(skillsAgentHook)
-                .interceptors(new DynamicSystemPromptInterceptor(
-                        AiAgentType.PROFILE, promptService, aiMemoryService))
+                .interceptors(new DynamicSystemPromptInterceptor(AiAgentType.PROFILE, promptService, aiMemoryService))
                 .parallelToolExecution(true)
                 .maxParallelTools(4)
                 .toolExecutionTimeout(Duration.ofSeconds(30))

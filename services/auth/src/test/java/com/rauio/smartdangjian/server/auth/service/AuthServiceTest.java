@@ -1,17 +1,13 @@
 package com.rauio.smartdangjian.server.auth.service;
 
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
-import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
-import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
-import com.rauio.smartdangjian.server.auth.pojo.request.RegisterRequest;
-import com.rauio.smartdangjian.server.auth.pojo.response.LoginResponse;
-import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
-import com.rauio.smartdangjian.server.user.mapper.UserMapper;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
-import com.rauio.smartdangjian.utils.SecurityUtils;
-import com.rauio.smartdangjian.utils.spec.UserType;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,15 +22,18 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
+import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
+import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
+import com.rauio.smartdangjian.server.auth.pojo.request.RegisterRequest;
+import com.rauio.smartdangjian.server.auth.pojo.response.LoginResponse;
+import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
+import com.rauio.smartdangjian.server.user.mapper.UserMapper;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
+import com.rauio.smartdangjian.utils.SecurityUtils;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {

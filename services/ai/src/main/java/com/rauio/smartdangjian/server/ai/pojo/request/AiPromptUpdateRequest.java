@@ -1,7 +1,8 @@
 package com.rauio.smartdangjian.server.ai.pojo.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Schema(description = "AI系统提示词更新请求")

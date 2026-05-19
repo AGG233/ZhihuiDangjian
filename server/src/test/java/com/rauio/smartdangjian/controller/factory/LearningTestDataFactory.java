@@ -1,5 +1,9 @@
 package com.rauio.smartdangjian.controller.factory;
 
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rauio.smartdangjian.server.learning.pojo.dto.UserChapterProgressDto;
@@ -7,21 +11,15 @@ import com.rauio.smartdangjian.server.learning.pojo.dto.UserLearningRecordDto;
 import com.rauio.smartdangjian.server.learning.pojo.vo.UserChapterProgressVO;
 import com.rauio.smartdangjian.server.learning.pojo.vo.UserLearningRecordVO;
 
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-
 /**
  * Static factory for learning module test data — produces UserChapterProgressDto,
  * UserChapterProgressVO, UserLearningRecordDto, UserLearningRecordVO, and JSON helpers.
  */
 public final class LearningTestDataFactory {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-            .registerModule(new JavaTimeModule());
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    private LearningTestDataFactory() {
-    }
+    private LearningTestDataFactory() {}
 
     // ── UserChapterProgressDto ─────────────────────────────────────
 

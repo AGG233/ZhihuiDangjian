@@ -1,11 +1,11 @@
 package com.rauio.smartdangjian.server.quiz.pojo.entity;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class UserQuizAnswerTest {
 
@@ -112,10 +112,30 @@ class UserQuizAnswerTest {
     @Test
     @DisplayName("equals 比较所有字段相同的 UserQuizAnswer 视为相等")
     void equalsComparesAllFields() {
-        UserQuizAnswer a1 = UserQuizAnswer.builder().id("ans-1").quizId("q-1").userId("u-1").isCorrect(1).build();
-        UserQuizAnswer a2 = UserQuizAnswer.builder().id("ans-1").quizId("q-1").userId("u-1").isCorrect(1).build();
-        UserQuizAnswer a3 = UserQuizAnswer.builder().id("ans-2").quizId("q-1").userId("u-1").isCorrect(1).build();
-        UserQuizAnswer a4 = UserQuizAnswer.builder().id("ans-1").quizId("q-2").userId("u-1").isCorrect(1).build();
+        UserQuizAnswer a1 = UserQuizAnswer.builder()
+                .id("ans-1")
+                .quizId("q-1")
+                .userId("u-1")
+                .isCorrect(1)
+                .build();
+        UserQuizAnswer a2 = UserQuizAnswer.builder()
+                .id("ans-1")
+                .quizId("q-1")
+                .userId("u-1")
+                .isCorrect(1)
+                .build();
+        UserQuizAnswer a3 = UserQuizAnswer.builder()
+                .id("ans-2")
+                .quizId("q-1")
+                .userId("u-1")
+                .isCorrect(1)
+                .build();
+        UserQuizAnswer a4 = UserQuizAnswer.builder()
+                .id("ans-1")
+                .quizId("q-2")
+                .userId("u-1")
+                .isCorrect(1)
+                .build();
 
         assertThat(a1).isEqualTo(a2);
         assertThat(a1).isNotEqualTo(a3);

@@ -1,9 +1,9 @@
 package com.rauio.smartdangjian.server.auth.pojo;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class CaptchaTest {
 
@@ -38,10 +38,7 @@ class CaptchaTest {
     @Test
     @DisplayName("code 字段可以为 null")
     void codeCanBeNull() {
-        Captcha captcha = Captcha.builder()
-                .uuid("uuid")
-                .base64("base64")
-                .build();
+        Captcha captcha = Captcha.builder().uuid("uuid").base64("base64").build();
 
         assertThat(captcha.getCode()).isNull();
     }

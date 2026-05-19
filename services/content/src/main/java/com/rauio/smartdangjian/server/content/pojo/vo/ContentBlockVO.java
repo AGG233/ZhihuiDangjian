@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.server.content.pojo.vo;
 
 import com.rauio.smartdangjian.server.content.spec.BlockType;
 import com.rauio.smartdangjian.server.content.spec.ParentType;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "内容块视图对象")

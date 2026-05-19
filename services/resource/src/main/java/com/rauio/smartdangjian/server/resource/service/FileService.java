@@ -1,6 +1,16 @@
 package com.rauio.smartdangjian.server.resource.service;
 
-import cn.hutool.core.date.DateUtil;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.dromara.x.file.storage.core.FileInfo;
+import org.dromara.x.file.storage.core.FileStorageService;
+import org.dromara.x.file.storage.core.constant.Constant;
+import org.dromara.x.file.storage.core.presigned.GeneratePresignedUrlResult;
+import org.springframework.stereotype.Service;
+
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.resource.Constant.ResourceConstant;
 import com.rauio.smartdangjian.server.resource.Constant.ResourceStatusConstants;
@@ -12,26 +22,18 @@ import com.rauio.smartdangjian.server.resource.pojo.request.UploadFileRequest;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
 import com.rauio.smartdangjian.server.user.service.UserService;
+
+import cn.hutool.core.date.DateUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dromara.x.file.storage.core.FileInfo;
-import org.dromara.x.file.storage.core.FileStorageService;
-import org.dromara.x.file.storage.core.constant.Constant;
-import org.dromara.x.file.storage.core.presigned.GeneratePresignedUrlResult;
-import org.springframework.stereotype.Service;
-
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class FileService {
 
-    private final FileStorageService  fileStorageService;
-    private final UserService         userService;
+    private final FileStorageService fileStorageService;
+    private final UserService userService;
     private final ResourceMetaService resourceMetaService;
 
     public FileUploadResponse upload(UploadFileRequest request) {
@@ -65,8 +67,7 @@ public class FileService {
         } catch (Exception e) {
             log.error("生成 COS 预签名上传 URL 失败，请检查 COS 配置 (SecretId/SecretKey/Bucket/Region)", e);
             resourceMetaService.delete(meta.getId());
-            throw new BusinessException(ResourceErrorConstants.RESOURCE_CREATE_FAILED,
-                    "文件存储服务暂不可用，请稍后重试");
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_CREATE_FAILED, "文件存储服务暂不可用，请稍后重试");
         }
 
         return FileUploadResponse.builder()
@@ -130,15 +131,11 @@ public class FileService {
     }
 
     public List<String> getBatchByIds(List<String> ids) {
-        return ids.stream()
-                .map(this::getDownloadUrl)
-                .collect(Collectors.toList());
+        return ids.stream().map(this::getDownloadUrl).collect(Collectors.toList());
     }
 
     public List<String> getBatchByHashes(List<String> hashes) {
-        return hashes.stream()
-                .map(this::getByHash)
-                .collect(Collectors.toList());
+        return hashes.stream().map(this::getByHash).collect(Collectors.toList());
     }
 
     public String getByHash(String hash) {
@@ -163,8 +160,7 @@ public class FileService {
             return result.getUrl();
         } catch (Exception e) {
             log.error("生成 COS 预签名下载 URL 失败，objectKey={}", objectKey, e);
-            throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND,
-                    "文件服务暂不可用，请稍后重试");
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "文件服务暂不可用，请稍后重试");
         }
     }
 

@@ -1,10 +1,12 @@
 package com.rauio.smartdangjian.server.resource.controller.user;
 
-import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
-import com.rauio.smartdangjian.server.resource.pojo.request.UploadFileRequest;
-import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
-import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
-import com.rauio.smartdangjian.server.resource.service.FileService;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.*;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,12 +14,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.*;
+import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
+import com.rauio.smartdangjian.server.resource.pojo.request.UploadFileRequest;
+import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
+import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
+import com.rauio.smartdangjian.server.resource.service.FileService;
 
 @ExtendWith(MockitoExtension.class)
 class FileControllerTest {
@@ -35,9 +36,11 @@ class FileControllerTest {
         request.setFileName("test.png");
         request.setMimeType("image/png");
 
-        when(fileService.upload(any(UploadFileRequest.class))).thenReturn(
-                FileUploadResponse.builder().resourceId("r-1").uploadUrl("https://example.com/upload").build()
-        );
+        when(fileService.upload(any(UploadFileRequest.class)))
+                .thenReturn(FileUploadResponse.builder()
+                        .resourceId("r-1")
+                        .uploadUrl("https://example.com/upload")
+                        .build());
 
         var result = controller.upload(request);
 
@@ -47,9 +50,8 @@ class FileControllerTest {
     @Test
     @DisplayName("confirmUpload 委托 service 确认上传")
     void confirmUpload() {
-        when(fileService.confirmUpload("r-1")).thenReturn(
-                ResourceMeta.builder().id("r-1").build()
-        );
+        when(fileService.confirmUpload("r-1"))
+                .thenReturn(ResourceMeta.builder().id("r-1").build());
 
         var result = controller.confirmUpload("r-1");
 
@@ -59,9 +61,8 @@ class FileControllerTest {
     @Test
     @DisplayName("getById 委托 service 获取文件信息")
     void getById() {
-        when(fileService.getFileInfo("r-1")).thenReturn(
-                FileInfoResponse.builder().resourceId("r-1").build()
-        );
+        when(fileService.getFileInfo("r-1"))
+                .thenReturn(FileInfoResponse.builder().resourceId("r-1").build());
 
         var result = controller.getById("r-1");
 
@@ -71,9 +72,11 @@ class FileControllerTest {
     @Test
     @DisplayName("getByHash 委托 service 按哈希获取文件信息")
     void getByHash() {
-        when(fileService.getFileInfoByHash("hash123")).thenReturn(
-                FileInfoResponse.builder().resourceId("r-1").hash("hash123").build()
-        );
+        when(fileService.getFileInfoByHash("hash123"))
+                .thenReturn(FileInfoResponse.builder()
+                        .resourceId("r-1")
+                        .hash("hash123")
+                        .build());
 
         var result = controller.getByHash("hash123");
 

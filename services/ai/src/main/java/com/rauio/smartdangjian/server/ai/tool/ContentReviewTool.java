@@ -1,6 +1,16 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import static com.rauio.smartdangjian.constants.ErrorConstants.RESOURCE_NOT_EXISTS;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.stereotype.Component;
+
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
@@ -12,17 +22,8 @@ import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
 import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
 import com.rauio.smartdangjian.server.quiz.service.QuizService;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.ai.tool.annotation.ToolParam;
-import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static com.rauio.smartdangjian.constants.ErrorConstants.RESOURCE_NOT_EXISTS;
 
 @Component
 @RequiredArgsConstructor
@@ -41,16 +42,18 @@ public class ContentReviewTool {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "课程不存在");
         }
         List<ChapterVO> chapters = chapterService.getByCourseId(courseId);
-        List<Map<String, Object>> chapterData = chapters.stream().map(ch -> {
-            Map<String, Object> chMap = new HashMap<>();
-            chMap.put("id", ch.getId());
-            chMap.put("title", ch.getTitle());
-            chMap.put("description", ch.getDescription());
-            chMap.put("orderIndex", ch.getOrderIndex());
-            List<ContentBlockVO> blocks = contentBlockService.getByParentId(ch.getId());
-            chMap.put("contentBlocks", blocks);
-            return chMap;
-        }).collect(Collectors.toList());
+        List<Map<String, Object>> chapterData = chapters.stream()
+                .map(ch -> {
+                    Map<String, Object> chMap = new HashMap<>();
+                    chMap.put("id", ch.getId());
+                    chMap.put("title", ch.getTitle());
+                    chMap.put("description", ch.getDescription());
+                    chMap.put("orderIndex", ch.getOrderIndex());
+                    List<ContentBlockVO> blocks = contentBlockService.getByParentId(ch.getId());
+                    chMap.put("contentBlocks", blocks);
+                    return chMap;
+                })
+                .collect(Collectors.toList());
 
         Map<String, Object> result = new HashMap<>();
         result.put("id", course.getId());

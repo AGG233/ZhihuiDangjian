@@ -1,22 +1,5 @@
 package com.rauio.smartdangjian.controller.admin;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.AiTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.ai.controller.admin.AdminPromptController;
-import com.rauio.smartdangjian.server.ai.pojo.entity.AiPrompts;
-import com.rauio.smartdangjian.server.ai.service.PromptService;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
-import java.util.List;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -27,10 +10,27 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.AiTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.ai.controller.admin.AdminPromptController;
+import com.rauio.smartdangjian.server.ai.pojo.entity.AiPrompts;
+import com.rauio.smartdangjian.server.ai.service.PromptService;
+
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminPromptControllerTest.TestConfig.class
-)
+        classes = AdminPromptControllerTest.TestConfig.class)
 @DisplayName("管理员AI提示词接口测试")
 class AdminPromptControllerTest extends BaseControllerTest {
 
@@ -77,9 +77,7 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @DisplayName("GET / - 查询提示词列表成功")
         void listPromptsSuccess() throws Exception {
             List<AiPrompts> list = List.of(
-                    AiTestDataFactory.createAiPrompts("prompt-1"),
-                    AiTestDataFactory.createAiPrompts("prompt-2")
-            );
+                    AiTestDataFactory.createAiPrompts("prompt-1"), AiTestDataFactory.createAiPrompts("prompt-2"));
             when(promptService.list()).thenReturn(list);
 
             mockMvc.perform(get("/api/admin/ai/prompts"))
@@ -91,8 +89,7 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - 更新提示词成功")
         void updatePromptSuccess() throws Exception {
-            when(promptService.update(eq("prompt-1"), any()))
-                    .thenReturn(AiTestDataFactory.createAiPrompts("prompt-1"));
+            when(promptService.update(eq("prompt-1"), any())).thenReturn(AiTestDataFactory.createAiPrompts("prompt-1"));
 
             mockMvc.perform(put("/api/admin/ai/prompts/prompt-1")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -121,8 +118,7 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 400")
         void serviceThrowsBusinessException() throws Exception {
-            when(promptService.getById("nonexistent"))
-                    .thenThrow(new BusinessException(4000, "提示词不存在"));
+            when(promptService.getById("nonexistent")).thenThrow(new BusinessException(4000, "提示词不存在"));
 
             mockMvc.perform(get("/api/admin/ai/prompts/nonexistent"))
                     .andExpect(status().isBadRequest())
@@ -220,7 +216,8 @@ class AdminPromptControllerTest extends BaseControllerTest {
         void xssInName() throws Exception {
             when(promptService.create(any())).thenReturn(AiTestDataFactory.createAiPrompts("prompt-1"));
 
-            String json = "{\"agentType\":\"CHAT\",\"name\":\"<script>alert('xss')</script>\",\"content\":\"test\",\"role\":\"SYSTEM\"}";
+            String json =
+                    "{\"agentType\":\"CHAT\",\"name\":\"<script>alert('xss')</script>\",\"content\":\"test\",\"role\":\"SYSTEM\"}";
             mockMvc.perform(post("/api/admin/ai/prompts")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(json))
@@ -251,8 +248,7 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST 请求删除接口返回 405")
         void deleteWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/admin/ai/prompts/prompt-1"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/admin/ai/prompts/prompt-1")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

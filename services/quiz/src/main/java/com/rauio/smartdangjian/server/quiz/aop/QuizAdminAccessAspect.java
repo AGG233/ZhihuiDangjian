@@ -1,17 +1,21 @@
 package com.rauio.smartdangjian.server.quiz.aop;
 
+import java.util.Objects;
+
+import org.springframework.stereotype.Component;
+
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.rauio.smartdangjian.aop.support.DataScopeContext;
 import com.rauio.smartdangjian.aop.support.DataScopeResolver;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
 import com.rauio.smartdangjian.server.quiz.mapper.QuizMapper;
 import com.rauio.smartdangjian.server.quiz.mapper.QuizOptionMapper;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
@@ -19,10 +23,8 @@ import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.utils.spec.UserType;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-import java.util.Objects;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -55,17 +57,18 @@ public class QuizAdminAccessAspect implements DataScopeResolver {
     }
 
     private void assertSameUniversity(CurrentUserPrincipal currentUser, String resource, String resourceId) {
-        String quizId = switch (resource) {
-            case "QUIZ" -> resourceId;
-            case "OPTION" -> {
-                QuizOption option = quizOptionMapper.selectById(resourceId);
-                if (option == null) {
-                    throw new BusinessException(QuizErrorConstants.QUIZ_OPTION_NOT_FOUND, "题目选项不存在");
-                }
-                yield option.getQuizId();
-            }
-            default -> throw new BusinessException(ErrorConstants.RESOURCE_NOT_AUTHORIZED, "不支持的题目资源");
-        };
+        String quizId =
+                switch (resource) {
+                    case "QUIZ" -> resourceId;
+                    case "OPTION" -> {
+                        QuizOption option = quizOptionMapper.selectById(resourceId);
+                        if (option == null) {
+                            throw new BusinessException(QuizErrorConstants.QUIZ_OPTION_NOT_FOUND, "题目选项不存在");
+                        }
+                        yield option.getQuizId();
+                    }
+                    default -> throw new BusinessException(ErrorConstants.RESOURCE_NOT_AUTHORIZED, "不支持的题目资源");
+                };
 
         Quiz quiz = quizMapper.selectById(quizId);
         if (quiz == null) {
@@ -90,5 +93,4 @@ public class QuizAdminAccessAspect implements DataScopeResolver {
             throw new BusinessException(ErrorConstants.RESOURCE_NOT_AUTHORIZED, "当前高校管理员未绑定学校");
         }
     }
-
 }

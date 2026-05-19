@@ -1,7 +1,10 @@
 package com.rauio.smartdangjian.server.resource.controller.user;
 
-import com.rauio.smartdangjian.server.resource.pojo.response.BannerResourceResponse;
-import com.rauio.smartdangjian.server.resource.service.BannerService;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,10 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import com.rauio.smartdangjian.server.resource.pojo.response.BannerResourceResponse;
+import com.rauio.smartdangjian.server.resource.service.BannerService;
 
 @ExtendWith(MockitoExtension.class)
 class UserBannerControllerTest {
@@ -26,9 +27,8 @@ class UserBannerControllerTest {
     @Test
     @DisplayName("list 委托 service 获取用户侧轮播图列表")
     void list() {
-        when(bannerService.getUserList()).thenReturn(List.of(
-                new BannerResourceResponse(0, "r-1", "b.png", "hash", "key", 0, 1, "url")
-        ));
+        when(bannerService.getUserList())
+                .thenReturn(List.of(new BannerResourceResponse(0, "r-1", "b.png", "hash", "key", 0, 1, "url")));
 
         var result = controller.list();
 
@@ -39,9 +39,8 @@ class UserBannerControllerTest {
     @Test
     @DisplayName("get 委托 service 获取单个用户侧轮播图")
     void get() {
-        when(bannerService.getUser(0)).thenReturn(
-                new BannerResourceResponse(0, "r-1", "b.png", "hash", "key", 0, 1, "url")
-        );
+        when(bannerService.getUser(0))
+                .thenReturn(new BannerResourceResponse(0, "r-1", "b.png", "hash", "key", 0, 1, "url"));
 
         var result = controller.get(0);
 

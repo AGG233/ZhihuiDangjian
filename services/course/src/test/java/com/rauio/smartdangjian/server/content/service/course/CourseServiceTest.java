@@ -1,5 +1,24 @@
 package com.rauio.smartdangjian.server.content.service.course;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
@@ -12,25 +31,6 @@ import com.rauio.smartdangjian.server.content.pojo.vo.PageVO;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.utils.spec.UserType;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CourseServiceTest {
@@ -105,7 +105,11 @@ class CourseServiceTest {
     @Test
     @DisplayName("create 创建课程成功返回 true")
     void createCourseSuccessfully() {
-        User user = User.builder().id("user-001").username("creator").userType(UserType.SCHOOL).build();
+        User user = User.builder()
+                .id("user-001")
+                .username("creator")
+                .userType(UserType.SCHOOL)
+                .build();
         CourseDto dto = CourseDto.builder()
                 .title("新课程")
                 .categoryId("cat-001")
@@ -130,10 +134,7 @@ class CourseServiceTest {
     @DisplayName("create 保存失败时返回 false")
     void createReturnsFalseWhenSaveFails() {
         User user = User.builder().id("user-001").userType(UserType.SCHOOL).build();
-        CourseDto dto = CourseDto.builder()
-                .title("失败课程")
-                .categoryId("cat-001")
-                .build();
+        CourseDto dto = CourseDto.builder().title("失败课程").categoryId("cat-001").build();
         Course course = Course.builder().title("失败课程").build();
 
         when(userService.getCurrentUser()).thenReturn(user);
@@ -199,10 +200,7 @@ class CourseServiceTest {
     @Test
     @DisplayName("update 更新课程成功返回 true")
     void updateCourseSuccessfully() {
-        CourseDto dto = CourseDto.builder()
-                .title("更新课程")
-                .categoryId("cat-002")
-                .build();
+        CourseDto dto = CourseDto.builder().title("更新课程").categoryId("cat-002").build();
         Course course = Course.builder().title("更新课程").build();
         Course target = Course.builder().id("course-001").title("旧课程").build();
 
@@ -314,8 +312,7 @@ class CourseServiceTest {
     void getListReturnsAllCourses() {
         List<Course> courses = List.of(
                 Course.builder().id("course-001").title("课程1").build(),
-                Course.builder().id("course-002").title("课程2").build()
-        );
+                Course.builder().id("course-002").title("课程2").build());
         doReturn(courses).when(courseService).list();
 
         List<Course> result = courseService.getList();
@@ -370,9 +367,8 @@ class CourseServiceTest {
     @Test
     @DisplayName("getByUserId 根据用户 ID 返回已学课程")
     void getByUserIdReturnsLearnedCourses() {
-        List<Course> courses = List.of(
-                Course.builder().id("course-001").title("已学课程1").build()
-        );
+        List<Course> courses =
+                List.of(Course.builder().id("course-001").title("已学课程1").build());
         doReturn(courses).when(courseService).getByUserId("user-001");
 
         List<Course> result = courseService.getByUserId("user-001");

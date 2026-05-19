@@ -1,11 +1,12 @@
 package com.rauio.smartdangjian.server.content.pojo.vo;
 
+import java.time.LocalDateTime;
+
 import com.rauio.smartdangjian.server.content.spec.ArticleStatus;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 @Data
 @Builder

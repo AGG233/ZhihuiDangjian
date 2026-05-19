@@ -11,6 +11,5 @@ public final class AiConstants {
     public static final String MESSAGE_INPUT = "text";
     public static final String MESSAGE_OUTPUT = "text";
 
-    private AiConstants() {
-    }
+    private AiConstants() {}
 }

@@ -1,11 +1,11 @@
 package com.rauio.smartdangjian.server.ai.pojo.entity;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class AiSkillTest {
 
@@ -43,11 +43,8 @@ class AiSkillTest {
     @Test
     @DisplayName("null name 和 description 安全处理")
     void nullNameAndDescription() {
-        AiSkill skill = AiSkill.builder()
-                .name(null)
-                .description(null)
-                .content(null)
-                .build();
+        AiSkill skill =
+                AiSkill.builder().name(null).description(null).content(null).build();
 
         String result = skill.renderSkillMarkdown();
 

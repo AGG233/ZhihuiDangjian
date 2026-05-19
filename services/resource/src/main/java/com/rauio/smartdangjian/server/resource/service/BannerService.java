@@ -1,20 +1,22 @@
 package com.rauio.smartdangjian.server.resource.service;
 
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
-import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
-import com.rauio.smartdangjian.server.resource.pojo.response.BannerResourceResponse;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
+import static com.rauio.smartdangjian.server.resource.Constant.ResourceConstant.BANNER_MAX_SIZE;
+import static com.rauio.smartdangjian.server.resource.Constant.ResourceConstant.BANNER_PREFIX;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.rauio.smartdangjian.server.resource.Constant.ResourceConstant.BANNER_MAX_SIZE;
-import static com.rauio.smartdangjian.server.resource.Constant.ResourceConstant.BANNER_PREFIX;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
+import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
+import com.rauio.smartdangjian.server.resource.pojo.response.BannerResourceResponse;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -111,7 +113,9 @@ public class BannerService {
 
     public boolean delete(int order) {
         validateOrder(order);
-        redisTemplate.opsForList().remove(BANNER_PREFIX, 1, redisTemplate.opsForList().index(BANNER_PREFIX, order));
+        redisTemplate
+                .opsForList()
+                .remove(BANNER_PREFIX, 1, redisTemplate.opsForList().index(BANNER_PREFIX, order));
         return true;
     }
 
@@ -171,7 +175,6 @@ public class BannerService {
                 meta.getObjectKey(),
                 meta.getResourceType(),
                 meta.getStatus(),
-                downloadUrl
-        );
+                downloadUrl);
     }
 }

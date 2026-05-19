@@ -1,16 +1,17 @@
 package com.rauio.smartdangjian.controller.admin;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
-import com.rauio.smartdangjian.server.user.controller.admin.AdminUserController;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.server.user.service.UserService;
-import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
-import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
-import com.rauio.smartdangjian.utils.spec.UserType;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -29,51 +30,49 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import java.util.Collections;
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
+import com.rauio.smartdangjian.server.user.controller.admin.AdminUserController;
+import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.service.UserService;
+import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = AdminUserControllerTest.TestConfig.class)
 @AutoConfigureMockMvc(addFilters = false)
 @TestPropertySource(
         locations = "classpath:application-test.yaml",
         properties = {
-                "REDIS_HOST=localhost",
-                "REDIS_PORT=6379",
-                "REDIS_DATABASE=0",
-                "DATABASE_URL=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
-                "DATABASE_USERNAME=sa",
-                "DATABASE_PASSWORD=",
-                "NEO4J_URI=bolt://localhost:7687",
-                "NEO4J_USERNAME=neo4j",
-                "NEO4J_PASSWORD=password"
-        }
-)
+            "REDIS_HOST=localhost",
+            "REDIS_PORT=6379",
+            "REDIS_DATABASE=0",
+            "DATABASE_URL=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
+            "DATABASE_USERNAME=sa",
+            "DATABASE_PASSWORD=",
+            "NEO4J_URI=bolt://localhost:7687",
+            "NEO4J_USERNAME=neo4j",
+            "NEO4J_PASSWORD=password"
+        })
 @DisplayName("管理员用户接口测试")
 class AdminUserControllerTest {
 
     @SpringBootConfiguration
-    @EnableAutoConfiguration(exclude = {
-            DataSourceAutoConfiguration.class,
-            HibernateJpaAutoConfiguration.class,
-            org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
-            org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration.class,
-            com.rauio.smartdangjian.config.SecurityCoreAutoConfiguration.class,
-            com.rauio.smartdangjian.config.SecuritySupportAutoConfiguration.class,
-            com.rauio.smartdangjian.config.TransactionConfig.class
-    })
+    @EnableAutoConfiguration(
+            exclude = {
+                DataSourceAutoConfiguration.class,
+                HibernateJpaAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration.class,
+                com.rauio.smartdangjian.config.SecurityCoreAutoConfiguration.class,
+                com.rauio.smartdangjian.config.SecuritySupportAutoConfiguration.class,
+                com.rauio.smartdangjian.config.TransactionConfig.class
+            })
     @EnableWebMvc
     @ComponentScan(basePackages = "com.rauio.smartdangjian.server.user.controller")
-    static class TestConfig {
-    }
+    static class TestConfig {}
 
     @Autowired
     private MockMvc mockMvc;
@@ -85,17 +84,23 @@ class AdminUserControllerTest {
     void setUpSecurityContext() {
         CurrentUserPrincipal principal = new CurrentUserPrincipal() {
             @Override
-            public String getId() { return "admin1"; }
+            public String getId() {
+                return "admin1";
+            }
+
             @Override
-            public UserType getUserType() { return UserType.SCHOOL; }
+            public UserType getUserType() {
+                return UserType.SCHOOL;
+            }
+
             @Override
-            public String getUniversityId() { return "uni1"; }
+            public String getUniversityId() {
+                return "uni1";
+            }
         };
-        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(
-                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                        principal, null, java.util.Collections.emptyList()
-                )
-        );
+        org.springframework.security.core.context.SecurityContextHolder.getContext()
+                .setAuthentication(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                        principal, null, java.util.Collections.emptyList()));
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -112,7 +117,8 @@ class AdminUserControllerTest {
             List<User> records = UserTestDataFactory.createUserList(3);
             Page<User> page = UserTestDataFactory.createPage(records, 1, 10, 3);
 
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setUsername("user");
@@ -134,7 +140,8 @@ class AdminUserControllerTest {
             User vo = UserTestDataFactory.createUser("user-002", "lisi", "李四", UserType.STUDENT);
             Page<User> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
 
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setRealName("李");
@@ -153,7 +160,8 @@ class AdminUserControllerTest {
             List<User> records = UserTestDataFactory.createUserList(2, UserType.STUDENT);
             Page<User> page = UserTestDataFactory.createPage(records, 1, 10, 2);
 
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setUserType(UserType.STUDENT);
@@ -172,7 +180,8 @@ class AdminUserControllerTest {
             User vo = UserTestDataFactory.createDefaultUser();
             Page<User> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
 
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setPartyStatus(PartyStatus.FORMAL_MEMBER);
@@ -190,7 +199,8 @@ class AdminUserControllerTest {
             User vo = UserTestDataFactory.createDefaultUser();
             Page<User> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
 
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setUsername("zhang");
@@ -210,7 +220,8 @@ class AdminUserControllerTest {
             List<User> records = UserTestDataFactory.createUserList(5);
             Page<User> page = UserTestDataFactory.createPage(records, 1, 10, 5);
 
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setBranchName("第一");
@@ -228,7 +239,8 @@ class AdminUserControllerTest {
             User vo = UserTestDataFactory.createDefaultUser();
             Page<User> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
 
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setEmail("zhangsan@example.com");
@@ -246,7 +258,8 @@ class AdminUserControllerTest {
             User vo = UserTestDataFactory.createDefaultUser();
             Page<User> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
 
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setPhone("138");
@@ -264,7 +277,8 @@ class AdminUserControllerTest {
             List<User> records = UserTestDataFactory.createUserList(10);
             Page<User> page = UserTestDataFactory.createPage(records, 1, 10, 10);
 
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setUserId("user-");
@@ -282,7 +296,8 @@ class AdminUserControllerTest {
             User vo = UserTestDataFactory.createDefaultUser();
             Page<User> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
 
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setUniversityId("uni-sustech-001");
@@ -334,7 +349,8 @@ class AdminUserControllerTest {
             List<User> records = UserTestDataFactory.createUserList(10);
             Page<User> page = UserTestDataFactory.createPage(records, 2, 10, 25);
 
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             mockMvc.perform(post("/api/admin/users/search")
                             .param("pageNum", "2")
@@ -352,7 +368,8 @@ class AdminUserControllerTest {
         void searchNoResults() throws Exception {
             Page<User> page = UserTestDataFactory.createEmptyPage(1, 10);
 
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setUsername("nonexistent");
@@ -372,7 +389,8 @@ class AdminUserControllerTest {
             List<User> records = UserTestDataFactory.createUserList(10);
             Page<User> page = UserTestDataFactory.createPage(records, 1, 10, 50);
 
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -388,7 +406,8 @@ class AdminUserControllerTest {
             User vo = UserTestDataFactory.createDefaultUser();
             Page<User> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
 
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -414,7 +433,8 @@ class AdminUserControllerTest {
             User second = UserTestDataFactory.createUser("user-001", "user001", "张三", UserType.STUDENT);
             Page<User> page = UserTestDataFactory.createPage(List.of(first, second), 1, 10, 2);
 
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -584,7 +604,8 @@ class AdminUserControllerTest {
             List<User> records = UserTestDataFactory.createUserList(10);
             Page<User> page = UserTestDataFactory.createPage(records, 1, 10, 10);
 
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -638,7 +659,8 @@ class AdminUserControllerTest {
             List<User> records = UserTestDataFactory.createUserList(100);
             Page<User> page = UserTestDataFactory.createPage(records, 1, 100, 500);
 
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             mockMvc.perform(post("/api/admin/users/search")
                             .param("pageNum", "1")
@@ -653,7 +675,8 @@ class AdminUserControllerTest {
         @DisplayName("搜索字段含特殊字符 % _ - 时正常处理")
         void searchWithSpecialCharacters() throws Exception {
             Page<User> page = UserTestDataFactory.createEmptyPage(1, 10);
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setUsername("user_test-01%");
@@ -670,7 +693,8 @@ class AdminUserControllerTest {
         void searchWithChineseCharacters() throws Exception {
             User vo = UserTestDataFactory.createDefaultUser();
             Page<User> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setRealName("党员");
@@ -685,7 +709,8 @@ class AdminUserControllerTest {
         @DisplayName("搜索字段仅含空白字符时请求正常接受")
         void searchWithWhitespaceOnlyField() throws Exception {
             Page<User> page = UserTestDataFactory.createEmptyPage(1, 10);
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setUsername("   ");
@@ -700,7 +725,8 @@ class AdminUserControllerTest {
         @DisplayName("搜索字段超长字符串（1000字符）请求正常接受")
         void searchWithLongFieldValue() throws Exception {
             Page<User> page = UserTestDataFactory.createEmptyPage(1, 10);
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setUsername("a".repeat(1000));
@@ -724,7 +750,8 @@ class AdminUserControllerTest {
         @DisplayName("XSS 注入尝试在 username 字段 — input 透传，MyBatis-Plus 参数化查询防护")
         void xssInUsernameField() throws Exception {
             Page<User> page = UserTestDataFactory.createEmptyPage(1, 10);
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setUsername("<script>alert('xss')</script>");
@@ -741,7 +768,8 @@ class AdminUserControllerTest {
         @DisplayName("XSS 注入尝试在 realName 字段")
         void xssInRealNameField() throws Exception {
             Page<User> page = UserTestDataFactory.createEmptyPage(1, 10);
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setRealName("<img src=x onerror=alert(1)>");
@@ -756,7 +784,8 @@ class AdminUserControllerTest {
         @DisplayName("SQL 注入在 username — MyBatis-Plus like() 使用参数化查询防止注入")
         void sqlInjectionInUsername() throws Exception {
             Page<User> page = UserTestDataFactory.createEmptyPage(1, 10);
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setUsername("' OR '1'='1");
@@ -773,7 +802,8 @@ class AdminUserControllerTest {
         @DisplayName("SQL 注入多字段同时攻击")
         void sqlInjectionInMultipleFields() throws Exception {
             Page<User> page = UserTestDataFactory.createEmptyPage(1, 10);
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setUsername("'; DROP TABLE user; --");
@@ -789,7 +819,8 @@ class AdminUserControllerTest {
         @DisplayName("UNION SQL 注入尝试 — 参数化查询中作为字面量处理")
         void unionSqlInjection() throws Exception {
             Page<User> page = UserTestDataFactory.createEmptyPage(1, 10);
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserDto dto = UserTestDataFactory.createSearchDto();
             dto.setUsername("' UNION SELECT null, null, null --");
@@ -820,17 +851,28 @@ class AdminUserControllerTest {
         @DisplayName("STUDENT 用户绕过 PermissionAccess（非活动状态）返回 200")
         void studentUserAccessContract() throws Exception {
             CurrentUserPrincipal student = new CurrentUserPrincipal() {
-                @Override public String getId() { return "stu-001"; }
-                @Override public UserType getUserType() { return UserType.STUDENT; }
-                @Override public String getUniversityId() { return "uni1"; }
-            };
-            org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(
-                    new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                            student, null, Collections.emptyList()
-                    )
-            );
+                @Override
+                public String getId() {
+                    return "stu-001";
+                }
 
-            when(userService.getAdminPage(any(com.rauio.smartdangjian.server.user.pojo.dto.UserDto.class), anyInt(), anyInt()))
+                @Override
+                public UserType getUserType() {
+                    return UserType.STUDENT;
+                }
+
+                @Override
+                public String getUniversityId() {
+                    return "uni1";
+                }
+            };
+            org.springframework.security.core.context.SecurityContextHolder.getContext()
+                    .setAuthentication(
+                            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                                    student, null, Collections.emptyList()));
+
+            when(userService.getAdminPage(
+                            any(com.rauio.smartdangjian.server.user.pojo.dto.UserDto.class), anyInt(), anyInt()))
                     .thenReturn(com.baomidou.mybatisplus.extension.plugins.pagination.Page.of(0, 10));
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -860,7 +902,8 @@ class AdminUserControllerTest {
 
             // In production, UserManagementAspect forces universityId=uni1 from
             // the SecurityContext. Here we verify the mock receives the query.
-            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getAdminPage(any(UserDto.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)

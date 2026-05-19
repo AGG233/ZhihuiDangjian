@@ -11,6 +11,5 @@ public final class DataScopeResources {
     public static final String RESOURCE_META_ADMIN = "RESOURCE_META_ADMIN";
     public static final String CATEGORY = "CATEGORY";
 
-    private DataScopeResources() {
-    }
+    private DataScopeResources() {}
 }

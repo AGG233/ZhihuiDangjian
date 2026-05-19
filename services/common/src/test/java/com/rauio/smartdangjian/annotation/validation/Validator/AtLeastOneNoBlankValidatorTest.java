@@ -1,14 +1,16 @@
 package com.rauio.smartdangjian.annotation.validation.Validator;
 
-import com.rauio.smartdangjian.annotation.validation.AtLeastOneNoBlank;
-import jakarta.validation.ConstraintValidatorContext;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import jakarta.validation.ConstraintValidatorContext;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import com.rauio.smartdangjian.annotation.validation.AtLeastOneNoBlank;
 
 class AtLeastOneNoBlankValidatorTest {
 
@@ -23,9 +25,17 @@ class AtLeastOneNoBlankValidatorTest {
             this.fieldC = c;
         }
 
-        public String getFieldA() { return fieldA; }
-        public String getFieldB() { return fieldB; }
-        public String getFieldC() { return fieldC; }
+        public String getFieldA() {
+            return fieldA;
+        }
+
+        public String getFieldB() {
+            return fieldB;
+        }
+
+        public String getFieldC() {
+            return fieldC;
+        }
     }
 
     @Test
@@ -33,7 +43,7 @@ class AtLeastOneNoBlankValidatorTest {
     void initializeReadsFieldsFromAnnotation() {
         AtLeastOneNoBlankValidator validator = new AtLeastOneNoBlankValidator();
         AtLeastOneNoBlank mockAnnotation = mock(AtLeastOneNoBlank.class);
-        when(mockAnnotation.fields()).thenReturn(new String[]{"fieldA", "fieldB"});
+        when(mockAnnotation.fields()).thenReturn(new String[] {"fieldA", "fieldB"});
 
         validator.initialize(mockAnnotation);
 
@@ -56,7 +66,7 @@ class AtLeastOneNoBlankValidatorTest {
     void atLeastOneNonBlankReturnsTrue() {
         AtLeastOneNoBlankValidator validator = new AtLeastOneNoBlankValidator();
         AtLeastOneNoBlank mockAnnotation = mock(AtLeastOneNoBlank.class);
-        when(mockAnnotation.fields()).thenReturn(new String[]{"fieldA", "fieldB"});
+        when(mockAnnotation.fields()).thenReturn(new String[] {"fieldA", "fieldB"});
         validator.initialize(mockAnnotation);
 
         ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
@@ -72,7 +82,7 @@ class AtLeastOneNoBlankValidatorTest {
     void allFieldsBlankReturnsFalse() {
         AtLeastOneNoBlankValidator validator = new AtLeastOneNoBlankValidator();
         AtLeastOneNoBlank mockAnnotation = mock(AtLeastOneNoBlank.class);
-        when(mockAnnotation.fields()).thenReturn(new String[]{"fieldA", "fieldB"});
+        when(mockAnnotation.fields()).thenReturn(new String[] {"fieldA", "fieldB"});
         validator.initialize(mockAnnotation);
 
         ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
@@ -88,14 +98,13 @@ class AtLeastOneNoBlankValidatorTest {
     void nonExistentFieldThrowsRuntimeException() {
         AtLeastOneNoBlankValidator validator = new AtLeastOneNoBlankValidator();
         AtLeastOneNoBlank mockAnnotation = mock(AtLeastOneNoBlank.class);
-        when(mockAnnotation.fields()).thenReturn(new String[]{"nonExistent"});
+        when(mockAnnotation.fields()).thenReturn(new String[] {"nonExistent"});
         validator.initialize(mockAnnotation);
 
         ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
         TestObject obj = new TestObject("a", "b", "c");
 
-        assertThatThrownBy(() -> validator.isValid(obj, context))
-                .isInstanceOf(RuntimeException.class);
+        assertThatThrownBy(() -> validator.isValid(obj, context)).isInstanceOf(RuntimeException.class);
     }
 
     @Test
@@ -103,7 +112,7 @@ class AtLeastOneNoBlankValidatorTest {
     void thirdFieldNonBlankReturnsTrue() {
         AtLeastOneNoBlankValidator validator = new AtLeastOneNoBlankValidator();
         AtLeastOneNoBlank mockAnnotation = mock(AtLeastOneNoBlank.class);
-        when(mockAnnotation.fields()).thenReturn(new String[]{"fieldA", "fieldB", "fieldC"});
+        when(mockAnnotation.fields()).thenReturn(new String[] {"fieldA", "fieldB", "fieldC"});
         validator.initialize(mockAnnotation);
 
         ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);

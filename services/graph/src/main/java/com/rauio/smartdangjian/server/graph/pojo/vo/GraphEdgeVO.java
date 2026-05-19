@@ -10,8 +10,10 @@ import lombok.Data;
 public class GraphEdgeVO {
     @Schema(description = "起始节点ID")
     private String source;
+
     @Schema(description = "目标节点ID")
     private String target;
+
     @Schema(description = "关系类型")
     private String type;
 }

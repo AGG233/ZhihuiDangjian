@@ -1,11 +1,11 @@
 package com.rauio.smartdangjian.server.content.pojo.vo;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class PageVOTest {
 
@@ -30,12 +30,8 @@ class PageVOTest {
     @Test
     @DisplayName("builder 构造空列表 PageVO")
     void builderCreatesPageVOWithEmptyList() {
-        PageVO<Object> pageVO = PageVO.builder()
-                .total(0L)
-                .size(10L)
-                .current(1L)
-                .list(List.of())
-                .build();
+        PageVO<Object> pageVO =
+                PageVO.builder().total(0L).size(10L).current(1L).list(List.of()).build();
 
         assertThat(pageVO.getTotal()).isEqualTo(0L);
         assertThat(pageVO.getList()).isEmpty();

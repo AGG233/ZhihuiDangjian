@@ -1,16 +1,16 @@
 package com.rauio.smartdangjian.server.quiz.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.server.quiz.mapper.UserQuizAnswerMapper;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
 import com.rauio.smartdangjian.utils.spec.UserType;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-
 
 @Service
 @Transactional
@@ -46,10 +46,7 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
     @PermissionAccess(UserType.SCHOOL)
     public Boolean updateByUserIdAndQuizIdAndOptionId(UserQuizAnswer userQuizAnswer) {
         UserQuizAnswer existing = getByUserIdAndQuizIdAndOptionId(
-                userQuizAnswer.getUserId(),
-                userQuizAnswer.getQuizId(),
-                userQuizAnswer.getOptionId()
-        );
+                userQuizAnswer.getUserId(), userQuizAnswer.getQuizId(), userQuizAnswer.getOptionId());
         if (existing == null) {
             return false;
         }

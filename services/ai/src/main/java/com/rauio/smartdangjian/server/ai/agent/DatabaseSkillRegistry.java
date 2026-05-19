@@ -1,21 +1,23 @@
 package com.rauio.smartdangjian.server.ai.agent;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.ai.chat.prompt.SystemPromptTemplate;
+
 import com.alibaba.cloud.ai.graph.skills.SkillMetadata;
 import com.alibaba.cloud.ai.graph.skills.registry.SkillRegistry;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.ai.constants.AiErrorConstants;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiSkill;
 import com.rauio.smartdangjian.server.ai.service.SkillService;
-import org.springframework.ai.chat.prompt.SystemPromptTemplate;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class DatabaseSkillRegistry implements SkillRegistry {
 
-    private static final String SKILL_SYSTEM_PROMPT = """
+    private static final String SKILL_SYSTEM_PROMPT =
+            """
             ## Skills System
 
             你可以按需使用数据库中的技能库。每个技能都包含用途说明和完整执行方法。
@@ -35,9 +37,8 @@ public class DatabaseSkillRegistry implements SkillRegistry {
 
     private final SkillService skillService;
     private volatile Map<String, SkillMetadata> cache = new ConcurrentHashMap<>();
-    private final SystemPromptTemplate systemPromptTemplate = SystemPromptTemplate.builder()
-            .template(SKILL_SYSTEM_PROMPT)
-            .build();
+    private final SystemPromptTemplate systemPromptTemplate =
+            SystemPromptTemplate.builder().template(SKILL_SYSTEM_PROMPT).build();
 
     public DatabaseSkillRegistry(SkillService skillService) {
         this.skillService = skillService;
@@ -69,13 +70,15 @@ public class DatabaseSkillRegistry implements SkillRegistry {
         Map<String, SkillMetadata> newCache = new ConcurrentHashMap<>();
         try {
             for (AiSkill skill : skillService.listEnabledSkills()) {
-                newCache.put(skill.getName(), SkillMetadata.builder()
-                        .name(skill.getName())
-                        .description(skill.getDescription())
-                        .skillPath("db://ai_skill/" + skill.getId())
-                        .source("database")
-                        .fullContent(skill.renderSkillMarkdown())
-                        .build());
+                newCache.put(
+                        skill.getName(),
+                        SkillMetadata.builder()
+                                .name(skill.getName())
+                                .description(skill.getDescription())
+                                .skillPath("db://ai_skill/" + skill.getId())
+                                .source("database")
+                                .fullContent(skill.renderSkillMarkdown())
+                                .build());
             }
             this.cache = newCache;
         } catch (Exception e) {

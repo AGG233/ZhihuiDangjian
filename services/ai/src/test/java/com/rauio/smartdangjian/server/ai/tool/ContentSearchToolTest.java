@@ -1,8 +1,15 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,15 +17,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.content.service.course.CourseService;
 
 @ExtendWith(MockitoExtension.class)
 class ContentSearchToolTest {
@@ -44,10 +45,11 @@ class ContentSearchToolTest {
                 .build();
 
         when(courseService.list(argThat((LambdaQueryWrapper<Course> wrapper) -> {
-            // MyBatis-Plus LambdaQueryWrapper does not expose the condition value easily,
-            // so we verify the method was called with any wrapper instance.
-            return wrapper != null;
-        }))).thenReturn(List.of(course1, course2));
+                    // MyBatis-Plus LambdaQueryWrapper does not expose the condition value easily,
+                    // so we verify the method was called with any wrapper instance.
+                    return wrapper != null;
+                })))
+                .thenReturn(List.of(course1, course2));
 
         List<Map<String, Object>> result = contentSearchTool.searchCourses("Java");
 
@@ -69,5 +71,4 @@ class ContentSearchToolTest {
 
         assertThat(result).isEmpty();
     }
-
 }

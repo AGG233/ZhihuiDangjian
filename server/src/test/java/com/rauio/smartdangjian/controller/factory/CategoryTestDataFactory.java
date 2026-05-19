@@ -1,13 +1,13 @@
 package com.rauio.smartdangjian.controller.factory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rauio.smartdangjian.server.content.pojo.dto.CategoryDto;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryArticle;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
 import com.rauio.smartdangjian.server.content.pojo.vo.CategoryVO;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Static factory for category test data — produces CategoryDto, CategoryVO,
@@ -18,8 +18,7 @@ public final class CategoryTestDataFactory {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private CategoryTestDataFactory() {
-    }
+    private CategoryTestDataFactory() {}
 
     // ── CategoryDto builders ───────────────────────────────────────
 

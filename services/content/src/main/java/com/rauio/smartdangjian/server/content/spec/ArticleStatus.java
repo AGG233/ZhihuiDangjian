@@ -9,6 +9,7 @@ public enum ArticleStatus {
     Deleted("archived");
 
     private final String status;
+
     ArticleStatus(String status) {
         this.status = status;
     }

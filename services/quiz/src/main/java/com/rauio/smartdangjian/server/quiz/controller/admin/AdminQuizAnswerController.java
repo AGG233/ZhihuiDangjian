@@ -1,17 +1,19 @@
 package com.rauio.smartdangjian.server.quiz.controller.admin;
 
-import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
-import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
-import com.rauio.smartdangjian.utils.spec.UserType;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
+import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
+import com.rauio.smartdangjian.utils.spec.UserType;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 
 @Tag(name = "管理员答题记录接口", description = "管理员管理用户答题记录")
 @RestController

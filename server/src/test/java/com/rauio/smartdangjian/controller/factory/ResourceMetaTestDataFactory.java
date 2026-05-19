@@ -12,8 +12,7 @@ public final class ResourceMetaTestDataFactory {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private ResourceMetaTestDataFactory() {
-    }
+    private ResourceMetaTestDataFactory() {}
 
     // ── ResourceMetaCreateRequest ───────────────────────────────────
 

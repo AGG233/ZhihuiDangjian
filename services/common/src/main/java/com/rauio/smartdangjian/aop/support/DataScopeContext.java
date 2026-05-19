@@ -1,11 +1,8 @@
 package com.rauio.smartdangjian.aop.support;
 
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
-import com.rauio.smartdangjian.constants.ErrorConstants;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
-import lombok.Getter;
+import java.lang.reflect.Method;
+import java.util.regex.Pattern;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.context.expression.MethodBasedEvaluationContext;
@@ -13,16 +10,20 @@ import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
-import java.lang.reflect.Method;
-import java.util.regex.Pattern;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
+import com.rauio.smartdangjian.constants.ErrorConstants;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+
+import lombok.Getter;
 
 @Getter
 public class DataScopeContext {
 
     // Only allow simple parameter references like #id, #dto.userId, or quoted literals like 'QUIZ'.
-    private static final Pattern SAFE_SPEL_PATTERN = Pattern.compile(
-            "^#[_a-zA-Z][_a-zA-Z0-9]*(\\.[_a-zA-Z][_a-zA-Z0-9]*)*$|^'[^']*'$"
-    );
+    private static final Pattern SAFE_SPEL_PATTERN =
+            Pattern.compile("^#[_a-zA-Z][_a-zA-Z0-9]*(\\.[_a-zA-Z][_a-zA-Z0-9]*)*$|^'[^']*'$");
 
     private final ProceedingJoinPoint joinPoint;
     private final DataScopeAccess access;

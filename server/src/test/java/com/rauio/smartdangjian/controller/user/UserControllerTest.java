@@ -1,14 +1,13 @@
 package com.rauio.smartdangjian.controller.user;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserPublicVO;
-import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
-import com.rauio.smartdangjian.server.user.service.UserService;
-import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -18,14 +17,15 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.user.pojo.dto.UserDto;
+import com.rauio.smartdangjian.server.user.pojo.vo.UserPublicVO;
+import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
+import com.rauio.smartdangjian.server.user.service.UserService;
+import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = UserControllerTest.TestConfig.class)
 @DisplayName("用户管理接口测试")
@@ -33,8 +33,7 @@ class UserControllerTest extends BaseControllerTest {
 
     @SpringBootConfiguration
     @ComponentScan(basePackages = "com.rauio.smartdangjian.server.user.controller")
-    static class TestConfig extends CommonTestConfig {
-    }
+    static class TestConfig extends CommonTestConfig {}
 
     @MockitoBean
     private UserService userService;
@@ -126,8 +125,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 BusinessException 返回 400")
         void getThrowsBusinessException() throws Exception {
-            when(userService.get("user-001"))
-                    .thenThrow(new BusinessException(4000, "用户不存在"));
+            when(userService.get("user-001")).thenThrow(new BusinessException(4000, "用户不存在"));
 
             mockMvc.perform(get("/api/user/users/user-001"))
                     .andExpect(status().isBadRequest())
@@ -138,8 +136,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 RuntimeException 返回 500")
         void getThrowsRuntimeException() throws Exception {
-            when(userService.get("user-001"))
-                    .thenThrow(new RuntimeException("数据库异常"));
+            when(userService.get("user-001")).thenThrow(new RuntimeException("数据库异常"));
 
             mockMvc.perform(get("/api/user/users/user-001"))
                     .andExpect(status().isInternalServerError())
@@ -176,8 +173,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - Service 抛出 BusinessException 返回 400")
         void updateThrowsBusinessException() throws Exception {
-            when(userService.update(eq("user-001"), any()))
-                    .thenThrow(new BusinessException(4000, "更新用户失败"));
+            when(userService.update(eq("user-001"), any())).thenThrow(new BusinessException(4000, "更新用户失败"));
 
             mockMvc.perform(put("/api/user/users/user-001")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -190,8 +186,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - Service 抛出 RuntimeException 返回 500")
         void updateThrowsRuntimeException() throws Exception {
-            when(userService.update(eq("user-001"), any()))
-                    .thenThrow(new RuntimeException("数据库异常"));
+            when(userService.update(eq("user-001"), any())).thenThrow(new RuntimeException("数据库异常"));
 
             mockMvc.perform(put("/api/user/users/user-001")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -373,22 +368,19 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST 请求获取接口返回 405")
         void getWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/user/users/user-001"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/user/users/user-001")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("GET 请求搜索接口路径匹配 GET /{id} 返回 200")
         void searchWithWrongMethod() throws Exception {
-            mockMvc.perform(get("/api/user/users/search"))
-                    .andExpect(status().isOk());
+            mockMvc.perform(get("/api/user/users/search")).andExpect(status().isOk());
         }
 
         @Test
         @DisplayName("DELETE 请求搜索接口路径匹配 DELETE /{id} 返回 200")
         void searchWithDeleteMethod() throws Exception {
-            mockMvc.perform(delete("/api/user/users/search"))
-                    .andExpect(status().isOk());
+            mockMvc.perform(delete("/api/user/users/search")).andExpect(status().isOk());
         }
     }
 }

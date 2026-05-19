@@ -1,23 +1,26 @@
 package com.rauio.smartdangjian.server.auth.security;
 
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.server.user.service.UserService;
+import java.io.IOException;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.service.UserService;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
 @ConditionalOnProperty(name = "app.security.enabled", havingValue = "false")
@@ -30,9 +33,8 @@ public class DevAuthenticationFilter extends OncePerRequestFilter {
     private String defaultUserId;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         Authentication existingAuth = SecurityContextHolder.getContext().getAuthentication();
 
         boolean needsDefaultUser = existingAuth == null
@@ -42,9 +44,8 @@ public class DevAuthenticationFilter extends OncePerRequestFilter {
         if (needsDefaultUser && defaultUserId != null && !defaultUserId.isBlank()) {
             User user = userService.getById(defaultUserId);
             if (user != null) {
-                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                        user, null, user.getAuthorities()
-                );
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }

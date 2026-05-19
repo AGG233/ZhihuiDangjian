@@ -1,13 +1,16 @@
 package com.rauio.smartdangjian.controller.admin;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.ContentTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.controller.admin.AdminContentController;
-import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
-import com.rauio.smartdangjian.server.content.service.ContentBlockService;
-import com.rauio.smartdangjian.server.content.spec.BlockType;
-import com.rauio.smartdangjian.utils.spec.UserType;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -18,22 +21,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.ContentTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.controller.admin.AdminContentController;
+import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
+import com.rauio.smartdangjian.server.content.service.ContentBlockService;
+import com.rauio.smartdangjian.server.content.spec.BlockType;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminContentControllerTest.TestConfig.class
-)
+        classes = AdminContentControllerTest.TestConfig.class)
 @DisplayName("管理员内容块接口测试")
 class AdminContentControllerTest extends BaseControllerTest {
 
@@ -84,8 +83,7 @@ class AdminContentControllerTest extends BaseControllerTest {
 
             List<ContentBlock> blocks = List.of(
                     ContentTestDataFactory.createCarouselBlock("cb-001", BlockType.Image),
-                    ContentTestDataFactory.createCarouselBlock("cb-002", BlockType.Paragraph)
-            );
+                    ContentTestDataFactory.createCarouselBlock("cb-002", BlockType.Paragraph));
             mockMvc.perform(post(CAROUSEL_URL)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(ContentTestDataFactory.listToJson(blocks)))
@@ -117,8 +115,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /carousel - Service 抛出 BusinessException 返回 400")
         void updateThrowsBusinessException() throws Exception {
-            when(contentBlockService.update(any(ContentBlock.class)))
-                    .thenThrow(new BusinessException(4000, "更新轮播图失败"));
+            when(contentBlockService.update(any(ContentBlock.class))).thenThrow(new BusinessException(4000, "更新轮播图失败"));
 
             ContentBlock block = ContentTestDataFactory.createCarouselBlock("cb-001", BlockType.Image);
             mockMvc.perform(put(CAROUSEL_URL)
@@ -132,12 +129,9 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /carousel - Service 抛出 BusinessException 返回 400")
         void addThrowsBusinessException() throws Exception {
-            when(contentBlockService.saveBatch(any(List.class)))
-                    .thenThrow(new BusinessException(4000, "添加轮播图失败"));
+            when(contentBlockService.saveBatch(any(List.class))).thenThrow(new BusinessException(4000, "添加轮播图失败"));
 
-            List<ContentBlock> blocks = List.of(
-                    ContentTestDataFactory.createCarouselBlock("cb-001", BlockType.Image)
-            );
+            List<ContentBlock> blocks = List.of(ContentTestDataFactory.createCarouselBlock("cb-001", BlockType.Image));
             mockMvc.perform(post(CAROUSEL_URL)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(ContentTestDataFactory.listToJson(blocks)))
@@ -149,8 +143,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("DELETE /carousel/{id} - Service 抛出 BusinessException 返回 400")
         void deleteThrowsBusinessException() throws Exception {
-            when(contentBlockService.delete("nonexistent"))
-                    .thenThrow(new BusinessException(4000, "轮播图不存在"));
+            when(contentBlockService.delete("nonexistent")).thenThrow(new BusinessException(4000, "轮播图不存在"));
 
             mockMvc.perform(delete(CAROUSEL_URL + "/nonexistent"))
                     .andExpect(status().isBadRequest())
@@ -161,8 +154,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /carousel - Service 抛出 RuntimeException 返回 500")
         void updateThrowsRuntimeException() throws Exception {
-            when(contentBlockService.update(any(ContentBlock.class)))
-                    .thenThrow(new RuntimeException("数据库连接失败"));
+            when(contentBlockService.update(any(ContentBlock.class))).thenThrow(new RuntimeException("数据库连接失败"));
 
             ContentBlock block = ContentTestDataFactory.createCarouselBlock("cb-001", BlockType.Image);
             mockMvc.perform(put(CAROUSEL_URL)
@@ -175,12 +167,9 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /carousel - Service 抛出 RuntimeException 返回 500")
         void addThrowsRuntimeException() throws Exception {
-            when(contentBlockService.saveBatch(any(List.class)))
-                    .thenThrow(new RuntimeException("数据库连接失败"));
+            when(contentBlockService.saveBatch(any(List.class))).thenThrow(new RuntimeException("数据库连接失败"));
 
-            List<ContentBlock> blocks = List.of(
-                    ContentTestDataFactory.createCarouselBlock("cb-001", BlockType.Image)
-            );
+            List<ContentBlock> blocks = List.of(ContentTestDataFactory.createCarouselBlock("cb-001", BlockType.Image));
             mockMvc.perform(post(CAROUSEL_URL)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(ContentTestDataFactory.listToJson(blocks)))
@@ -191,8 +180,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("DELETE /carousel/{id} - Service 抛出 RuntimeException 返回 500")
         void deleteThrowsRuntimeException() throws Exception {
-            when(contentBlockService.delete("cb-001"))
-                    .thenThrow(new RuntimeException("数据库连接失败"));
+            when(contentBlockService.delete("cb-001")).thenThrow(new RuntimeException("数据库连接失败"));
 
             mockMvc.perform(delete(CAROUSEL_URL + "/cb-001"))
                     .andExpect(status().isInternalServerError())
@@ -365,34 +353,29 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("DELETE /carousel/{id} - SQL 注入在路径参数中")
         void sqlInjectionInPath() throws Exception {
-            when(contentBlockService.delete("' OR '1'='1"))
-                    .thenThrow(new BusinessException(4000, "轮播图不存在"));
+            when(contentBlockService.delete("' OR '1'='1")).thenThrow(new BusinessException(4000, "轮播图不存在"));
 
-            mockMvc.perform(delete(CAROUSEL_URL + "/' OR '1'='1"))
-                    .andExpect(status().isBadRequest());
+            mockMvc.perform(delete(CAROUSEL_URL + "/' OR '1'='1")).andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("GET 请求更新接口返回 405")
         void updateWithWrongMethod() throws Exception {
-            mockMvc.perform(get(CAROUSEL_URL)
-                            .contentType(MediaType.APPLICATION_JSON))
+            mockMvc.perform(get(CAROUSEL_URL).contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("GET 请求添加接口返回 405")
         void addWithWrongMethod() throws Exception {
-            mockMvc.perform(get(CAROUSEL_URL)
-                            .contentType(MediaType.APPLICATION_JSON))
+            mockMvc.perform(get(CAROUSEL_URL).contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("POST 请求删除接口返回 405")
         void deleteWithWrongMethod() throws Exception {
-            mockMvc.perform(post(CAROUSEL_URL + "/cb-001"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post(CAROUSEL_URL + "/cb-001")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

@@ -1,5 +1,7 @@
 package com.rauio.smartdangjian.server.user.controller.user;
 
+import org.springframework.web.bind.annotation.*;
+
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
@@ -12,11 +14,11 @@ import com.rauio.smartdangjian.server.user.pojo.vo.UserPublicVO;
 import com.rauio.smartdangjian.server.user.pojo.vo.UserVO;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.utils.spec.UserType;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "用户管理接口", description = "提供用户信息操作，搜索仅返回基本公开信息，不包含邮箱、手机等敏感数据")
 @RestController
@@ -40,14 +42,17 @@ public class UserController {
     public Result<Page<UserPublicVO>> getPage(
             @RequestBody UserDto userDto,
             @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
-            @Parameter(name = "pageSize", description = "页大小") @RequestParam(defaultValue = "10") int pageSize
-    ) {
+            @Parameter(name = "pageSize", description = "页大小") @RequestParam(defaultValue = "10") int pageSize) {
         return Result.ok(userService.getPage(userDto, pageNum, pageSize));
     }
 
     @Operation(summary = "更新用户信息", description = "通过ID更新用户信息")
     @PutMapping("/{id}")
-    @DataScopeAccess(resource = DataScopeResources.USER_MANAGEMENT, action = DataScopeAction.UPDATE, id = "#id", body = "#user")
+    @DataScopeAccess(
+            resource = DataScopeResources.USER_MANAGEMENT,
+            action = DataScopeAction.UPDATE,
+            id = "#id",
+            body = "#user")
     public Result<Boolean> update(@PathVariable String id, @RequestBody User user) {
         return Result.ok(userService.update(id, user));
     }

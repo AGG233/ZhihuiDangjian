@@ -1,5 +1,8 @@
 package com.rauio.smartdangjian.controller.factory;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiPrompts;
@@ -10,19 +13,14 @@ import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptUpdateRequest;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiSkillCreateRequest;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiSkillUpdateRequest;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 /**
  * Static factory for AI test data — produces AiPrompts, AiSkill, request DTOs, and a JSON helper.
  */
 public final class AiTestDataFactory {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-            .registerModule(new JavaTimeModule());
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    private AiTestDataFactory() {
-    }
+    private AiTestDataFactory() {}
 
     // ── AiPromptCreateRequest ───────────────────────────────────────
 

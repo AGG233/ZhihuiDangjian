@@ -1,11 +1,14 @@
 package com.rauio.smartdangjian.server.ai.service;
 
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.ai.mapper.AiPromptsMapper;
-import com.rauio.smartdangjian.server.ai.pojo.entity.AiPrompts;
-import com.rauio.smartdangjian.server.ai.pojo.enums.PromptRoleEnum;
-import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptCreateRequest;
-import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptUpdateRequest;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
+
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,14 +19,12 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Collections;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.ai.mapper.AiPromptsMapper;
+import com.rauio.smartdangjian.server.ai.pojo.entity.AiPrompts;
+import com.rauio.smartdangjian.server.ai.pojo.enums.PromptRoleEnum;
+import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptCreateRequest;
+import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptUpdateRequest;
 
 @ExtendWith(MockitoExtension.class)
 class PromptServiceTest {
@@ -95,11 +96,13 @@ class PromptServiceTest {
     @DisplayName("无效角色抛出 IllegalArgumentException")
     void invalidRoleThrowsException() {
         assertThatThrownBy(() -> {
-            var method = PromptService.class.getDeclaredMethod("parsePromptRole", String.class);
-            method.setAccessible(true);
-            method.invoke(promptService, "INVALID_ROLE");
-        }).hasCauseInstanceOf(IllegalArgumentException.class)
-          .getCause().hasMessageContaining("无效的提示词角色");
+                    var method = PromptService.class.getDeclaredMethod("parsePromptRole", String.class);
+                    method.setAccessible(true);
+                    method.invoke(promptService, "INVALID_ROLE");
+                })
+                .hasCauseInstanceOf(IllegalArgumentException.class)
+                .getCause()
+                .hasMessageContaining("无效的提示词角色");
     }
 
     @Test

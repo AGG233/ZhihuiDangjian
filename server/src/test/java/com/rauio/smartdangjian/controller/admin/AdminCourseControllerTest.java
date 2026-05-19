@@ -1,11 +1,12 @@
 package com.rauio.smartdangjian.controller.admin;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.controller.admin.AdminCourseController;
-import com.rauio.smartdangjian.server.content.pojo.dto.CourseDto;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -15,17 +16,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.controller.admin.AdminCourseController;
+import com.rauio.smartdangjian.server.content.pojo.dto.CourseDto;
+import com.rauio.smartdangjian.server.content.service.course.CourseService;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminCourseControllerTest.TestConfig.class
-)
+        classes = AdminCourseControllerTest.TestConfig.class)
 @DisplayName("管理员课程接口测试")
 class AdminCourseControllerTest extends BaseControllerTest {
 
@@ -89,8 +89,7 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 400 并携带错误码")
         void createThrowsBusinessException() throws Exception {
-            when(courseService.create(any(CourseDto.class)))
-                    .thenThrow(new BusinessException(4000, "课程创建失败"));
+            when(courseService.create(any(CourseDto.class))).thenThrow(new BusinessException(4000, "课程创建失败"));
 
             mockMvc.perform(post("/api/admin/content/courses/")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -103,8 +102,7 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 RuntimeException 返回 500")
         void createThrowsRuntimeException() throws Exception {
-            when(courseService.create(any(CourseDto.class)))
-                    .thenThrow(new RuntimeException("数据库连接失败"));
+            when(courseService.create(any(CourseDto.class))).thenThrow(new RuntimeException("数据库连接失败"));
 
             mockMvc.perform(post("/api/admin/content/courses/")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -261,15 +259,13 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET 请求创建接口返回 405")
         void createWithWrongMethod() throws Exception {
-            mockMvc.perform(get("/api/admin/content/courses/"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(get("/api/admin/content/courses/")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("POST 请求删除接口返回 405")
         void deleteWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/admin/content/courses/course-1"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/admin/content/courses/course-1")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

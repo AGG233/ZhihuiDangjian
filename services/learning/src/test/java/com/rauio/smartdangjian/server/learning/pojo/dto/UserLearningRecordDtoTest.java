@@ -1,11 +1,11 @@
 package com.rauio.smartdangjian.server.learning.pojo.dto;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 @DisplayName("UserLearningRecordDto 用户学习记录请求体")
 class UserLearningRecordDtoTest {

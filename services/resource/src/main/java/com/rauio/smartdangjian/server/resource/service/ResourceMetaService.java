@@ -1,5 +1,11 @@
 package com.rauio.smartdangjian.server.resource.service;
 
+import java.util.List;
+
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -10,12 +16,8 @@ import com.rauio.smartdangjian.server.resource.mapper.ResourceMetaMapper;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaCreateRequest;
 import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaUpdateRequest;
-import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +48,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return meta;
     }
 
-    @Cacheable(value = "resourceMeta",key = "#hash")
+    @Cacheable(value = "resourceMeta", key = "#hash")
     public ResourceMeta getByHash(String hash) {
         ResourceMeta meta = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
                 .eq(ResourceMeta::getHash, hash)
@@ -58,11 +60,11 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
     }
 
     public boolean existsByHash(String hash) {
-        return this.exists(new LambdaQueryWrapper<ResourceMeta>()
-                .eq(ResourceMeta::getHash, hash));
+        return this.exists(new LambdaQueryWrapper<ResourceMeta>().eq(ResourceMeta::getHash, hash));
     }
 
-    public List<ResourceMeta> list(String uploaderId, String originalName, String hash, Integer resourceType, Integer status) {
+    public List<ResourceMeta> list(
+            String uploaderId, String originalName, String hash, Integer resourceType, Integer status) {
         LambdaQueryWrapper<ResourceMeta> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(StringUtils.isNotBlank(uploaderId), ResourceMeta::getUploaderId, uploaderId)
                 .like(StringUtils.isNotBlank(originalName), ResourceMeta::getOriginalName, originalName)
@@ -81,9 +83,16 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
                 .id(id)
                 .uploaderId(existing.getUploaderId())
                 .hash(existing.getHash())
-                .objectKey(StringUtils.isNotBlank(request.getObjectKey()) ? request.getObjectKey() : existing.getObjectKey())
-                .originalName(StringUtils.isNotBlank(request.getOriginalName()) ? request.getOriginalName() : existing.getOriginalName())
-                .resourceType(request.getResourceType() != null ? request.getResourceType() : existing.getResourceType())
+                .objectKey(
+                        StringUtils.isNotBlank(request.getObjectKey())
+                                ? request.getObjectKey()
+                                : existing.getObjectKey())
+                .originalName(
+                        StringUtils.isNotBlank(request.getOriginalName())
+                                ? request.getOriginalName()
+                                : existing.getOriginalName())
+                .resourceType(
+                        request.getResourceType() != null ? request.getResourceType() : existing.getResourceType())
                 .status(request.getStatus() != null ? request.getStatus() : existing.getStatus())
                 .build();
 

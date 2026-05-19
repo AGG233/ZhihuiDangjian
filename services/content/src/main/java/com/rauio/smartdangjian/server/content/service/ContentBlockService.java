@@ -1,16 +1,18 @@
 package com.rauio.smartdangjian.server.content.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.server.content.mapper.ContentBlockMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ContentBlockConvertor;
 import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
 import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -80,8 +82,8 @@ public class ContentBlockService extends ServiceImpl<ContentBlockMapper, Content
      * @return 该章节或文章的所有内容块
      */
     public List<ContentBlockVO> getByParentId(String parentId) {
-        return convertor.toVOList(this.list(new LambdaQueryWrapper<ContentBlock>()
-                .eq(ContentBlock::getParentId, parentId)));
+        return convertor.toVOList(
+                this.list(new LambdaQueryWrapper<ContentBlock>().eq(ContentBlock::getParentId, parentId)));
     }
 
     /**
@@ -91,12 +93,7 @@ public class ContentBlockService extends ServiceImpl<ContentBlockMapper, Content
      * @return 所有内容块
      */
     public List<ContentBlockVO> getByResourceIds(List<String> Ids) {
-        return convertor.toVOList(Ids.stream()
-                .toList()
-                .stream()
-                .map(this::getById)
-                .collect(Collectors.toList()
-                )
-        );
+        return convertor.toVOList(
+                Ids.stream().toList().stream().map(this::getById).collect(Collectors.toList()));
     }
 }

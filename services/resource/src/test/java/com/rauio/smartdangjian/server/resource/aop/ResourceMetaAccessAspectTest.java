@@ -1,15 +1,11 @@
 package com.rauio.smartdangjian.server.resource.aop;
 
-import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
-import com.rauio.smartdangjian.aop.support.DataScopeAction;
-import com.rauio.smartdangjian.aop.support.DataScopeContext;
-import com.rauio.smartdangjian.aop.support.DataScopeResources;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
-import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
-import com.rauio.smartdangjian.server.user.mapper.UserMapper;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.utils.spec.UserType;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
+
+import java.lang.reflect.Method;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.junit.jupiter.api.DisplayName;
@@ -19,12 +15,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.lang.reflect.Method;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
+import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
+import com.rauio.smartdangjian.aop.support.DataScopeAction;
+import com.rauio.smartdangjian.aop.support.DataScopeContext;
+import com.rauio.smartdangjian.aop.support.DataScopeResources;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
+import com.rauio.smartdangjian.server.user.mapper.UserMapper;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 @ExtendWith(MockitoExtension.class)
 class ResourceMetaAccessAspectTest {
@@ -89,8 +88,13 @@ class ResourceMetaAccessAspectTest {
         return mockContext(userType, "test-user", "uni-1", action, id, query);
     }
 
-    private DataScopeContext mockContext(UserType userType, String userId, String universityId, DataScopeAction action, String id, String query) {
-        User user = User.builder().id(userId).userType(userType).universityId(universityId).build();
+    private DataScopeContext mockContext(
+            UserType userType, String userId, String universityId, DataScopeAction action, String id, String query) {
+        User user = User.builder()
+                .id(userId)
+                .userType(userType)
+                .universityId(universityId)
+                .build();
         DataScopeAccess access = createAccess(action, id, query);
 
         ProceedingJoinPoint jp = mock(ProceedingJoinPoint.class);
@@ -105,12 +109,33 @@ class ResourceMetaAccessAspectTest {
 
     private DataScopeAccess createAccess(DataScopeAction action, String id, String query) {
         return new DataScopeAccess() {
-            @Override public String resource() { return DataScopeResources.RESOURCE_META_ADMIN; }
-            @Override public DataScopeAction action() { return action; }
-            @Override public String id() { return id; }
-            @Override public String body() { return ""; }
-            @Override public String query() { return query; }
-            @Override public Class<? extends java.lang.annotation.Annotation> annotationType() {
+            @Override
+            public String resource() {
+                return DataScopeResources.RESOURCE_META_ADMIN;
+            }
+
+            @Override
+            public DataScopeAction action() {
+                return action;
+            }
+
+            @Override
+            public String id() {
+                return id;
+            }
+
+            @Override
+            public String body() {
+                return "";
+            }
+
+            @Override
+            public String query() {
+                return query;
+            }
+
+            @Override
+            public Class<? extends java.lang.annotation.Annotation> annotationType() {
                 return DataScopeAccess.class;
             }
         };

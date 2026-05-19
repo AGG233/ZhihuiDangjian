@@ -1,13 +1,15 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
+import org.springframework.ai.chat.model.ToolContext;
+import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.stereotype.Component;
+
 import com.rauio.smartdangjian.search.pojo.vo.UserProfileVO;
 import com.rauio.smartdangjian.search.service.UserProfileService;
 import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
 import com.rauio.smartdangjian.server.user.service.UserService;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.ai.chat.model.ToolContext;
-import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor

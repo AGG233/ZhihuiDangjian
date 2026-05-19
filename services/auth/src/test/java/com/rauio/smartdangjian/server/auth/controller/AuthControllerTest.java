@@ -1,5 +1,17 @@
 package com.rauio.smartdangjian.server.auth.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.auth.pojo.Captcha;
 import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
@@ -8,17 +20,6 @@ import com.rauio.smartdangjian.server.auth.pojo.request.RegisterRequest;
 import com.rauio.smartdangjian.server.auth.pojo.response.LoginResponse;
 import com.rauio.smartdangjian.server.auth.service.AuthService;
 import com.rauio.smartdangjian.server.auth.service.CaptchaService;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
@@ -39,10 +40,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("getCaptcha 返回 Captcha 对象包装在 Result 中")
     void getCaptchaReturnsCaptchaInResult() {
-        Captcha captcha = Captcha.builder()
-                .uuid("uuid-1")
-                .base64("base64data")
-                .build();
+        Captcha captcha = Captcha.builder().uuid("uuid-1").base64("base64data").build();
         when(captchaService.get()).thenReturn(captcha);
 
         Result<Captcha> result = authController.getCaptcha();
@@ -86,9 +84,8 @@ class AuthControllerTest {
     @DisplayName("login 委托 authService.login 并返回 LoginResponse")
     void loginDelegatesToAuthService() {
         LoginRequest request = new LoginRequest();
-        LoginResponse loginResponse = LoginResponse.builder()
-                .accessToken("jwt-token-xyz")
-                .build();
+        LoginResponse loginResponse =
+                LoginResponse.builder().accessToken("jwt-token-xyz").build();
         when(authService.login(any(LoginRequest.class))).thenReturn(loginResponse);
 
         Result<LoginResponse> result = authController.login(request);

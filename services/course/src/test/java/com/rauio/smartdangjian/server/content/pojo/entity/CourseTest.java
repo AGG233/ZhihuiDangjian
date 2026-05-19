@@ -1,12 +1,12 @@
 package com.rauio.smartdangjian.server.content.pojo.entity;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class CourseTest {
 
@@ -84,8 +84,16 @@ class CourseTest {
     @Test
     @DisplayName("两个相同字段的 Course equals 和 hashCode 行为符合 @Data 预期")
     void equalsAndHashCodeBehavior() {
-        Course c1 = Course.builder().id("course-001").title("课程").difficulty("beginner").build();
-        Course c2 = Course.builder().id("course-001").title("课程").difficulty("beginner").build();
+        Course c1 = Course.builder()
+                .id("course-001")
+                .title("课程")
+                .difficulty("beginner")
+                .build();
+        Course c2 = Course.builder()
+                .id("course-001")
+                .title("课程")
+                .difficulty("beginner")
+                .build();
 
         assertThat(c1).isEqualTo(c2);
         assertThat(c1.hashCode()).isEqualTo(c2.hashCode());
@@ -103,7 +111,8 @@ class CourseTest {
     @Test
     @DisplayName("isPublished 为 null 时 builder 正常工作")
     void builderWithNullIsPublished() {
-        Course course = Course.builder().id("course-001").title("课程").isPublished(null).build();
+        Course course =
+                Course.builder().id("course-001").title("课程").isPublished(null).build();
 
         assertThat(course.getIsPublished()).isNull();
     }

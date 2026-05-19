@@ -1,15 +1,18 @@
 package com.rauio.smartdangjian.controller.user;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.ai.constants.AiChatResponseType;
-import com.rauio.smartdangjian.server.ai.controller.user.UserChatController;
-import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
-import com.rauio.smartdangjian.server.ai.pojo.request.AiChatRequest;
-import com.rauio.smartdangjian.server.ai.pojo.response.AiChatResponse;
-import com.rauio.smartdangjian.server.ai.service.AiMemoryService;
-import com.rauio.smartdangjian.server.ai.service.LLMService;
-import com.rauio.smartdangjian.server.user.service.UserService;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.lang.reflect.Method;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -19,34 +22,28 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.bind.annotation.PostMapping;
+
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.server.ai.constants.AiChatResponseType;
+import com.rauio.smartdangjian.server.ai.controller.user.UserChatController;
+import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
+import com.rauio.smartdangjian.server.ai.pojo.request.AiChatRequest;
+import com.rauio.smartdangjian.server.ai.pojo.response.AiChatResponse;
+import com.rauio.smartdangjian.server.ai.service.AiMemoryService;
+import com.rauio.smartdangjian.server.ai.service.LLMService;
+import com.rauio.smartdangjian.server.user.service.UserService;
+
 import reactor.core.publisher.Flux;
 
-import java.lang.reflect.Method;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = UserChatControllerTest.TestConfig.class
-)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = UserChatControllerTest.TestConfig.class)
 @DisplayName("用户AI聊天接口测试")
 class UserChatControllerTest extends BaseControllerTest {
 
     @SpringBootConfiguration
     static class TestConfig extends CommonTestConfig {
         @Bean
-        public UserChatController userChatController(LLMService llmService,
-                                                     AiMemoryService aiMemoryService,
-                                                     UserService userService) {
+        public UserChatController userChatController(
+                LLMService llmService, AiMemoryService aiMemoryService, UserService userService) {
             return new UserChatController(llmService, aiMemoryService, userService);
         }
     }
@@ -67,9 +64,9 @@ class UserChatControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST / - SSE 聊天成功")
         void chatSuccess() throws Exception {
-            when(llmService.chat(any(AiChatRequest.class))).thenReturn(
-                    Flux.just(new AiChatResponse("assistant", "回复内容", null, AiChatResponseType.TEXT, null))
-            );
+            when(llmService.chat(any(AiChatRequest.class)))
+                    .thenReturn(
+                            Flux.just(new AiChatResponse("assistant", "回复内容", null, AiChatResponseType.TEXT, null)));
 
             mockMvc.perform(post("/api/ai/chat")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -81,9 +78,9 @@ class UserChatControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /evaluation - SSE 学习评估成功（兼容垫片）")
         void evaluateSuccess() throws Exception {
-            when(llmService.chat(any(AiChatRequest.class))).thenReturn(
-                    Flux.just(new AiChatResponse("assistant", "评估结果", null, AiChatResponseType.TEXT, null))
-            );
+            when(llmService.chat(any(AiChatRequest.class)))
+                    .thenReturn(
+                            Flux.just(new AiChatResponse("assistant", "评估结果", null, AiChatResponseType.TEXT, null)));
 
             mockMvc.perform(post("/api/ai/chat/evaluation")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -95,9 +92,8 @@ class UserChatControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /quiz - SSE 测试小题成功（兼容垫片）")
         void quizSuccess() throws Exception {
-            when(llmService.chat(any(AiChatRequest.class))).thenReturn(
-                    Flux.just(new AiChatResponse("assistant", "测试题", null, AiChatResponseType.TEXT, null))
-            );
+            when(llmService.chat(any(AiChatRequest.class)))
+                    .thenReturn(Flux.just(new AiChatResponse("assistant", "测试题", null, AiChatResponseType.TEXT, null)));
 
             mockMvc.perform(post("/api/ai/chat/quiz")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -110,18 +106,16 @@ class UserChatControllerTest extends BaseControllerTest {
         @DisplayName("GET /{sessionId}/messages - 查询会话消息成功")
         void listMessagesSuccess() throws Exception {
             when(userService.getCurrentUserId()).thenReturn("stu-001");
-            List<AiChatMessage> messages = List.of(
-                    AiChatMessage.builder()
-                            .id("msg-1")
-                            .sessionId("session-1")
-                            .userId("stu-001")
-                            .agentType("CHAT")
-                            .senderType("USER")
-                            .content("你好")
-                            .messageType("TEXT")
-                            .createdAt(LocalDateTime.now())
-                            .build()
-            );
+            List<AiChatMessage> messages = List.of(AiChatMessage.builder()
+                    .id("msg-1")
+                    .sessionId("session-1")
+                    .userId("stu-001")
+                    .agentType("CHAT")
+                    .senderType("USER")
+                    .content("你好")
+                    .messageType("TEXT")
+                    .createdAt(LocalDateTime.now())
+                    .build());
             when(aiMemoryService.listSessionMessages("stu-001", "session-1")).thenReturn(messages);
 
             mockMvc.perform(get("/api/ai/chat/session-1/messages"))
@@ -135,7 +129,8 @@ class UserChatControllerTest extends BaseControllerTest {
         @DisplayName("流式接口声明 SSE 响应类型")
         void streamingEndpointsDeclareSseMediaType() throws Exception {
             assertPostMappingProducesSse("chat", AiChatRequest.class);
-            assertPostMappingProducesSse("evaluate", com.rauio.smartdangjian.server.ai.pojo.request.AiEvaluationRequest.class);
+            assertPostMappingProducesSse(
+                    "evaluate", com.rauio.smartdangjian.server.ai.pojo.request.AiEvaluationRequest.class);
             assertPostMappingProducesSse("quiz", com.rauio.smartdangjian.server.ai.pojo.request.AiQuizRequest.class);
         }
     }
@@ -175,8 +170,7 @@ class UserChatControllerTest extends BaseControllerTest {
         @DisplayName("POST / - Service 抛出 RuntimeException 时 SSE 仍然返回 200 (Flux 内部处理)")
         void chatWithRuntimeException() throws Exception {
             // LLMService handles errors internally via onErrorResume, so the HTTP status is still 200
-            when(llmService.chat(any(AiChatRequest.class)))
-                    .thenReturn(Flux.error(new RuntimeException("AI 服务异常")));
+            when(llmService.chat(any(AiChatRequest.class))).thenReturn(Flux.error(new RuntimeException("AI 服务异常")));
 
             mockMvc.perform(post("/api/ai/chat")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -269,15 +263,13 @@ class UserChatControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET 请求聊天接口返回 405")
         void chatWithWrongMethod() throws Exception {
-            mockMvc.perform(get("/api/ai/chat"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(get("/api/ai/chat")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("POST 请求消息查询接口返回 405")
         void listMessagesWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/ai/chat/session-1/messages"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/ai/chat/session-1/messages")).andExpect(status().isMethodNotAllowed());
         }
     }
 
@@ -285,10 +277,7 @@ class UserChatControllerTest extends BaseControllerTest {
         Method method = UserChatController.class.getDeclaredMethod(methodName, parameterType);
         PostMapping postMapping = method.getAnnotation(PostMapping.class);
 
-        assertThat(postMapping)
-                .as("%s must declare @PostMapping", methodName)
-                .isNotNull();
-        assertThat(Arrays.asList(postMapping.produces()))
-                .contains(MediaType.TEXT_EVENT_STREAM_VALUE);
+        assertThat(postMapping).as("%s must declare @PostMapping", methodName).isNotNull();
+        assertThat(Arrays.asList(postMapping.produces())).contains(MediaType.TEXT_EVENT_STREAM_VALUE);
     }
 }

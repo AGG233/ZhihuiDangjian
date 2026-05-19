@@ -1,16 +1,19 @@
 package com.rauio.smartdangjian.server.content.service.category;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
-import com.rauio.smartdangjian.server.content.constants.CategoryErrorConstants;
-import com.rauio.smartdangjian.server.content.mapper.CategoryMapper;
-import com.rauio.smartdangjian.server.content.pojo.convertor.CategoryConvertor;
-import com.rauio.smartdangjian.server.content.pojo.dto.CategoryDto;
-import com.rauio.smartdangjian.server.content.pojo.entity.Category;
-import com.rauio.smartdangjian.server.content.pojo.vo.CategoryVO;
-import com.rauio.smartdangjian.utils.SecurityUtils;
-import com.rauio.smartdangjian.utils.spec.UserType;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,19 +25,17 @@ import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.server.content.constants.CategoryErrorConstants;
+import com.rauio.smartdangjian.server.content.mapper.CategoryMapper;
+import com.rauio.smartdangjian.server.content.pojo.convertor.CategoryConvertor;
+import com.rauio.smartdangjian.server.content.pojo.dto.CategoryDto;
+import com.rauio.smartdangjian.server.content.pojo.entity.Category;
+import com.rauio.smartdangjian.server.content.pojo.vo.CategoryVO;
+import com.rauio.smartdangjian.utils.SecurityUtils;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 @ExtendWith(MockitoExtension.class)
 class CategoryServiceTest {
@@ -144,14 +145,11 @@ class CategoryServiceTest {
     @Test
     @DisplayName("getRootList 返回所有顶级目录的 VO 列表")
     void getRootListReturnsVOList() {
-        List<Category> rootCategories = List.of(
-                createCategory("1", "根目录1", 0, null),
-                createCategory("2", "根目录2", 0, null)
-        );
+        List<Category> rootCategories =
+                List.of(createCategory("1", "根目录1", 0, null), createCategory("2", "根目录2", 0, null));
         List<CategoryVO> rootVOs = List.of(
                 createCategoryVO("1", "根目录1", null, Collections.emptyList()),
-                createCategoryVO("2", "根目录2", null, Collections.emptyList())
-        );
+                createCategoryVO("2", "根目录2", null, Collections.emptyList()));
 
         doReturn(rootCategories).when(categoryService).list(any(LambdaQueryWrapper.class));
         doReturn(rootVOs).when(convertor).toVOList(rootCategories);
@@ -168,14 +166,10 @@ class CategoryServiceTest {
     @Test
     @DisplayName("getByParentId 根据父目录 ID 返回直接子目录的 VO 列表")
     void getByParentIdReturnsVOList() {
-        List<Category> children = List.of(
-                createCategory("2", "子目录1", 1, "1"),
-                createCategory("3", "子目录2", 1, "1")
-        );
+        List<Category> children = List.of(createCategory("2", "子目录1", 1, "1"), createCategory("3", "子目录2", 1, "1"));
         List<CategoryVO> childVOs = List.of(
                 createCategoryVO("2", "子目录1", "1", Collections.emptyList()),
-                createCategoryVO("3", "子目录2", "1", Collections.emptyList())
-        );
+                createCategoryVO("3", "子目录2", "1", Collections.emptyList()));
 
         doReturn(children).when(categoryService).list(any(LambdaQueryWrapper.class));
         doReturn(childVOs).when(convertor).toVOList(children);
@@ -205,7 +199,10 @@ class CategoryServiceTest {
     @DisplayName("create 当前用户为 null 时抛出 BusinessException 3006")
     void createWhenCurrentUserIsNullThrowsBusinessException() {
         securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(null);
-        CategoryDto dto = CategoryDto.builder().name("根目录").childrenNode(Collections.emptyList()).build();
+        CategoryDto dto = CategoryDto.builder()
+                .name("根目录")
+                .childrenNode(Collections.emptyList())
+                .build();
         Category category = createCategory(null, "根目录", 0, null);
         doReturn(category).when(convertor).toEntity(dto);
 
@@ -223,7 +220,10 @@ class CategoryServiceTest {
     void createWhenUserIsManagerThrowsBusinessException() {
         CurrentUserPrincipal managerUser = createMockUser(UserType.MANAGER, null);
         securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(managerUser);
-        CategoryDto dto = CategoryDto.builder().name("根目录").childrenNode(Collections.emptyList()).build();
+        CategoryDto dto = CategoryDto.builder()
+                .name("根目录")
+                .childrenNode(Collections.emptyList())
+                .build();
         Category category = createCategory(null, "根目录", 0, null);
         doReturn(category).when(convertor).toEntity(dto);
 
@@ -241,7 +241,10 @@ class CategoryServiceTest {
     void createWhenSchoolUserAndNoChildrenCreatesSuccessfully() {
         CurrentUserPrincipal schoolUser = createMockUser(UserType.SCHOOL, "uni123");
         securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(schoolUser);
-        CategoryDto dto = CategoryDto.builder().name("根目录").childrenNode(Collections.emptyList()).build();
+        CategoryDto dto = CategoryDto.builder()
+                .name("根目录")
+                .childrenNode(Collections.emptyList())
+                .build();
         Category category = createCategory(null, "根目录", null, null);
         doReturn(category).when(convertor).toEntity(dto);
         doReturn(true).when(categoryService).save(any(Category.class));
@@ -260,7 +263,10 @@ class CategoryServiceTest {
     void createWhenStudentUserAndNoChildrenCreatesSuccessfully() {
         CurrentUserPrincipal studentUser = createMockUser(UserType.STUDENT, "uni456");
         securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(studentUser);
-        CategoryDto dto = CategoryDto.builder().name("根目录").childrenNode(new ArrayList<>()).build();
+        CategoryDto dto = CategoryDto.builder()
+                .name("根目录")
+                .childrenNode(new ArrayList<>())
+                .build();
         Category category = createCategory(null, "根目录", null, null);
         doReturn(category).when(convertor).toEntity(dto);
         doReturn(true).when(categoryService).save(any(Category.class));
@@ -276,9 +282,13 @@ class CategoryServiceTest {
     void createWithChildrenDelegatesToCreateByParentId() {
         CurrentUserPrincipal schoolUser = createMockUser(UserType.SCHOOL, "uni123");
         securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(schoolUser);
-        CategoryDto childDto = CategoryDto.builder().name("子目录").childrenNode(Collections.emptyList()).build();
+        CategoryDto childDto = CategoryDto.builder()
+                .name("子目录")
+                .childrenNode(Collections.emptyList())
+                .build();
         List<CategoryDto> children = List.of(childDto);
-        CategoryDto dto = CategoryDto.builder().name("根目录").childrenNode(children).build();
+        CategoryDto dto =
+                CategoryDto.builder().name("根目录").childrenNode(children).build();
         Category category = createCategory("parent1", "根目录", null, null);
         doReturn(category).when(convertor).toEntity(dto);
         doReturn(true).when(categoryService).save(any(Category.class));
@@ -304,9 +314,10 @@ class CategoryServiceTest {
     void createByParentIdWhenParentNotFoundThrowsBusinessException() {
         doReturn(null).when(categoryService).getById("parent1");
 
-        List<CategoryDto> children = List.of(
-                CategoryDto.builder().name("子目录").childrenNode(Collections.emptyList()).build()
-        );
+        List<CategoryDto> children = List.of(CategoryDto.builder()
+                .name("子目录")
+                .childrenNode(Collections.emptyList())
+                .build());
 
         assertThatThrownBy(() -> categoryService.createByParentId(children, "parent1"))
                 .isInstanceOf(BusinessException.class)
@@ -337,9 +348,10 @@ class CategoryServiceTest {
         Category parent = createCategory("parent1", "父目录", 3, null);
         doReturn(parent).when(categoryService).getById("parent1");
 
-        List<CategoryDto> children = List.of(
-                CategoryDto.builder().name("子目录").childrenNode(Collections.emptyList()).build()
-        );
+        List<CategoryDto> children = List.of(CategoryDto.builder()
+                .name("子目录")
+                .childrenNode(Collections.emptyList())
+                .build());
 
         assertThatThrownBy(() -> categoryService.createByParentId(children, "parent1"))
                 .isInstanceOf(BusinessException.class)
@@ -358,7 +370,10 @@ class CategoryServiceTest {
         parent.setUniversityId("uni123");
         doReturn(parent).when(categoryService).getById("parent1");
 
-        CategoryDto childDto = CategoryDto.builder().name("超限子目录").childrenNode(Collections.emptyList()).build();
+        CategoryDto childDto = CategoryDto.builder()
+                .name("超限子目录")
+                .childrenNode(Collections.emptyList())
+                .build();
         List<CategoryDto> children = List.of(childDto);
         Category childEntity = createCategory(null, "超限子目录", null, null);
         doReturn(childEntity).when(convertor).toEntity(childDto);
@@ -378,7 +393,11 @@ class CategoryServiceTest {
         parent.setUniversityId("uni123");
         doReturn(parent).when(categoryService).getById("parent1");
 
-        CategoryDto childDto = CategoryDto.builder().name("子目录").description("子目录描述").childrenNode(Collections.emptyList()).build();
+        CategoryDto childDto = CategoryDto.builder()
+                .name("子目录")
+                .description("子目录描述")
+                .childrenNode(Collections.emptyList())
+                .build();
         List<CategoryDto> children = List.of(childDto);
         Category childEntity = createCategory(null, "子目录", null, null);
         doReturn(childEntity).when(convertor).toEntity(childDto);
@@ -400,8 +419,14 @@ class CategoryServiceTest {
         parent.setUniversityId("uni123");
         doReturn(parent).when(categoryService).getById("parent1");
 
-        CategoryDto child1 = CategoryDto.builder().name("子目录1").childrenNode(Collections.emptyList()).build();
-        CategoryDto child2 = CategoryDto.builder().name("子目录2").childrenNode(Collections.emptyList()).build();
+        CategoryDto child1 = CategoryDto.builder()
+                .name("子目录1")
+                .childrenNode(Collections.emptyList())
+                .build();
+        CategoryDto child2 = CategoryDto.builder()
+                .name("子目录2")
+                .childrenNode(Collections.emptyList())
+                .build();
         List<CategoryDto> children = List.of(child1, child2);
 
         Category entity1 = createCategory(null, "子目录1", null, null);
@@ -424,8 +449,14 @@ class CategoryServiceTest {
         parent.setUniversityId("uni123");
         doReturn(parent).when(categoryService).getById("parent1");
 
-        CategoryDto grandchildDto = CategoryDto.builder().name("孙子目录").childrenNode(Collections.emptyList()).build();
-        CategoryDto childDto = CategoryDto.builder().name("子目录").childrenNode(List.of(grandchildDto)).build();
+        CategoryDto grandchildDto = CategoryDto.builder()
+                .name("孙子目录")
+                .childrenNode(Collections.emptyList())
+                .build();
+        CategoryDto childDto = CategoryDto.builder()
+                .name("子目录")
+                .childrenNode(List.of(grandchildDto))
+                .build();
         List<CategoryDto> children = List.of(childDto);
 
         Category childEntity = createCategory("child1", "子目录", null, null);
@@ -450,7 +481,8 @@ class CategoryServiceTest {
     @DisplayName("delete 目录有子目录时抛出 BusinessException 3005")
     void deleteWhenHasChildrenThrowsBusinessException() {
         doReturn(List.of(createCategory("child1", "子目录", 1, "parent1")))
-                .when(categoryService).list(any(LambdaQueryWrapper.class));
+                .when(categoryService)
+                .list(any(LambdaQueryWrapper.class));
 
         assertThatThrownBy(() -> categoryService.delete("parent1"))
                 .isInstanceOf(BusinessException.class)

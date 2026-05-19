@@ -1,5 +1,16 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
+import static com.rauio.smartdangjian.constants.ErrorConstants.RESOURCE_NOT_EXISTS;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.stereotype.Component;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.pojo.entity.Article;
@@ -12,17 +23,8 @@ import com.rauio.smartdangjian.server.content.service.ContentBlockService;
 import com.rauio.smartdangjian.server.content.service.article.ArticleService;
 import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.ai.tool.annotation.ToolParam;
-import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static com.rauio.smartdangjian.constants.ErrorConstants.RESOURCE_NOT_EXISTS;
 
 @Component
 @RequiredArgsConstructor
@@ -35,10 +37,7 @@ public class ContentSearchTool {
 
     @Tool(name = "searchCourses", description = "根据关键词搜索课程（匹配标题）")
     public List<Map<String, Object>> searchCourses(@ToolParam(description = "搜索关键词") String keyword) {
-        List<Course> courses = courseService.list(
-                new LambdaQueryWrapper<Course>()
-                        .like(Course::getTitle, keyword)
-        );
+        List<Course> courses = courseService.list(new LambdaQueryWrapper<Course>().like(Course::getTitle, keyword));
         return courses.stream()
                 .map(course -> {
                     Map<String, Object> map = new HashMap<>();
@@ -52,10 +51,8 @@ public class ContentSearchTool {
 
     @Tool(name = "searchArticles", description = "根据关键词搜索文章（匹配标题）")
     public List<Map<String, Object>> searchArticles(@ToolParam(description = "搜索关键词") String keyword) {
-        List<Article> articles = articleService.list(
-                new LambdaQueryWrapper<Article>()
-                        .like(Article::getTitle, keyword)
-        );
+        List<Article> articles =
+                articleService.list(new LambdaQueryWrapper<Article>().like(Article::getTitle, keyword));
         return articles.stream()
                 .map(article -> {
                     Map<String, Object> map = new HashMap<>();
@@ -69,10 +66,8 @@ public class ContentSearchTool {
 
     @Tool(name = "searchChapters", description = "根据关键词搜索章节（匹配标题）")
     public List<Map<String, Object>> searchChapters(@ToolParam(description = "搜索关键词") String keyword) {
-        List<Chapter> chapters = chapterService.list(
-                new LambdaQueryWrapper<Chapter>()
-                        .like(Chapter::getTitle, keyword)
-        );
+        List<Chapter> chapters =
+                chapterService.list(new LambdaQueryWrapper<Chapter>().like(Chapter::getTitle, keyword));
         return chapters.stream()
                 .map(chapter -> {
                     Map<String, Object> map = new HashMap<>();
@@ -97,16 +92,18 @@ public class ContentSearchTool {
         result.put("title", course.getTitle());
         result.put("description", course.getDescription());
         result.put("difficulty", course.getDifficulty());
-        result.put("chapters", chapters.stream()
-                .map(ch -> {
-                    Map<String, Object> chMap = new HashMap<>();
-                    chMap.put("id", ch.getId());
-                    chMap.put("title", ch.getTitle());
-                    chMap.put("description", ch.getDescription());
-                    chMap.put("orderIndex", ch.getOrderIndex());
-                    return chMap;
-                })
-                .collect(Collectors.toList()));
+        result.put(
+                "chapters",
+                chapters.stream()
+                        .map(ch -> {
+                            Map<String, Object> chMap = new HashMap<>();
+                            chMap.put("id", ch.getId());
+                            chMap.put("title", ch.getTitle());
+                            chMap.put("description", ch.getDescription());
+                            chMap.put("orderIndex", ch.getOrderIndex());
+                            return chMap;
+                        })
+                        .collect(Collectors.toList()));
         return result;
     }
 

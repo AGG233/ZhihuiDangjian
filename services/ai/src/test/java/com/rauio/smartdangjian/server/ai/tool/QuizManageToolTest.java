@@ -1,21 +1,5 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
-import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
-import com.rauio.smartdangjian.server.quiz.service.QuizService;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,6 +8,23 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
+import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
+import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
+import com.rauio.smartdangjian.server.quiz.service.QuizService;
 
 @ExtendWith(MockitoExtension.class)
 class QuizManageToolTest {
@@ -40,10 +41,7 @@ class QuizManageToolTest {
     @Test
     @DisplayName("getQuiz 返回存在的测验")
     void getQuizReturnsExistingQuiz() {
-        Quiz quiz = Quiz.builder()
-                .id("quiz-1")
-                .question("What is Java?")
-                .build();
+        Quiz quiz = Quiz.builder().id("quiz-1").question("What is Java?").build();
         when(quizService.get("quiz-1")).thenReturn(quiz);
 
         Quiz result = quizManageTool.getQuiz("quiz-1");
@@ -74,23 +72,20 @@ class QuizManageToolTest {
 
         List<Map<String, Object>> options = List.of(
                 Map.of("optionText", "A", "isCorrect", true, "orderIndex", "A"),
-                Map.of("optionText", "B", "isCorrect", false, "orderIndex", "B")
-        );
+                Map.of("optionText", "B", "isCorrect", false, "orderIndex", "B"));
 
-        Boolean result = quizManageTool.createQuiz(
-                "chapter-1", "Q1", "single_choice", 5, "easy", "explanation", options
-        );
+        Boolean result =
+                quizManageTool.createQuiz("chapter-1", "Q1", "single_choice", 5, "easy", "explanation", options);
 
         assertThat(result).isTrue();
-        verify(quizService, times(1)).create(argThat(q ->
-                q.getChapterId().equals("chapter-1")
+        verify(quizService, times(1))
+                .create(argThat(q -> q.getChapterId().equals("chapter-1")
                         && q.getQuestion().equals("Q1")
                         && q.getQuestionType().equals("single_choice")
                         && q.getScore().equals(5)
                         && q.getDifficulty().equals("easy")
                         && q.getExplanation().equals("explanation")
-                        && Boolean.TRUE.equals(q.getIsActive())
-        ));
+                        && Boolean.TRUE.equals(q.getIsActive())));
         verify(quizOptionService, times(2)).create(any(), any(QuizOption.class));
     }
 
@@ -103,9 +98,7 @@ class QuizManageToolTest {
             return true;
         });
 
-        Boolean result = quizManageTool.createQuiz(
-                "chapter-1", "Q2", "true_false", 2, "easy", null, null
-        );
+        Boolean result = quizManageTool.createQuiz("chapter-1", "Q2", "true_false", 2, "easy", null, null);
 
         assertThat(result).isTrue();
         verify(quizOptionService, never()).create(any(), any(QuizOption.class));
@@ -117,8 +110,7 @@ class QuizManageToolTest {
         when(quizService.create(any(Quiz.class))).thenReturn(false);
 
         assertThatThrownBy(() -> quizManageTool.createQuiz(
-                "chapter-1", "Q3", "single_choice", 5, "easy", null, Collections.emptyList()
-        ))
+                        "chapter-1", "Q3", "single_choice", 5, "easy", null, Collections.emptyList()))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("测验创建失败");
     }
@@ -133,13 +125,10 @@ class QuizManageToolTest {
         });
         when(quizOptionService.create(any(), any(QuizOption.class))).thenReturn(false);
 
-        List<Map<String, Object>> options = List.of(
-                Map.of("optionText", "A", "isCorrect", true, "orderIndex", "A")
-        );
+        List<Map<String, Object>> options = List.of(Map.of("optionText", "A", "isCorrect", true, "orderIndex", "A"));
 
-        assertThatThrownBy(() -> quizManageTool.createQuiz(
-                "chapter-1", "Q4", "single_choice", 5, "easy", null, options
-        ))
+        assertThatThrownBy(
+                        () -> quizManageTool.createQuiz("chapter-1", "Q4", "single_choice", 5, "easy", null, options))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("选项创建失败");
     }

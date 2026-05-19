@@ -1,9 +1,12 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
-import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
-import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
-import com.rauio.smartdangjian.server.user.service.UserService;
-import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,12 +15,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.model.ToolContext;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
+import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
+import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
+import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 class UserQuizAnswerToolTest {
@@ -72,8 +73,7 @@ class UserQuizAnswerToolTest {
         when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-1");
 
         UserQuizAnswer answer = mock(UserQuizAnswer.class);
-        when(userQuizAnswerService.getByUserIdAndQuizId("user-1", "quiz-1"))
-                .thenReturn(List.of(answer));
+        when(userQuizAnswerService.getByUserIdAndQuizId("user-1", "quiz-1")).thenReturn(List.of(answer));
 
         List<UserQuizAnswer> result = userQuizAnswerTool.getQuizAnswersByQuizId("quiz-1", toolContext);
 

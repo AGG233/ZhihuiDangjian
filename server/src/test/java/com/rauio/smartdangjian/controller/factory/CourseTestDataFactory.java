@@ -1,5 +1,10 @@
 package com.rauio.smartdangjian.controller.factory;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rauio.smartdangjian.server.content.pojo.dto.ChapterDto;
@@ -11,11 +16,6 @@ import com.rauio.smartdangjian.server.content.pojo.vo.CourseVO;
 import com.rauio.smartdangjian.server.content.pojo.vo.PageVO;
 import com.rauio.smartdangjian.server.content.spec.BlockType;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * Static factory for course/chapter test data — produces CourseDto, CourseVO,
  * ChapterDto, ChapterVO, PageVO, Course, and JSON helpers.
@@ -23,11 +23,9 @@ import java.util.List;
  */
 public final class CourseTestDataFactory {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-            .registerModule(new JavaTimeModule());
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    private CourseTestDataFactory() {
-    }
+    private CourseTestDataFactory() {}
 
     // ── CourseDto ──────────────────────────────────────────────────
 

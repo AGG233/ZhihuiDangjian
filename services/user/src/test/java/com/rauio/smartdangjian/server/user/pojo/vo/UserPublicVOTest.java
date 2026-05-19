@@ -1,10 +1,11 @@
 package com.rauio.smartdangjian.server.user.pojo.vo;
 
-import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 
 class UserPublicVOTest {
 

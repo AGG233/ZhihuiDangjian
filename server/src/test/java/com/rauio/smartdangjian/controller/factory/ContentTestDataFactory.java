@@ -1,15 +1,16 @@
 package com.rauio.smartdangjian.controller.factory;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.test.util.ReflectionTestUtils;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
 import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
 import com.rauio.smartdangjian.server.content.spec.BlockType;
 import com.rauio.smartdangjian.server.content.spec.ParentType;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Static factory for content test data — produces ContentBlock and ContentBlockVO
@@ -17,11 +18,9 @@ import java.util.List;
  */
 public final class ContentTestDataFactory {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-            .registerModule(new JavaTimeModule());
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    private ContentTestDataFactory() {
-    }
+    private ContentTestDataFactory() {}
 
     // ── ContentBlock builders ──────────────────────────────────────
 
@@ -75,8 +74,8 @@ public final class ContentTestDataFactory {
 
     // ── ContentBlockVO builders (uses ReflectionTestUtils for field access) ──
 
-    public static ContentBlockVO createContentBlockVO(String parentId, ParentType parentType,
-                                                       BlockType blockType, String textContent) {
+    public static ContentBlockVO createContentBlockVO(
+            String parentId, ParentType parentType, BlockType blockType, String textContent) {
         ContentBlockVO vo = new ContentBlockVO();
         ReflectionTestUtils.setField(vo, "parentId", parentId);
         ReflectionTestUtils.setField(vo, "parentType", parentType);

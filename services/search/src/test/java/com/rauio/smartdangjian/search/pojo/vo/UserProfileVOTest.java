@@ -1,12 +1,12 @@
 package com.rauio.smartdangjian.search.pojo.vo;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 @DisplayName("UserProfileVO 用户画像视图对象")
 class UserProfileVOTest {
@@ -15,15 +15,23 @@ class UserProfileVOTest {
     @DisplayName("使用 builder 构造完整画像")
     void buildCompleteProfile() {
         UserProfileVO.LearningStats learning = UserProfileVO.LearningStats.builder()
-                .totalDuration(3600).avgDuration(600).totalRecords(6)
-                .completedChapters(4).preferredDevice("web").build();
+                .totalDuration(3600)
+                .avgDuration(600)
+                .totalRecords(6)
+                .completedChapters(4)
+                .preferredDevice("web")
+                .build();
 
         UserProfileVO.KnowledgeStats knowledge = UserProfileVO.KnowledgeStats.builder()
-                .avgProgress(75.0).completionRate(0.66)
-                .weakChapterIds(List.of("ch-weak")).build();
+                .avgProgress(75.0)
+                .completionRate(0.66)
+                .weakChapterIds(List.of("ch-weak"))
+                .build();
 
         UserProfileVO.QuizStats quiz = UserProfileVO.QuizStats.builder()
-                .totalAnswers(50).correctCount(42).correctRate(0.84)
+                .totalAnswers(50)
+                .correctCount(42)
+                .correctRate(0.84)
                 .avgTimeSpent(45.6)
                 .byDifficulty(Map.of("easy", 0.9, "medium", 0.75))
                 .build();
@@ -49,7 +57,8 @@ class UserProfileVOTest {
     @Test
     @DisplayName("LearningStats 默认值检查")
     void learningStatsDefaults() {
-        UserProfileVO.LearningStats stats = UserProfileVO.LearningStats.builder().build();
+        UserProfileVO.LearningStats stats =
+                UserProfileVO.LearningStats.builder().build();
 
         assertThat(stats.getTotalDuration()).isZero();
         assertThat(stats.getAvgDuration()).isZero();
@@ -61,7 +70,8 @@ class UserProfileVOTest {
     @Test
     @DisplayName("KnowledgeStats 默认值")
     void knowledgeStatsDefaults() {
-        UserProfileVO.KnowledgeStats stats = UserProfileVO.KnowledgeStats.builder().build();
+        UserProfileVO.KnowledgeStats stats =
+                UserProfileVO.KnowledgeStats.builder().build();
 
         assertThat(stats.getAvgProgress()).isZero();
         assertThat(stats.getCompletionRate()).isZero();

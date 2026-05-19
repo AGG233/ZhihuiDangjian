@@ -1,13 +1,17 @@
 package com.rauio.smartdangjian.controller.admin;
 
-import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.controller.factory.CategoryTestDataFactory;
-import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
-import com.rauio.smartdangjian.server.content.controller.admin.AdminCategoryController;
-import com.rauio.smartdangjian.server.content.pojo.dto.CategoryDto;
-import com.rauio.smartdangjian.server.content.service.category.CategoryService;
-import com.rauio.smartdangjian.utils.spec.UserType;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -18,19 +22,18 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.Collections;
-import java.util.List;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.CategoryTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.server.content.controller.admin.AdminCategoryController;
+import com.rauio.smartdangjian.server.content.pojo.dto.CategoryDto;
+import com.rauio.smartdangjian.server.content.service.category.CategoryService;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = AdminCategoryControllerTest.TestConfig.class)
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+        classes = AdminCategoryControllerTest.TestConfig.class)
 @DisplayName("管理员目录接口测试")
 class AdminCategoryControllerTest extends BaseControllerTest {
 
@@ -70,7 +73,8 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /{id}/children - 创建子目录成功")
         void createChildrenSuccess() throws Exception {
-            when(categoryService.createByParentId(any(List.class), eq("cat-001"))).thenReturn(true);
+            when(categoryService.createByParentId(any(List.class), eq("cat-001")))
+                    .thenReturn(true);
 
             List<CategoryDto> children = CategoryTestDataFactory.createSingleChildCategoryDtoList("子分类A");
             mockMvc.perform(post("/api/admin/content/categories/cat-001/children")
@@ -159,7 +163,8 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /{id}/children - 请求体为空数组返回 200（空操作）")
         void createChildrenWithEmptyList() throws Exception {
-            when(categoryService.createByParentId(any(List.class), eq("cat-001"))).thenReturn(true);
+            when(categoryService.createByParentId(any(List.class), eq("cat-001")))
+                    .thenReturn(true);
 
             mockMvc.perform(post("/api/admin/content/categories/cat-001/children")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -194,8 +199,7 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 时返回 400 和错误信息")
         void serviceThrowsBusinessException() throws Exception {
-            when(categoryService.create(any(CategoryDto.class)))
-                    .thenThrow(new BusinessException(4001, "目录不存在"));
+            when(categoryService.create(any(CategoryDto.class))).thenThrow(new BusinessException(4001, "目录不存在"));
 
             CategoryDto dto = CategoryTestDataFactory.createRootCategoryDto("测试");
             mockMvc.perform(post("/api/admin/content/categories/root")
@@ -209,8 +213,7 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 RuntimeException 时返回 500")
         void serviceThrowsRuntimeException() throws Exception {
-            when(categoryService.create(any(CategoryDto.class)))
-                    .thenThrow(new RuntimeException("数据库异常"));
+            when(categoryService.create(any(CategoryDto.class))).thenThrow(new RuntimeException("数据库异常"));
 
             CategoryDto dto = CategoryTestDataFactory.createRootCategoryDto("测试");
             mockMvc.perform(post("/api/admin/content/categories/root")
@@ -269,7 +272,8 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /{id}/children - 批量创建多个子目录成功")
         void createMultipleChildrenSuccess() throws Exception {
-            when(categoryService.createByParentId(any(List.class), eq("cat-001"))).thenReturn(true);
+            when(categoryService.createByParentId(any(List.class), eq("cat-001")))
+                    .thenReturn(true);
 
             List<CategoryDto> children = CategoryTestDataFactory.createCategoryDtoList(5);
             mockMvc.perform(post("/api/admin/content/categories/cat-001/children")
@@ -307,11 +311,10 @@ class AdminCategoryControllerTest extends BaseControllerTest {
                     return "uni1";
                 }
             };
-            SecurityContextHolder.getContext().setAuthentication(
-                    new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                            student, null, Collections.emptyList()
-                    )
-            );
+            SecurityContextHolder.getContext()
+                    .setAuthentication(
+                            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                                    student, null, Collections.emptyList()));
 
             when(categoryService.create(any(CategoryDto.class))).thenReturn(true);
             mockMvc.perform(post("/api/admin/content/categories/root")

@@ -1,5 +1,22 @@
 package com.rauio.smartdangjian.server.learning.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -10,22 +27,6 @@ import com.rauio.smartdangjian.server.learning.pojo.convertor.UserLearningRecord
 import com.rauio.smartdangjian.server.learning.pojo.dto.UserLearningRecordDto;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
 import com.rauio.smartdangjian.server.learning.pojo.vo.UserLearningRecordVO;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserLearningRecordServiceTest {
@@ -54,11 +55,19 @@ class UserLearningRecordServiceTest {
     @DisplayName("get 根据ID获取学习记录成功")
     void getSuccess() {
         UserLearningRecord entity = UserLearningRecord.builder()
-                .id(RECORD_ID).userId(USER_ID).chapterId(CHAPTER_ID).duration(1800).build();
+                .id(RECORD_ID)
+                .userId(USER_ID)
+                .chapterId(CHAPTER_ID)
+                .duration(1800)
+                .build();
         doReturn(entity).when(recordService).getById(RECORD_ID);
 
         UserLearningRecordVO vo = UserLearningRecordVO.builder()
-                .id(RECORD_ID).userId(USER_ID).chapterId(CHAPTER_ID).duration(1800).build();
+                .id(RECORD_ID)
+                .userId(USER_ID)
+                .chapterId(CHAPTER_ID)
+                .duration(1800)
+                .build();
         when(convertor.toVO(entity)).thenReturn(vo);
 
         UserLearningRecordVO result = recordService.get(RECORD_ID);
@@ -84,7 +93,9 @@ class UserLearningRecordServiceTest {
     @DisplayName("getPage 分页查询学习记录")
     void getPage() {
         UserLearningRecordDto dto = UserLearningRecordDto.builder()
-                .userId(USER_ID).deviceType("web").build();
+                .userId(USER_ID)
+                .deviceType("web")
+                .build();
         Page<UserLearningRecord> pageResult = new Page<>(1, 10);
         pageResult.setRecords(List.of(UserLearningRecord.builder().id(RECORD_ID).build()));
         doReturn(pageResult).when(recordService).page(any(Page.class), any(LambdaQueryWrapper.class));
@@ -100,13 +111,17 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("getByUserId 查询用户所有学习记录")
     void getByUserId() {
-        List<UserLearningRecord> list = List.of(
-                UserLearningRecord.builder().id(RECORD_ID).userId(USER_ID).chapterId(CHAPTER_ID).build()
-        );
+        List<UserLearningRecord> list = List.of(UserLearningRecord.builder()
+                .id(RECORD_ID)
+                .userId(USER_ID)
+                .chapterId(CHAPTER_ID)
+                .build());
         doReturn(list).when(recordService).list(any(QueryWrapper.class));
-        when(convertor.toVOList(list)).thenReturn(List.of(
-                UserLearningRecordVO.builder().id(RECORD_ID).userId(USER_ID).build()
-        ));
+        when(convertor.toVOList(list))
+                .thenReturn(List.of(UserLearningRecordVO.builder()
+                        .id(RECORD_ID)
+                        .userId(USER_ID)
+                        .build()));
 
         List<UserLearningRecordVO> result = recordService.getByUserId(USER_ID);
 
@@ -120,8 +135,7 @@ class UserLearningRecordServiceTest {
     @DisplayName("getRecentByUserId 查询最近N天学习记录")
     void getRecentByUserId() {
         List<UserLearningRecord> list = List.of(
-                UserLearningRecord.builder().id(RECORD_ID).userId(USER_ID).build()
-        );
+                UserLearningRecord.builder().id(RECORD_ID).userId(USER_ID).build());
         doReturn(list).when(recordService).list(any(LambdaQueryWrapper.class));
 
         List<UserLearningRecord> result = recordService.getRecentByUserId(USER_ID, 7);
@@ -145,12 +159,13 @@ class UserLearningRecordServiceTest {
     @DisplayName("getByChapterId 查询章节下所有学习记录")
     void getByChapterId() {
         List<UserLearningRecord> list = List.of(
-                UserLearningRecord.builder().id(RECORD_ID).chapterId(CHAPTER_ID).build()
-        );
+                UserLearningRecord.builder().id(RECORD_ID).chapterId(CHAPTER_ID).build());
         doReturn(list).when(recordService).list(any(QueryWrapper.class));
-        when(convertor.toVOList(list)).thenReturn(List.of(
-                UserLearningRecordVO.builder().id(RECORD_ID).chapterId(CHAPTER_ID).build()
-        ));
+        when(convertor.toVOList(list))
+                .thenReturn(List.of(UserLearningRecordVO.builder()
+                        .id(RECORD_ID)
+                        .chapterId(CHAPTER_ID)
+                        .build()));
 
         List<UserLearningRecordVO> result = recordService.getByChapterId(CHAPTER_ID);
 
@@ -162,13 +177,18 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("getByUserIdAndChapterId 查询用户章节学习记录")
     void getByUserIdAndChapterId() {
-        List<UserLearningRecord> list = List.of(
-                UserLearningRecord.builder().id(RECORD_ID).userId(USER_ID).chapterId(CHAPTER_ID).build()
-        );
+        List<UserLearningRecord> list = List.of(UserLearningRecord.builder()
+                .id(RECORD_ID)
+                .userId(USER_ID)
+                .chapterId(CHAPTER_ID)
+                .build());
         doReturn(list).when(recordService).list(any(QueryWrapper.class));
-        when(convertor.toVOList(list)).thenReturn(List.of(
-                UserLearningRecordVO.builder().id(RECORD_ID).userId(USER_ID).chapterId(CHAPTER_ID).build()
-        ));
+        when(convertor.toVOList(list))
+                .thenReturn(List.of(UserLearningRecordVO.builder()
+                        .id(RECORD_ID)
+                        .userId(USER_ID)
+                        .chapterId(CHAPTER_ID)
+                        .build()));
 
         List<UserLearningRecordVO> result = recordService.getByUserIdAndChapterId(USER_ID, CHAPTER_ID);
 
@@ -180,9 +200,11 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("getByUserIdAndCourseId 查询用户课程学习记录")
     void getByUserIdAndCourseId() {
-        List<UserLearningRecord> list = List.of(
-                UserLearningRecord.builder().id(RECORD_ID).userId(USER_ID).chapterId(CHAPTER_ID).build()
-        );
+        List<UserLearningRecord> list = List.of(UserLearningRecord.builder()
+                .id(RECORD_ID)
+                .userId(USER_ID)
+                .chapterId(CHAPTER_ID)
+                .build());
         doReturn(list).when(recordService).list(any(QueryWrapper.class));
 
         List<UserLearningRecord> result = recordService.getByUserIdAndCourseId(USER_ID, COURSE_ID);
@@ -203,12 +225,15 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("getByUserIdAndCourseIdAndChapterId 查询用户课程章节学习记录")
     void getByUserIdAndCourseIdAndChapterId() {
-        List<UserLearningRecord> list = List.of(
-                UserLearningRecord.builder().id(RECORD_ID).userId(USER_ID).chapterId(CHAPTER_ID).build()
-        );
+        List<UserLearningRecord> list = List.of(UserLearningRecord.builder()
+                .id(RECORD_ID)
+                .userId(USER_ID)
+                .chapterId(CHAPTER_ID)
+                .build());
         doReturn(list).when(recordService).list(any(QueryWrapper.class));
 
-        List<UserLearningRecord> result = recordService.getByUserIdAndCourseIdAndChapterId(USER_ID, COURSE_ID, CHAPTER_ID);
+        List<UserLearningRecord> result =
+                recordService.getByUserIdAndCourseIdAndChapterId(USER_ID, COURSE_ID, CHAPTER_ID);
 
         assertThat(result).hasSize(1);
     }
@@ -216,8 +241,10 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("getByUserIdAndCourseIdAndChapterId 参数为空返回空列表")
     void getByUserIdAndCourseIdAndChapterIdBlankParams() {
-        assertThat(recordService.getByUserIdAndCourseIdAndChapterId(USER_ID, "", CHAPTER_ID)).isEmpty();
-        assertThat(recordService.getByUserIdAndCourseIdAndChapterId(USER_ID, COURSE_ID, "")).isEmpty();
+        assertThat(recordService.getByUserIdAndCourseIdAndChapterId(USER_ID, "", CHAPTER_ID))
+                .isEmpty();
+        assertThat(recordService.getByUserIdAndCourseIdAndChapterId(USER_ID, COURSE_ID, ""))
+                .isEmpty();
     }
 
     // ==================== syncUserLearningGraph ====================
@@ -226,9 +253,16 @@ class UserLearningRecordServiceTest {
     @DisplayName("syncUserLearningGraph 同步用户学习图谱")
     void syncUserLearningGraph() {
         List<UserLearningRecord> records = List.of(
-                UserLearningRecord.builder().id(RECORD_ID).userId(USER_ID).chapterId(CHAPTER_ID).build(),
-                UserLearningRecord.builder().id("r-2").userId(USER_ID).chapterId("ch-2").build()
-        );
+                UserLearningRecord.builder()
+                        .id(RECORD_ID)
+                        .userId(USER_ID)
+                        .chapterId(CHAPTER_ID)
+                        .build(),
+                UserLearningRecord.builder()
+                        .id("r-2")
+                        .userId(USER_ID)
+                        .chapterId("ch-2")
+                        .build());
         doReturn(records).when(recordService).list(any(QueryWrapper.class));
 
         int result = recordService.syncUserLearningGraph(USER_ID);
@@ -245,10 +279,18 @@ class UserLearningRecordServiceTest {
         LocalDateTime start = LocalDateTime.of(2025, 1, 1, 10, 0);
         LocalDateTime end = LocalDateTime.of(2025, 1, 1, 11, 0);
         UserLearningRecordDto dto = UserLearningRecordDto.builder()
-                .userId(USER_ID).chapterId(CHAPTER_ID).startTime(start).endTime(end).build();
+                .userId(USER_ID)
+                .chapterId(CHAPTER_ID)
+                .startTime(start)
+                .endTime(end)
+                .build();
 
         UserLearningRecord entity = UserLearningRecord.builder()
-                .userId(USER_ID).chapterId(CHAPTER_ID).startTime(start).endTime(end).build();
+                .userId(USER_ID)
+                .chapterId(CHAPTER_ID)
+                .startTime(start)
+                .endTime(end)
+                .build();
         when(convertor.toEntity(dto)).thenReturn(entity);
         doReturn(true).when(recordService).save(any(UserLearningRecord.class));
 
@@ -263,9 +305,13 @@ class UserLearningRecordServiceTest {
     @DisplayName("create 未提供时间时自动设置创建时间")
     void createSetsCreatedAt() {
         UserLearningRecordDto dto = UserLearningRecordDto.builder()
-                .userId(USER_ID).chapterId(CHAPTER_ID).build();
+                .userId(USER_ID)
+                .chapterId(CHAPTER_ID)
+                .build();
         UserLearningRecord entity = UserLearningRecord.builder()
-                .userId(USER_ID).chapterId(CHAPTER_ID).build();
+                .userId(USER_ID)
+                .chapterId(CHAPTER_ID)
+                .build();
         when(convertor.toEntity(dto)).thenReturn(entity);
         doReturn(true).when(recordService).save(any(UserLearningRecord.class));
 
@@ -278,7 +324,9 @@ class UserLearningRecordServiceTest {
     @DisplayName("create 保存失败抛出异常")
     void createFailed() {
         UserLearningRecordDto dto = UserLearningRecordDto.builder()
-                .userId(USER_ID).chapterId(CHAPTER_ID).build();
+                .userId(USER_ID)
+                .chapterId(CHAPTER_ID)
+                .build();
         when(convertor.toEntity(dto)).thenReturn(UserLearningRecord.builder().build());
         doReturn(false).when(recordService).save(any(UserLearningRecord.class));
 
@@ -295,11 +343,19 @@ class UserLearningRecordServiceTest {
         LocalDateTime start = LocalDateTime.of(2025, 1, 1, 10, 0);
         LocalDateTime end = LocalDateTime.of(2025, 1, 1, 11, 30);
         UserLearningRecordDto dto = UserLearningRecordDto.builder()
-                .id(RECORD_ID).startTime(start).endTime(end).build();
-        doReturn(UserLearningRecord.builder().id(RECORD_ID).build()).when(recordService).getById(RECORD_ID);
+                .id(RECORD_ID)
+                .startTime(start)
+                .endTime(end)
+                .build();
+        doReturn(UserLearningRecord.builder().id(RECORD_ID).build())
+                .when(recordService)
+                .getById(RECORD_ID);
 
         UserLearningRecord entity = UserLearningRecord.builder()
-                .id(RECORD_ID).startTime(start).endTime(end).build();
+                .id(RECORD_ID)
+                .startTime(start)
+                .endTime(end)
+                .build();
         when(convertor.toEntity(dto)).thenReturn(entity);
         doReturn(true).when(recordService).updateById(any(UserLearningRecord.class));
 
@@ -322,7 +378,8 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("update 记录不存在抛出异常")
     void updateNotFound() {
-        UserLearningRecordDto dto = UserLearningRecordDto.builder().id(RECORD_ID).build();
+        UserLearningRecordDto dto =
+                UserLearningRecordDto.builder().id(RECORD_ID).build();
         doReturn(null).when(recordService).getById(RECORD_ID);
 
         assertThatThrownBy(() -> recordService.update(dto))
@@ -335,7 +392,9 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("delete 删除学习记录成功")
     void deleteSuccess() {
-        doReturn(UserLearningRecord.builder().id(RECORD_ID).build()).when(recordService).getById(RECORD_ID);
+        doReturn(UserLearningRecord.builder().id(RECORD_ID).build())
+                .when(recordService)
+                .getById(RECORD_ID);
         doReturn(true).when(recordService).removeById(RECORD_ID);
 
         Boolean result = recordService.delete(RECORD_ID);
@@ -356,7 +415,9 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("delete 删除失败抛出异常")
     void deleteFailed() {
-        doReturn(UserLearningRecord.builder().id(RECORD_ID).build()).when(recordService).getById(RECORD_ID);
+        doReturn(UserLearningRecord.builder().id(RECORD_ID).build())
+                .when(recordService)
+                .getById(RECORD_ID);
         doReturn(false).when(recordService).removeById(RECORD_ID);
 
         assertThatThrownBy(() -> recordService.delete(RECORD_ID))

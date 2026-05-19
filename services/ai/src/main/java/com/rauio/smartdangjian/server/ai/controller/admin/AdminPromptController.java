@@ -1,5 +1,11 @@
 package com.rauio.smartdangjian.server.ai.controller.admin;
 
+import java.util.List;
+
+import jakarta.validation.Valid;
+
+import org.springframework.web.bind.annotation.*;
+
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiPrompts;
@@ -7,13 +13,10 @@ import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptCreateRequest;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptUpdateRequest;
 import com.rauio.smartdangjian.server.ai.service.PromptService;
 import com.rauio.smartdangjian.utils.spec.UserType;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "AI提示词接口", description = "提供AI系统提示词管理功能")
 @RestController
