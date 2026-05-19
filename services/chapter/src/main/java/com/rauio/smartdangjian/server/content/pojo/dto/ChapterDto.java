@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.server.content.pojo.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Builder;
 import lombok.Data;
 
@@ -41,6 +42,6 @@ public class ChapterDto {
     private String  chapterStatus = "draft";
 
     @Schema(description = "章节的内容块列表,一般来说一个内容块对应着章节的一个内容，比如文本，视频，音频等等")
-    @NotBlank(message = "章节内容块列表不能为空")
+    @NotEmpty(message = "章节内容块列表不能为空")
     private List<ContentBlockDto> content;
 }
