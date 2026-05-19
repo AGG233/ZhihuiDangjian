@@ -50,8 +50,19 @@ gradle.projectsEvaluated {
         project.plugins.hasPlugin("java")
     }
 
-    val coverageExecutionData = coverageProjects.map {
-        it.layout.buildDirectory.files("jacoco/test.exec", "jacoco/integrationTest.exec")
+    val coverageExecutionData = coverageProjects.map { project ->
+        project.files(project.layout.buildDirectory.file("jacoco/test.exec"))
+    }
+
+    // Modules with integration tests also contribute integrationTest.exec data.
+    // Since integrationTest task is NO-SOURCE for most modules, the exec file
+    // is only included when integration test sources exist.
+    val itProjects = coverageProjects.filter { project ->
+        project.layout.projectDirectory.dir("src/integrationTest/java").asFile.exists() &&
+        !project.fileTree("src/integrationTest/java") { include("**/*.java") }.isEmpty
+    }
+    val itExecutionData = itProjects.map { project ->
+        project.files(project.layout.buildDirectory.file("jacoco/integrationTest.exec"))
     }
     val coverageClassDirs = coverageProjects.map {
         it.layout.buildDirectory.dir("classes/java/main")
@@ -62,13 +73,16 @@ gradle.projectsEvaluated {
 
     tasks.named<JacocoReport>("jacocoRootReport") {
         dependsOn(coverageProjects.map { it.tasks.named("test") })
+        dependsOn(itProjects.map { it.tasks.named("integrationTest") })
         executionData.from(coverageExecutionData)
+        executionData.from(itExecutionData)
         classDirectories.from(coverageClassDirs)
         sourceDirectories.from(coverageSourceDirs)
     }
 
     tasks.named<JacocoCoverageVerification>("jacocoRootCoverageVerification") {
         executionData.from(coverageExecutionData)
+        executionData.from(itExecutionData)
         classDirectories.from(coverageClassDirs)
         sourceDirectories.from(coverageSourceDirs)
     }
