@@ -50,28 +50,26 @@ gradle.projectsEvaluated {
         project.plugins.hasPlugin("java")
     }
 
+    val coverageExecutionData = coverageProjects.map {
+        it.layout.buildDirectory.files("jacoco/test.exec", "jacoco/integrationTest.exec")
+    }
+    val coverageClassDirs = coverageProjects.map {
+        it.layout.buildDirectory.dir("classes/java/main")
+    }
+    val coverageSourceDirs = coverageProjects.map {
+        it.layout.projectDirectory.dir("src/main/java")
+    }
+
     tasks.named<JacocoReport>("jacocoRootReport") {
         dependsOn(coverageProjects.map { it.tasks.named("test") })
-        executionData.from(coverageProjects.map {
-            it.layout.buildDirectory.file("jacoco/test.exec")
-        })
-        classDirectories.from(coverageProjects.map {
-            it.layout.buildDirectory.dir("classes/java/main")
-        })
-        sourceDirectories.from(coverageProjects.map {
-            it.layout.projectDirectory.dir("src/main/java")
-        })
+        executionData.from(coverageExecutionData)
+        classDirectories.from(coverageClassDirs)
+        sourceDirectories.from(coverageSourceDirs)
     }
 
     tasks.named<JacocoCoverageVerification>("jacocoRootCoverageVerification") {
-        executionData.from(coverageProjects.map {
-            it.layout.buildDirectory.file("jacoco/test.exec")
-        })
-        classDirectories.from(coverageProjects.map {
-            it.layout.buildDirectory.dir("classes/java/main")
-        })
-        sourceDirectories.from(coverageProjects.map {
-            it.layout.projectDirectory.dir("src/main/java")
-        })
+        executionData.from(coverageExecutionData)
+        classDirectories.from(coverageClassDirs)
+        sourceDirectories.from(coverageSourceDirs)
     }
 }
