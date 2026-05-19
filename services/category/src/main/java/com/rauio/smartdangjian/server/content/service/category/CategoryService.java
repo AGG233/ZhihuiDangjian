@@ -23,7 +23,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
+public class
+CategoryService extends ServiceImpl<CategoryMapper, Category> {
 
     private final CategoryConvertor convertor;
 
@@ -90,11 +91,19 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
         Category category = convertor.toEntity(dto);
         category.setLevel(0);
         category.setParentId(null);
-        String universityId = resolveRootCategoryUniversityId();
-        if (universityId == null) {
-            throw new BusinessException(CategoryErrorConstants.CATEGORY_ARGS_ERROR, "不能获取当前用户所属学校");
+
+        CurrentUserPrincipal currentUser = SecurityUtils.getCurrentUser();
+        if (currentUser == null) {
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_USER_NOT_FOUND, "当前用户不存在");
         }
-        category.setUniversityId(universityId);
+        if (currentUser.getUserType() != UserType.MANAGER) {
+            String universityId = currentUser.getUniversityId();
+            if (universityId == null) {
+                throw new BusinessException(CategoryErrorConstants.CATEGORY_ARGS_ERROR, "不能获取当前用户所属学校");
+            }
+            category.setUniversityId(universityId);
+        }
+        // MANAGER: 不设置 universityId → 公共分类（DB 中为 NULL）
         this.save(category);
 
         List<CategoryRequest> childrenNode = dto.getChildrenNode();
@@ -197,14 +206,4 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
         return this.updateById(category);
     }
 
-    private String resolveRootCategoryUniversityId() {
-        CurrentUserPrincipal currentUser = SecurityUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new BusinessException(CategoryErrorConstants.CATEGORY_USER_NOT_FOUND, "当前用户不存在");
-        }
-        if (currentUser.getUserType() == UserType.MANAGER) {
-            return null;
-        }
-        return currentUser.getUniversityId();
-    }
 }
