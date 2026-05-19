@@ -113,7 +113,17 @@ jobs:
           echo $! > server/build/api-smoke-app.pid
 
       - name: Wait for app
+        id: wait-for-app
+        continue-on-error: true
         run: bash .github/scripts/wait-for-app.sh http://127.0.0.1:9000/v3/api-docs
+
+      - name: Dump app logs on failure
+        if: steps.wait-for-app.outcome != 'success'
+        run: cat server/build/api-smoke-app.log || true
+
+      - name: Check wait result
+        if: steps.wait-for-app.outcome != 'success'
+        run: exit 1
 
       - name: Run OpenAPI smoke
         env:
