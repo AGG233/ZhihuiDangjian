@@ -36,6 +36,9 @@ public class SecurityConfig {
     ) throws Exception {
         http
                 .cors(cors -> {})
+                // CSRF protection is disabled because this is a stateless JWT-based API.
+                // No session cookies are used, so there is no risk of browser-based CSRF attacks.
+                // Authentication is enforced via JWT tokens in the Authorization header.
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
