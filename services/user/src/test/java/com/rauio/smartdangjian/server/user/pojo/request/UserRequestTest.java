@@ -13,6 +13,8 @@ import com.rauio.smartdangjian.utils.spec.UserType;
 
 class UserRequestTest {
 
+    private static final String TEST_PASSWORD = "ENC_test_password_hash";
+
     @Test
     @DisplayName("UserRequest setter 和 getter 正确工作")
     void settersAndGetters() {
@@ -22,7 +24,7 @@ class UserRequestTest {
         request.setUserId("user-1");
         request.setUsername("testuser");
         request.setRealName("张三");
-        request.setPassword("test-pwd-123");
+        request.setPassword(TEST_PASSWORD);
         request.setPartyMemberId("pm-001");
         request.setPartyStatus(PartyStatus.FORMAL_MEMBER);
         request.setBranchName("党支部A");
@@ -37,7 +39,7 @@ class UserRequestTest {
         assertThat(request.getUserId()).isEqualTo("user-1");
         assertThat(request.getUsername()).isEqualTo("testuser");
         assertThat(request.getRealName()).isEqualTo("张三");
-        assertThat(request.getPassword()).isEqualTo("secret123");
+        assertThat(request.getPassword()).isEqualTo(TEST_PASSWORD);
         assertThat(request.getPartyMemberId()).isEqualTo("pm-001");
         assertThat(request.getPartyStatus()).isEqualTo(PartyStatus.FORMAL_MEMBER);
         assertThat(request.getBranchName()).isEqualTo("党支部A");

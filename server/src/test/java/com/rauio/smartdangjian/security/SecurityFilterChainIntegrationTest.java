@@ -63,7 +63,7 @@ class SecurityFilterChainIntegrationTest {
         @Test
         @DisplayName("permitAll 接口无需 token")
         void publicEndpointAllowsAnonymousAccess() throws Exception {
-            mockMvc.perform(get("/auth/captcha"))
+            mockMvc.perform(get("/api/auth/captcha"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value("captcha-ok"));
@@ -172,7 +172,7 @@ class SecurityFilterChainIntegrationTest {
     }
 
     @RestController
-    @RequestMapping("/auth")
+    @RequestMapping("/api/auth")
     static class SecurityTestAuthController {
 
         @GetMapping(value = "/captcha", produces = MediaType.APPLICATION_JSON_VALUE)
