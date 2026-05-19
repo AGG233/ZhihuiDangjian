@@ -10,6 +10,7 @@ import org.dromara.x.file.storage.core.FileStorageService;
 import org.dromara.x.file.storage.core.constant.Constant;
 import org.dromara.x.file.storage.core.presigned.GeneratePresignedUrlResult;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.resource.constants.ResourceConstant;
@@ -89,6 +90,32 @@ public class FileService {
         meta.setStatus(ResourceStatusConstants.PUBLIC);
         resourceMetaService.updateById(meta);
         return meta;
+    }
+
+    public FileUploadResponse uploadDirect(MultipartFile file, UploadFileRequest request) {
+        String path = resolvePath(request.getMimeType());
+        String uuid = UUID.randomUUID().toString().replace("-", "");
+
+        FileInfo fileInfo = fileStorageService.of(file)
+                .setPlatform("local-dev")
+                .setPath(path)
+                .upload();
+
+        ResourceMetaCreateRequest createRequest = new ResourceMetaCreateRequest();
+        createRequest.setUploaderId(request.getUserId() != null ? request.getUserId() : userService.getCurrentUserId());
+        createRequest.setOriginalName(request.getFileName());
+        createRequest.setHash(uuid);
+        createRequest.setObjectKey(fileInfo.getPath() + fileInfo.getFilename());
+        createRequest.setResourceType(detectResourceType(request.getMimeType()));
+        createRequest.setStatus(ResourceStatusConstants.PUBLIC);
+        ResourceMeta meta = resourceMetaService.create(createRequest);
+
+        return FileUploadResponse.builder()
+                .resourceId(meta.getId())
+                .uploadUrl("/uploads/" + fileInfo.getPath() + fileInfo.getFilename())
+                .objectKey(fileInfo.getPath() + fileInfo.getFilename())
+                .expiration(-1L)
+                .build();
     }
 
     public FileInfoResponse getFileInfo(String resourceId) {
