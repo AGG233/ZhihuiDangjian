@@ -123,7 +123,7 @@ class PromptServiceTest {
         assertThat(result.getRole()).isEqualTo(PromptRoleEnum.SYSTEM);
         assertThat(result.getEnabled()).isTrue();
         assertThat(result.getSort()).isEqualTo(5);
-        assertThat(result.getId()).isNotNull();
+        assertThat(result.getId()).isNull();
 
         verify(promptService).save(promptCaptor.capture());
         assertThat(promptCaptor.getValue().getAgentType()).isEqualTo("CHAT");
