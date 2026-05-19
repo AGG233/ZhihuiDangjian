@@ -27,4 +27,6 @@ dependencies {
     annotationProcessor(libs.mapstruct.processor)
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("io.projectreactor:reactor-test")
+    testImplementation(libs.mybatis.plus.starter)
 }

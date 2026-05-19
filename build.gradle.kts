@@ -5,6 +5,11 @@ plugins {
 
 description = "Zhihuidangjian Demo project for Spring Boot"
 
+repositories {
+    maven { url = uri("https://maven.aliyun.com/repository/public") }
+    mavenCentral()
+}
+
 tasks.register<JacocoReport>("jacocoRootReport") {
     group = LifecycleBasePlugin.VERIFICATION_GROUP
     description = "Generates an aggregate JaCoCo coverage report for all Java modules."
@@ -27,14 +32,14 @@ tasks.register<JacocoCoverageVerification>("jacocoRootCoverageVerification") {
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
-                minimum = "0.15".toBigDecimal()
+                minimum = "0.55".toBigDecimal()
             }
         }
         rule {
             limit {
                 counter = "BRANCH"
                 value = "COVEREDRATIO"
-                minimum = "0.08".toBigDecimal()
+                minimum = "0.45".toBigDecimal()
             }
         }
     }
