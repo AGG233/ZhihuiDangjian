@@ -19,7 +19,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
 import com.rauio.smartdangjian.server.learning.pojo.convertor.UserLearningRecordConvertor;
-import com.rauio.smartdangjian.server.learning.pojo.dto.UserLearningRecordDto;
+import com.rauio.smartdangjian.server.learning.pojo.request.UserLearningRecordRequest;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
 
@@ -42,8 +42,8 @@ class UserLearningRecordServiceTest {
             return page;
         });
 
-        UserLearningRecordDto dto =
-                UserLearningRecordDto.builder().userId("user-001").build();
+        UserLearningRecordRequest dto =
+                UserLearningRecordRequest.builder().userId("user-001").build();
         service.getPage(dto, 1, 10);
 
         org.mockito.ArgumentCaptor<Wrapper<UserLearningRecord>> captor =

@@ -24,12 +24,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.search.controller.SearchController;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 import com.rauio.smartdangjian.server.search.service.RecommendService;
 import com.rauio.smartdangjian.server.search.service.SearchService;
 import com.rauio.smartdangjian.server.search.service.UserProfileService;
-import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = SearchControllerTest.TestConfig.class)
 @DisplayName("搜索与推荐接口测试")
@@ -99,7 +99,8 @@ class SearchControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /recommend - 个性化推荐成功")
         void recommendSuccess() throws Exception {
-            UserProfileResponse profile = UserProfileResponse.builder().userId("stu-001").build();
+            UserProfileResponse profile =
+                    UserProfileResponse.builder().userId("stu-001").build();
             when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
 
             Page<String> recommendPage = new Page<>(1, 10, 2);
@@ -196,7 +197,8 @@ class SearchControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /recommend - 推荐结果为空")
         void recommendEmpty() throws Exception {
-            UserProfileResponse profile = UserProfileResponse.builder().userId("stu-001").build();
+            UserProfileResponse profile =
+                    UserProfileResponse.builder().userId("stu-001").build();
             when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
 
             Page<String> emptyPage = new Page<>(1, 10, 0);

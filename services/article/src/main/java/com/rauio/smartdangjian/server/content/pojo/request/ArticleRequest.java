@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.pojo.dto;
+package com.rauio.smartdangjian.server.content.pojo.request;
 
 import com.rauio.smartdangjian.server.content.spec.ArticleStatus;
 
@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 @Builder
 @Schema(description = "文章请求体")
-public class ArticleDto {
+public class ArticleRequest {
 
     @Schema(description = "文章ID，默认留空", hidden = true)
     private String id;

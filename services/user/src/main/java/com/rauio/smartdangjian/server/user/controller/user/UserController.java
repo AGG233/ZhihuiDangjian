@@ -8,8 +8,8 @@ import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 import com.rauio.smartdangjian.server.user.service.UserService;
@@ -53,8 +53,9 @@ public class UserController {
             action = DataScopeAction.UPDATE,
             id = "#id",
             body = "#user")
-    public Result<Boolean> update(@PathVariable String id, @RequestBody User user) {
-        return Result.ok(userService.update(id, user));
+    public Result<Void> update(@PathVariable String id, @RequestBody User user) {
+        userService.update(id, user);
+        return Result.ok(null);
     }
 
     @Operation(summary = "删除用户（已经弃用）", description = "通过ID删除用户")

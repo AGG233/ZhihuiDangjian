@@ -200,7 +200,8 @@ class ChapterServiceTest {
     @Test
     @DisplayName("update 更新章节成功返回 true")
     void updateChapterSuccessfully() {
-        ChapterRequest dto = ChapterRequest.builder().title("更新章节").description("更新描述").build();
+        ChapterRequest dto =
+                ChapterRequest.builder().title("更新章节").description("更新描述").build();
         Chapter entity = Chapter.builder().id("ch-001").title("更新章节").build();
         when(chapterConvertor.toEntity(dto)).thenReturn(entity);
         doReturn(true).when(chapterService).updateById(entity);

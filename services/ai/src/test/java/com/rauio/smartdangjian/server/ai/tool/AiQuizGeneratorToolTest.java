@@ -30,8 +30,8 @@ import org.springframework.beans.factory.ObjectProvider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
-import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
+import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
+import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
 import com.rauio.smartdangjian.server.content.service.ContentBlockService;
 import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
@@ -126,11 +126,11 @@ class AiQuizGeneratorToolTest {
     @Test
     @DisplayName("generateMiniQuiz 基于章节内容生成题目")
     void generateMiniQuizWithChapter() throws Exception {
-        ChapterVO chapter =
-                ChapterVO.builder().id("ch-1").title("第一章").description("章节描述").build();
+        ChapterResponse chapter =
+                ChapterResponse.builder().id("ch-1").title("第一章").description("章节描述").build();
 
-        ContentBlockVO block = new ContentBlockVO();
-        Field textField = ContentBlockVO.class.getDeclaredField("textContent");
+        ContentBlockResponse block = new ContentBlockResponse();
+        Field textField = ContentBlockResponse.class.getDeclaredField("textContent");
         textField.setAccessible(true);
         textField.set(block, "章节内容文本");
 

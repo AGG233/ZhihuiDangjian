@@ -7,18 +7,18 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.rauio.smartdangjian.server.content.pojo.dto.ChapterDto;
+import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
 import com.rauio.smartdangjian.server.content.pojo.dto.ContentBlockDto;
-import com.rauio.smartdangjian.server.content.pojo.request.CourseRequest;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
+import com.rauio.smartdangjian.server.content.pojo.request.CourseRequest;
 import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.content.pojo.response.PageResponse;
+import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.spec.BlockType;
 
 /**
  * Static factory for course/chapter test data — produces CourseRequest, CourseResponse,
- * ChapterDto, ChapterVO, PageResponse, Course, and JSON helpers.
+ * ChapterRequest, ChapterResponse, PageResponse, Course, and JSON helpers.
  * All IDs are deterministic strings so jsonPath assertions are predictable.
  */
 public final class CourseTestDataFactory {
@@ -57,10 +57,10 @@ public final class CourseTestDataFactory {
                 .build();
     }
 
-    // ── ChapterDto ─────────────────────────────────────────────────
+    // ── ChapterRequest ─────────────────────────────────────────────────
 
-    public static ChapterDto createChapterDto() {
-        return ChapterDto.builder()
+    public static ChapterRequest createChapterRequest() {
+        return ChapterRequest.builder()
                 .courseId("course-1")
                 .title("test-chapter")
                 .description("test-chapter-description")
@@ -72,10 +72,10 @@ public final class CourseTestDataFactory {
                 .build();
     }
 
-    // ── ChapterVO ──────────────────────────────────────────────────
+    // ── ChapterResponse ──────────────────────────────────────────────────
 
-    public static ChapterVO createChapterVO(String id) {
-        return ChapterVO.builder()
+    public static ChapterResponse createChapterResponse(String id) {
+        return ChapterResponse.builder()
                 .id(id)
                 .courseId("course-1")
                 .title("test-chapter")

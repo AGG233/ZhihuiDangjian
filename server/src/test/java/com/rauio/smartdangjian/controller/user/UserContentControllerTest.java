@@ -22,7 +22,7 @@ import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.ContentTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.controller.user.UserContentController;
-import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
+import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
 import com.rauio.smartdangjian.server.content.service.ContentBlockService;
 import com.rauio.smartdangjian.server.content.spec.BlockType;
 
@@ -56,7 +56,7 @@ class UserContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /carousel - 获取轮播图列表成功")
         void getCarouselSuccess() throws Exception {
-            List<ContentBlockVO> voList = ContentTestDataFactory.createContentBlockVOList(3);
+            List<ContentBlockResponse> voList = ContentTestDataFactory.createContentBlockResponseList(3);
             when(contentBlockService.getByParentId("1145141919810")).thenReturn(voList);
 
             mockMvc.perform(get(CAROUSEL_URL))
@@ -68,7 +68,7 @@ class UserContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /carousel - 返回的 VO 包含正确字段")
         void getCarouselContainsAllFields() throws Exception {
-            ContentBlockVO vo = ContentTestDataFactory.createCarouselVO("1145141919810", BlockType.Image);
+            ContentBlockResponse vo = ContentTestDataFactory.createCarouselResponse("1145141919810", BlockType.Image);
             when(contentBlockService.getByParentId("1145141919810")).thenReturn(List.of(vo));
 
             mockMvc.perform(get(CAROUSEL_URL))
@@ -141,7 +141,7 @@ class UserContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("大量轮播图（10 个）正常返回")
         void getCarouselWithManyItems() throws Exception {
-            List<ContentBlockVO> voList = ContentTestDataFactory.createContentBlockVOList(10);
+            List<ContentBlockResponse> voList = ContentTestDataFactory.createContentBlockResponseList(10);
             when(contentBlockService.getByParentId("1145141919810")).thenReturn(voList);
 
             mockMvc.perform(get(CAROUSEL_URL))
@@ -163,7 +163,7 @@ class UserContentControllerTest extends BaseControllerTest {
         @DisplayName("STUDENT 用户可正常访问 GET /carousel")
         void studentCanAccessCarousel() throws Exception {
             // Default context is SCHOOL; no @PermissionAccess on UserContentController
-            List<ContentBlockVO> voList = ContentTestDataFactory.createContentBlockVOList(1);
+            List<ContentBlockResponse> voList = ContentTestDataFactory.createContentBlockResponseList(1);
             when(contentBlockService.getByParentId("1145141919810")).thenReturn(voList);
 
             mockMvc.perform(get(CAROUSEL_URL))

@@ -87,7 +87,7 @@ public class AuthService {
         return Result.ok("注册成功！");
     }
 
-    public Boolean changePassword(ChangePasswordRequest request) {
+    public void changePassword(ChangePasswordRequest request) {
         String userId = SecurityUtils.getCurrentUserId();
         if (userId == null) {
             throw new BusinessException(AuthErrorConstants.UNAUTHORIZED, "未登录或登录已过期");
@@ -105,7 +105,9 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         user.setUpdatedAt(LocalDateTime.now());
         jwtService.clearUserCache(userId);
-        return userMapper.updateById(user) > 0;
+        if (userMapper.updateById(user) <= 0) {
+            throw new BusinessException(AuthErrorConstants.PASSWORD_CHANGE_ERROR, "密码修改失败");
+        }
     }
 
     private void checkEmailRegistered(String email) {

@@ -14,14 +14,15 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.graph.pojo.vo.GraphEdgeVO;
-import com.rauio.smartdangjian.server.graph.pojo.vo.GraphNodeVO;
-import com.rauio.smartdangjian.server.graph.pojo.vo.KnowledgeGraphVO;
+import com.rauio.smartdangjian.server.graph.pojo.response.GraphEdgeResponse;
+import com.rauio.smartdangjian.server.graph.pojo.response.GraphNodeResponse;
+import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
+import com.rauio.smartdangjian.server.graph.controller.user.UserKnowledgeGraphController;
 import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 
 @SpringBootTest(
@@ -31,8 +32,12 @@ import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 class UserKnowledgeGraphControllerTest extends BaseControllerTest {
 
     @SpringBootConfiguration
-    @ComponentScan(basePackages = "com.rauio.smartdangjian.server.graph.controller")
-    static class TestConfig extends CommonTestConfig {}
+    static class TestConfig extends CommonTestConfig {
+        @Bean
+        public UserKnowledgeGraphController knowledgeGraphController(KnowledgeGraphService knowledgeGraphService) {
+            return new UserKnowledgeGraphController(knowledgeGraphService);
+        }
+    }
 
     @MockitoBean
     private KnowledgeGraphService knowledgeGraphService;
@@ -48,19 +53,19 @@ class UserKnowledgeGraphControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /users/{userId} - 获取用户学习图谱成功")
         void getUserGraphSuccess() throws Exception {
-            KnowledgeGraphVO vo = KnowledgeGraphVO.builder()
+            KnowledgeGraphResponse vo = KnowledgeGraphResponse.builder()
                     .nodes(List.of(
-                            GraphNodeVO.builder()
+                            GraphNodeResponse.builder()
                                     .id("User:user-001")
                                     .label("User")
                                     .name("张三")
                                     .build(),
-                            GraphNodeVO.builder()
+                            GraphNodeResponse.builder()
                                     .id("Course:course-001")
                                     .label("Course")
                                     .name("习近平新时代中国特色社会主义思想")
                                     .build()))
-                    .edges(List.of(GraphEdgeVO.builder()
+                    .edges(List.of(GraphEdgeResponse.builder()
                             .source("User:user-001")
                             .target("Course:course-001")
                             .type("LEARNED")
@@ -80,19 +85,19 @@ class UserKnowledgeGraphControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /courses/{courseId} - 获取课程图谱成功")
         void getCourseGraphSuccess() throws Exception {
-            KnowledgeGraphVO vo = KnowledgeGraphVO.builder()
+            KnowledgeGraphResponse vo = KnowledgeGraphResponse.builder()
                     .nodes(List.of(
-                            GraphNodeVO.builder()
+                            GraphNodeResponse.builder()
                                     .id("Course:course-001")
                                     .label("Course")
                                     .name("习近平新时代中国特色社会主义思想")
                                     .build(),
-                            GraphNodeVO.builder()
+                            GraphNodeResponse.builder()
                                     .id("Chapter:ch-001")
                                     .label("Chapter")
                                     .name("第一章")
                                     .build()))
-                    .edges(List.of(GraphEdgeVO.builder()
+                    .edges(List.of(GraphEdgeResponse.builder()
                             .source("Course:course-001")
                             .target("Chapter:ch-001")
                             .type("HAS_CHAPTER")
@@ -170,8 +175,8 @@ class UserKnowledgeGraphControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /users/{userId} - 知识图谱空结构（无节点无边）")
         void getUserGraphEmpty() throws Exception {
-            KnowledgeGraphVO emptyVo =
-                    KnowledgeGraphVO.builder().nodes(List.of()).edges(List.of()).build();
+            KnowledgeGraphResponse emptyVo =
+                    KnowledgeGraphResponse.builder().nodes(List.of()).edges(List.of()).build();
             when(knowledgeGraphService.getUserGraph("user-empty")).thenReturn(emptyVo);
 
             mockMvc.perform(get("/api/graph/knowledge-graphs/users/user-empty"))
@@ -184,8 +189,8 @@ class UserKnowledgeGraphControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /courses/{courseId} - 课程无关联用户和章节")
         void getCourseGraphEmpty() throws Exception {
-            KnowledgeGraphVO emptyVo =
-                    KnowledgeGraphVO.builder().nodes(List.of()).edges(List.of()).build();
+            KnowledgeGraphResponse emptyVo =
+                    KnowledgeGraphResponse.builder().nodes(List.of()).edges(List.of()).build();
             when(knowledgeGraphService.getCourseGraph("course-empty")).thenReturn(emptyVo);
 
             mockMvc.perform(get("/api/graph/knowledge-graphs/courses/course-empty"))
@@ -197,50 +202,50 @@ class UserKnowledgeGraphControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /users/{userId} - 大型图谱多节点多边")
         void getUserGraphLarge() throws Exception {
-            KnowledgeGraphVO vo = KnowledgeGraphVO.builder()
+            KnowledgeGraphResponse vo = KnowledgeGraphResponse.builder()
                     .nodes(List.of(
-                            GraphNodeVO.builder()
+                            GraphNodeResponse.builder()
                                     .id("User:user-001")
                                     .label("User")
                                     .name("张三")
                                     .build(),
-                            GraphNodeVO.builder()
+                            GraphNodeResponse.builder()
                                     .id("Course:c-001")
                                     .label("Course")
                                     .name("课程A")
                                     .build(),
-                            GraphNodeVO.builder()
+                            GraphNodeResponse.builder()
                                     .id("Course:c-002")
                                     .label("Course")
                                     .name("课程B")
                                     .build(),
-                            GraphNodeVO.builder()
+                            GraphNodeResponse.builder()
                                     .id("Chapter:ch-001")
                                     .label("Chapter")
                                     .name("第一章")
                                     .build(),
-                            GraphNodeVO.builder()
+                            GraphNodeResponse.builder()
                                     .id("Chapter:ch-002")
                                     .label("Chapter")
                                     .name("第二章")
                                     .build()))
                     .edges(List.of(
-                            GraphEdgeVO.builder()
+                            GraphEdgeResponse.builder()
                                     .source("User:user-001")
                                     .target("Course:c-001")
                                     .type("LEARNED")
                                     .build(),
-                            GraphEdgeVO.builder()
+                            GraphEdgeResponse.builder()
                                     .source("User:user-001")
                                     .target("Course:c-002")
                                     .type("LEARNED")
                                     .build(),
-                            GraphEdgeVO.builder()
+                            GraphEdgeResponse.builder()
                                     .source("Course:c-001")
                                     .target("Chapter:ch-001")
                                     .type("HAS_CHAPTER")
                                     .build(),
-                            GraphEdgeVO.builder()
+                            GraphEdgeResponse.builder()
                                     .source("Course:c-002")
                                     .target("Chapter:ch-002")
                                     .type("HAS_CHAPTER")

@@ -11,8 +11,11 @@ class GraphNodeResponseTest {
     @Test
     @DisplayName("使用 builder 构造 GraphNodeResponse")
     void buildGraphNodeResponse() {
-        GraphNodeResponse node =
-                GraphNodeResponse.builder().id("User:user-1").label("User").name("张三").build();
+        GraphNodeResponse node = GraphNodeResponse.builder()
+                .id("User:user-1")
+                .label("User")
+                .name("张三")
+                .build();
 
         assertThat(node.getId()).isEqualTo("User:user-1");
         assertThat(node.getLabel()).isEqualTo("User");

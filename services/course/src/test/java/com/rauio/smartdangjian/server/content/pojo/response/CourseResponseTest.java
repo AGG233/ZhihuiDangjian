@@ -56,7 +56,8 @@ class CourseResponseTest {
     @Test
     @DisplayName("setter 修改 title 后 getter 返回新值")
     void setterAndGetterWorkForTitle() {
-        CourseResponse vo = CourseResponse.builder().id("course-001").title("旧标题").build();
+        CourseResponse vo =
+                CourseResponse.builder().id("course-001").title("旧标题").build();
 
         vo.setTitle("新标题");
 

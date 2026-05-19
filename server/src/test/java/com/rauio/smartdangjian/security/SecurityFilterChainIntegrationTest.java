@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -43,13 +45,7 @@ import com.rauio.smartdangjian.utils.spec.UserType;
 @AutoConfigureMockMvc
 @TestPropertySource(
         properties = {
-            "app.security.enabled=true",
-            "REDIS_HOST=localhost",
-            "REDIS_PORT=6379",
-            "REDIS_DATABASE=0",
-            "DATABASE_URL=jdbc:h2:mem:security-filter-chain;DB_CLOSE_DELAY=-1",
-            "DATABASE_USERNAME=sa",
-            "DATABASE_PASSWORD="
+            "app.security.enabled=true"
         })
 @DisplayName("真实 Security Filter Chain 集成测试")
 class SecurityFilterChainIntegrationTest {
@@ -134,7 +130,26 @@ class SecurityFilterChainIntegrationTest {
                 SecurityAutoConfiguration.class,
                 UserDetailsServiceAutoConfiguration.class,
                 SecurityCoreAutoConfiguration.class,
-                SecuritySupportAutoConfiguration.class
+                SecuritySupportAutoConfiguration.class,
+                DataSourceAutoConfiguration.class,
+                FlywayAutoConfiguration.class,
+                com.rauio.smartdangjian.config.MybatisConfig.class,
+                com.rauio.smartdangjian.config.RedisConfig.class,
+                com.rauio.smartdangjian.config.TransactionConfig.class,
+                com.rauio.smartdangjian.config.AsyncConfig.class,
+                com.rauio.smartdangjian.config.OpenApiConfig.class,
+                com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.neo4j.Neo4jAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.neo4j.Neo4jDataAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.neo4j.Neo4jReactiveDataAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.neo4j.Neo4jRepositoriesAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.neo4j.Neo4jReactiveRepositoriesAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration.class,
+                org.redisson.spring.starter.RedissonAutoConfigurationV2.class,
+                org.redisson.spring.starter.RedissonAutoConfigurationV4.class
             })
     @EnableMethodSecurity
     @Import({SecurityConfig.class, GlobalExceptionHandler.class, TestController.class})

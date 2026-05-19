@@ -281,7 +281,7 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("changePassword 旧密码正确时更新密码并返回 true")
+    @DisplayName("changePassword 旧密码正确时更新密码并返回 void")
     void changePasswordSuccessWhenOldPasswordMatches() {
         ChangePasswordRequest request = new ChangePasswordRequest();
         request.setOldPassword("correctOldPass");
@@ -295,18 +295,19 @@ class AuthServiceTest {
         when(passwordEncoder.encode("newSecretPass")).thenReturn("encodedNewPassword");
         when(userMapper.updateById(user)).thenReturn(1);
 
-        Boolean result = authService.changePassword(request);
+        authService.changePassword(request);
 
-        assertThat(result).isTrue();
         assertThat(user.getPassword()).isEqualTo("encodedNewPassword");
         verify(jwtService).clearUserCache("u1");
         verify(userMapper).updateById(user);
     }
 
     @Test
-    @DisplayName("changePassword 更新失败时返回 false")
-    void changePasswordReturnsFalseWhenUpdateFails() {
-        ChangePasswordRequest request = createChangePasswordRequest();
+    @DisplayName("changePassword 更新失败时抛出 BusinessException(PASSWORD_CHANGE_ERROR)")
+    void changePasswordThrowsWhenUpdateFails() {
+        ChangePasswordRequest request = new ChangePasswordRequest();
+        request.setOldPassword("wrongOldPass");
+        request.setNewPassword("newSecretPass");
         User user = createUser("u1", "testuser");
         user.setPassword("encodedOldPassword");
 
@@ -316,9 +317,10 @@ class AuthServiceTest {
         when(passwordEncoder.encode("newSecretPass")).thenReturn("encodedNewPassword");
         when(userMapper.updateById(user)).thenReturn(0);
 
-        Boolean result = authService.changePassword(request);
-
-        assertThat(result).isFalse();
+        assertThatThrownBy(() -> authService.changePassword(request))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(AuthErrorConstants.PASSWORD_CHANGE_ERROR);
     }
 
     // ================================================================

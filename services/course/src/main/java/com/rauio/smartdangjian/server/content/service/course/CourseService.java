@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.constants.CourseErrorConstants;
 import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.CourseConvertor;
@@ -48,128 +50,79 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         }
     }
 
-    /**
-     * 根据课程 ID 获取课程详情。
-     *
-     * @param courseId 课程 ID
-     * @return 课程视图对象
-     */
     public CourseResponse get(String courseId) {
         Course entity = this.getById(courseId);
         if (entity == null) {
-            return null;
+            throw new BusinessException(CourseErrorConstants.COURSE_NOT_FOUND, "课程不存在");
         }
         CourseResponse vo = courseConvertor.toResponse(entity);
         vo.setCategoryId(getCategoryIdByCourseId(courseId));
         return vo;
     }
 
-    /**
-     * 创建课程并建立分类关联。
-     *
-     * @param courseRequest 课程创建参数
-     * @return 是否创建成功
-     */
-    public Boolean create(CourseRequest courseRequest) {
+    public void create(CourseRequest courseRequest) {
         User user = userService.getCurrentUser();
         Course course = courseConvertor.toCourse(courseRequest);
-
         course.setCreatorId(user.getId());
         normalizeCourseFields(course);
-
         if (!this.save(course)) {
-            return false;
+            throw new BusinessException(CourseErrorConstants.COURSE_SAVE_FAILED, "课程保存失败");
         }
-        return categoryCourseMapper.insert(CategoryCourse.builder()
-                        .courseId(course.getId())
-                        .categoryId(courseRequest.getCategoryId())
-                        .build())
-                > 0;
+        int insertResult = categoryCourseMapper.insert(CategoryCourse.builder()
+                .courseId(course.getId())
+                .categoryId(courseRequest.getCategoryId())
+                .build());
+        if (insertResult <= 0) {
+            throw new BusinessException(CourseErrorConstants.COURSE_SAVE_FAILED, "课程分类关联保存失败");
+        }
     }
 
-    /**
-     * 更新课程信息。
-     *
-     * @param courseRequest 课程更新参数
-     * @param id 课程 ID
-     * @return 是否更新成功
-     */
-    public Boolean update(CourseRequest courseRequest, String id) {
+    public void update(CourseRequest courseRequest, String id) {
         if (id == null) {
-            return false;
+            throw new BusinessException(CourseErrorConstants.COURSE_NOT_FOUND, "课程ID不能为空");
         }
-
-        Course course = courseConvertor.toCourse(courseRequest);
         Course target = this.getById(id);
         if (target == null) {
-            return false;
+            throw new BusinessException(CourseErrorConstants.COURSE_NOT_FOUND, "课程不存在");
         }
+        Course course = courseConvertor.toCourse(courseRequest);
         course.setId(id);
         normalizeCourseFields(course);
-        boolean updated = this.updateById(course);
-        if (!updated) {
-            return false;
+        if (!this.updateById(course)) {
+            throw new BusinessException(CourseErrorConstants.COURSE_UPDATE_FAILED, "课程更新失败");
         }
-
         if (courseRequest.getCategoryId() != null) {
             categoryCourseMapper.delete(new LambdaQueryWrapper<CategoryCourse>().eq(CategoryCourse::getCourseId, id));
-            return categoryCourseMapper.insert(CategoryCourse.builder()
-                            .courseId(id)
-                            .categoryId(courseRequest.getCategoryId())
-                            .build())
-                    > 0;
+            int insertResult = categoryCourseMapper.insert(CategoryCourse.builder()
+                    .courseId(id)
+                    .categoryId(courseRequest.getCategoryId())
+                    .build());
+            if (insertResult <= 0) {
+                throw new BusinessException(CourseErrorConstants.COURSE_UPDATE_FAILED, "课程分类关联更新失败");
+            }
         }
-        return true;
     }
 
-    /**
-     * 删除课程。
-     *
-     * @param courseId 课程 ID
-     * @return 是否删除成功
-     */
-    public Boolean delete(String courseId) {
+    public void delete(String courseId) {
         categoryCourseMapper.delete(new LambdaQueryWrapper<CategoryCourse>().eq(CategoryCourse::getCourseId, courseId));
-        return this.removeById(courseId);
+        if (!this.removeById(courseId)) {
+            throw new BusinessException(CourseErrorConstants.COURSE_DELETE_FAILED, "课程删除失败");
+        }
     }
 
-    /**
-     * 获取全部课程。
-     *
-     * @return 课程列表
-     */
     public List<Course> getList() {
         return this.list();
     }
 
-    /**
-     * 根据分类 ID 查询课程分类关联。
-     *
-     * @param categoryId 分类 ID
-     * @return 分类课程关联列表
-     */
     public List<CategoryCourse> getByCategoryId(String categoryId) {
         return categoryCourseMapper.selectList(
                 new LambdaQueryWrapper<CategoryCourse>().eq(CategoryCourse::getCategoryId, categoryId));
     }
 
-    /**
-     * 查询用户学习过的课程列表。
-     *
-     * @param userId 用户 ID
-     * @return 课程列表
-     */
     public List<Course> getByUserId(String userId) {
         return this.baseMapper.selectLearnedCoursesByUserId(userId);
     }
 
-    /**
-     * 分页查询课程。
-     *
-     * @param pageNum 页码
-     * @param pageSize 每页条数
-     * @return 课程分页结果
-     */
     public PageResponse<Object> getPage(int pageNum, int pageSize) {
         Page<Course> page = this.page(new Page<>(pageNum, pageSize));
         List<CourseResponse> courseVOList = toCourseResponseList(page.getRecords());
@@ -185,11 +138,9 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         if (courses == null || courses.isEmpty()) {
             return Collections.emptyList();
         }
-
         List<CourseResponse> courseVOList = new ArrayList<>(courseConvertor.toResponseList(courses));
         Map<String, String> categoryIdMap = getCategoryIdMapByCourseIds(
                 courses.stream().map(Course::getId).filter(Objects::nonNull).toList());
-
         for (CourseResponse courseVO : courseVOList) {
             courseVO.setCategoryId(categoryIdMap.get(courseVO.getId()));
         }
@@ -200,10 +151,8 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         if (courseIds == null || courseIds.isEmpty()) {
             return Collections.emptyMap();
         }
-
         List<CategoryCourse> relations = categoryCourseMapper.selectList(
                 new LambdaQueryWrapper<CategoryCourse>().in(CategoryCourse::getCourseId, courseIds));
-
         Map<String, String> categoryIdMap = new HashMap<>();
         for (CategoryCourse relation : relations) {
             categoryIdMap.putIfAbsent(relation.getCourseId(), relation.getCategoryId());

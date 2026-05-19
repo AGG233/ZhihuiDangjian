@@ -3,15 +3,15 @@ package com.rauio.smartdangjian.server.content.pojo.convertor;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
-import com.rauio.smartdangjian.server.content.pojo.dto.ArticleDto;
 import com.rauio.smartdangjian.server.content.pojo.entity.Article;
-import com.rauio.smartdangjian.server.content.pojo.vo.ArticleVO;
+import com.rauio.smartdangjian.server.content.pojo.request.ArticleRequest;
+import com.rauio.smartdangjian.server.content.pojo.response.ArticleResponse;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ArticleConvertor {
-    ArticleDto toDto(Article article);
+    ArticleRequest toRequest(Article article);
 
-    Article toEntity(ArticleDto articleDto);
+    Article toEntity(ArticleRequest articleRequest);
 
-    ArticleVO toVO(Article article);
+    ArticleResponse toResponse(Article article);
 }

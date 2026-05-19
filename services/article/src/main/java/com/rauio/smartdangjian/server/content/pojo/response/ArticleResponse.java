@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.pojo.vo;
+package com.rauio.smartdangjian.server.content.pojo.response;
 
 import java.time.LocalDateTime;
 
@@ -10,8 +10,8 @@ import lombok.Data;
 
 @Data
 @Builder
-@Schema(description = "文章视图对象")
-public class ArticleVO {
+@Schema(description = "文章响应体")
+public class ArticleResponse {
 
     @Schema(description = "文章ID")
     private String id;

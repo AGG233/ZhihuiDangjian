@@ -571,7 +571,8 @@ class CategoryServiceTest {
         existing.setUniversityId("uni123");
         doReturn(existing).when(categoryService).getById("1");
 
-        CategoryRequest dto = CategoryRequest.builder().name("新名称").description("新描述").build();
+        CategoryRequest dto =
+                CategoryRequest.builder().name("新名称").description("新描述").build();
         Category updatedEntity = createCategory(null, "新名称", null, null);
         doReturn(updatedEntity).when(convertor).toEntity(dto);
         doReturn(true).when(categoryService).updateById(any(Category.class));
@@ -597,7 +598,8 @@ class CategoryServiceTest {
         return category;
     }
 
-    private CategoryResponse createCategoryResponse(String id, String name, String parentId, List<CategoryResponse> children) {
+    private CategoryResponse createCategoryResponse(
+            String id, String name, String parentId, List<CategoryResponse> children) {
         CategoryResponse vo = new CategoryResponse();
         vo.setId(id);
         vo.setName(name);

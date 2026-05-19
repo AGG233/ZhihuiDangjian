@@ -16,8 +16,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
-import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
+import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
+import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
 import com.rauio.smartdangjian.server.content.service.ContentBlockService;
 import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
@@ -56,13 +56,13 @@ class ContentReviewToolTest {
                 .description("课程描述")
                 .difficulty("easy")
                 .build();
-        ChapterVO chapter = ChapterVO.builder()
+        ChapterResponse chapter = ChapterResponse.builder()
                 .id("ch-1")
                 .title("第一章")
                 .description("章节描述")
                 .orderIndex(1)
                 .build();
-        ContentBlockVO block = new ContentBlockVO();
+        ContentBlockResponse block = new ContentBlockResponse();
 
         when(courseService.getById("course-1")).thenReturn(course);
         when(chapterService.getByCourseId("course-1")).thenReturn(List.of(chapter));

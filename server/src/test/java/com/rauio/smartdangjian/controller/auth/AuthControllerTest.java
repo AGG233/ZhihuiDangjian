@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -57,7 +58,7 @@ class AuthControllerTest extends BaseControllerTest {
         void getCaptchaSuccess() throws Exception {
             when(captchaService.get()).thenReturn(AuthTestDataFactory.createCaptcha());
 
-            mockMvc.perform(get("/auth/captcha"))
+            mockMvc.perform(get("/api/auth/captcha"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.uuid").value("captcha-uuid-001"))
@@ -69,7 +70,7 @@ class AuthControllerTest extends BaseControllerTest {
         void validateCaptchaSuccess() throws Exception {
             when(captchaService.validate("uuid-001", "valid-code")).thenReturn(true);
 
-            mockMvc.perform(post("/auth/captcha").param("uuid", "uuid-001").param("code", "valid-code"))
+            mockMvc.perform(post("/api/auth/captcha").param("uuid", "uuid-001").param("code", "valid-code"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(true));
@@ -80,7 +81,7 @@ class AuthControllerTest extends BaseControllerTest {
         void loginSuccess() throws Exception {
             when(authService.login(any(LoginRequest.class))).thenReturn(AuthTestDataFactory.createLoginResponse());
 
-            mockMvc.perform(post("/auth/login")
+            mockMvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(AuthTestDataFactory.toJson(AuthTestDataFactory.createLoginRequest())))
                     .andExpect(status().isOk())
@@ -93,7 +94,7 @@ class AuthControllerTest extends BaseControllerTest {
         void registerSuccess() throws Exception {
             when(authService.register(any(RegisterRequest.class))).thenReturn(Result.ok("注册成功"));
 
-            mockMvc.perform(post("/auth/register")
+            mockMvc.perform(post("/api/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(AuthTestDataFactory.toJson(AuthTestDataFactory.createRegisterRequest())))
                     .andExpect(status().isOk())
@@ -104,14 +105,13 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/changePassword - 修改密码成功")
         void changePasswordSuccess() throws Exception {
-            when(authService.changePassword(any(ChangePasswordRequest.class))).thenReturn(true);
+            doNothing().when(authService).changePassword(any(ChangePasswordRequest.class));
 
-            mockMvc.perform(post("/auth/changePassword")
+            mockMvc.perform(post("/api/auth/changePassword")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(AuthTestDataFactory.toJson(AuthTestDataFactory.createChangePasswordRequest())))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value(true));
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test
@@ -119,7 +119,7 @@ class AuthControllerTest extends BaseControllerTest {
         void logoutSuccess() throws Exception {
             doNothing().when(authService).logout("test-token");
 
-            mockMvc.perform(post("/auth/logout").param("token", "test-token"))
+            mockMvc.perform(post("/api/auth/logout").param("token", "test-token"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));
         }
@@ -136,7 +136,7 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/login - 请求体为空返回 400")
         void loginWithEmptyBody() throws Exception {
-            mockMvc.perform(post("/auth/login")
+            mockMvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(""))
                     .andExpect(status().isBadRequest());
@@ -145,7 +145,7 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/register - 请求体为空返回 400")
         void registerWithEmptyBody() throws Exception {
-            mockMvc.perform(post("/auth/register")
+            mockMvc.perform(post("/api/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(""))
                     .andExpect(status().isBadRequest());
@@ -154,7 +154,7 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/changePassword - 请求体为空返回 400")
         void changePasswordWithEmptyBody() throws Exception {
-            mockMvc.perform(post("/auth/changePassword")
+            mockMvc.perform(post("/api/auth/changePassword")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(""))
                     .andExpect(status().isBadRequest());
@@ -165,7 +165,7 @@ class AuthControllerTest extends BaseControllerTest {
         void loginThrowsBusinessException() throws Exception {
             when(authService.login(any(LoginRequest.class))).thenThrow(new BusinessException(4000, "验证码错误"));
 
-            mockMvc.perform(post("/auth/login")
+            mockMvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(AuthTestDataFactory.toJson(AuthTestDataFactory.createLoginRequest())))
                     .andExpect(status().isBadRequest())
@@ -178,7 +178,7 @@ class AuthControllerTest extends BaseControllerTest {
         void loginThrowsRuntimeException() throws Exception {
             when(authService.login(any(LoginRequest.class))).thenThrow(new RuntimeException("认证服务异常"));
 
-            mockMvc.perform(post("/auth/login")
+            mockMvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(AuthTestDataFactory.toJson(AuthTestDataFactory.createLoginRequest())))
                     .andExpect(status().isInternalServerError())
@@ -190,7 +190,7 @@ class AuthControllerTest extends BaseControllerTest {
         void registerThrowsBusinessException() throws Exception {
             when(authService.register(any(RegisterRequest.class))).thenThrow(new BusinessException(4000, "该手机号已被注册"));
 
-            mockMvc.perform(post("/auth/register")
+            mockMvc.perform(post("/api/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(AuthTestDataFactory.toJson(AuthTestDataFactory.createRegisterRequest())))
                     .andExpect(status().isBadRequest())
@@ -199,17 +199,18 @@ class AuthControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("POST /auth/changePassword - Service 返回 false 时 code 为 400")
-        void changePasswordReturnsFalse() throws Exception {
-            when(authService.changePassword(any(ChangePasswordRequest.class))).thenReturn(false);
+        @DisplayName("POST /auth/changePassword - Service 抛出 BusinessException 时返回 400")
+        void changePasswordThrowsBusinessException() throws Exception {
+            doThrow(new BusinessException(4000, "旧密码错误"))
+                    .when(authService)
+                    .changePassword(any(ChangePasswordRequest.class));
 
-            mockMvc.perform(post("/auth/changePassword")
+            mockMvc.perform(post("/api/auth/changePassword")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(AuthTestDataFactory.toJson(AuthTestDataFactory.createChangePasswordRequest())))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value(false))
-                    .andExpect(jsonPath("$.message").value("OK"));
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.message").value("旧密码错误"));
         }
 
         @Test
@@ -217,7 +218,7 @@ class AuthControllerTest extends BaseControllerTest {
         void registerThrowsRuntimeException() throws Exception {
             when(authService.register(any(RegisterRequest.class))).thenThrow(new RuntimeException("注册服务异常"));
 
-            mockMvc.perform(post("/auth/register")
+            mockMvc.perform(post("/api/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(AuthTestDataFactory.toJson(AuthTestDataFactory.createRegisterRequest())))
                     .andExpect(status().isInternalServerError())
@@ -229,7 +230,7 @@ class AuthControllerTest extends BaseControllerTest {
         void logoutThrowsBusinessException() throws Exception {
             doThrow(new BusinessException(4000, "令牌无效")).when(authService).logout("invalid-token");
 
-            mockMvc.perform(post("/auth/logout").param("token", "invalid-token"))
+            mockMvc.perform(post("/api/auth/logout").param("token", "invalid-token"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("令牌无效"));
@@ -249,7 +250,7 @@ class AuthControllerTest extends BaseControllerTest {
         void captchaWithSpecialChars() throws Exception {
             when(captchaService.get()).thenReturn(AuthTestDataFactory.createCaptcha());
 
-            mockMvc.perform(get("/auth/captcha"))
+            mockMvc.perform(get("/api/auth/captcha"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.code").value("captcha-code-001"));
@@ -260,7 +261,7 @@ class AuthControllerTest extends BaseControllerTest {
         void captchaValidationFails() throws Exception {
             when(captchaService.validate("uuid-001", "wrong-code")).thenReturn(false);
 
-            mockMvc.perform(post("/auth/captcha").param("uuid", "uuid-001").param("code", "wrong-code"))
+            mockMvc.perform(post("/api/auth/captcha").param("uuid", "uuid-001").param("code", "wrong-code"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.message").value("OK"))
@@ -275,7 +276,7 @@ class AuthControllerTest extends BaseControllerTest {
             String longPassport = "a".repeat(200);
             LoginRequest request = AuthTestDataFactory.createLoginRequest();
             request.setPassport(longPassport);
-            mockMvc.perform(post("/auth/login")
+            mockMvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(AuthTestDataFactory.toJson(request)))
                     .andExpect(status().isBadRequest());
@@ -288,7 +289,7 @@ class AuthControllerTest extends BaseControllerTest {
 
             RegisterRequest request = AuthTestDataFactory.createRegisterRequest();
             request.setUsername("test_@#$%^&");
-            mockMvc.perform(post("/auth/register")
+            mockMvc.perform(post("/api/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(AuthTestDataFactory.toJson(request)))
                     .andExpect(status().isOk())
@@ -311,7 +312,7 @@ class AuthControllerTest extends BaseControllerTest {
             request.setPassport("<script>alert('xss')</script>");
             when(authService.login(any(LoginRequest.class))).thenReturn(AuthTestDataFactory.createLoginResponse());
 
-            mockMvc.perform(post("/auth/login")
+            mockMvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(AuthTestDataFactory.toJson(request)))
                     .andExpect(status().isOk());
@@ -324,7 +325,7 @@ class AuthControllerTest extends BaseControllerTest {
             request.setPassport("' OR '1'='1");
             when(authService.login(any(LoginRequest.class))).thenReturn(AuthTestDataFactory.createLoginResponse());
 
-            mockMvc.perform(post("/auth/login")
+            mockMvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(AuthTestDataFactory.toJson(request)))
                     .andExpect(status().isOk());
@@ -333,13 +334,13 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET 请求登录接口返回 405")
         void loginWithWrongMethod() throws Exception {
-            mockMvc.perform(get("/auth/login")).andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(get("/api/auth/login")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("PUT 请求注册接口返回 405")
         void registerWithWrongMethod() throws Exception {
-            mockMvc.perform(put("/auth/register")
+            mockMvc.perform(put("/api/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
                     .andExpect(status().isMethodNotAllowed());
@@ -348,7 +349,7 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("DELETE 请求验证码接口返回 405")
         void captchaWithWrongMethod() throws Exception {
-            mockMvc.perform(delete("/auth/captcha")).andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(delete("/api/auth/captcha")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

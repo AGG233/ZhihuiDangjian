@@ -58,8 +58,9 @@ public class AuthController {
 
     @Operation(summary = "修改密码", description = "已登录用户修改自己的密码")
     @PostMapping("/changePassword")
-    public Result<Boolean> changePassword(@RequestBody @Valid ChangePasswordRequest request) {
-        return Result.ok(authService.changePassword(request));
+    public Result<Void> changePassword(@RequestBody @Valid ChangePasswordRequest request) {
+        authService.changePassword(request);
+        return Result.ok(null);
     }
 
     @Operation(summary = "用户登出", description = "登出成功后将返回一个空的响应体")

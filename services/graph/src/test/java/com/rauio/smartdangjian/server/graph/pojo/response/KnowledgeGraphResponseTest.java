@@ -13,8 +13,11 @@ class KnowledgeGraphResponseTest {
     @Test
     @DisplayName("使用 builder 构造 KnowledgeGraphResponse")
     void buildKnowledgeGraphResponse() {
-        GraphNodeResponse node =
-                GraphNodeResponse.builder().id("User:user-1").label("User").name("张三").build();
+        GraphNodeResponse node = GraphNodeResponse.builder()
+                .id("User:user-1")
+                .label("User")
+                .name("张三")
+                .build();
         GraphEdgeResponse edge = GraphEdgeResponse.builder()
                 .source("User:user-1")
                 .target("Course:course-1")

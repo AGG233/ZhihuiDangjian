@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
@@ -24,6 +23,7 @@ import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
 import com.rauio.smartdangjian.server.learning.pojo.dto.UserBehaviorDto;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserChapterProgress;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
+import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 import com.rauio.smartdangjian.server.user.mapper.UserSimilarityMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.UserSimilarity;
 import com.rauio.smartdangjian.server.user.service.UserSimilarityService;

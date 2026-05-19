@@ -23,7 +23,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -35,8 +35,8 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.controller.admin.AdminUserController;
-import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -71,8 +71,12 @@ class AdminUserControllerTest {
                 com.rauio.smartdangjian.config.TransactionConfig.class
             })
     @EnableWebMvc
-    @ComponentScan(basePackages = "com.rauio.smartdangjian.server.user.controller")
-    static class TestConfig {}
+    static class TestConfig {
+        @Bean
+        public AdminUserController adminUserController(UserService userService) {
+            return new AdminUserController(userService);
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -315,7 +319,8 @@ class AdminUserControllerTest {
             List<User> records = UserTestDataFactory.createUserList(10);
             Page<User> page = UserTestDataFactory.createPage(records, 1, 10, 10);
 
-            when(userService.getAdminPage(any(UserRequest.class), eq(1), eq(10))).thenReturn(page);
+            when(userService.getAdminPage(any(UserRequest.class), eq(1), eq(10)))
+                    .thenReturn(page);
 
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -585,7 +590,8 @@ class AdminUserControllerTest {
         void searchPageNumBeyondAvailablePages() throws Exception {
             Page<User> page = UserTestDataFactory.createEmptyPage(5, 10);
 
-            when(userService.getAdminPage(any(UserRequest.class), eq(5), eq(10))).thenReturn(page);
+            when(userService.getAdminPage(any(UserRequest.class), eq(5), eq(10)))
+                    .thenReturn(page);
 
             mockMvc.perform(post("/api/admin/users/search")
                             .param("pageNum", "5")
@@ -639,7 +645,8 @@ class AdminUserControllerTest {
             List<User> records = UserTestDataFactory.createUserList(100);
             Page<User> page = UserTestDataFactory.createPage(records, 1, 100, 500);
 
-            when(userService.getAdminPage(any(UserRequest.class), eq(1), eq(100))).thenReturn(page);
+            when(userService.getAdminPage(any(UserRequest.class), eq(1), eq(100)))
+                    .thenReturn(page);
 
             mockMvc.perform(post("/api/admin/users/search")
                             .param("pageNum", "1")
@@ -871,8 +878,7 @@ class AdminUserControllerTest {
                             new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
                                     student, null, Collections.emptyList()));
 
-            when(userService.getAdminPage(
-                            any(UserRequest.class), anyInt(), anyInt()))
+            when(userService.getAdminPage(any(UserRequest.class), anyInt(), anyInt()))
                     .thenReturn(com.baomidou.mybatisplus.extension.plugins.pagination.Page.of(0, 10));
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)

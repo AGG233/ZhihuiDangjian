@@ -6,14 +6,14 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.rauio.smartdangjian.server.learning.pojo.dto.UserChapterProgressDto;
-import com.rauio.smartdangjian.server.learning.pojo.dto.UserLearningRecordDto;
-import com.rauio.smartdangjian.server.learning.pojo.vo.UserChapterProgressVO;
-import com.rauio.smartdangjian.server.learning.pojo.vo.UserLearningRecordVO;
+import com.rauio.smartdangjian.server.learning.pojo.request.UserChapterProgressRequest;
+import com.rauio.smartdangjian.server.learning.pojo.request.UserLearningRecordRequest;
+import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
+import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 
 /**
- * Static factory for learning module test data — produces UserChapterProgressDto,
- * UserChapterProgressVO, UserLearningRecordDto, UserLearningRecordVO, and JSON helpers.
+ * Static factory for learning module test data — produces UserChapterProgressRequest,
+ * UserChapterProgressResponse, UserLearningRecordRequest, UserLearningRecordResponse, and JSON helpers.
  */
 public final class LearningTestDataFactory {
 
@@ -21,10 +21,10 @@ public final class LearningTestDataFactory {
 
     private LearningTestDataFactory() {}
 
-    // ── UserChapterProgressDto ─────────────────────────────────────
+    // ── UserChapterProgressRequest ─────────────────────────────────────
 
-    public static UserChapterProgressDto createChapterProgressDto() {
-        return UserChapterProgressDto.builder()
+    public static UserChapterProgressRequest createChapterProgressDto() {
+        return UserChapterProgressRequest.builder()
                 .userId("user-001")
                 .chapterId("ch-001")
                 .progress(50)
@@ -33,8 +33,8 @@ public final class LearningTestDataFactory {
                 .build();
     }
 
-    public static UserChapterProgressDto createChapterProgressDto(String userId, String chapterId) {
-        return UserChapterProgressDto.builder()
+    public static UserChapterProgressRequest createChapterProgressDto(String userId, String chapterId) {
+        return UserChapterProgressRequest.builder()
                 .userId(userId)
                 .chapterId(chapterId)
                 .progress(75)
@@ -43,18 +43,18 @@ public final class LearningTestDataFactory {
                 .build();
     }
 
-    public static UserChapterProgressDto createChapterProgressUpdateDto(String id) {
-        return UserChapterProgressDto.builder()
+    public static UserChapterProgressRequest createChapterProgressUpdateDto(String id) {
+        return UserChapterProgressRequest.builder()
                 .id(id)
                 .progress(100)
                 .status("completed")
                 .build();
     }
 
-    // ── UserChapterProgressVO ──────────────────────────────────────
+    // ── UserChapterProgressResponse ──────────────────────────────────────
 
-    public static UserChapterProgressVO createChapterProgressVO(String id) {
-        return UserChapterProgressVO.builder()
+    public static UserChapterProgressResponse createChapterProgressVO(String id) {
+        return UserChapterProgressResponse.builder()
                 .id(id)
                 .userId("user-001")
                 .chapterId("ch-001")
@@ -64,8 +64,8 @@ public final class LearningTestDataFactory {
                 .build();
     }
 
-    public static UserChapterProgressVO createChapterProgressVO(String id, String userId, String chapterId) {
-        return UserChapterProgressVO.builder()
+    public static UserChapterProgressResponse createChapterProgressVO(String id, String userId, String chapterId) {
+        return UserChapterProgressResponse.builder()
                 .id(id)
                 .userId(userId)
                 .chapterId(chapterId)
@@ -75,10 +75,10 @@ public final class LearningTestDataFactory {
                 .build();
     }
 
-    // ── UserLearningRecordDto ──────────────────────────────────────
+    // ── UserLearningRecordRequest ──────────────────────────────────────
 
-    public static UserLearningRecordDto createLearningRecordDto() {
-        return UserLearningRecordDto.builder()
+    public static UserLearningRecordRequest createLearningRecordDto() {
+        return UserLearningRecordRequest.builder()
                 .userId("user-001")
                 .chapterId("ch-001")
                 .startTime(LocalDateTime.now().minusHours(1))
@@ -88,8 +88,8 @@ public final class LearningTestDataFactory {
                 .build();
     }
 
-    public static UserLearningRecordDto createLearningRecordDto(String userId, String chapterId) {
-        return UserLearningRecordDto.builder()
+    public static UserLearningRecordRequest createLearningRecordDto(String userId, String chapterId) {
+        return UserLearningRecordRequest.builder()
                 .userId(userId)
                 .chapterId(chapterId)
                 .startTime(LocalDateTime.now().minusMinutes(30))
@@ -99,18 +99,18 @@ public final class LearningTestDataFactory {
                 .build();
     }
 
-    public static UserLearningRecordDto createLearningRecordUpdateDto(String id) {
-        return UserLearningRecordDto.builder()
+    public static UserLearningRecordRequest createLearningRecordUpdateDto(String id) {
+        return UserLearningRecordRequest.builder()
                 .id(id)
                 .duration(7200)
                 .deviceType("tablet")
                 .build();
     }
 
-    // ── UserLearningRecordVO ───────────────────────────────────────
+    // ── UserLearningRecordResponse ───────────────────────────────────────
 
-    public static UserLearningRecordVO createLearningRecordVO(String id) {
-        return UserLearningRecordVO.builder()
+    public static UserLearningRecordResponse createLearningRecordVO(String id) {
+        return UserLearningRecordResponse.builder()
                 .id(id)
                 .userId("user-001")
                 .chapterId("ch-001")
@@ -122,8 +122,8 @@ public final class LearningTestDataFactory {
                 .build();
     }
 
-    public static UserLearningRecordVO createLearningRecordVO(String id, String userId, String chapterId) {
-        return UserLearningRecordVO.builder()
+    public static UserLearningRecordResponse createLearningRecordVO(String id, String userId, String chapterId) {
+        return UserLearningRecordResponse.builder()
                 .id(id)
                 .userId(userId)
                 .chapterId(chapterId)

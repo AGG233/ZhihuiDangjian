@@ -19,8 +19,8 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
-import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 
@@ -41,11 +41,12 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      *
      * @param passport 用户名、邮箱或手机号
      * @return 用户实体
+     * @throws BusinessException 如果通行凭证为空
      */
     @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#passport")
     public User getByPassport(String passport) {
         if (passport == null || passport.isEmpty()) {
-            return null;
+            throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "通行凭证不能为空");
         }
         if (passport.contains("@")) {
             return getByEmail(passport);
@@ -153,40 +154,46 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      *
      * @param id 用户 ID
      * @param user 用户实体
-     * @return 是否更新成功
+     * @throws BusinessException 如果更新失败
      */
     @CachePut(value = USER_VO_CACHE_PREFIX, key = "#id")
-    public Boolean update(String id, User user) {
+    public void update(String id, User user) {
         user.setId(id);
         if (StringUtils.isNotBlank(user.getPassword())) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
-        return this.updateById(user);
+        if (!this.updateById(user)) {
+            throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户更新失败");
+        }
     }
 
     /**
      * 删除用户。
      *
      * @param id 用户 ID
-     * @return 是否删除成功
+     * @throws BusinessException 如果删除失败
      */
-    public Boolean delete(String id) {
-        return this.removeById(id);
+    public void delete(String id) {
+        if (!this.removeById(id)) {
+            throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户删除失败");
+        }
     }
 
     /**
      * 注册新用户。
      *
      * @param user 用户实体
-     * @return 是否注册成功
+     * @throws BusinessException 如果注册失败
      */
-    public Boolean register(User user) {
+    public void register(User user) {
         checkEmailRegistered(user.getEmail());
         checkPhoneRegistered(user.getPhone());
         checkUsernameOccupied(user.getUsername());
         checkPartyMemberId(String.valueOf(user.getPartyMemberId()));
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return this.save(user);
+        if (!this.save(user)) {
+            throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户注册失败");
+        }
     }
 
     /**
@@ -194,18 +201,21 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      *
      * @param oldPassword 旧密码
      * @param newPassword 新密码
-     * @return 是否修改成功
+     * @throws BusinessException 如果修改失败
      */
-    public Boolean changePassword(String oldPassword, String newPassword) {
+    public void changePassword(String oldPassword, String newPassword) {
         if (oldPassword == null || oldPassword.isEmpty()) {
             throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "有空参数");
         }
         User user = getCurrentUser();
         if (passwordEncoder.matches(oldPassword, user.getPassword())) {
             user.setPassword(passwordEncoder.encode(newPassword));
-            return this.updateById(user);
+            if (!this.updateById(user)) {
+                throw new BusinessException(UserErrorConstants.PASSWORD_CHANGE_ERROR, "修改密码时出现错误");
+            }
+        } else {
+            throw new BusinessException(UserErrorConstants.PASSWORD_CHANGE_ERROR, "修改密码时出现错误");
         }
-        throw new BusinessException(UserErrorConstants.PASSWORD_CHANGE_ERROR, "修改密码时出现错误");
     }
 
     /**
@@ -259,7 +269,10 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         wrapper.like(StringUtils.isNotBlank(request.getUserId()), User::getId, request.getUserId())
                 .like(StringUtils.isNotBlank(request.getUsername()), User::getUsername, request.getUsername())
                 .like(StringUtils.isNotBlank(request.getRealName()), User::getRealName, request.getRealName())
-                .like(StringUtils.isNotBlank(request.getPartyMemberId()), User::getPartyMemberId, request.getPartyMemberId())
+                .like(
+                        StringUtils.isNotBlank(request.getPartyMemberId()),
+                        User::getPartyMemberId,
+                        request.getPartyMemberId())
                 .like(StringUtils.isNotBlank(request.getEmail()), User::getEmail, request.getEmail())
                 .like(StringUtils.isNotBlank(request.getPhone()), User::getPhone, request.getPhone())
                 .eq(request.getUserType() != null, User::getUserType, request.getUserType())

@@ -26,6 +26,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
@@ -37,6 +38,7 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
+import com.rauio.smartdangjian.server.resource.controller.user.FileController;
 import com.rauio.smartdangjian.server.resource.service.FileService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
@@ -70,13 +72,12 @@ class FileControllerTest {
                 com.rauio.smartdangjian.config.TransactionConfig.class
             })
     @EnableWebMvc
-    @ComponentScan(
-            basePackages = "com.rauio.smartdangjian.server.resource.controller.user",
-            excludeFilters =
-                    @ComponentScan.Filter(
-                            type = org.springframework.context.annotation.FilterType.REGEX,
-                            pattern = ".*Banner.*"))
-    static class TestConfig {}
+    static class TestConfig {
+        @Bean
+        public FileController fileController(FileService fileService) {
+            return new FileController(fileService);
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;

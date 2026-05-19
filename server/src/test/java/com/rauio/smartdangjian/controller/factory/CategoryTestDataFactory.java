@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rauio.smartdangjian.server.content.pojo.dto.CategoryDto;
+import com.rauio.smartdangjian.server.content.pojo.request.CategoryRequest;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryArticle;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
-import com.rauio.smartdangjian.server.content.pojo.vo.CategoryVO;
+import com.rauio.smartdangjian.server.content.pojo.response.CategoryResponse;
 
 /**
- * Static factory for category test data — produces CategoryDto, CategoryVO,
+ * Static factory for category test data — produces CategoryRequest, CategoryResponse,
  * CategoryCourse, CategoryArticle, and JSON helpers.
  * All IDs are deterministic strings so jsonPath assertions are predictable.
  */
@@ -20,34 +20,34 @@ public final class CategoryTestDataFactory {
 
     private CategoryTestDataFactory() {}
 
-    // ── CategoryDto builders ───────────────────────────────────────
+    // ── CategoryRequest builders ───────────────────────────────────────
 
-    public static CategoryDto createRootCategoryDto(String name) {
-        return CategoryDto.builder()
+    public static CategoryRequest createRootCategoryRequest(String name) {
+        return CategoryRequest.builder()
                 .name(name)
                 .description("根分类描述")
                 .sortOrder(0)
                 .build();
     }
 
-    public static CategoryDto createCategoryDto(String name) {
-        return CategoryDto.builder()
+    public static CategoryRequest createCategoryRequest(String name) {
+        return CategoryRequest.builder()
                 .name(name)
                 .description("子分类描述")
                 .sortOrder(1)
                 .build();
     }
 
-    public static CategoryDto createCategoryDto(String name, String description, Integer sortOrder) {
-        return CategoryDto.builder()
+    public static CategoryRequest createCategoryRequest(String name, String description, Integer sortOrder) {
+        return CategoryRequest.builder()
                 .name(name)
                 .description(description)
                 .sortOrder(sortOrder)
                 .build();
     }
 
-    public static CategoryDto createCategoryDtoWithChildren(String name, List<CategoryDto> children) {
-        return CategoryDto.builder()
+    public static CategoryRequest createCategoryRequestWithChildren(String name, List<CategoryRequest> children) {
+        return CategoryRequest.builder()
                 .name(name)
                 .description("带子节点的分类")
                 .sortOrder(0)
@@ -55,22 +55,22 @@ public final class CategoryTestDataFactory {
                 .build();
     }
 
-    public static List<CategoryDto> createCategoryDtoList(int count) {
-        List<CategoryDto> list = new ArrayList<>();
+    public static List<CategoryRequest> createCategoryRequestList(int count) {
+        List<CategoryRequest> list = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
-            list.add(createCategoryDto("子分类" + i));
+            list.add(createCategoryRequest("子分类" + i));
         }
         return list;
     }
 
-    public static List<CategoryDto> createSingleChildCategoryDtoList(String name) {
-        return List.of(createCategoryDto(name));
+    public static List<CategoryRequest> createSingleChildCategoryRequestList(String name) {
+        return List.of(createCategoryRequest(name));
     }
 
-    // ── CategoryVO builders ────────────────────────────────────────
+    // ── CategoryResponse builders ────────────────────────────────────────
 
-    public static CategoryVO createCategoryVO(String id, String name, String parentId) {
-        CategoryVO vo = new CategoryVO();
+    public static CategoryResponse createCategoryResponse(String id, String name, String parentId) {
+        CategoryResponse vo = new CategoryResponse();
         vo.setId(id);
         vo.setName(name);
         vo.setDescription("描述-" + name);
@@ -81,31 +81,31 @@ public final class CategoryTestDataFactory {
         return vo;
     }
 
-    public static CategoryVO createCategoryVO(String id, String name, String parentId, List<CategoryVO> children) {
-        CategoryVO vo = createCategoryVO(id, name, parentId);
+    public static CategoryResponse createCategoryResponse(String id, String name, String parentId, List<CategoryResponse> children) {
+        CategoryResponse vo = createCategoryResponse(id, name, parentId);
         vo.setChildren(children);
         return vo;
     }
 
-    public static List<CategoryVO> createCategoryVOList(int count) {
-        List<CategoryVO> list = new ArrayList<>();
+    public static List<CategoryResponse> createCategoryResponseList(int count) {
+        List<CategoryResponse> list = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
-            list.add(createCategoryVO("cat-" + String.format("%03d", i), "分类" + i, null));
+            list.add(createCategoryResponse("cat-" + String.format("%03d", i), "分类" + i, null));
         }
         return list;
     }
 
-    public static List<CategoryVO> createCategoryVOList(int count, String parentId) {
-        List<CategoryVO> list = new ArrayList<>();
+    public static List<CategoryResponse> createCategoryResponseList(int count, String parentId) {
+        List<CategoryResponse> list = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
-            list.add(createCategoryVO("child-" + String.format("%03d", i), "子分类" + i, parentId));
+            list.add(createCategoryResponse("child-" + String.format("%03d", i), "子分类" + i, parentId));
         }
         return list;
     }
 
-    public static CategoryVO createCategoryWithChildren(String id, String name, int childCount) {
-        CategoryVO vo = createCategoryVO(id, name, null);
-        vo.setChildren(createCategoryVOList(childCount, id));
+    public static CategoryResponse createCategoryWithChildren(String id, String name, int childCount) {
+        CategoryResponse vo = createCategoryResponse(id, name, null);
+        vo.setChildren(createCategoryResponseList(childCount, id));
         return vo;
     }
 

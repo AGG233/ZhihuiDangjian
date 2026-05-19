@@ -272,9 +272,11 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入尝试在路径参数中")
         void sqlInjectionInPath() throws Exception {
-            when(userQuizAnswerService.getByUserId("' OR '1'='1")).thenReturn(null);
+            when(userQuizAnswerService.getByUserId("' OR '1'='1")).thenReturn(List.of());
 
-            mockMvc.perform(get("/api/quiz/answers/users/{id}", "' OR '1'='1")).andExpect(status().isOk());
+            mockMvc.perform(get("/api/quiz/answers/users/{id}", "' OR '1'='1"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test

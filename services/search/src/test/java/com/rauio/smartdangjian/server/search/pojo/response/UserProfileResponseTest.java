@@ -81,7 +81,8 @@ class UserProfileResponseTest {
     @Test
     @DisplayName("QuizStats 默认值")
     void quizStatsDefaults() {
-        UserProfileResponse.QuizStats stats = UserProfileResponse.QuizStats.builder().build();
+        UserProfileResponse.QuizStats stats =
+                UserProfileResponse.QuizStats.builder().build();
 
         assertThat(stats.getTotalAnswers()).isZero();
         assertThat(stats.getCorrectCount()).isZero();

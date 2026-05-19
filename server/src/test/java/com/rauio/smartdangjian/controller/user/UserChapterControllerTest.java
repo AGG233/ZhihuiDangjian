@@ -19,7 +19,7 @@ import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.controller.user.UserChapterController;
-import com.rauio.smartdangjian.server.content.pojo.vo.ChapterVO;
+import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
 
 @SpringBootTest(
@@ -46,7 +46,7 @@ class UserChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 获取章节详情成功")
         void getChapterDetailSuccess() throws Exception {
-            ChapterVO vo = CourseTestDataFactory.createChapterVO("ch-1");
+            ChapterResponse vo = CourseTestDataFactory.createChapterResponse("ch-1");
             when(chapterService.get("ch-1")).thenReturn(vo);
 
             mockMvc.perform(get("/api/content/chapters/ch-1"))
@@ -62,8 +62,8 @@ class UserChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /by-course/{courseId} - 获取课程下的章节列表成功")
         void getByCourseIdSuccess() throws Exception {
-            ChapterVO vo1 = CourseTestDataFactory.createChapterVO("ch-1");
-            ChapterVO vo2 = CourseTestDataFactory.createChapterVO("ch-2");
+            ChapterResponse vo1 = CourseTestDataFactory.createChapterResponse("ch-1");
+            ChapterResponse vo2 = CourseTestDataFactory.createChapterResponse("ch-2");
             when(chapterService.getByCourseId("course-1")).thenReturn(List.of(vo1, vo2));
 
             mockMvc.perform(get("/api/content/chapters/by-course/course-1"))
@@ -131,7 +131,7 @@ class UserChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 路径含中文正常处理")
         void getWithChineseId() throws Exception {
-            ChapterVO vo = CourseTestDataFactory.createChapterVO("ch-1");
+            ChapterResponse vo = CourseTestDataFactory.createChapterResponse("ch-1");
             when(chapterService.get("第一章")).thenReturn(vo);
 
             mockMvc.perform(get("/api/content/chapters/第一章"))

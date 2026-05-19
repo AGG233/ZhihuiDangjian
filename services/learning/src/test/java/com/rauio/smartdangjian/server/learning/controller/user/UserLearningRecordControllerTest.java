@@ -28,7 +28,8 @@ class UserLearningRecordControllerTest {
     @Test
     @DisplayName("get 委托 service 获取学习记录")
     void get() {
-        UserLearningRecordResponse vo = UserLearningRecordResponse.builder().id("r-1").build();
+        UserLearningRecordResponse vo =
+                UserLearningRecordResponse.builder().id("r-1").build();
         when(recordService.get("r-1")).thenReturn(vo);
 
         var result = controller.get("r-1");
@@ -40,7 +41,8 @@ class UserLearningRecordControllerTest {
     @DisplayName("getByUserId 委托 service 获取用户所有记录")
     void getByUserId() {
         when(recordService.getByUserId("user-1"))
-                .thenReturn(List.of(UserLearningRecordResponse.builder().id("r-1").build()));
+                .thenReturn(
+                        List.of(UserLearningRecordResponse.builder().id("r-1").build()));
 
         var result = controller.getByUserId("user-1");
 
@@ -51,7 +53,8 @@ class UserLearningRecordControllerTest {
     @DisplayName("getByUserIdAndChapterId 委托 service 获取用户章节记录")
     void getByUserIdAndChapterId() {
         when(recordService.getByUserIdAndChapterId("user-1", "ch-1"))
-                .thenReturn(List.of(UserLearningRecordResponse.builder().id("r-1").build()));
+                .thenReturn(
+                        List.of(UserLearningRecordResponse.builder().id("r-1").build()));
 
         var result = controller.getByUserIdAndChapterId("user-1", "ch-1");
 
@@ -75,7 +78,8 @@ class UserLearningRecordControllerTest {
     @Test
     @DisplayName("update 委托 service 更新记录")
     void update() {
-        UserLearningRecordRequest dto = UserLearningRecordRequest.builder().id("r-1").build();
+        UserLearningRecordRequest dto =
+                UserLearningRecordRequest.builder().id("r-1").build();
         when(recordService.update(dto)).thenReturn(true);
 
         var result = controller.update(dto);

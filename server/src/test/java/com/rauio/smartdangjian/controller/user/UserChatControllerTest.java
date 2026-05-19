@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.server.ai.constants.AiChatResponseType;
 import com.rauio.smartdangjian.server.ai.controller.user.UserChatController;
-import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiChatRequest;
+import com.rauio.smartdangjian.server.ai.pojo.response.AiChatMessageResponse;
 import com.rauio.smartdangjian.server.ai.pojo.response.AiChatResponse;
 import com.rauio.smartdangjian.server.ai.service.AiMemoryService;
 import com.rauio.smartdangjian.server.ai.service.LLMService;
@@ -106,7 +106,7 @@ class UserChatControllerTest extends BaseControllerTest {
         @DisplayName("GET /{sessionId}/messages - 查询会话消息成功")
         void listMessagesSuccess() throws Exception {
             when(userService.getCurrentUserId()).thenReturn("stu-001");
-            List<AiChatMessage> messages = List.of(AiChatMessage.builder()
+            List<AiChatMessageResponse> messages = List.of(AiChatMessageResponse.builder()
                     .id("msg-1")
                     .sessionId("session-1")
                     .userId("stu-001")

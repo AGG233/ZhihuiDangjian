@@ -229,8 +229,10 @@ class UserChapterProgressServiceTest {
     @Test
     @DisplayName("update 更新进度记录成功")
     void updateSuccess() {
-        UserChapterProgressRequest dto =
-                UserChapterProgressRequest.builder().id(PROGRESS_ID).progress(100).build();
+        UserChapterProgressRequest dto = UserChapterProgressRequest.builder()
+                .id(PROGRESS_ID)
+                .progress(100)
+                .build();
         UserChapterProgress existing = UserChapterProgress.builder()
                 .id(PROGRESS_ID)
                 .userId(USER_ID)
@@ -276,8 +278,10 @@ class UserChapterProgressServiceTest {
     @Test
     @DisplayName("update 进度100时自动设为完成")
     void updateAutoComplete() {
-        UserChapterProgressRequest dto =
-                UserChapterProgressRequest.builder().id(PROGRESS_ID).progress(100).build();
+        UserChapterProgressRequest dto = UserChapterProgressRequest.builder()
+                .id(PROGRESS_ID)
+                .progress(100)
+                .build();
         UserChapterProgress existing = UserChapterProgress.builder()
                 .id(PROGRESS_ID)
                 .userId(USER_ID)

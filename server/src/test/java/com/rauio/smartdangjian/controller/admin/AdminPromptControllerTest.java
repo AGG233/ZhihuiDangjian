@@ -25,7 +25,7 @@ import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.AiTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.ai.controller.admin.AdminPromptController;
-import com.rauio.smartdangjian.server.ai.pojo.entity.AiPrompts;
+import com.rauio.smartdangjian.server.ai.pojo.response.AiPromptResponse;
 import com.rauio.smartdangjian.server.ai.service.PromptService;
 
 @SpringBootTest(
@@ -52,7 +52,7 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST / - 创建提示词成功")
         void createPromptSuccess() throws Exception {
-            when(promptService.create(any())).thenReturn(AiTestDataFactory.createAiPrompts("prompt-1"));
+            when(promptService.create(any())).thenReturn(AiTestDataFactory.createAiPromptResponse("prompt-1"));
 
             mockMvc.perform(post("/api/admin/ai/prompts")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -65,7 +65,7 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 获取提示词成功")
         void getPromptSuccess() throws Exception {
-            when(promptService.getById("prompt-1")).thenReturn(AiTestDataFactory.createAiPrompts("prompt-1"));
+            when(promptService.getByIdResponse("prompt-1")).thenReturn(AiTestDataFactory.createAiPromptResponse("prompt-1"));
 
             mockMvc.perform(get("/api/admin/ai/prompts/prompt-1"))
                     .andExpect(status().isOk())
@@ -76,9 +76,9 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET / - 查询提示词列表成功")
         void listPromptsSuccess() throws Exception {
-            List<AiPrompts> list = List.of(
-                    AiTestDataFactory.createAiPrompts("prompt-1"), AiTestDataFactory.createAiPrompts("prompt-2"));
-            when(promptService.list()).thenReturn(list);
+            List<AiPromptResponse> list = List.of(
+                    AiTestDataFactory.createAiPromptResponse("prompt-1"), AiTestDataFactory.createAiPromptResponse("prompt-2"));
+            when(promptService.listResponses()).thenReturn(list);
 
             mockMvc.perform(get("/api/admin/ai/prompts"))
                     .andExpect(status().isOk())
@@ -89,7 +89,7 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - 更新提示词成功")
         void updatePromptSuccess() throws Exception {
-            when(promptService.update(eq("prompt-1"), any())).thenReturn(AiTestDataFactory.createAiPrompts("prompt-1"));
+            when(promptService.update(eq("prompt-1"), any())).thenReturn(AiTestDataFactory.createAiPromptResponse("prompt-1"));
 
             mockMvc.perform(put("/api/admin/ai/prompts/prompt-1")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -118,7 +118,7 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 400")
         void serviceThrowsBusinessException() throws Exception {
-            when(promptService.getById("nonexistent")).thenThrow(new BusinessException(4000, "提示词不存在"));
+            when(promptService.getByIdResponse("nonexistent")).thenThrow(new BusinessException(4000, "提示词不存在"));
 
             mockMvc.perform(get("/api/admin/ai/prompts/nonexistent"))
                     .andExpect(status().isBadRequest())
@@ -129,7 +129,7 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 RuntimeException 返回 500")
         void serviceThrowsRuntimeException() throws Exception {
-            when(promptService.list()).thenThrow(new RuntimeException("数据库异常"));
+            when(promptService.listResponses()).thenThrow(new RuntimeException("数据库异常"));
 
             mockMvc.perform(get("/api/admin/ai/prompts"))
                     .andExpect(status().isInternalServerError())
@@ -172,7 +172,7 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET / - 空结果集返回空数组")
         void listEmptyResult() throws Exception {
-            when(promptService.list()).thenReturn(List.of());
+            when(promptService.listResponses()).thenReturn(List.of());
 
             mockMvc.perform(get("/api/admin/ai/prompts"))
                     .andExpect(status().isOk())
@@ -183,7 +183,7 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("中文名称创建提示词")
         void createWithChineseName() throws Exception {
-            when(promptService.create(any())).thenReturn(AiTestDataFactory.createAiPrompts("prompt-1"));
+            when(promptService.create(any())).thenReturn(AiTestDataFactory.createAiPromptResponse("prompt-1"));
 
             AiTestDataFactory.createAiPromptCreateRequest().setName("党的二十大精神学习规范");
             mockMvc.perform(post("/api/admin/ai/prompts")
@@ -196,7 +196,7 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("超长 content 创建提示词")
         void createWithLongContent() throws Exception {
-            when(promptService.create(any())).thenReturn(AiTestDataFactory.createAiPrompts("prompt-1"));
+            when(promptService.create(any())).thenReturn(AiTestDataFactory.createAiPromptResponse("prompt-1"));
 
             AiTestDataFactory.createAiPromptCreateRequest().setContent("a".repeat(5000));
             mockMvc.perform(post("/api/admin/ai/prompts")
@@ -214,7 +214,7 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 注入在 name 字段")
         void xssInName() throws Exception {
-            when(promptService.create(any())).thenReturn(AiTestDataFactory.createAiPrompts("prompt-1"));
+            when(promptService.create(any())).thenReturn(AiTestDataFactory.createAiPromptResponse("prompt-1"));
 
             String json =
                     "{\"agentType\":\"CHAT\",\"name\":\"<script>alert('xss')</script>\",\"content\":\"test\",\"role\":\"SYSTEM\"}";
@@ -227,7 +227,7 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入在 content 字段")
         void sqlInjectionInContent() throws Exception {
-            when(promptService.create(any())).thenReturn(AiTestDataFactory.createAiPrompts("prompt-1"));
+            when(promptService.create(any())).thenReturn(AiTestDataFactory.createAiPromptResponse("prompt-1"));
 
             String json = "{\"agentType\":\"CHAT\",\"name\":\"test\",\"content\":\"' OR '1'='1\",\"role\":\"SYSTEM\"}";
             mockMvc.perform(post("/api/admin/ai/prompts")
@@ -239,7 +239,7 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET 请求创建接口正常处理（匹配查询接口）")
         void createWithWrongMethod() throws Exception {
-            when(promptService.list()).thenReturn(java.util.List.of());
+            when(promptService.listResponses()).thenReturn(java.util.List.of());
             mockMvc.perform(get("/api/admin/ai/prompts"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));

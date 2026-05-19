@@ -19,4 +19,5 @@ public class AuthErrorConstants {
     public static final int UNAUTHORIZED = 1012;
     public static final int USER_NOT_FOUND = 1013;
     public static final int OLD_PASSWORD_ERROR = 1014;
+    public static final int PASSWORD_CHANGE_ERROR = 1015;
 }

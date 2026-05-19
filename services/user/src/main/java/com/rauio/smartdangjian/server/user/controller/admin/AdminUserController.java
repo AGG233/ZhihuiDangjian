@@ -8,8 +8,8 @@ import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
@@ -47,8 +47,9 @@ public class AdminUserController {
     @Operation(summary = "创建用户", description = "由管理员创建用户")
     @PostMapping
     @DataScopeAccess(resource = DataScopeResources.USER_MANAGEMENT, action = DataScopeAction.CREATE, body = "#user")
-    public Result<Boolean> create(@RequestBody User user) {
-        return Result.ok(userService.register(user));
+    public Result<Void> create(@RequestBody User user) {
+        userService.register(user);
+        return Result.ok(null);
     }
 
     @Operation(summary = "更新用户", description = "根据用户ID更新用户")
@@ -58,7 +59,8 @@ public class AdminUserController {
             action = DataScopeAction.UPDATE,
             id = "#id",
             body = "#user")
-    public Result<Boolean> update(@PathVariable String id, @RequestBody User user) {
-        return Result.ok(userService.update(id, user));
+    public Result<Void> update(@PathVariable String id, @RequestBody User user) {
+        userService.update(id, user);
+        return Result.ok(null);
     }
 }

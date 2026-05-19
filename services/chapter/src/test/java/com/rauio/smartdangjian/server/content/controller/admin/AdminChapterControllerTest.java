@@ -163,7 +163,8 @@ class AdminChapterControllerTest {
     @Test
     @DisplayName("update 更新章节成功时返回 true")
     void updateShouldReturnTrue() {
-        ChapterRequest dto = ChapterRequest.builder().title("更新章节").description("更新描述").build();
+        ChapterRequest dto =
+                ChapterRequest.builder().title("更新章节").description("更新描述").build();
         when(chapterService.update(any(ChapterRequest.class))).thenReturn(true);
 
         Result<Boolean> result = controller.update(dto);
@@ -176,7 +177,8 @@ class AdminChapterControllerTest {
     @Test
     @DisplayName("update 更新章节失败时返回 false")
     void updateShouldReturnFalseWhenServiceFails() {
-        ChapterRequest dto = ChapterRequest.builder().title("失败更新").description("描述").build();
+        ChapterRequest dto =
+                ChapterRequest.builder().title("失败更新").description("描述").build();
         when(chapterService.update(any(ChapterRequest.class))).thenReturn(false);
 
         Result<Boolean> result = controller.update(dto);

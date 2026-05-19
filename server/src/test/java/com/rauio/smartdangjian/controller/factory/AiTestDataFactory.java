@@ -12,6 +12,7 @@ import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptCreateRequest;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptUpdateRequest;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiSkillCreateRequest;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiSkillUpdateRequest;
+import com.rauio.smartdangjian.server.ai.pojo.response.AiPromptResponse;
 
 /**
  * Static factory for AI test data — produces AiPrompts, AiSkill, request DTOs, and a JSON helper.
@@ -88,6 +89,23 @@ public final class AiTestDataFactory {
 
     public static AiPrompts createAiPrompts(String id) {
         return AiPrompts.builder()
+                .id(id)
+                .agentType("CHAT")
+                .name("通用回复规范")
+                .category("通用")
+                .content("你是党务学习助手，回答需严谨、客观、简洁。")
+                .role(PromptRoleEnum.SYSTEM)
+                .enabled(true)
+                .sort(10)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    // ── AiPromptResponse ───────────────────────────────────────────
+
+    public static AiPromptResponse createAiPromptResponse(String id) {
+        return AiPromptResponse.builder()
                 .id(id)
                 .agentType("CHAT")
                 .name("通用回复规范")

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
+import com.rauio.smartdangjian.server.ai.pojo.response.AiChatMessageResponse;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiChatRequest;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiEvaluationRequest;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiQuizRequest;
@@ -66,7 +66,7 @@ public class UserChatController {
 
     @Operation(summary = "查询会话消息", description = "返回当前用户指定会话下的历史消息，用于长期记忆与消息面板展示")
     @GetMapping("/{sessionId}/messages")
-    public Result<List<AiChatMessage>> listMessages(@PathVariable String sessionId) {
+    public Result<List<AiChatMessageResponse>> listMessages(@PathVariable String sessionId) {
         return Result.ok(aiMemoryService.listSessionMessages(userService.getCurrentUserId(), sessionId));
     }
 }

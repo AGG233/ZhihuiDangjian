@@ -44,7 +44,8 @@ class CourseRequestTest {
     @Test
     @DisplayName("description 和 coverImageId 可为 null")
     void optionalFieldsCanBeNull() {
-        CourseRequest dto = CourseRequest.builder().title("最简课程").categoryId("cat-001").build();
+        CourseRequest dto =
+                CourseRequest.builder().title("最简课程").categoryId("cat-001").build();
 
         assertThat(dto.getDescription()).isNull();
         assertThat(dto.getCoverImageId()).isNull();
@@ -54,7 +55,8 @@ class CourseRequestTest {
     @Test
     @DisplayName("setter 修改 title 后 getter 返回新值")
     void setterAndGetterWorkForTitle() {
-        CourseRequest dto = CourseRequest.builder().title("旧标题").categoryId("cat-001").build();
+        CourseRequest dto =
+                CourseRequest.builder().title("旧标题").categoryId("cat-001").build();
 
         dto.setTitle("新标题");
 

@@ -1,6 +1,8 @@
 package com.rauio.smartdangjian.controller.user;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -13,7 +15,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -24,6 +26,7 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
+import com.rauio.smartdangjian.server.user.controller.user.UserController;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 
@@ -32,8 +35,12 @@ import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 class UserControllerTest extends BaseControllerTest {
 
     @SpringBootConfiguration
-    @ComponentScan(basePackages = "com.rauio.smartdangjian.server.user.controller")
-    static class TestConfig extends CommonTestConfig {}
+    static class TestConfig extends CommonTestConfig {
+        @Bean
+        public UserController userController(UserService userService) {
+            return new UserController(userService);
+        }
+    }
 
     @MockitoBean
     private UserService userService;
@@ -93,15 +100,14 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - 更新用户成功")
         void updateSuccess() throws Exception {
-            when(userService.update(eq("user-001"), any())).thenReturn(true);
+            doNothing().when(userService).update(eq("user-001"), any());
 
             String json = "{\"realName\":\"张三丰\"}";
             mockMvc.perform(put("/api/user/users/user-001")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(json))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value(true));
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test
@@ -173,7 +179,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - Service 抛出 BusinessException 返回 400")
         void updateThrowsBusinessException() throws Exception {
-            when(userService.update(eq("user-001"), any())).thenThrow(new BusinessException(4000, "更新用户失败"));
+            doThrow(new BusinessException(4000, "更新用户失败")).when(userService).update(eq("user-001"), any());
 
             mockMvc.perform(put("/api/user/users/user-001")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -186,7 +192,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - Service 抛出 RuntimeException 返回 500")
         void updateThrowsRuntimeException() throws Exception {
-            when(userService.update(eq("user-001"), any())).thenThrow(new RuntimeException("数据库异常"));
+            doThrow(new RuntimeException("数据库异常")).when(userService).update(eq("user-001"), any());
 
             mockMvc.perform(put("/api/user/users/user-001")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -196,16 +202,15 @@ class UserControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("PUT /{id} - Service 返回 false 时 code 为 400")
-        void updateReturnsFalse() throws Exception {
-            when(userService.update(eq("user-001"), any())).thenReturn(false);
+        @DisplayName("PUT /{id} - Service 正常返回 200 OK")
+        void updateNormalSuccess() throws Exception {
+            doNothing().when(userService).update(eq("user-001"), any());
 
             mockMvc.perform(put("/api/user/users/user-001")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"realName\":\"新名称\"}"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value(false))
                     .andExpect(jsonPath("$.message").value("OK"));
         }
 
@@ -243,7 +248,8 @@ class UserControllerTest extends BaseControllerTest {
         void searchEmptyResults() throws Exception {
             Page<UserPublicResponse> emptyPage = new Page<>(1, 10, 0);
             emptyPage.setRecords(List.of());
-            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt())).thenReturn(emptyPage);
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
+                    .thenReturn(emptyPage);
 
             mockMvc.perform(post("/api/user/users/search")
                             .param("pageNum", "1")
@@ -275,7 +281,8 @@ class UserControllerTest extends BaseControllerTest {
         void searchWithSpecialChars() throws Exception {
             Page<UserPublicResponse> page = new Page<>(1, 10, 0);
             page.setRecords(List.of());
-            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserRequest dto = new UserRequest();
             dto.setUsername("user_@#$%");
@@ -291,7 +298,8 @@ class UserControllerTest extends BaseControllerTest {
         void searchWithLongField() throws Exception {
             Page<UserPublicResponse> page = new Page<>(1, 10, 0);
             page.setRecords(List.of());
-            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserRequest dto = new UserRequest();
             dto.setUsername("a".repeat(1000));
@@ -340,7 +348,8 @@ class UserControllerTest extends BaseControllerTest {
         void xssInSearch() throws Exception {
             Page<UserPublicResponse> page = new Page<>(1, 10, 0);
             page.setRecords(List.of());
-            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserRequest dto = new UserRequest();
             dto.setUsername("<script>alert('xss')</script>");
@@ -355,7 +364,8 @@ class UserControllerTest extends BaseControllerTest {
         void sqlInjectionInSearch() throws Exception {
             Page<UserPublicResponse> page = new Page<>(1, 10, 0);
             page.setRecords(List.of());
-            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt())).thenReturn(page);
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
+                    .thenReturn(page);
 
             UserRequest dto = new UserRequest();
             dto.setUsername("' OR '1'='1");

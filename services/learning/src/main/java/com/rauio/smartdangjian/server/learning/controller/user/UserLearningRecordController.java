@@ -34,7 +34,8 @@ public class UserLearningRecordController {
     @GetMapping("/{id}")
     @PermissionAccess(UserType.STUDENT)
     @DataScopeAccess(resource = DataScopeResources.LEARNING_RECORD, action = DataScopeAction.READ, id = "#id")
-    public Result<UserLearningRecordResponse> get(@Parameter(name = "id", description = "记录ID") @PathVariable String id) {
+    public Result<UserLearningRecordResponse> get(
+            @Parameter(name = "id", description = "记录ID") @PathVariable String id) {
         UserLearningRecordResponse result = recordService.get(id);
         return Result.ok(result);
     }

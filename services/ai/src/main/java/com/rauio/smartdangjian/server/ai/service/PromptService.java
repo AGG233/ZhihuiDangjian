@@ -10,10 +10,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.ai.constants.AiErrorConstants;
 import com.rauio.smartdangjian.server.ai.mapper.AiPromptsMapper;
+import com.rauio.smartdangjian.server.ai.pojo.convertor.PromptConvertor;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiPrompts;
 import com.rauio.smartdangjian.server.ai.pojo.enums.PromptRoleEnum;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptCreateRequest;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptUpdateRequest;
+import com.rauio.smartdangjian.server.ai.pojo.response.AiPromptResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +24,9 @@ import lombok.RequiredArgsConstructor;
 @Transactional(transactionManager = "dataSourceTransactionManager")
 public class PromptService extends ServiceImpl<AiPromptsMapper, AiPrompts> {
 
-    public AiPrompts create(AiPromptCreateRequest request) {
+    private final PromptConvertor convertor;
+
+    public AiPromptResponse create(AiPromptCreateRequest request) {
         AiPrompts prompt = AiPrompts.builder()
                 .agentType(request.getAgentType().toUpperCase())
                 .name(request.getName())
@@ -32,10 +36,10 @@ public class PromptService extends ServiceImpl<AiPromptsMapper, AiPrompts> {
                 .sort(request.getSort() == null ? 0 : request.getSort())
                 .build();
         this.save(prompt);
-        return prompt;
+        return convertor.toResponse(prompt);
     }
 
-    public AiPrompts update(String id, AiPromptUpdateRequest request) {
+    public AiPromptResponse update(String id, AiPromptUpdateRequest request) {
         AiPrompts prompt = this.getById(id);
         if (prompt == null) {
             throw new BusinessException(AiErrorConstants.PROMPT_NOT_FOUND, "提示词不存在: " + id);
@@ -59,7 +63,15 @@ public class PromptService extends ServiceImpl<AiPromptsMapper, AiPrompts> {
             prompt.setSort(request.getSort());
         }
         this.updateById(prompt);
-        return prompt;
+        return convertor.toResponse(prompt);
+    }
+
+    public AiPromptResponse getByIdResponse(String id) {
+        return convertor.toResponse(this.getById(id));
+    }
+
+    public List<AiPromptResponse> listResponses() {
+        return convertor.toResponseList(this.list());
     }
 
     public List<AiPrompts> listEnabledSystemPrompts(String agentType) {

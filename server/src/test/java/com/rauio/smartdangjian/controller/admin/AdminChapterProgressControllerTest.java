@@ -24,7 +24,7 @@ import com.rauio.smartdangjian.controller.factory.LearningTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.learning.controller.admin.AdminChapterProgressController;
-import com.rauio.smartdangjian.server.learning.pojo.vo.UserChapterProgressVO;
+import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
 import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
@@ -57,7 +57,7 @@ class AdminChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /chapter/{chapterId} - 获取章节所有进度成功")
         void getByChapterIdSuccess() throws Exception {
-            UserChapterProgressVO vo = LearningTestDataFactory.createChapterProgressVO("prog-001");
+            UserChapterProgressResponse vo = LearningTestDataFactory.createChapterProgressVO("prog-001");
             when(progressService.getByChapterId("ch-001")).thenReturn(List.of(vo));
 
             mockMvc.perform(get("/api/admin/learning/progress/chapter/ch-001"))
@@ -166,7 +166,7 @@ class AdminChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /chapter/{chapterId} - 多记录返回")
         void getByChapterIdMultipleRecords() throws Exception {
-            List<UserChapterProgressVO> list = List.of(
+            List<UserChapterProgressResponse> list = List.of(
                     LearningTestDataFactory.createChapterProgressVO("prog-001", "user-001", "ch-001"),
                     LearningTestDataFactory.createChapterProgressVO("prog-002", "user-002", "ch-001"),
                     LearningTestDataFactory.createChapterProgressVO("prog-003", "user-003", "ch-001"));

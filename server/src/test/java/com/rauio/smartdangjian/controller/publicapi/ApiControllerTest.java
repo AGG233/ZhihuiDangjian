@@ -18,7 +18,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.common.controller.publicapi.ApiController;
-import com.rauio.smartdangjian.common.pojo.Universities;
+import com.rauio.smartdangjian.common.pojo.response.SchoolResponse;
 import com.rauio.smartdangjian.common.service.UniversitiesService;
 import com.rauio.smartdangjian.exception.BusinessException;
 
@@ -44,7 +44,7 @@ class ApiControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /school/all - 获取学校列表成功")
         void getSchoolListSuccess() throws Exception {
-            List<Universities> list = List.of(createUniversity("1", "北京大学"), createUniversity("2", "清华大学"));
+            List<SchoolResponse> list = List.of(createSchoolResponse("1", "北京大学"), createSchoolResponse("2", "清华大学"));
             when(universitiesService.getList()).thenReturn(list);
 
             mockMvc.perform(get("/api/school/all"))
@@ -99,7 +99,7 @@ class ApiControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /school/all - 单个学校")
         void getSchoolListSingle() throws Exception {
-            List<Universities> list = List.of(createUniversity("1", "浙江大学"));
+            List<SchoolResponse> list = List.of(createSchoolResponse("1", "浙江大学"));
             when(universitiesService.getList()).thenReturn(list);
 
             mockMvc.perform(get("/api/school/all"))
@@ -112,7 +112,7 @@ class ApiControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /school/all - 学校名含特殊字符")
         void getSchoolListWithSpecialChars() throws Exception {
-            List<Universities> list = List.of(createUniversity("3", "测试·大学（海淀）"));
+            List<SchoolResponse> list = List.of(createSchoolResponse("3", "测试·大学（海淀）"));
             when(universitiesService.getList()).thenReturn(list);
 
             mockMvc.perform(get("/api/school/all"))
@@ -140,10 +140,7 @@ class ApiControllerTest extends BaseControllerTest {
         }
     }
 
-    private Universities createUniversity(String id, String name) {
-        Universities u = new Universities();
-        u.setId(id);
-        u.setName(name);
-        return u;
+    private SchoolResponse createSchoolResponse(String id, String name) {
+        return SchoolResponse.builder().id(id).name(name).build();
     }
 }

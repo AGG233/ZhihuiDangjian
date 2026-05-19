@@ -34,8 +34,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
-import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 
@@ -76,17 +76,21 @@ class UserServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("getByPassport passport为null时返回null")
-    void getByPassportNullReturnsNull() {
-        User result = userService.getByPassport(null);
-        assertThat(result).isNull();
+    @DisplayName("getByPassport passport为null时抛出BusinessException(EMPTY_ARGS)")
+    void getByPassportNullThrows() {
+        assertThatThrownBy(() -> userService.getByPassport(null))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(UserErrorConstants.EMPTY_ARGS);
     }
 
     @Test
-    @DisplayName("getByPassport passport为空字符串时返回null")
-    void getByPassportEmptyReturnsNull() {
-        User result = userService.getByPassport("");
-        assertThat(result).isNull();
+    @DisplayName("getByPassport passport为空字符串时抛出BusinessException(EMPTY_ARGS)")
+    void getByPassportEmptyThrows() {
+        assertThatThrownBy(() -> userService.getByPassport(""))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(UserErrorConstants.EMPTY_ARGS);
     }
 
     @Test
@@ -311,9 +315,8 @@ class UserServiceTest {
 
         doReturn(true).when(userService).updateById(any(User.class));
 
-        Boolean result = userService.update("u1", user);
+        userService.update("u1", user);
 
-        assertThat(result).isTrue();
         assertThat(user.getId()).isEqualTo("u1");
         verify(passwordEncoder, never()).encode(anyString());
         verify(userService).updateById(user);
@@ -328,9 +331,8 @@ class UserServiceTest {
         when(passwordEncoder.encode("plainPassword")).thenReturn("encodedNewPassword");
         doReturn(true).when(userService).updateById(any(User.class));
 
-        Boolean result = userService.update("u1", user);
+        userService.update("u1", user);
 
-        assertThat(result).isTrue();
         assertThat(user.getId()).isEqualTo("u1");
         assertThat(user.getPassword()).isEqualTo("encodedNewPassword");
         verify(passwordEncoder).encode("plainPassword");
@@ -345,9 +347,8 @@ class UserServiceTest {
 
         doReturn(true).when(userService).updateById(any(User.class));
 
-        Boolean result = userService.update("u1", user);
+        userService.update("u1", user);
 
-        assertThat(result).isTrue();
         verify(passwordEncoder, never()).encode(anyString());
     }
 
@@ -356,24 +357,24 @@ class UserServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("delete 调用removeById删除并返回结果")
+    @DisplayName("delete 调用removeById删除")
     void deleteCallsRemoveById() {
         doReturn(true).when(userService).removeById("u1");
 
-        Boolean result = userService.delete("u1");
+        userService.delete("u1");
 
-        assertThat(result).isTrue();
         verify(userService).removeById("u1");
     }
 
     @Test
-    @DisplayName("delete 删除不存在的用户返回false")
-    void deleteNonExistentReturnsFalse() {
+    @DisplayName("delete 删除不存在的用户时抛出 BusinessException")
+    void deleteNonExistentThrows() {
         doReturn(false).when(userService).removeById("nonexistent");
 
-        Boolean result = userService.delete("nonexistent");
-
-        assertThat(result).isFalse();
+        assertThatThrownBy(() -> userService.delete("nonexistent"))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(UserErrorConstants.USER_NOT_EXISTS);
     }
 
     // ================================================================
@@ -390,9 +391,8 @@ class UserServiceTest {
         when(passwordEncoder.encode("plainPassword")).thenReturn("encodedPassword");
         doReturn(true).when(userService).save(any(User.class));
 
-        Boolean result = userService.register(user);
+        userService.register(user);
 
-        assertThat(result).isTrue();
         assertThat(user.getPassword()).isEqualTo("encodedPassword");
         verify(passwordEncoder).encode("plainPassword");
         verify(userService).save(user);
@@ -488,9 +488,8 @@ class UserServiceTest {
         when(passwordEncoder.encode("newPassword")).thenReturn("encodedNewPassword");
         doReturn(true).when(userService).updateById(any(User.class));
 
-        Boolean result = userService.changePassword("oldPassword", "newPassword");
+        userService.changePassword("oldPassword", "newPassword");
 
-        assertThat(result).isTrue();
         assertThat(user.getPassword()).isEqualTo("encodedNewPassword");
         verify(passwordEncoder).matches("oldPassword", "encodedOldPassword");
         verify(passwordEncoder).encode("newPassword");

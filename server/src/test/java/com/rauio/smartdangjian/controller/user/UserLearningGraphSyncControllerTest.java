@@ -52,7 +52,7 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
         void syncUserGraphSuccess() throws Exception {
             when(userLearningRecordService.syncUserLearningGraph("user-001")).thenReturn(5);
 
-            mockMvc.perform(post("/api/learning/graph/user/user-001/sync"))
+            mockMvc.perform(post("/api/learning/graph/users/user-001/sync"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(5));
@@ -63,7 +63,7 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
         void syncUserGraphNoRecords() throws Exception {
             when(userLearningRecordService.syncUserLearningGraph("user-empty")).thenReturn(0);
 
-            mockMvc.perform(post("/api/learning/graph/user/user-empty/sync"))
+            mockMvc.perform(post("/api/learning/graph/users/user-empty/sync"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(0));
@@ -84,7 +84,7 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
             when(userLearningRecordService.syncUserLearningGraph("user-001"))
                     .thenThrow(new BusinessException(4000, "用户不存在"));
 
-            mockMvc.perform(post("/api/learning/graph/user/user-001/sync"))
+            mockMvc.perform(post("/api/learning/graph/users/user-001/sync"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("用户不存在"));
@@ -95,7 +95,7 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
         void syncThrowsRuntimeException() throws Exception {
             when(userLearningRecordService.syncUserLearningGraph("user-001")).thenThrow(new RuntimeException("图谱同步异常"));
 
-            mockMvc.perform(post("/api/learning/graph/user/user-001/sync"))
+            mockMvc.perform(post("/api/learning/graph/users/user-001/sync"))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("500"));
         }
@@ -114,7 +114,7 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
         void syncWithSpecialCharsInUserId() throws Exception {
             when(userLearningRecordService.syncUserLearningGraph("user_@#$%")).thenReturn(0);
 
-            mockMvc.perform(post("/api/learning/graph/user/{userId}/sync", "user_@#$%"))
+            mockMvc.perform(post("/api/learning/graph/users/{userId}/sync", "user_@#$%"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));
         }
@@ -124,7 +124,7 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
         void syncWithLargeNumberOfRecords() throws Exception {
             when(userLearningRecordService.syncUserLearningGraph("user-busy")).thenReturn(9999);
 
-            mockMvc.perform(post("/api/learning/graph/user/user-busy/sync"))
+            mockMvc.perform(post("/api/learning/graph/users/user-busy/sync"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(9999));
@@ -145,7 +145,7 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
             when(userLearningRecordService.syncUserLearningGraph("<script>alert('xss')</script>"))
                     .thenThrow(new BusinessException(4000, "用户不存在"));
 
-            mockMvc.perform(post(URI.create("/api/learning/graph/user/%3Cscript%3Ealert('xss')%3C%2Fscript%3E/sync")))
+            mockMvc.perform(post(URI.create("/api/learning/graph/users/%3Cscript%3Ealert('xss')%3C%2Fscript%3E/sync")))
                     .andExpect(status().isBadRequest());
         }
 
@@ -155,21 +155,21 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
             when(userLearningRecordService.syncUserLearningGraph("' OR '1'='1"))
                     .thenThrow(new BusinessException(4000, "用户不存在"));
 
-            mockMvc.perform(post("/api/learning/graph/user/{userId}/sync", "' OR '1'='1"))
+            mockMvc.perform(post("/api/learning/graph/users/{userId}/sync", "' OR '1'='1"))
                     .andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("GET 请求同步接口返回 405")
         void syncWithWrongMethod() throws Exception {
-            mockMvc.perform(get("/api/learning/graph/user/user-001/sync")).andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(get("/api/learning/graph/users/user-001/sync")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("DELETE 请求同步接口返回 405")
         void syncWithDeleteMethod() throws Exception {
             mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete(
-                            "/api/learning/graph/user/user-001/sync"))
+                            "/api/learning/graph/users/user-001/sync"))
                     .andExpect(status().isMethodNotAllowed());
         }
     }

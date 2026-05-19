@@ -26,7 +26,7 @@ import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.content.controller.user.UserCategoryController;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryArticle;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
-import com.rauio.smartdangjian.server.content.pojo.vo.CategoryVO;
+import com.rauio.smartdangjian.server.content.pojo.response.CategoryResponse;
 import com.rauio.smartdangjian.server.content.service.article.ArticleService;
 import com.rauio.smartdangjian.server.content.service.category.CategoryService;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
@@ -90,7 +90,7 @@ class UserCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 获取目录详情成功")
         void getCategoryByIdSuccess() throws Exception {
-            CategoryVO vo = CategoryTestDataFactory.createCategoryVO("cat-001", "党建学习", null);
+            CategoryResponse vo = CategoryTestDataFactory.createCategoryResponse("cat-001", "党建学习", null);
             when(categoryService.get("cat-001")).thenReturn(vo);
 
             mockMvc.perform(get("/api/content/categories/cat-001"))
@@ -103,7 +103,7 @@ class UserCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET / - 获取根目录列表成功")
         void getRootListSuccess() throws Exception {
-            List<CategoryVO> list = CategoryTestDataFactory.createCategoryVOList(3);
+            List<CategoryResponse> list = CategoryTestDataFactory.createCategoryResponseList(3);
             when(categoryService.getRootList()).thenReturn(list);
 
             mockMvc.perform(get("/api/content/categories"))
@@ -115,7 +115,7 @@ class UserCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /root - 获取所有根目录成功")
         void getRootListViaRootSuccess() throws Exception {
-            List<CategoryVO> list = CategoryTestDataFactory.createCategoryVOList(2);
+            List<CategoryResponse> list = CategoryTestDataFactory.createCategoryResponseList(2);
             when(categoryService.getRootList()).thenReturn(list);
 
             mockMvc.perform(get("/api/content/categories/root"))
@@ -127,7 +127,7 @@ class UserCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id}/children - 获取子目录成功")
         void getChildrenSuccess() throws Exception {
-            List<CategoryVO> children = CategoryTestDataFactory.createCategoryVOList(3, "cat-001");
+            List<CategoryResponse> children = CategoryTestDataFactory.createCategoryResponseList(3, "cat-001");
             when(categoryService.getByParentId("cat-001")).thenReturn(children);
 
             mockMvc.perform(get("/api/content/categories/cat-001/children"))
@@ -168,7 +168,7 @@ class UserCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET / - 返回的 VO 包含所有字段")
         void getRootListContainsAllFields() throws Exception {
-            CategoryVO vo = CategoryTestDataFactory.createCategoryVO("cat-001", "党委工作", null);
+            CategoryResponse vo = CategoryTestDataFactory.createCategoryResponse("cat-001", "党委工作", null);
             vo.setDescription("党委工作分类描述");
             vo.setSortOrder(1);
             vo.setUniversityId("uni-sustech-001");
@@ -186,8 +186,8 @@ class UserCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 获取带子节点的目录详情成功")
         void getCategoryWithChildrenSuccess() throws Exception {
-            CategoryVO child = CategoryTestDataFactory.createCategoryVO("child-001", "子分类", "cat-001");
-            CategoryVO parent = CategoryTestDataFactory.createCategoryVO("cat-001", "父分类", null, List.of(child));
+            CategoryResponse child = CategoryTestDataFactory.createCategoryResponse("child-001", "子分类", "cat-001");
+            CategoryResponse parent = CategoryTestDataFactory.createCategoryResponse("cat-001", "父分类", null, List.of(child));
             when(categoryService.get("cat-001")).thenReturn(parent);
 
             mockMvc.perform(get("/api/content/categories/cat-001"))
@@ -314,10 +314,10 @@ class UserCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 目录包含深层嵌套子节点")
         void getCategoryWithDeepNestedChildren() throws Exception {
-            CategoryVO grandchild = CategoryTestDataFactory.createCategoryVO("grandchild-001", "孙节点", "child-001");
-            CategoryVO child =
-                    CategoryTestDataFactory.createCategoryVO("child-001", "子节点", "cat-001", List.of(grandchild));
-            CategoryVO parent = CategoryTestDataFactory.createCategoryVO("cat-001", "根节点", null, List.of(child));
+            CategoryResponse grandchild = CategoryTestDataFactory.createCategoryResponse("grandchild-001", "孙节点", "child-001");
+            CategoryResponse child =
+                    CategoryTestDataFactory.createCategoryResponse("child-001", "子节点", "cat-001", List.of(grandchild));
+            CategoryResponse parent = CategoryTestDataFactory.createCategoryResponse("cat-001", "根节点", null, List.of(child));
 
             when(categoryService.get("cat-001")).thenReturn(parent);
 
@@ -340,7 +340,7 @@ class UserCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("STUDENT 用户可正常访问 GET /{id}")
         void studentCanAccessGetCategory() throws Exception {
-            CategoryVO vo = CategoryTestDataFactory.createCategoryVO("cat-001", "党建学习", null);
+            CategoryResponse vo = CategoryTestDataFactory.createCategoryResponse("cat-001", "党建学习", null);
             when(categoryService.get("cat-001")).thenReturn(vo);
 
             mockMvc.perform(get("/api/content/categories/cat-001"))

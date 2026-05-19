@@ -24,7 +24,7 @@ import com.rauio.smartdangjian.controller.factory.LearningTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.learning.controller.admin.AdminLearningRecordController;
-import com.rauio.smartdangjian.server.learning.pojo.vo.UserLearningRecordVO;
+import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
@@ -56,7 +56,7 @@ class AdminLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /chapter/{chapterId} - 获取章节所有学习记录成功")
         void getByChapterIdSuccess() throws Exception {
-            UserLearningRecordVO vo = LearningTestDataFactory.createLearningRecordVO("rec-001");
+            UserLearningRecordResponse vo = LearningTestDataFactory.createLearningRecordVO("rec-001");
             when(recordService.getByChapterId("ch-001")).thenReturn(List.of(vo));
 
             mockMvc.perform(get("/api/admin/learning/records/chapter/ch-001"))
@@ -165,7 +165,7 @@ class AdminLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /chapter/{chapterId} - 多记录返回")
         void getByChapterIdMultipleRecords() throws Exception {
-            List<UserLearningRecordVO> list = List.of(
+            List<UserLearningRecordResponse> list = List.of(
                     LearningTestDataFactory.createLearningRecordVO("rec-001", "user-001", "ch-001"),
                     LearningTestDataFactory.createLearningRecordVO("rec-002", "user-002", "ch-001"),
                     LearningTestDataFactory.createLearningRecordVO("rec-003", "user-003", "ch-001"));

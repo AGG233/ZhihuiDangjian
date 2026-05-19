@@ -72,7 +72,8 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      * @return 父目录的子目录
      * */
     public List<CategoryResponse> getByParentId(String categoryId) {
-        return convertor.toResponseList(this.list(new LambdaQueryWrapper<Category>().eq(Category::getParentId, categoryId)));
+        return convertor.toResponseList(
+                this.list(new LambdaQueryWrapper<Category>().eq(Category::getParentId, categoryId)));
     }
 
     /**

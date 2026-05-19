@@ -28,7 +28,8 @@ class UserChapterProgressControllerTest {
     @Test
     @DisplayName("get 委托 service 获取进度记录")
     void get() {
-        UserChapterProgressResponse vo = UserChapterProgressResponse.builder().id("p-1").build();
+        UserChapterProgressResponse vo =
+                UserChapterProgressResponse.builder().id("p-1").build();
         when(progressService.get("p-1")).thenReturn(vo);
 
         var result = controller.get("p-1");
@@ -40,7 +41,8 @@ class UserChapterProgressControllerTest {
     @DisplayName("getByUserId 委托 service 获取用户所有进度")
     void getByUserId() {
         when(progressService.getByUserId("user-1"))
-                .thenReturn(List.of(UserChapterProgressResponse.builder().id("p-1").build()));
+                .thenReturn(
+                        List.of(UserChapterProgressResponse.builder().id("p-1").build()));
 
         var result = controller.getByUserId("user-1");
 
@@ -50,7 +52,8 @@ class UserChapterProgressControllerTest {
     @Test
     @DisplayName("getByUserIdAndChapterId 委托 service 获取用户章节进度")
     void getByUserIdAndChapterId() {
-        UserChapterProgressResponse vo = UserChapterProgressResponse.builder().id("p-1").build();
+        UserChapterProgressResponse vo =
+                UserChapterProgressResponse.builder().id("p-1").build();
         when(progressService.getByUserIdAndChapterId("user-1", "ch-1")).thenReturn(vo);
 
         var result = controller.getByUserIdAndChapterId("user-1", "ch-1");

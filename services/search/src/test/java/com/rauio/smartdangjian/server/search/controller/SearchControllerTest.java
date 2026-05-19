@@ -13,11 +13,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 import com.rauio.smartdangjian.server.search.service.RecommendService;
 import com.rauio.smartdangjian.server.search.service.SearchService;
 import com.rauio.smartdangjian.server.search.service.UserProfileService;
-import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 
 @ExtendWith(MockitoExtension.class)
 class SearchControllerTest {
@@ -74,7 +74,8 @@ class SearchControllerTest {
     @Test
     @DisplayName("recommend 委托 Service 返回推荐")
     void recommendDelegates() {
-        UserProfileResponse profile = UserProfileResponse.builder().userId("user-1").build();
+        UserProfileResponse profile =
+                UserProfileResponse.builder().userId("user-1").build();
         when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
         Page<String> recPage = new Page<>(1, 10);
         recPage.setRecords(List.of("course-1"));
@@ -89,7 +90,8 @@ class SearchControllerTest {
     @Test
     @DisplayName("getProfile 委托 Service 返回用户画像")
     void getProfileDelegates() {
-        UserProfileResponse profile = UserProfileResponse.builder().userId("user-1").build();
+        UserProfileResponse profile =
+                UserProfileResponse.builder().userId("user-1").build();
         when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
 
         var result = searchController.getProfile();

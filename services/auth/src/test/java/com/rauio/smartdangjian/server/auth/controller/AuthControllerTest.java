@@ -118,27 +118,14 @@ class AuthControllerTest {
     // ================================================================
 
     @Test
-    @DisplayName("changePassword 委托 authService.changePassword 并包装结果为 Result")
+    @DisplayName("changePassword 委托 authService.changePassword 并返回成功 Result")
     void changePasswordDelegatesToAuthService() {
         ChangePasswordRequest request = new ChangePasswordRequest();
-        when(authService.changePassword(any(ChangePasswordRequest.class))).thenReturn(true);
 
-        Result<Boolean> result = authController.changePassword(request);
+        Result<Void> result = authController.changePassword(request);
 
         assertThat(result.getCode()).isEqualTo("200");
-        assertThat(result.getData()).isTrue();
         verify(authService).changePassword(request);
-    }
-
-    @Test
-    @DisplayName("changePassword 修改失败时返回 false")
-    void changePasswordReturnsFalseWhenServiceReturnsFalse() {
-        ChangePasswordRequest request = new ChangePasswordRequest();
-        when(authService.changePassword(any(ChangePasswordRequest.class))).thenReturn(false);
-
-        Result<Boolean> result = authController.changePassword(request);
-
-        assertThat(result.getData()).isFalse();
     }
 
     // ================================================================

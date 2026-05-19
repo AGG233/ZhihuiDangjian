@@ -28,7 +28,8 @@ class AdminLearningRecordControllerTest {
     @DisplayName("getByChapterId 委托 service 获取章节学习记录")
     void getByChapterId() {
         when(recordService.getByChapterId("ch-1"))
-                .thenReturn(List.of(UserLearningRecordResponse.builder().id("r-1").build()));
+                .thenReturn(
+                        List.of(UserLearningRecordResponse.builder().id("r-1").build()));
 
         var result = controller.getByChapterId("ch-1");
 

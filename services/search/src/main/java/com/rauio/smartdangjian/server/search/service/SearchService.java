@@ -86,7 +86,8 @@ public class SearchService {
 
         // 搜索结果不足时，用推荐补充
         if (records.size() < pageSize) {
-            Set<String> existingIds = records.stream().map(CourseResponse::getId).collect(Collectors.toSet());
+            Set<String> existingIds =
+                    records.stream().map(CourseResponse::getId).collect(Collectors.toSet());
 
             String userId = userService.getCurrentUserId();
             Page<String> cfIds = recommendService.recommend(userId, 1, pageSize);

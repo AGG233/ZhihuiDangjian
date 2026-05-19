@@ -56,8 +56,8 @@ public class UserQuizAnswerController {
             @Parameter(name = "id", description = "用户ID") @PathVariable String id,
             @Parameter(name = "quizId", description = "试题ID") @PathVariable String quizId,
             @Parameter(name = "optionId", description = "选项ID") @PathVariable String optionId) {
-        return Result.ok(toUserQuizAnswerResponse(
-                userQuizAnswerService.getByUserIdAndQuizIdAndOptionId(id, quizId, optionId)));
+        return Result.ok(
+                toUserQuizAnswerResponse(userQuizAnswerService.getByUserIdAndQuizIdAndOptionId(id, quizId, optionId)));
     }
 
     @Operation(summary = "提交答题", description = "用户提交一道题的答案")

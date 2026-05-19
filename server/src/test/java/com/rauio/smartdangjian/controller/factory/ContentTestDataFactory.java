@@ -8,12 +8,12 @@ import org.springframework.test.util.ReflectionTestUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
-import com.rauio.smartdangjian.server.content.pojo.vo.ContentBlockVO;
+import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
 import com.rauio.smartdangjian.server.content.spec.BlockType;
 import com.rauio.smartdangjian.server.content.spec.ParentType;
 
 /**
- * Static factory for content test data — produces ContentBlock and ContentBlockVO
+ * Static factory for content test data — produces ContentBlock and ContentBlockResponse
  * instances, lists, and JSON helpers.
  */
 public final class ContentTestDataFactory {
@@ -72,11 +72,11 @@ public final class ContentTestDataFactory {
         return list;
     }
 
-    // ── ContentBlockVO builders (uses ReflectionTestUtils for field access) ──
+    // ── ContentBlockResponse builders (uses ReflectionTestUtils for field access) ──
 
-    public static ContentBlockVO createContentBlockVO(
+    public static ContentBlockResponse createContentBlockResponse(
             String parentId, ParentType parentType, BlockType blockType, String textContent) {
-        ContentBlockVO vo = new ContentBlockVO();
+        ContentBlockResponse vo = new ContentBlockResponse();
         ReflectionTestUtils.setField(vo, "parentId", parentId);
         ReflectionTestUtils.setField(vo, "parentType", parentType);
         ReflectionTestUtils.setField(vo, "blockType", blockType);
@@ -86,15 +86,15 @@ public final class ContentTestDataFactory {
         return vo;
     }
 
-    public static ContentBlockVO createCarouselVO(String parentId, BlockType blockType) {
-        return createContentBlockVO(parentId, ParentType.chapter, blockType, "轮播图内容");
+    public static ContentBlockResponse createCarouselResponse(String parentId, BlockType blockType) {
+        return createContentBlockResponse(parentId, ParentType.chapter, blockType, "轮播图内容");
     }
 
-    public static List<ContentBlockVO> createContentBlockVOList(int count) {
-        List<ContentBlockVO> list = new ArrayList<>();
+    public static List<ContentBlockResponse> createContentBlockResponseList(int count) {
+        List<ContentBlockResponse> list = new ArrayList<>();
         BlockType[] types = BlockType.values();
         for (int i = 1; i <= count; i++) {
-            list.add(createCarouselVO("1145141919810", types[i % types.length]));
+            list.add(createCarouselResponse("1145141919810", types[i % types.length]));
         }
         return list;
     }

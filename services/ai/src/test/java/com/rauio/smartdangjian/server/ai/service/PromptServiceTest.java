@@ -21,16 +21,21 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.ai.mapper.AiPromptsMapper;
+import com.rauio.smartdangjian.server.ai.pojo.convertor.PromptConvertor;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiPrompts;
 import com.rauio.smartdangjian.server.ai.pojo.enums.PromptRoleEnum;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptCreateRequest;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptUpdateRequest;
+import com.rauio.smartdangjian.server.ai.pojo.response.AiPromptResponse;
 
 @ExtendWith(MockitoExtension.class)
 class PromptServiceTest {
 
     @Mock
     private AiPromptsMapper mapper;
+
+    @Mock
+    private PromptConvertor convertor;
 
     @Spy
     @InjectMocks
@@ -117,8 +122,18 @@ class PromptServiceTest {
         request.setSort(5);
 
         doReturn(true).when(promptService).save(any(AiPrompts.class));
+        AiPromptResponse expectedResponse = AiPromptResponse.builder()
+                .id(null)
+                .agentType("CHAT")
+                .name("测试提示词")
+                .content("提示词内容")
+                .role(PromptRoleEnum.SYSTEM)
+                .enabled(true)
+                .sort(5)
+                .build();
+        doReturn(expectedResponse).when(convertor).toResponse(any(AiPrompts.class));
 
-        AiPrompts result = promptService.create(request);
+        AiPromptResponse result = promptService.create(request);
 
         assertThat(result.getAgentType()).isEqualTo("CHAT");
         assertThat(result.getName()).isEqualTo("测试提示词");
@@ -142,8 +157,10 @@ class PromptServiceTest {
         request.setRole("SYSTEM");
 
         doReturn(true).when(promptService).save(any(AiPrompts.class));
+        AiPromptResponse expectedResponse = AiPromptResponse.builder().enabled(false).sort(0).build();
+        doReturn(expectedResponse).when(convertor).toResponse(any(AiPrompts.class));
 
-        AiPrompts result = promptService.create(request);
+        AiPromptResponse result = promptService.create(request);
 
         assertThat(result.getEnabled()).isFalse();
         assertThat(result.getSort()).isZero();
@@ -164,6 +181,15 @@ class PromptServiceTest {
 
         doReturn(existing).when(promptService).getById("prompt-1");
         doReturn(true).when(promptService).updateById(any(AiPrompts.class));
+        AiPromptResponse expectedResponse = AiPromptResponse.builder()
+                .id("prompt-1")
+                .name("新名称")
+                .content("新内容")
+                .role(PromptRoleEnum.DEVELOPER)
+                .enabled(true)
+                .sort(10)
+                .build();
+        doReturn(expectedResponse).when(convertor).toResponse(any(AiPrompts.class));
 
         AiPromptUpdateRequest request = new AiPromptUpdateRequest();
         request.setName("新名称");
@@ -172,7 +198,7 @@ class PromptServiceTest {
         request.setEnabled(true);
         request.setSort(10);
 
-        AiPrompts result = promptService.update("prompt-1", request);
+        AiPromptResponse result = promptService.update("prompt-1", request);
 
         assertThat(result.getName()).isEqualTo("新名称");
         assertThat(result.getContent()).isEqualTo("新内容");
@@ -196,11 +222,20 @@ class PromptServiceTest {
 
         doReturn(existing).when(promptService).getById("prompt-1");
         doReturn(true).when(promptService).updateById(any(AiPrompts.class));
+        AiPromptResponse expectedResponse = AiPromptResponse.builder()
+                .id("prompt-1")
+                .name("仅更新名称")
+                .content("内容")
+                .role(PromptRoleEnum.SYSTEM)
+                .enabled(false)
+                .sort(0)
+                .build();
+        doReturn(expectedResponse).when(convertor).toResponse(any(AiPrompts.class));
 
         AiPromptUpdateRequest request = new AiPromptUpdateRequest();
         request.setName("仅更新名称");
 
-        AiPrompts result = promptService.update("prompt-1", request);
+        AiPromptResponse result = promptService.update("prompt-1", request);
 
         assertThat(result.getName()).isEqualTo("仅更新名称");
         assertThat(result.getContent()).isEqualTo("内容");

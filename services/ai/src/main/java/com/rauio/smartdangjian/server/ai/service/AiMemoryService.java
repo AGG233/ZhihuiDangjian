@@ -8,12 +8,14 @@ import static com.rauio.smartdangjian.server.ai.constants.AiConstants.SENDER_USE
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
+import com.rauio.smartdangjian.server.ai.pojo.response.AiChatMessageResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -65,11 +67,14 @@ public class AiMemoryService {
         return builder.toString().trim();
     }
 
-    public List<AiChatMessage> listSessionMessages(String userId, String sessionId) {
+    public List<AiChatMessageResponse> listSessionMessages(String userId, String sessionId) {
         return aiChatMessageService.list(new LambdaQueryWrapper<AiChatMessage>()
                 .eq(AiChatMessage::getUserId, userId)
                 .eq(AiChatMessage::getSessionId, sessionId)
-                .orderByAsc(AiChatMessage::getCreatedAt));
+                .orderByAsc(AiChatMessage::getCreatedAt))
+                .stream()
+                .map(AiChatMessageResponse::fromEntity)
+                .collect(Collectors.toList());
     }
 
     private AiChatMessage buildMessage(

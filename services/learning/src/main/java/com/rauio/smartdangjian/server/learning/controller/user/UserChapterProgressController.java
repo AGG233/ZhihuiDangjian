@@ -34,7 +34,8 @@ public class UserChapterProgressController {
     @GetMapping("/{id}")
     @PermissionAccess(UserType.STUDENT)
     @DataScopeAccess(resource = DataScopeResources.CHAPTER_PROGRESS, action = DataScopeAction.READ, id = "#id")
-    public Result<UserChapterProgressResponse> get(@Parameter(name = "id", description = "进度ID") @PathVariable String id) {
+    public Result<UserChapterProgressResponse> get(
+            @Parameter(name = "id", description = "进度ID") @PathVariable String id) {
         UserChapterProgressResponse result = progressService.get(id);
         return Result.ok(result);
     }

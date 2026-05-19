@@ -3,6 +3,7 @@ package com.rauio.smartdangjian.server.user.controller.user;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -14,8 +15,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 import com.rauio.smartdangjian.server.user.service.UserService;
@@ -77,13 +78,12 @@ class UserControllerTest {
     @DisplayName("update 委托 service 更新用户信息")
     void update() {
         User user = User.builder().realName("新名字").build();
-        when(userService.update("user-1", user)).thenReturn(true);
+        doNothing().when(userService).update("user-1", user);
 
         var result = controller.update("user-1", user);
 
         assertThat(result).isNotNull();
         assertThat(result.getCode()).isEqualTo("200");
-        assertThat(result.getData()).isTrue();
         verify(userService).update("user-1", user);
     }
 

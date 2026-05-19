@@ -1,6 +1,8 @@
 package com.rauio.smartdangjian.common.service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -8,6 +10,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.common.mapper.UniversitiesMapper;
 import com.rauio.smartdangjian.common.pojo.Universities;
+import com.rauio.smartdangjian.common.pojo.response.SchoolResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -42,9 +45,28 @@ public class UniversitiesService extends ServiceImpl<UniversitiesMapper, Univers
     /**
      * 获取学校列表。
      *
-     * @return 学校实体列表
+     * @return 学校响应列表
      */
-    public List<Universities> getList() {
-        return this.list();
+    public List<SchoolResponse> getList() {
+        List<Universities> entities = this.list();
+        if (entities == null) {
+            return Collections.emptyList();
+        }
+        return entities.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 将 Universities 实体转换为 SchoolResponse。
+     *
+     * @param entity 学校实体
+     * @return 学校响应对象
+     */
+    private SchoolResponse toResponse(Universities entity) {
+        return SchoolResponse.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .build();
     }
 }

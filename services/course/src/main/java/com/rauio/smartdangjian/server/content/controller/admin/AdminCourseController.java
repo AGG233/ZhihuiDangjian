@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
@@ -34,25 +33,24 @@ public class AdminCourseController {
             action = DataScopeAction.UPDATE,
             id = "#id",
             body = "#course")
-    public Result<Boolean> update(@RequestBody @Valid CourseRequest course, @PathVariable String id)
-            throws JsonProcessingException {
-        Boolean result = courseService.update(course, id);
-        return Result.ok(result);
+    public Result<Void> update(@RequestBody @Valid CourseRequest course, @PathVariable String id) {
+        courseService.update(course, id);
+        return Result.ok();
     }
 
     @Operation(summary = "创建课程", description = "创建一个新的课程")
     @PostMapping
     @DataScopeAccess(resource = DataScopeResources.COURSE_ADMIN, action = DataScopeAction.CREATE, body = "#course")
-    public Result<Boolean> create(@RequestBody @Valid CourseRequest course) throws JsonProcessingException {
-        Boolean result = courseService.create(course);
-        return Result.ok(result);
+    public Result<Void> create(@RequestBody @Valid CourseRequest course) {
+        courseService.create(course);
+        return Result.ok();
     }
 
     @Operation(summary = "删除课程", description = "根据课程ID删除指定课程")
     @DeleteMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.COURSE_ADMIN, action = DataScopeAction.DELETE, id = "#id")
-    public Result<Boolean> delete(@PathVariable String id) throws JsonProcessingException {
-        Boolean result = courseService.delete(id);
-        return Result.ok(result);
+    public Result<Void> delete(@PathVariable String id) {
+        courseService.delete(id);
+        return Result.ok();
     }
 }

@@ -262,7 +262,8 @@ public class KnowledgeGraphService {
      * @param target 目标节点键
      * @param type 边类型
      */
-    private void addEdge(Set<String> edgeKeys, List<GraphEdgeResponse> edges, String source, String target, String type) {
+    private void addEdge(
+            Set<String> edgeKeys, List<GraphEdgeResponse> edges, String source, String target, String type) {
         String key = source + "|" + type + "|" + target;
         if (edgeKeys.add(key)) {
             edges.add(GraphEdgeResponse.builder()

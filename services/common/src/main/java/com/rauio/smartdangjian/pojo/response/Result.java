@@ -36,6 +36,11 @@ public class Result<T> {
     }
 
     @ApiResponse(responseCode = "200", description = "操作成功")
+    public static <T> Result<T> ok() {
+        return new Result<>();
+    }
+
+    @ApiResponse(responseCode = "200", description = "操作成功")
     public static <T> Result<T> ok(T data) {
         return new Result<>(data);
     }

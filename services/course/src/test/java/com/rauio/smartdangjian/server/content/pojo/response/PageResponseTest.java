@@ -30,8 +30,12 @@ class PageResponseTest {
     @Test
     @DisplayName("builder 构造空列表 PageResponse")
     void builderCreatesPageResponseWithEmptyList() {
-        PageResponse<Object> pageResponse =
-                PageResponse.builder().total(0L).size(10L).current(1L).list(List.of()).build();
+        PageResponse<Object> pageResponse = PageResponse.builder()
+                .total(0L)
+                .size(10L)
+                .current(1L)
+                .list(List.of())
+                .build();
 
         assertThat(pageResponse.getTotal()).isEqualTo(0L);
         assertThat(pageResponse.getList()).isEmpty();

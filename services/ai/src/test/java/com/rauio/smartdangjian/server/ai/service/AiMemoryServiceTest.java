@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
+import com.rauio.smartdangjian.server.ai.pojo.response.AiChatMessageResponse;
 
 @ExtendWith(MockitoExtension.class)
 class AiMemoryServiceTest {
@@ -139,7 +140,7 @@ class AiMemoryServiceTest {
         AiChatMessage msg2 = AiChatMessage.builder().content("msg2").build();
         doReturn(List.of(msg1, msg2)).when(aiChatMessageService).list(any(LambdaQueryWrapper.class));
 
-        List<AiChatMessage> messages = aiMemoryService.listSessionMessages("user-1", "session-1");
+        List<AiChatMessageResponse> messages = aiMemoryService.listSessionMessages("user-1", "session-1");
 
         assertThat(messages).hasSize(2);
     }

@@ -27,7 +27,7 @@ import com.rauio.smartdangjian.controller.factory.CategoryTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.content.controller.admin.AdminCategoryController;
-import com.rauio.smartdangjian.server.content.pojo.dto.CategoryDto;
+import com.rauio.smartdangjian.server.content.pojo.request.CategoryRequest;
 import com.rauio.smartdangjian.server.content.service.category.CategoryService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
@@ -59,9 +59,9 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /root - 创建根目录成功")
         void createRootCategorySuccess() throws Exception {
-            when(categoryService.create(any(CategoryDto.class))).thenReturn(true);
+            when(categoryService.create(any(CategoryRequest.class))).thenReturn(true);
 
-            CategoryDto dto = CategoryTestDataFactory.createRootCategoryDto("党建学习");
+            CategoryRequest dto = CategoryTestDataFactory.createRootCategoryRequest("党建学习");
             mockMvc.perform(post("/api/admin/content/categories/root")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CategoryTestDataFactory.toJson(dto)))
@@ -76,7 +76,7 @@ class AdminCategoryControllerTest extends BaseControllerTest {
             when(categoryService.createByParentId(any(List.class), eq("cat-001")))
                     .thenReturn(true);
 
-            List<CategoryDto> children = CategoryTestDataFactory.createSingleChildCategoryDtoList("子分类A");
+            List<CategoryRequest> children = CategoryTestDataFactory.createSingleChildCategoryRequestList("子分类A");
             mockMvc.perform(post("/api/admin/content/categories/cat-001/children")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CategoryTestDataFactory.listToJson(children)))
@@ -88,9 +88,9 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - 更新目录成功")
         void updateCategorySuccess() throws Exception {
-            when(categoryService.update(any(CategoryDto.class), eq("cat-001"))).thenReturn(true);
+            when(categoryService.update(any(CategoryRequest.class), eq("cat-001"))).thenReturn(true);
 
-            CategoryDto dto = CategoryTestDataFactory.createCategoryDto("更新后名称");
+            CategoryRequest dto = CategoryTestDataFactory.createCategoryRequest("更新后名称");
             mockMvc.perform(put("/api/admin/content/categories/cat-001")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CategoryTestDataFactory.toJson(dto)))
@@ -142,7 +142,7 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /root - name 为空返回 400")
         void createRootWithBlankName() throws Exception {
-            CategoryDto dto = CategoryTestDataFactory.createRootCategoryDto("");
+            CategoryRequest dto = CategoryTestDataFactory.createRootCategoryRequest("");
             mockMvc.perform(post("/api/admin/content/categories/root")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CategoryTestDataFactory.toJson(dto)))
@@ -153,7 +153,7 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @DisplayName("POST /root - name 超过 64 字符返回 400")
         void createRootWithNameTooLong() throws Exception {
             String longName = "a".repeat(65);
-            CategoryDto dto = CategoryTestDataFactory.createRootCategoryDto(longName);
+            CategoryRequest dto = CategoryTestDataFactory.createRootCategoryRequest(longName);
             mockMvc.perform(post("/api/admin/content/categories/root")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CategoryTestDataFactory.toJson(dto)))
@@ -176,7 +176,7 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - name 为空返回 400")
         void updateWithBlankName() throws Exception {
-            CategoryDto dto = CategoryTestDataFactory.createCategoryDto("");
+            CategoryRequest dto = CategoryTestDataFactory.createCategoryRequest("");
             mockMvc.perform(put("/api/admin/content/categories/cat-001")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CategoryTestDataFactory.toJson(dto)))
@@ -186,9 +186,9 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 返回 false 时 code 为 400")
         void serviceReturnsFalse() throws Exception {
-            when(categoryService.create(any(CategoryDto.class))).thenReturn(false);
+            when(categoryService.create(any(CategoryRequest.class))).thenReturn(false);
 
-            CategoryDto dto = CategoryTestDataFactory.createRootCategoryDto("测试");
+            CategoryRequest dto = CategoryTestDataFactory.createRootCategoryRequest("测试");
             mockMvc.perform(post("/api/admin/content/categories/root")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CategoryTestDataFactory.toJson(dto)))
@@ -199,9 +199,9 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 时返回 400 和错误信息")
         void serviceThrowsBusinessException() throws Exception {
-            when(categoryService.create(any(CategoryDto.class))).thenThrow(new BusinessException(4001, "目录不存在"));
+            when(categoryService.create(any(CategoryRequest.class))).thenThrow(new BusinessException(4001, "目录不存在"));
 
-            CategoryDto dto = CategoryTestDataFactory.createRootCategoryDto("测试");
+            CategoryRequest dto = CategoryTestDataFactory.createRootCategoryRequest("测试");
             mockMvc.perform(post("/api/admin/content/categories/root")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CategoryTestDataFactory.toJson(dto)))
@@ -213,9 +213,9 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 RuntimeException 时返回 500")
         void serviceThrowsRuntimeException() throws Exception {
-            when(categoryService.create(any(CategoryDto.class))).thenThrow(new RuntimeException("数据库异常"));
+            when(categoryService.create(any(CategoryRequest.class))).thenThrow(new RuntimeException("数据库异常"));
 
-            CategoryDto dto = CategoryTestDataFactory.createRootCategoryDto("测试");
+            CategoryRequest dto = CategoryTestDataFactory.createRootCategoryRequest("测试");
             mockMvc.perform(post("/api/admin/content/categories/root")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CategoryTestDataFactory.toJson(dto)))
@@ -236,9 +236,9 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @DisplayName("POST /root - name 恰好 64 字符允许")
         void createRootWithMaxLengthName() throws Exception {
             String maxName = "a".repeat(64);
-            when(categoryService.create(any(CategoryDto.class))).thenReturn(true);
+            when(categoryService.create(any(CategoryRequest.class))).thenReturn(true);
 
-            CategoryDto dto = CategoryTestDataFactory.createRootCategoryDto(maxName);
+            CategoryRequest dto = CategoryTestDataFactory.createRootCategoryRequest(maxName);
             mockMvc.perform(post("/api/admin/content/categories/root")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CategoryTestDataFactory.toJson(dto)))
@@ -259,7 +259,7 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - description 为 null 正常处理")
         void updateWithNullDescription() throws Exception {
-            when(categoryService.update(any(CategoryDto.class), eq("cat-001"))).thenReturn(true);
+            when(categoryService.update(any(CategoryRequest.class), eq("cat-001"))).thenReturn(true);
 
             String json = "{\"name\": \"测试分类\"}";
             mockMvc.perform(put("/api/admin/content/categories/cat-001")
@@ -275,7 +275,7 @@ class AdminCategoryControllerTest extends BaseControllerTest {
             when(categoryService.createByParentId(any(List.class), eq("cat-001")))
                     .thenReturn(true);
 
-            List<CategoryDto> children = CategoryTestDataFactory.createCategoryDtoList(5);
+            List<CategoryRequest> children = CategoryTestDataFactory.createCategoryRequestList(5);
             mockMvc.perform(post("/api/admin/content/categories/cat-001/children")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CategoryTestDataFactory.listToJson(children)))
@@ -316,7 +316,7 @@ class AdminCategoryControllerTest extends BaseControllerTest {
                             new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
                                     student, null, Collections.emptyList()));
 
-            when(categoryService.create(any(CategoryDto.class))).thenReturn(true);
+            when(categoryService.create(any(CategoryRequest.class))).thenReturn(true);
             mockMvc.perform(post("/api/admin/content/categories/root")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"name\": \"测试\"}"))
