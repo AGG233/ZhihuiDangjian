@@ -6,6 +6,8 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.controller.admin.AdminChapterController;
 import com.rauio.smartdangjian.server.content.pojo.dto.ChapterDto;
 import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
+
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -74,6 +76,47 @@ class AdminChapterControllerTest extends BaseControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(true));
+        }
+
+        @Test
+        @DisplayName("GET 根据章节 ID 获取章节详情成功")
+        void getByIdSuccess() throws Exception {
+            var vo = CourseTestDataFactory.createChapterVO("ch-1");
+            when(chapterService.get("ch-1")).thenReturn(vo);
+
+            mockMvc.perform(get("/api/admin/content/chapters/ch-1"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data.id").value("ch-1"))
+                    .andExpect(jsonPath("$.data.title").value("test-chapter"))
+                    .andExpect(jsonPath("$.data.courseId").value("course-1"));
+        }
+
+        @Test
+        @DisplayName("GET 根据课程 ID 获取章节列表成功")
+        void getByCourseIdSuccess() throws Exception {
+            var vo1 = CourseTestDataFactory.createChapterVO("ch-1");
+            var vo2 = CourseTestDataFactory.createChapterVO("ch-2");
+            when(chapterService.getByCourseId("course-1")).thenReturn(List.of(vo1, vo2));
+
+            mockMvc.perform(get("/api/admin/content/chapters/by-course/course-1"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").isArray())
+                    .andExpect(jsonPath("$.data[0].id").value("ch-1"))
+                    .andExpect(jsonPath("$.data[1].id").value("ch-2"));
+        }
+
+        @Test
+        @DisplayName("GET 课程下无章节时返回空列表")
+        void getByCourseIdReturnsEmptyList() throws Exception {
+            when(chapterService.getByCourseId("empty-course")).thenReturn(List.of());
+
+            mockMvc.perform(get("/api/admin/content/chapters/by-course/empty-course"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").isArray())
+                    .andExpect(jsonPath("$.data").isEmpty());
         }
     }
 
