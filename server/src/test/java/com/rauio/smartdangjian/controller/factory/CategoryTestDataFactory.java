@@ -90,7 +90,7 @@ public final class CategoryTestDataFactory {
     public static List<CategoryResponse> createCategoryResponseList(int count) {
         List<CategoryResponse> list = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
-            list.add(createCategoryResponse("cat-" + String.format("%03d", i), "分类" + i, null));
+            list.add(createCategoryResponse("cat-" + i, "分类" + i, null));
         }
         return list;
     }
@@ -98,7 +98,7 @@ public final class CategoryTestDataFactory {
     public static List<CategoryResponse> createCategoryResponseList(int count, String parentId) {
         List<CategoryResponse> list = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
-            list.add(createCategoryResponse("child-" + String.format("%03d", i), "子分类" + i, parentId));
+            list.add(createCategoryResponse("child-" + i, "子分类" + i, parentId));
         }
         return list;
     }

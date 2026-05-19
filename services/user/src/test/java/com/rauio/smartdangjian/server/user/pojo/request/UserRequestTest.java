@@ -22,7 +22,7 @@ class UserRequestTest {
         request.setUserId("user-1");
         request.setUsername("testuser");
         request.setRealName("张三");
-        request.setPassword("secret123");
+        request.setPassword("test-pwd-123");
         request.setPartyMemberId("pm-001");
         request.setPartyStatus(PartyStatus.FORMAL_MEMBER);
         request.setBranchName("党支部A");
