@@ -40,9 +40,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.requestMatchers(
-                                "/auth/login",
-                                "/auth/captcha",
-                                "/auth/register",
+                                "/api/auth/login",
+                                "/api/auth/captcha",
+                                "/api/auth/register",
                                 "/api/schools/list",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
