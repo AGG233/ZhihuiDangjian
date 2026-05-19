@@ -1,12 +1,12 @@
 package com.rauio.smartdangjian.server.resource.controller.user;
 
+import java.io.IOException;
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.annotation.RequireUser;
@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 
 @Tag(
         name = "文件资源接口",
-        description = "基于xfile的文件上传、下载、删除接口。上传流程：1) 调用upload获取预签名PUT URL；2) 前端直接用PUT上传文件到该URL；3) 调用confirm确认上传完成。")
+        description = "上传流程：1) 调用upload获取预签名PUT URL（COS 不可用时返回服务器中转 URL）；2) 前端直接用 PUT 上传文件到该 URL；3) 调用confirm确认上传完成。")
 @RestController
 @RequestMapping("/api/resource/files")
 @RequiredArgsConstructor
@@ -46,19 +46,15 @@ public class FileController {
     }
 
     @Operation(
-            summary = "直接上传文件（适用于本地存储）",
-            description = "开发环境使用。前端通过 multipart/form-data 直接上传文件到服务端，服务端保存到本地存储并创建资源记录。无需额外调用 confirm 接口。")
-    @PostMapping("/upload/direct")
+            summary = "回调接收文件上传（适用于本地中转模式）",
+            description = "当 COS 不可用时，upload 接口返回的 uploadUrl 指向本端点。前端应直接对该地址发起 HTTP PUT 请求，将文件二进制内容作为请求体上传。")
+    @PutMapping("/upload/callback/{resourceId}")
     @PermissionAccess(UserType.STUDENT)
-    public Result<FileUploadResponse> uploadDirect(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("fileName") @NotBlank String fileName,
-            @RequestParam("mimeType") @NotBlank String mimeType) {
-        UploadFileRequest request = new UploadFileRequest();
-        request.setFileName(fileName);
-        request.setMimeType(mimeType);
-        request.setUserId(SecurityUtils.getCurrentUserId());
-        return Result.ok(fileService.uploadDirect(file, request));
+    public Result<Void> uploadCallback(
+            @PathVariable String resourceId,
+            HttpServletRequest request) throws IOException {
+        fileService.handleUploadCallback(resourceId, request.getInputStream());
+        return Result.ok(null);
     }
 
     @Operation(

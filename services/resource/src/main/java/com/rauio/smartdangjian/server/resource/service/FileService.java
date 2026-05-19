@@ -1,5 +1,9 @@
 package com.rauio.smartdangjian.server.resource.service;
 
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -10,7 +14,6 @@ import org.dromara.x.file.storage.core.FileStorageService;
 import org.dromara.x.file.storage.core.constant.Constant;
 import org.dromara.x.file.storage.core.presigned.GeneratePresignedUrlResult;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.resource.constants.ResourceConstant;
@@ -53,9 +56,10 @@ public class FileService {
         createRequest.setStatus(ResourceStatusConstants.UPLOADING);
         ResourceMeta meta = resourceMetaService.create(createRequest);
 
-        GeneratePresignedUrlResult urlResult;
+        String uploadUrl;
+        long expiration;
         try {
-            urlResult = fileStorageService
+            GeneratePresignedUrlResult urlResult = fileStorageService
                     .generatePresignedUrl()
                     .setPlatform(ResourceConstant.COS_PLATFORM)
                     .setPath(path)
@@ -65,17 +69,19 @@ public class FileService {
                     .putHeaders(Constant.Metadata.CONTENT_TYPE, request.getMimeType())
                     .putUserMetadata("resourceId", meta.getId())
                     .generatePresignedUrl();
+            uploadUrl = urlResult.getUrl();
+            expiration = System.currentTimeMillis() + ResourceConstant.COS_KEY_EXPIRATION;
         } catch (Exception e) {
-            log.error("生成 COS 预签名上传 URL 失败，请检查 COS 配置 (SecretId/SecretKey/Bucket/Region)", e);
-            resourceMetaService.delete(meta.getId());
-            throw new BusinessException(ResourceErrorConstants.RESOURCE_CREATE_FAILED, "文件存储服务暂不可用，请稍后重试");
+            log.warn("COS 预签名 URL 生成失败，回退到服务器中转上传", e);
+            uploadUrl = "/api/resource/files/upload/callback/" + meta.getId();
+            expiration = -1L;
         }
 
         return FileUploadResponse.builder()
                 .resourceId(meta.getId())
-                .uploadUrl(urlResult.getUrl())
+                .uploadUrl(uploadUrl)
                 .objectKey(objectKey)
-                .expiration(System.currentTimeMillis() + ResourceConstant.COS_KEY_EXPIRATION)
+                .expiration(expiration)
                 .build();
     }
 
@@ -84,7 +90,16 @@ public class FileService {
         if (meta.getStatus() != null && meta.getStatus() == ResourceStatusConstants.PUBLIC) {
             return meta;
         }
-        if (!fileStorageService.exists(buildFileInfo(meta.getObjectKey()))) {
+
+        boolean exists;
+        try {
+            exists = fileStorageService.exists(buildFileInfo(meta.getObjectKey()));
+        } catch (Exception e) {
+            log.warn("COS 文件检查失败，尝试检查本地文件", e);
+            exists = Files.exists(Path.of("./uploads", meta.getObjectKey()));
+        }
+
+        if (!exists) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "文件尚未上传到存储服务器，请先上传");
         }
         meta.setStatus(ResourceStatusConstants.PUBLIC);
@@ -92,30 +107,16 @@ public class FileService {
         return meta;
     }
 
-    public FileUploadResponse uploadDirect(MultipartFile file, UploadFileRequest request) {
-        String path = resolvePath(request.getMimeType());
-        String uuid = UUID.randomUUID().toString().replace("-", "");
-
-        FileInfo fileInfo = fileStorageService.of(file)
-                .setPlatform("local-dev")
-                .setPath(path)
-                .upload();
-
-        ResourceMetaCreateRequest createRequest = new ResourceMetaCreateRequest();
-        createRequest.setUploaderId(request.getUserId() != null ? request.getUserId() : userService.getCurrentUserId());
-        createRequest.setOriginalName(request.getFileName());
-        createRequest.setHash(uuid);
-        createRequest.setObjectKey(fileInfo.getPath() + fileInfo.getFilename());
-        createRequest.setResourceType(detectResourceType(request.getMimeType()));
-        createRequest.setStatus(ResourceStatusConstants.PUBLIC);
-        ResourceMeta meta = resourceMetaService.create(createRequest);
-
-        return FileUploadResponse.builder()
-                .resourceId(meta.getId())
-                .uploadUrl("/uploads/" + fileInfo.getPath() + fileInfo.getFilename())
-                .objectKey(fileInfo.getPath() + fileInfo.getFilename())
-                .expiration(-1L)
-                .build();
+    public void handleUploadCallback(String resourceId, InputStream inputStream) {
+        ResourceMeta meta = resourceMetaService.get(resourceId);
+        try {
+            Path filePath = Path.of("./uploads", meta.getObjectKey());
+            Files.createDirectories(filePath.getParent());
+            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (Exception e) {
+            log.error("本地文件保存失败，resourceId={}", resourceId, e);
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_CREATE_FAILED, "文件保存失败");
+        }
     }
 
     public FileInfoResponse getFileInfo(String resourceId) {
