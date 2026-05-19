@@ -23,7 +23,6 @@ public class PromptService extends ServiceImpl<AiPromptsMapper, AiPrompts> {
 
     public AiPrompts create(AiPromptCreateRequest request) {
         AiPrompts prompt = AiPrompts.builder()
-                .id(UUID.randomUUID().toString())
                 .agentType(request.getAgentType().toUpperCase())
                 .name(request.getName())
                 .content(request.getContent())
