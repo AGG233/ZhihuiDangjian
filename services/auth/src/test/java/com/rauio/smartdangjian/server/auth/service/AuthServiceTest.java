@@ -9,6 +9,8 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.UUID;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +49,7 @@ class AuthServiceTest {
     private UserService userService;
 
     @Mock
-    private PasswordEncoder passwordEncoder;
+private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private AuthService authService;
@@ -73,11 +75,12 @@ class AuthServiceTest {
     @DisplayName("login 验证码通过且登录成功时返回 LoginResponse")
     void loginReturnsTokenWhenSuccessful() {
         LoginRequest request = createLoginRequest();
+        String rawPassword = request.getPassword();
         User user = createUser("u1", "testuser");
-        user.setPassword("encodedPassword");
+        user.setPassword(newEncodedPassword());
         when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
         when(userService.getByPassport("admin")).thenReturn(user);
-        when(passwordEncoder.matches("password123", "encodedPassword")).thenReturn(true);
+        when(passwordEncoder.matches(rawPassword, user.getPassword())).thenReturn(true);
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
             SaSession session = mock(SaSession.class);
@@ -94,11 +97,12 @@ class AuthServiceTest {
     @DisplayName("login 密码错误时抛出 BusinessException(PASSWORD_ERROR)")
     void loginThrowsWhenPasswordMismatch() {
         LoginRequest request = createLoginRequest();
+        String rawPassword = request.getPassword();
         User user = createUser("u1", "testuser");
-        user.setPassword("encodedPassword");
+        user.setPassword(newEncodedPassword());
         when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
         when(userService.getByPassport("admin")).thenReturn(user);
-        when(passwordEncoder.matches("password123", "encodedPassword")).thenReturn(false);
+        when(passwordEncoder.matches(rawPassword, user.getPassword())).thenReturn(false);
 
         assertThatThrownBy(() -> authService.login(request))
                 .isInstanceOf(BusinessException.class)
@@ -192,9 +196,10 @@ class AuthServiceTest {
     @DisplayName("register 所有校验通过且插入成功时返回成功结果")
     void registerSuccessWhenAllChecksPass() {
         RegisterRequest request = createRegisterRequest();
+        String rawPassword = request.getPassword();
         when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
         when(userMapper.exists(any())).thenReturn(false, false, false, false);
-        when(passwordEncoder.encode("Test@1234")).thenReturn("encodedPass");
+        when(passwordEncoder.encode(rawPassword)).thenReturn(newEncodedPassword());
         when(userMapper.insert(any(User.class))).thenReturn(1);
 
         var result = authService.register(request);
@@ -202,7 +207,7 @@ class AuthServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getCode()).isEqualTo("200");
         assertThat(result.getMessage()).isEqualTo("OK");
-        verify(passwordEncoder).encode("Test@1234");
+        verify(passwordEncoder).encode(rawPassword);
         verify(userMapper).insert(any(User.class));
     }
 
@@ -213,7 +218,7 @@ class AuthServiceTest {
         request.setEmail(null);
         when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
         when(userMapper.exists(any())).thenReturn(false, false, false);
-        when(passwordEncoder.encode(anyString())).thenReturn("encodedPass");
+        when(passwordEncoder.encode(anyString())).thenReturn(newEncodedPassword());
         when(userMapper.insert(any(User.class))).thenReturn(1);
 
         var result = authService.register(request);
@@ -260,12 +265,12 @@ class AuthServiceTest {
     void changePasswordThrowsWhenOldPasswordMismatch() {
         ChangePasswordRequest request = createChangePasswordRequest();
         User user = createUser("u1", "testuser");
-        user.setPassword("encodedOldPassword");
+        user.setPassword(newEncodedPassword());
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
             stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("u1");
             when(userMapper.selectById("u1")).thenReturn(user);
-            when(passwordEncoder.matches("wrongOldPass", "encodedOldPassword")).thenReturn(false);
+            when(passwordEncoder.matches(request.getOldPassword(), user.getPassword())).thenReturn(false);
 
             assertThatThrownBy(() -> authService.changePassword(request))
                     .isInstanceOf(BusinessException.class)
@@ -277,24 +282,24 @@ class AuthServiceTest {
     @Test
     @DisplayName("changePassword 旧密码正确时更新密码并返回 void")
     void changePasswordSuccessWhenOldPasswordMatches() {
-        ChangePasswordRequest request = new ChangePasswordRequest();
-        request.setOldPassword("correctOldPass");
-        request.setNewPassword("newSecretPass");
+        ChangePasswordRequest request = createChangePasswordRequest();
+        String newRawPassword = request.getNewPassword();
+        String encodedNewPassword = newEncodedPassword();
         User user = createUser("u1", "testuser");
-        user.setPassword("encodedOldPassword");
+        user.setPassword(newEncodedPassword());
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
             SaSession session = mock(SaSession.class);
             stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("u1");
             stpUtilMock.when(StpUtil::getSession).thenReturn(session);
             when(userMapper.selectById("u1")).thenReturn(user);
-            when(passwordEncoder.matches("correctOldPass", "encodedOldPassword")).thenReturn(true);
-            when(passwordEncoder.encode("newSecretPass")).thenReturn("encodedNewPassword");
+            when(passwordEncoder.matches(request.getOldPassword(), user.getPassword())).thenReturn(true);
+            when(passwordEncoder.encode(newRawPassword)).thenReturn(encodedNewPassword);
             when(userMapper.updateById(user)).thenReturn(1);
 
             authService.changePassword(request);
 
-            assertThat(user.getPassword()).isEqualTo("encodedNewPassword");
+            assertThat(user.getPassword()).isEqualTo(encodedNewPassword);
             verify(userMapper).updateById(user);
             verify(session).set("user", user);
         }
@@ -303,17 +308,16 @@ class AuthServiceTest {
     @Test
     @DisplayName("changePassword 更新失败时抛出 BusinessException(PASSWORD_CHANGE_ERROR)")
     void changePasswordThrowsWhenUpdateFails() {
-        ChangePasswordRequest request = new ChangePasswordRequest();
-        request.setOldPassword("wrongOldPass");
-        request.setNewPassword("newSecretPass");
+        ChangePasswordRequest request = createChangePasswordRequest();
+        String newRawPassword = request.getNewPassword();
         User user = createUser("u1", "testuser");
-        user.setPassword("encodedOldPassword");
+        user.setPassword(newEncodedPassword());
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
             stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("u1");
             when(userMapper.selectById("u1")).thenReturn(user);
-            when(passwordEncoder.matches("wrongOldPass", "encodedOldPassword")).thenReturn(true);
-            when(passwordEncoder.encode("newSecretPass")).thenReturn("encodedNewPassword");
+            when(passwordEncoder.matches(request.getOldPassword(), user.getPassword())).thenReturn(true);
+            when(passwordEncoder.encode(newRawPassword)).thenReturn(newEncodedPassword());
             when(userMapper.updateById(user)).thenReturn(0);
 
             assertThatThrownBy(() -> authService.changePassword(request))
@@ -327,10 +331,14 @@ class AuthServiceTest {
     // helpers
     // ================================================================
 
+    private static String newEncodedPassword() {
+        return "enc_" + UUID.randomUUID();
+    }
+
     private LoginRequest createLoginRequest() {
         LoginRequest request = new LoginRequest();
         request.setPassport("admin");
-        request.setPassword("password123");
+        request.setPassword(UUID.randomUUID().toString());
         request.setPlatform("web");
         request.setCaptchaUUID("uuid-1");
         request.setCaptchaCode("1234");
@@ -341,7 +349,7 @@ class AuthServiceTest {
         RegisterRequest request = new RegisterRequest();
         request.setType(UserType.STUDENT);
         request.setUsername("newuser");
-        request.setPassword("Test@1234");
+        request.setPassword(UUID.randomUUID().toString());
         request.setRealName("张三");
         request.setIdCard("110101199001011234");
         request.setPartyMemberId("PM123456789012345678");
@@ -357,8 +365,8 @@ class AuthServiceTest {
 
     private ChangePasswordRequest createChangePasswordRequest() {
         ChangePasswordRequest request = new ChangePasswordRequest();
-        request.setOldPassword("wrongOldPass");
-        request.setNewPassword("newSecretPass");
+        request.setOldPassword(UUID.randomUUID().toString());
+        request.setNewPassword(UUID.randomUUID().toString());
         return request;
     }
 
