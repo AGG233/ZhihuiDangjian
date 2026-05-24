@@ -59,6 +59,7 @@ class CategoryServiceCrossLayerTest extends CrossLayerTestBase {
         }
 
         @Bean
+        @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
         CategoryService categoryService(CategoryConvertor convertor, CategoryMapper categoryMapper) {
             CategoryService service = new CategoryService(convertor);
             try {
