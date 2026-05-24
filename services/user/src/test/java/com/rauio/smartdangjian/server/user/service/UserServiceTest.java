@@ -14,7 +14,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +23,6 @@ import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.session.SaSession;
@@ -51,11 +49,6 @@ class UserServiceTest {
     @Spy
     @InjectMocks
     private UserService userService;
-
-    @BeforeEach
-    void setUp() {
-        ReflectionTestUtils.setField(userService, "defaultDevUserId", "default-dev-id");
-    }
 
     // ---------- helpers ----------
 
@@ -213,14 +206,14 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("getCurrentUserId 未登录时返回默认开发用户ID")
+    @DisplayName("getCurrentUserId 未登录时返回null")
     void getCurrentUserIdNotAuthenticatedReturnsDefaultId() {
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
             stpUtilMock.when(StpUtil::isLogin).thenReturn(false);
 
             String result = userService.getCurrentUserId();
 
-            assertThat(result).isEqualTo("default-dev-id");
+            assertThat(result).isNull();
         }
     }
 

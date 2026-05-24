@@ -284,7 +284,9 @@ class AuthServiceTest {
         user.setPassword("encodedOldPassword");
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            SaSession session = mock(SaSession.class);
             stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("u1");
+            stpUtilMock.when(StpUtil::getSession).thenReturn(session);
             when(userMapper.selectById("u1")).thenReturn(user);
             when(passwordEncoder.matches("correctOldPass", "encodedOldPassword")).thenReturn(true);
             when(passwordEncoder.encode("newSecretPass")).thenReturn("encodedNewPassword");
@@ -294,6 +296,7 @@ class AuthServiceTest {
 
             assertThat(user.getPassword()).isEqualTo("encodedNewPassword");
             verify(userMapper).updateById(user);
+            verify(session).set("user", user);
         }
     }
 
