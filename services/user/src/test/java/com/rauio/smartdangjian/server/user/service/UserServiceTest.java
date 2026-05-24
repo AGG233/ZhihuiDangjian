@@ -23,11 +23,11 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.session.SaSession;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -152,18 +152,15 @@ class UserServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("getCurrentUser 认证成功且principal为User时返回该User")
+    @DisplayName("getCurrentUser 已登录且session中有User时返回该User")
     void getCurrentUserAuthenticatedReturnsUser() {
         User user = createUser("u1", "testuser", "test@example.com", "13800138000");
 
-        try (MockedStatic<SecurityContextHolder> mockedStatic = mockStatic(SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-            Authentication authentication = mock(Authentication.class);
-
-            mockedStatic.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.isAuthenticated()).thenReturn(true);
-            when(authentication.getPrincipal()).thenReturn(user);
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            SaSession session = mock(SaSession.class);
+            when(session.get("user")).thenReturn(user);
+            stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
+            stpUtilMock.when(StpUtil::getSession).thenReturn(session);
 
             User result = userService.getCurrentUser();
 
@@ -172,16 +169,13 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("getCurrentUser principal不是User实例时返回null")
+    @DisplayName("getCurrentUser session中的user不是User实例时返回null")
     void getCurrentUserPrincipalNotUserReturnsNull() {
-        try (MockedStatic<SecurityContextHolder> mockedStatic = mockStatic(SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-            Authentication authentication = mock(Authentication.class);
-
-            mockedStatic.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.isAuthenticated()).thenReturn(true);
-            when(authentication.getPrincipal()).thenReturn("not-a-user-instance");
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            SaSession session = mock(SaSession.class);
+            when(session.get("user")).thenReturn("not-a-user-instance");
+            stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
+            stpUtilMock.when(StpUtil::getSession).thenReturn(session);
 
             User result = userService.getCurrentUser();
 
@@ -190,13 +184,10 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("getCurrentUser authentication为null时返回null")
+    @DisplayName("getCurrentUser 未登录时返回null")
     void getCurrentUserNullAuthenticationReturnsNull() {
-        try (MockedStatic<SecurityContextHolder> mockedStatic = mockStatic(SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-
-            mockedStatic.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(null);
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            stpUtilMock.when(StpUtil::isLogin).thenReturn(false);
 
             User result = userService.getCurrentUser();
 
@@ -209,18 +200,11 @@ class UserServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("getCurrentUserId 认证成功时返回用户ID")
+    @DisplayName("getCurrentUserId 已登录时返回用户ID")
     void getCurrentUserIdAuthenticatedReturnsId() {
-        User user = createUser("user-id-123", "testuser", "test@example.com", "13800138000");
-
-        try (MockedStatic<SecurityContextHolder> mockedStatic = mockStatic(SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-            Authentication authentication = mock(Authentication.class);
-
-            mockedStatic.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.isAuthenticated()).thenReturn(true);
-            when(authentication.getPrincipal()).thenReturn(user);
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
+            stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("user-id-123");
 
             String result = userService.getCurrentUserId();
 
@@ -229,13 +213,10 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("getCurrentUserId 未认证时返回默认开发用户ID")
+    @DisplayName("getCurrentUserId 未登录时返回默认开发用户ID")
     void getCurrentUserIdNotAuthenticatedReturnsDefaultId() {
-        try (MockedStatic<SecurityContextHolder> mockedStatic = mockStatic(SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-
-            mockedStatic.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(null);
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            stpUtilMock.when(StpUtil::isLogin).thenReturn(false);
 
             String result = userService.getCurrentUserId();
 

@@ -8,8 +8,8 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
-import com.rauio.smartdangjian.aop.annotation.RequireUser;
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
@@ -39,7 +39,7 @@ public class FileController {
             description =
                     "前端调用本接口获取预签名PUT上传地址。服务端会创建ResourceMeta记录（状态为UPLOADING）并返回预签名URL。前端拿到uploadUrl后，应直接对该地址发起HTTP PUT请求，把文件二进制内容作为请求体上传。上传完成后，需调用confirm接口确认。")
     @PostMapping("/upload")
-    @PermissionAccess(UserType.STUDENT)
+    @SaCheckRole("STUDENT")
     public Result<FileUploadResponse> upload(@RequestBody @Valid UploadFileRequest request) {
         request.setUserId(SecurityUtils.getCurrentUserId());
         return Result.ok(fileService.upload(request));
@@ -49,7 +49,7 @@ public class FileController {
             summary = "回调接收文件上传（适用于本地中转模式）",
             description = "当 COS 不可用时，upload 接口返回的 uploadUrl 指向本端点。前端应直接对该地址发起 HTTP PUT 请求，将文件二进制内容作为请求体上传。")
     @PutMapping("/upload/callback/{resourceId}")
-    @PermissionAccess(UserType.STUDENT)
+    @SaCheckRole("STUDENT")
     public Result<Void> uploadCallback(
             @PathVariable String resourceId,
             HttpServletRequest request) throws IOException {
@@ -60,9 +60,9 @@ public class FileController {
     @Operation(
             summary = "确认文件上传完成",
             description = "前端通过预签名URL成功上传文件到COS后，调用本接口通知服务端。服务端会将ResourceMeta状态从UPLOADING更新为PUBLIC，此后文件即为可用资源。")
-    @RequireUser
+    @SaCheckLogin
     @PostMapping("/confirm/{resourceId}")
-    @PermissionAccess(UserType.STUDENT)
+    @SaCheckRole("STUDENT")
     @ResourceAccess(id = "#resourceId", type = "RESOURCE_META")
     public Result<ResourceMeta> confirmUpload(@PathVariable String resourceId) {
         return Result.ok(fileService.confirmUpload(resourceId));
@@ -83,7 +83,7 @@ public class FileController {
     @Operation(
             summary = "获取文件下载链接",
             description = "根据资源ID生成COS预签名下载链接。前端拿到返回的URL后，可直接发起GET请求下载或预览文件；链接具有时效性，过期后需重新调用本接口获取。")
-    @RequireUser
+    @SaCheckLogin
     @GetMapping("/{id}/download")
     public Result<String> getDownloadUrl(@PathVariable String id) {
         return Result.ok(fileService.getDownloadUrl(id));
@@ -102,9 +102,9 @@ public class FileController {
     }
 
     @Operation(summary = "删除文件", description = "根据资源ID删除文件。服务端会先从COS删除文件对象，再删除resource_meta数据库记录。")
-    @RequireUser
+    @SaCheckLogin
     @DeleteMapping("/{id}")
-    @PermissionAccess(UserType.STUDENT)
+    @SaCheckRole("STUDENT")
     @ResourceAccess(id = "#id", type = "RESOURCE_META")
     public Result<Boolean> delete(@PathVariable String id) {
         fileService.delete(id);

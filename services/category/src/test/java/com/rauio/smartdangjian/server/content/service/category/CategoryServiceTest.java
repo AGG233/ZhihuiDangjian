@@ -216,10 +216,32 @@ class CategoryServiceTest {
     }
 
     @Test
-    @DisplayName("create 当前用户为 MANAGER 时抛出 BusinessException 3002（无法获取学校 ID）")
-    void createWhenUserIsManagerThrowsBusinessException() {
+    @DisplayName("create 当前用户为 MANAGER 时创建公共根目录成功（无学校归属）")
+    void createWhenUserIsManagerCreatesPublicCategory() {
         CurrentUserPrincipal managerUser = createMockUser(UserType.MANAGER, null);
         securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(managerUser);
+        CategoryRequest dto = CategoryRequest.builder()
+                .name("根目录")
+                .childrenNode(Collections.emptyList())
+                .build();
+        Category category = createCategory(null, "根目录", null, null);
+        doReturn(category).when(convertor).toEntity(dto);
+        doReturn(true).when(categoryService).save(any(Category.class));
+
+        Boolean result = categoryService.create(dto);
+
+        assertThat(result).isTrue();
+        assertThat(category.getLevel()).isEqualTo(0);
+        assertThat(category.getParentId()).isNull();
+        assertThat(category.getUniversityId()).isNull();
+        verify(categoryService).save(category);
+    }
+
+    @Test
+    @DisplayName("create SCHOOL 用户 universityId 为 null 时抛出 BusinessException 3002")
+    void createWhenSchoolUserAndUniversityIdIsNullThrowsBusinessException() {
+        CurrentUserPrincipal schoolUser = createMockUser(UserType.SCHOOL, null);
+        securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(schoolUser);
         CategoryRequest dto = CategoryRequest.builder()
                 .name("根目录")
                 .childrenNode(Collections.emptyList())
@@ -275,6 +297,8 @@ class CategoryServiceTest {
 
         assertThat(result).isTrue();
         assertThat(category.getUniversityId()).isEqualTo("uni456");
+        assertThat(category.getLevel()).isEqualTo(0);
+        assertThat(category.getParentId()).isNull();
     }
 
     @Test

@@ -6,11 +6,10 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
 import com.rauio.smartdangjian.server.content.service.ContentBlockService;
-import com.rauio.smartdangjian.utils.spec.UserType;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/content/content-blocks")
 @RequiredArgsConstructor
-@PermissionAccess(UserType.MANAGER)
+@SaCheckRole("MANAGER")
 public class AdminContentController {
 
     private static final String CAROUSEL_PARENT_ID = "1145141919810";

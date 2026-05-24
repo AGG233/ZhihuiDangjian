@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.rauio.smartdangjian.pojo.response.Result;
 
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
+import cn.dev33.satoken.exception.NotRoleException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -49,10 +51,22 @@ public class GlobalExceptionHandler {
         return buildResult("400", msg);
     }
 
-    @ExceptionHandler(TokenExpiredException.class)
+    @ExceptionHandler(NotLoginException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public Result handleTokenExpiredException(TokenExpiredException e) {
-        return buildResult("401", "登录已过期，请重新登录");
+    public Result handleNotLoginException(NotLoginException e) {
+        return buildResult("401", "未登录或登录已过期，请重新登录");
+    }
+
+    @ExceptionHandler(NotRoleException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Result handleNotRoleException(NotRoleException e) {
+        return buildResult("403", "无权限访问该资源");
+    }
+
+    @ExceptionHandler(NotPermissionException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Result handleNotPermissionException(NotPermissionException e) {
+        return buildResult("403", "无权限执行该操作");
     }
 
     @ExceptionHandler(DuplicateKeyException.class)

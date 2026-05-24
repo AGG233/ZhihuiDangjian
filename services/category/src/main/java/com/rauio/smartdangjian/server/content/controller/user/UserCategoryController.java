@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
-import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
@@ -18,7 +18,6 @@ import com.rauio.smartdangjian.server.content.pojo.response.CategoryResponse;
 import com.rauio.smartdangjian.server.content.service.article.ArticleService;
 import com.rauio.smartdangjian.server.content.service.category.CategoryService;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
-import com.rauio.smartdangjian.utils.spec.UserType;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/content/categories")
 @RequiredArgsConstructor
-@PermissionAccess(UserType.STUDENT)
+@SaCheckRole("STUDENT")
 public class UserCategoryController {
 
     private final CategoryService categoryService;

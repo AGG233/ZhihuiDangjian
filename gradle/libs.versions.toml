@@ -6,6 +6,8 @@ spring-ai-ali = "1.1.2.0"
 spring-redisson = "4.3.0"
 
 spring-security-oauth2-jose = "6.5.1"
+spring-security-crypto = "6.5.1"
+sa-token = "1.45.0"
 
 mybatis-plus = "3.5.14"
 mybatis-plus-join = "1.5.4"
@@ -56,6 +58,9 @@ spring-ai-alibaba-agent-framework = { module = "com.alibaba.cloud.ai:spring-ai-a
 
 # Security
 spring-security-oauth2-jose = { module = "org.springframework.security:spring-security-oauth2-jose", version.ref = "spring-security-oauth2-jose" }
+spring-security-crypto = { module = "org.springframework.security:spring-security-crypto", version.ref = "spring-security-crypto" }
+sa-token-spring-boot3-starter = { module = "cn.dev33:sa-token-spring-boot3-starter", version.ref = "sa-token" }
+sa-token-redis-jackson = { module = "cn.dev33:sa-token-redis-jackson", version.ref = "sa-token" }
 # Datasource
 hikari-cp = { module = "com.zaxxer:HikariCP", version.ref = "hikari-cp" }
 mysql-connector-j = { module = "com.mysql:mysql-connector-j" }
@@ -105,6 +110,10 @@ ai = [
 security = [
   "spring-boot-starter-security",
   "spring-security-oauth2-jose"
+]
+sa-token = [
+  "sa-token-spring-boot3-starter",
+  "sa-token-redis-jackson"
 ]
 datasource-core = [
   "spring-boot-starter-jdbc",

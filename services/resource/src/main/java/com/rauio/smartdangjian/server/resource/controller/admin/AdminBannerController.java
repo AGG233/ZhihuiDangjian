@@ -7,7 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/resource/banners")
 @RequiredArgsConstructor
-@PermissionAccess(UserType.MANAGER)
+@SaCheckRole("MANAGER")
 public class AdminBannerController {
 
     private final BannerService bannerService;

@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
@@ -55,73 +54,6 @@ class UserTest {
         assertThat(user.getUpdatedAt()).isEqualTo(now);
     }
 
-    @Test
-    @DisplayName("getAuthorities 用户类型为 STUDENT 时返回 ROLE_STUDENT")
-    void getAuthoritiesReturnsRoleStudent() {
-        User user = User.builder()
-                .id("1001")
-                .username("student1")
-                .userType(UserType.STUDENT)
-                .build();
-
-        assertThat(user.getAuthorities()).singleElement().isEqualTo(new SimpleGrantedAuthority("ROLE_STUDENT"));
-    }
-
-    @Test
-    @DisplayName("getAuthorities 用户类型为 SCHOOL 时返回 ROLE_SCHOOL")
-    void getAuthoritiesReturnsRoleSchool() {
-        User user = User.builder()
-                .id("1002")
-                .username("school1")
-                .userType(UserType.SCHOOL)
-                .build();
-
-        assertThat(user.getAuthorities()).singleElement().isEqualTo(new SimpleGrantedAuthority("ROLE_SCHOOL"));
-    }
-
-    @Test
-    @DisplayName("getAuthorities 用户类型为 MANAGER 时返回 ROLE_MANAGER")
-    void getAuthoritiesReturnsRoleManager() {
-        User user = User.builder()
-                .id("1003")
-                .username("admin1")
-                .userType(UserType.MANAGER)
-                .build();
-
-        assertThat(user.getAuthorities()).singleElement().isEqualTo(new SimpleGrantedAuthority("ROLE_MANAGER"));
-    }
-
-    @Test
-    @DisplayName("UserDetails isEnabled 默认返回 true")
-    void isEnabledReturnsTrue() {
-        User user = User.builder().id("1001").userType(UserType.STUDENT).build();
-
-        assertThat(user.isEnabled()).isTrue();
-    }
-
-    @Test
-    @DisplayName("UserDetails isAccountNonExpired 默认返回 true")
-    void isAccountNonExpiredReturnsTrue() {
-        User user = User.builder().id("1001").userType(UserType.STUDENT).build();
-
-        assertThat(user.isAccountNonExpired()).isTrue();
-    }
-
-    @Test
-    @DisplayName("UserDetails isAccountNonLocked 默认返回 true")
-    void isAccountNonLockedReturnsTrue() {
-        User user = User.builder().id("1001").userType(UserType.STUDENT).build();
-
-        assertThat(user.isAccountNonLocked()).isTrue();
-    }
-
-    @Test
-    @DisplayName("UserDetails isCredentialsNonExpired 默认返回 true")
-    void isCredentialsNonExpiredReturnsTrue() {
-        User user = User.builder().id("1001").userType(UserType.STUDENT).build();
-
-        assertThat(user.isCredentialsNonExpired()).isTrue();
-    }
 
     @Test
     @DisplayName("CurrentUserPrincipal getId 返回 id 字段值")

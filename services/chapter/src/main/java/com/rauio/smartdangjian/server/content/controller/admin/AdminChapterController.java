@@ -6,15 +6,14 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
-import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
 import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
-import com.rauio.smartdangjian.utils.spec.UserType;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/content/chapters")
 @RequiredArgsConstructor
-@PermissionAccess(UserType.SCHOOL)
+@SaCheckRole("SCHOOL")
 public class AdminChapterController {
     private final ChapterService chapterService;
 

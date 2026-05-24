@@ -9,7 +9,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
@@ -19,17 +18,22 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.controller.factory.CategoryTestDataFactory;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.content.controller.admin.AdminCategoryController;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.content.pojo.request.CategoryRequest;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.content.service.category.CategoryService;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.utils.spec.UserType;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
@@ -311,11 +315,7 @@ class AdminCategoryControllerTest extends BaseControllerTest {
                     return "uni1";
                 }
             };
-            SecurityContextHolder.getContext()
-                    .setAuthentication(
-                            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                                    student, null, Collections.emptyList()));
-
+            setSecurityContext(UserType.STUDENT, "student1", "uni1");
             when(categoryService.create(any(CategoryRequest.class))).thenReturn(true);
             mockMvc.perform(post("/api/admin/content/categories/root")
                             .contentType(MediaType.APPLICATION_JSON)

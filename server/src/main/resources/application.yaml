@@ -31,6 +31,19 @@ spring:
         options:
           model: deepseek-chat
 
+# Sa-Token 配置
+sa-token:
+  token-name: Zhihui-Token
+  token-prefix: Bearer
+  timeout: 7200
+  is-concurrent: false
+  is-read-head: true
+  is-read-body: false
+  is-read-cookie: false
+  is-log: false
+  token-style: random-64
+  is-write-header: true
+
 auth:
   captcha:
     test-code: ${AUTH_TEST_CAPTCHA_CODE:}

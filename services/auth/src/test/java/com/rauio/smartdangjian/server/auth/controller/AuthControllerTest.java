@@ -135,10 +135,10 @@ class AuthControllerTest {
     @Test
     @DisplayName("logout 委托 authService.logout 并返回空字符串")
     void logoutDelegatesToAuthService() {
-        Result<?> result = authController.logout("some-token");
+        Result<?> result = authController.logout();
 
         assertThat(result.getCode()).isEqualTo("200");
         assertThat(result.getData()).isEqualTo("");
-        verify(authService).logout("some-token");
+        verify(authService).logout();
     }
 }

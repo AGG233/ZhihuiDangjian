@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## gstack
+
+Use the `/browse` skill from gstack for all web browsing. Never use `mcp__claude-in-chrome__*` tools.
+
+Available gstack skills: `/office-hours`, `/plan-ceo-review`, `/plan-eng-review`, `/plan-design-review`, `/design-consultation`, `/design-shotgun`, `/design-html`, `/review`, `/ship`, `/land-and-deploy`, `/canary`, `/benchmark`, `/browse`, `/connect-chrome`, `/qa`, `/qa-only`, `/design-review`, `/setup-browser-cookies`, `/setup-deploy`, `/setup-gbrain`, `/retro`, `/investigate`, `/document-release`, `/document-generate`, `/codex`, `/cso`, `/autoplan`, `/plan-devex-review`, `/devex-review`, `/careful`, `/freeze`, `/guard`, `/unfreeze`, `/gstack-upgrade`, `/learn`.
+
 ## Build Commands
 
 ```bash
@@ -110,6 +116,12 @@ git merge product                # 修复同步回 dev
 | quiz | `QuizErrorConstants` | 6000-6999 |
 | graph | `GraphErrorConstants` | 7000-7999 |
 | ai | `AiErrorConstants` | 8000-8999 |
+
+### 测试规范
+
+- **Controller mock 测试**（`BaseControllerTest` 风格）只验证路由、参数校验、响应包装，不作为业务回归唯一证明。
+- **新增 bugfix** 需要同时满足：service 层单元测试更新 + 至少一个跨层回归测试（`extends CrossLayerTestBase`），除非该 bug 完全位于纯函数/DTO/validator。
+- **CI 必须运行根任务** `./gradlew test --continue`，不能只跑 `:server:test`。
 
 ### 注意事项
 

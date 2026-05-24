@@ -4,20 +4,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.List;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.mockito.MockedStatic;
 
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.aop.resolver.ResourceOwnerResolver;
@@ -25,14 +25,24 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
+import cn.dev33.satoken.stp.StpUtil;
+
 @DisplayName("ResourceAccessAspect 单元测试")
 class ResourceAccessAspectTest {
 
     private final ResourceAccessAspect aspect = new ResourceAccessAspect();
+    private MockedStatic<StpUtil> stpUtilMock;
+
+    @BeforeEach
+    void setUp() {
+        stpUtilMock = mockStatic(StpUtil.class);
+    }
 
     @AfterEach
     void clearContext() {
-        SecurityContextHolder.clearContext();
+        if (stpUtilMock != null) {
+            stpUtilMock.close();
+        }
     }
 
     @Test
@@ -153,8 +163,8 @@ class ResourceAccessAspectTest {
                 return "uni-001";
             }
         };
-        SecurityContextHolder.getContext()
-                .setAuthentication(new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList()));
+        stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
+        stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn(userId);
     }
 
     private ResourceOwnerResolver resourceOwnerResolver(String resourceType, String ownerId) {

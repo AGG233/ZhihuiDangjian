@@ -7,9 +7,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Collections;
-
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -17,15 +14,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.quiz.controller.admin.AdminQuizAnswerController;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.utils.spec.UserType;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
@@ -46,13 +46,7 @@ class AdminQuizAnswerControllerTest extends BaseControllerTest {
 
     @BeforeEach
     void managerSecurityContext() {
-        // AdminQuizAnswerController requires MANAGER permission
         setSecurityContext(UserType.MANAGER, "admin1", "uni1");
-    }
-
-    @AfterEach
-    void clearManagerSecurityContext() {
-        SecurityContextHolder.clearContext();
     }
 
     @Nested
@@ -191,10 +185,7 @@ class AdminQuizAnswerControllerTest extends BaseControllerTest {
                     return "uni1";
                 }
             };
-            SecurityContextHolder.getContext()
-                    .setAuthentication(
-                            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                                    schoolUser, null, Collections.emptyList()));
+            setSecurityContext(UserType.SCHOOL, schoolUser.getId(), schoolUser.getUniversityId());
 
             when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId("user-1", "quiz-1", "opt-1"))
                     .thenReturn(true);

@@ -15,7 +15,7 @@ dependencies {
 
     implementation(libs.bundles.common)
     implementation(libs.bundles.ai)
-    implementation(libs.bundles.security)
+    // implementation(libs.bundles.security)
     implementation(libs.spring.boot.starter.data.redis)
     implementation(libs.springdoc.openapi.starter.webmvc.ui)
     implementation(libs.mapstruct)

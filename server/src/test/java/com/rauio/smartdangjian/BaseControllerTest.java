@@ -1,21 +1,24 @@
 package com.rauio.smartdangjian;
 
-import java.util.Collections;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.mockito.MockedStatic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import cn.dev33.satoken.session.SaSession;
+import cn.dev33.satoken.stp.StpUtil;
+
 import com.rauio.smartdangjian.utils.spec.UserType;
 
 @AutoConfigureMockMvc(addFilters = false)
@@ -37,35 +40,37 @@ public abstract class BaseControllerTest {
     @Autowired
     protected MockMvc mockMvc;
 
+    private MockedStatic<StpUtil> stpUtilMock;
+
     @BeforeEach
     void defaultSecurityContext() {
+        stpUtilMock = mockStatic(StpUtil.class);
         setSecurityContext(UserType.SCHOOL, "admin1", "uni1");
     }
 
     @AfterEach
     void clearSecurityContext() {
-        SecurityContextHolder.clearContext();
+        if (stpUtilMock != null) {
+            stpUtilMock.close();
+        }
     }
 
     protected void setSecurityContext(UserType userType, String userId, String universityId) {
-        CurrentUserPrincipal principal = new CurrentUserPrincipal() {
-            @Override
-            public String getId() {
-                return userId;
-            }
+        if (stpUtilMock == null) {
+            stpUtilMock = mockStatic(StpUtil.class);
+        }
+        stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
+        stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn(userId);
+        SaSession session = mock(SaSession.class);
+        stpUtilMock.when(StpUtil::getSession).thenReturn(session);
+    }
 
-            @Override
-            public UserType getUserType() {
-                return userType;
-            }
-
-            @Override
-            public String getUniversityId() {
-                return universityId;
-            }
-        };
-        SecurityContextHolder.getContext()
-                .setAuthentication(new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList()));
+    protected void setAnonymousContext() {
+        if (stpUtilMock != null) {
+            stpUtilMock.close();
+        }
+        stpUtilMock = mockStatic(StpUtil.class);
+        stpUtilMock.when(StpUtil::isLogin).thenReturn(false);
     }
 
     @EnableWebMvc
@@ -73,10 +78,6 @@ public abstract class BaseControllerTest {
             exclude = {
                 DataSourceAutoConfiguration.class,
                 HibernateJpaAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration.class,
-                com.rauio.smartdangjian.config.SecurityCoreAutoConfiguration.class,
-                com.rauio.smartdangjian.config.SecuritySupportAutoConfiguration.class,
                 com.rauio.smartdangjian.config.TransactionConfig.class
             })
     protected static class CommonTestConfig {}

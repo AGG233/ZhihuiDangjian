@@ -1,30 +1,38 @@
 package com.rauio.smartdangjian.utils;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
+import cn.dev33.satoken.exception.SaTokenContextException;
+import cn.dev33.satoken.session.SaSession;
+import cn.dev33.satoken.stp.StpUtil;
+
 public class SecurityUtils {
     public static CurrentUserPrincipal getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null
-                || !authentication.isAuthenticated()
-                || "anonymousUser".equals(authentication.getPrincipal())) {
+        try {
+            if (!StpUtil.isLogin()) {
+                return null;
+            }
+            SaSession session = StpUtil.getSession();
+            if (session == null) {
+                return null;
+            }
+            Object user = session.get("user");
+            return user instanceof CurrentUserPrincipal ? (CurrentUserPrincipal) user : null;
+        } catch (SaTokenContextException e) {
             return null;
         }
-
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof CurrentUserPrincipal currentUserPrincipal) {
-            return currentUserPrincipal;
-        }
-        return null;
     }
 
     public static String getCurrentUserId() {
-        CurrentUserPrincipal currentUser = getCurrentUser();
-        return currentUser == null ? null : currentUser.getId();
+        try {
+            if (!StpUtil.isLogin()) {
+                return null;
+            }
+            return StpUtil.getLoginIdAsString();
+        } catch (SaTokenContextException e) {
+            return null;
+        }
     }
 
     public static UserType getCurrentUserType() {

@@ -3,19 +3,22 @@ package com.rauio.smartdangjian.controller.admin;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Collections;
 import java.util.List;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -30,9 +33,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import cn.dev33.satoken.stp.StpUtil;
+
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.controller.admin.AdminUserController;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
@@ -57,17 +62,13 @@ import com.rauio.smartdangjian.utils.spec.UserType;
             "NEO4J_PASSWORD=password"
         })
 @DisplayName("管理员用户接口测试")
-class AdminUserControllerTest {
+class AdminUserControllerTest extends BaseControllerTest {
 
     @SpringBootConfiguration
     @EnableAutoConfiguration(
             exclude = {
                 DataSourceAutoConfiguration.class,
                 HibernateJpaAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration.class,
-                com.rauio.smartdangjian.config.SecurityCoreAutoConfiguration.class,
-                com.rauio.smartdangjian.config.SecuritySupportAutoConfiguration.class,
                 com.rauio.smartdangjian.config.TransactionConfig.class
             })
     @EnableWebMvc
@@ -102,9 +103,7 @@ class AdminUserControllerTest {
                 return "uni1";
             }
         };
-        org.springframework.security.core.context.SecurityContextHolder.getContext()
-                .setAuthentication(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                        principal, null, java.util.Collections.emptyList()));
+        setSecurityContext(UserType.SCHOOL, principal.getId(), principal.getUniversityId());
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -873,10 +872,7 @@ class AdminUserControllerTest {
                     return "uni1";
                 }
             };
-            org.springframework.security.core.context.SecurityContextHolder.getContext()
-                    .setAuthentication(
-                            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                                    student, null, Collections.emptyList()));
+        setSecurityContext(UserType.STUDENT, student.getId(), student.getUniversityId());
 
             when(userService.getAdminPage(any(UserRequest.class), anyInt(), anyInt()))
                     .thenReturn(com.baomidou.mybatisplus.extension.plugins.pagination.Page.of(0, 10));

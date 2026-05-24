@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
-import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.ai.pojo.response.AiChatMessageResponse;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiChatRequest;
@@ -34,7 +34,7 @@ import reactor.core.publisher.Flux;
 @RestController
 @RequestMapping("/api/ai/chat")
 @RequiredArgsConstructor
-@PermissionAccess(UserType.STUDENT)
+@SaCheckRole("STUDENT")
 public class UserChatController {
 
     private final LLMService llmService;

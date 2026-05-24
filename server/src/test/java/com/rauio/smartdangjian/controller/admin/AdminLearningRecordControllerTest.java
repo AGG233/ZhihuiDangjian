@@ -7,26 +7,29 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import java.util.List;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.controller.factory.LearningTestDataFactory;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.learning.controller.admin.AdminLearningRecordController;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.utils.spec.UserType;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
@@ -205,10 +208,7 @@ class AdminLearningRecordControllerTest extends BaseControllerTest {
                     return "uni1";
                 }
             };
-            SecurityContextHolder.getContext()
-                    .setAuthentication(
-                            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                                    student, null, Collections.emptyList()));
+            setSecurityContext(UserType.STUDENT, student.getId(), student.getUniversityId());
 
             when(recordService.getByChapterId("ch-001")).thenReturn(java.util.List.of());
             mockMvc.perform(get("/api/admin/learning/records/chapter/ch-001")).andExpect(status().isOk());
