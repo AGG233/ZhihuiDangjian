@@ -23,8 +23,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class
-CategoryService extends ServiceImpl<CategoryMapper, Category> {
+public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
 
     private final CategoryConvertor convertor;
 
