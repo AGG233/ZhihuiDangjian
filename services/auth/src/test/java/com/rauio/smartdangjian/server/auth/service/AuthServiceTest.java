@@ -18,7 +18,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
@@ -35,6 +34,7 @@ import com.rauio.smartdangjian.utils.spec.UserType;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.session.SaSession;
+import cn.hutool.crypto.digest.BCrypt;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -47,9 +47,6 @@ class AuthServiceTest {
 
     @Mock
     private UserService userService;
-
-    @Mock
-private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private AuthService authService;
@@ -80,9 +77,10 @@ private PasswordEncoder passwordEncoder;
         user.setPassword(newEncodedPassword());
         when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
         when(userService.getByPassport("admin")).thenReturn(user);
-        when(passwordEncoder.matches(rawPassword, user.getPassword())).thenReturn(true);
 
-        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
+             MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.checkpw(rawPassword, user.getPassword())).thenReturn(true);
             SaSession session = mock(SaSession.class);
             stpUtilMock.when(StpUtil::getSession).thenReturn(session);
             stpUtilMock.when(StpUtil::getTokenValue).thenReturn("sa-token-abc");
@@ -102,12 +100,15 @@ private PasswordEncoder passwordEncoder;
         user.setPassword(newEncodedPassword());
         when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
         when(userService.getByPassport("admin")).thenReturn(user);
-        when(passwordEncoder.matches(rawPassword, user.getPassword())).thenReturn(false);
 
-        assertThatThrownBy(() -> authService.login(request))
-                .isInstanceOf(BusinessException.class)
-                .extracting("code")
-                .isEqualTo(AuthErrorConstants.PASSWORD_ERROR);
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.checkpw(rawPassword, user.getPassword())).thenReturn(false);
+
+            assertThatThrownBy(() -> authService.login(request))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("code")
+                    .isEqualTo(AuthErrorConstants.PASSWORD_ERROR);
+        }
     }
 
     // ================================================================
@@ -199,16 +200,19 @@ private PasswordEncoder passwordEncoder;
         String rawPassword = request.getPassword();
         when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
         when(userMapper.exists(any())).thenReturn(false, false, false, false);
-        when(passwordEncoder.encode(rawPassword)).thenReturn(newEncodedPassword());
         when(userMapper.insert(any(User.class))).thenReturn(1);
 
-        var result = authService.register(request);
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.hashpw(rawPassword)).thenReturn(newEncodedPassword());
 
-        assertThat(result).isNotNull();
-        assertThat(result.getCode()).isEqualTo("200");
-        assertThat(result.getMessage()).isEqualTo("OK");
-        verify(passwordEncoder).encode(rawPassword);
-        verify(userMapper).insert(any(User.class));
+            var result = authService.register(request);
+
+            assertThat(result).isNotNull();
+            assertThat(result.getCode()).isEqualTo("200");
+            assertThat(result.getMessage()).isEqualTo("OK");
+            bcryptMock.verify(() -> BCrypt.hashpw(rawPassword));
+            verify(userMapper).insert(any(User.class));
+        }
     }
 
     @Test
@@ -218,13 +222,16 @@ private PasswordEncoder passwordEncoder;
         request.setEmail(null);
         when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
         when(userMapper.exists(any())).thenReturn(false, false, false);
-        when(passwordEncoder.encode(anyString())).thenReturn(newEncodedPassword());
         when(userMapper.insert(any(User.class))).thenReturn(1);
 
-        var result = authService.register(request);
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.hashpw(anyString())).thenReturn(newEncodedPassword());
 
-        assertThat(result).isNotNull();
-        assertThat(result.getCode()).isEqualTo("200");
+            var result = authService.register(request);
+
+            assertThat(result).isNotNull();
+            assertThat(result.getCode()).isEqualTo("200");
+        }
     }
 
     // ================================================================
@@ -267,10 +274,11 @@ private PasswordEncoder passwordEncoder;
         User user = createUser("u1", "testuser");
         user.setPassword(newEncodedPassword());
 
-        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
+             MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
             stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("u1");
             when(userMapper.selectById("u1")).thenReturn(user);
-            when(passwordEncoder.matches(request.getOldPassword(), user.getPassword())).thenReturn(false);
+            bcryptMock.when(() -> BCrypt.checkpw(request.getOldPassword(), user.getPassword())).thenReturn(false);
 
             assertThatThrownBy(() -> authService.changePassword(request))
                     .isInstanceOf(BusinessException.class)
@@ -288,13 +296,14 @@ private PasswordEncoder passwordEncoder;
         User user = createUser("u1", "testuser");
         user.setPassword(newEncodedPassword());
 
-        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
+             MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
             SaSession session = mock(SaSession.class);
             stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("u1");
             stpUtilMock.when(StpUtil::getSession).thenReturn(session);
             when(userMapper.selectById("u1")).thenReturn(user);
-            when(passwordEncoder.matches(request.getOldPassword(), user.getPassword())).thenReturn(true);
-            when(passwordEncoder.encode(newRawPassword)).thenReturn(encodedNewPassword);
+            bcryptMock.when(() -> BCrypt.checkpw(request.getOldPassword(), user.getPassword())).thenReturn(true);
+            bcryptMock.when(() -> BCrypt.hashpw(newRawPassword)).thenReturn(encodedNewPassword);
             when(userMapper.updateById(user)).thenReturn(1);
 
             authService.changePassword(request);
@@ -313,11 +322,12 @@ private PasswordEncoder passwordEncoder;
         User user = createUser("u1", "testuser");
         user.setPassword(newEncodedPassword());
 
-        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
+             MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
             stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("u1");
             when(userMapper.selectById("u1")).thenReturn(user);
-            when(passwordEncoder.matches(request.getOldPassword(), user.getPassword())).thenReturn(true);
-            when(passwordEncoder.encode(newRawPassword)).thenReturn(newEncodedPassword());
+            bcryptMock.when(() -> BCrypt.checkpw(request.getOldPassword(), user.getPassword())).thenReturn(true);
+            bcryptMock.when(() -> BCrypt.hashpw(newRawPassword)).thenReturn(newEncodedPassword());
             when(userMapper.updateById(user)).thenReturn(0);
 
             assertThatThrownBy(() -> authService.changePassword(request))

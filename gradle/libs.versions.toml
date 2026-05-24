@@ -5,8 +5,6 @@ spring-ai = "1.1.2"
 spring-ai-ali = "1.1.2.0"
 spring-redisson = "4.3.0"
 
-spring-security-oauth2-jose = "6.5.1"
-spring-security-crypto = "6.5.1"
 sa-token = "1.45.0"
 
 mybatis-plus = "3.5.14"
@@ -44,7 +42,6 @@ spring-boot-starter-aop = { module = "org.springframework.boot:spring-boot-start
 spring-boot-starter-data-neo4j = { module = "org.springframework.boot:spring-boot-starter-data-neo4j" }
 spring-boot-starter-data-redis = { module = "org.springframework.boot:spring-boot-starter-data-redis" }
 spring-boot-starter-jdbc = { module = "org.springframework.boot:spring-boot-starter-jdbc" }
-spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
 spring-boot-starter-web-services = { module = "org.springframework.boot:spring-boot-starter-web-services" }
@@ -57,8 +54,6 @@ spring-ai-starter-mcp-client = { module = "org.springframework.ai:spring-ai-star
 spring-ai-alibaba-agent-framework = { module = "com.alibaba.cloud.ai:spring-ai-alibaba-agent-framework", version.ref = "spring-ai-ali" }
 
 # Security
-spring-security-oauth2-jose = { module = "org.springframework.security:spring-security-oauth2-jose", version.ref = "spring-security-oauth2-jose" }
-spring-security-crypto = { module = "org.springframework.security:spring-security-crypto", version.ref = "spring-security-crypto" }
 sa-token-spring-boot3-starter = { module = "cn.dev33:sa-token-spring-boot3-starter", version.ref = "sa-token" }
 sa-token-redis-jackson = { module = "cn.dev33:sa-token-redis-jackson", version.ref = "sa-token" }
 # Datasource
@@ -106,10 +101,6 @@ ai = [
   "spring-ai-starter-model-openai",
   "spring-ai-starter-mcp-client",
   "spring-ai-alibaba-agent-framework"
-]
-security = [
-  "spring-boot-starter-security",
-  "spring-security-oauth2-jose"
 ]
 sa-token = [
   "sa-token-spring-boot3-starter",

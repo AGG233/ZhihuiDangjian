@@ -2,8 +2,9 @@ package com.rauio.smartdangjian.server.auth.service;
 
 import java.time.LocalDateTime;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import cn.hutool.crypto.digest.BCrypt;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
@@ -30,7 +31,6 @@ public class AuthService {
     private final CaptchaService captchaService;
     private final UserMapper userMapper;
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
 
     public LoginResponse login(LoginRequest loginRequest) {
         if (!captchaService.validate(loginRequest.getCaptchaUUID(), loginRequest.getCaptchaCode())) {
@@ -49,7 +49,7 @@ public class AuthService {
             throw new BusinessException(AuthErrorConstants.UNAUTHORIZED, "账号未激活");
         }
 
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+        if (!BCrypt.checkpw(loginRequest.getPassword(), user.getPassword())) {
             throw new BusinessException(AuthErrorConstants.PASSWORD_ERROR, "密码错误");
         }
 
@@ -81,7 +81,7 @@ public class AuthService {
 
         User user = User.builder()
                 .username(registerRequest.getUsername())
-                .password(passwordEncoder.encode(registerRequest.getPassword()))
+                .password(BCrypt.hashpw(registerRequest.getPassword()))
                 .realName(registerRequest.getRealName())
                 .idCard(registerRequest.getIdCard())
                 .partyMemberId(registerRequest.getPartyMemberId())
@@ -112,11 +112,11 @@ public class AuthService {
             throw new BusinessException(AuthErrorConstants.USER_NOT_FOUND, "用户不存在");
         }
 
-        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+        if (!BCrypt.checkpw(request.getOldPassword(), user.getPassword())) {
             throw new BusinessException(AuthErrorConstants.OLD_PASSWORD_ERROR, "旧密码错误");
         }
 
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setPassword(BCrypt.hashpw(request.getNewPassword()));
         user.setUpdatedAt(LocalDateTime.now());
         if (userMapper.updateById(user) <= 0) {
             throw new BusinessException(AuthErrorConstants.PASSWORD_CHANGE_ERROR, "密码修改失败");

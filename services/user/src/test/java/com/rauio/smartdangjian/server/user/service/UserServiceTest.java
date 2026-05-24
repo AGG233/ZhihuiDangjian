@@ -22,10 +22,10 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.session.SaSession;
+import cn.hutool.crypto.digest.BCrypt;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -39,9 +39,6 @@ import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
 
     @Mock
     private UserConvertor convertor;
@@ -292,7 +289,6 @@ class UserServiceTest {
         userService.update("u1", user);
 
         assertThat(user.getId()).isEqualTo("u1");
-        verify(passwordEncoder, never()).encode(anyString());
         verify(userService).updateById(user);
     }
 
@@ -302,14 +298,16 @@ class UserServiceTest {
         User user = createUser(null, "testuser", "test@example.com", "13800138000");
         user.setPassword("plainPassword");
 
-        when(passwordEncoder.encode("plainPassword")).thenReturn("encodedNewPassword");
-        doReturn(true).when(userService).updateById(any(User.class));
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.hashpw("plainPassword")).thenReturn("encodedNewPassword");
+            doReturn(true).when(userService).updateById(any(User.class));
 
-        userService.update("u1", user);
+            userService.update("u1", user);
 
-        assertThat(user.getId()).isEqualTo("u1");
-        assertThat(user.getPassword()).isEqualTo("encodedNewPassword");
-        verify(passwordEncoder).encode("plainPassword");
+            assertThat(user.getId()).isEqualTo("u1");
+            assertThat(user.getPassword()).isEqualTo("encodedNewPassword");
+            bcryptMock.verify(() -> BCrypt.hashpw("plainPassword"));
+        }
         verify(userService).updateById(user);
     }
 
@@ -321,9 +319,11 @@ class UserServiceTest {
 
         doReturn(true).when(userService).updateById(any(User.class));
 
-        userService.update("u1", user);
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            userService.update("u1", user);
 
-        verify(passwordEncoder, never()).encode(anyString());
+            bcryptMock.verify(() -> BCrypt.hashpw(anyString()), never());
+        }
     }
 
     // ================================================================
@@ -362,13 +362,16 @@ class UserServiceTest {
         user.setPassword("plainPassword");
 
         doReturn(false).when(userService).exists(any(LambdaQueryWrapper.class));
-        when(passwordEncoder.encode("plainPassword")).thenReturn("encodedPassword");
         doReturn(true).when(userService).save(any(User.class));
 
-        userService.register(user);
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.hashpw("plainPassword")).thenReturn("encodedPassword");
 
-        assertThat(user.getPassword()).isEqualTo("encodedPassword");
-        verify(passwordEncoder).encode("plainPassword");
+            userService.register(user);
+
+            assertThat(user.getPassword()).isEqualTo("encodedPassword");
+            bcryptMock.verify(() -> BCrypt.hashpw("plainPassword"));
+        }
         verify(userService).save(user);
     }
 
@@ -458,15 +461,18 @@ class UserServiceTest {
         user.setPassword("encodedOldPassword");
 
         doReturn(user).when(userService).getCurrentUser();
-        when(passwordEncoder.matches("oldPassword", "encodedOldPassword")).thenReturn(true);
-        when(passwordEncoder.encode("newPassword")).thenReturn("encodedNewPassword");
         doReturn(true).when(userService).updateById(any(User.class));
 
-        userService.changePassword("oldPassword", "newPassword");
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.checkpw("oldPassword", "encodedOldPassword")).thenReturn(true);
+            bcryptMock.when(() -> BCrypt.hashpw("newPassword")).thenReturn("encodedNewPassword");
 
-        assertThat(user.getPassword()).isEqualTo("encodedNewPassword");
-        verify(passwordEncoder).matches("oldPassword", "encodedOldPassword");
-        verify(passwordEncoder).encode("newPassword");
+            userService.changePassword("oldPassword", "newPassword");
+
+            assertThat(user.getPassword()).isEqualTo("encodedNewPassword");
+            bcryptMock.verify(() -> BCrypt.checkpw("oldPassword", "encodedOldPassword"));
+            bcryptMock.verify(() -> BCrypt.hashpw("newPassword"));
+        }
         verify(userService).updateById(user);
     }
 
@@ -477,14 +483,17 @@ class UserServiceTest {
         user.setPassword("encodedOldPassword");
 
         doReturn(user).when(userService).getCurrentUser();
-        when(passwordEncoder.matches("wrongPassword", "encodedOldPassword")).thenReturn(false);
 
-        assertThatThrownBy(() -> userService.changePassword("wrongPassword", "newPassword"))
-                .isInstanceOf(BusinessException.class)
-                .extracting("code")
-                .isEqualTo(UserErrorConstants.PASSWORD_CHANGE_ERROR);
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.checkpw("wrongPassword", "encodedOldPassword")).thenReturn(false);
 
-        verify(passwordEncoder, never()).encode(anyString());
+            assertThatThrownBy(() -> userService.changePassword("wrongPassword", "newPassword"))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("code")
+                    .isEqualTo(UserErrorConstants.PASSWORD_CHANGE_ERROR);
+
+            bcryptMock.verify(() -> BCrypt.hashpw(anyString()), never());
+        }
         verify(userService, never()).updateById(any(User.class));
     }
 

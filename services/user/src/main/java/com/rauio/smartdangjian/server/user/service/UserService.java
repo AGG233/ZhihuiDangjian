@@ -5,8 +5,9 @@ import static com.rauio.smartdangjian.constants.RedisConstants.USER_VO_CACHE_PRE
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import cn.hutool.crypto.digest.BCrypt;
 
 import cn.dev33.satoken.stp.StpUtil;
 
@@ -29,7 +30,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserService extends ServiceImpl<UserMapper, User> {
 
-    private final PasswordEncoder passwordEncoder;
     private final UserConvertor convertor;
 
     /**
@@ -145,7 +145,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     public void update(String id, User user) {
         user.setId(id);
         if (StringUtils.isNotBlank(user.getPassword())) {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.setPassword(BCrypt.hashpw(user.getPassword()));
         }
         if (!this.updateById(user)) {
             throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户更新失败");
@@ -175,7 +175,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         checkPhoneRegistered(user.getPhone());
         checkUsernameOccupied(user.getUsername());
         checkPartyMemberId(String.valueOf(user.getPartyMemberId()));
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(BCrypt.hashpw(user.getPassword()));
         if (!this.save(user)) {
             throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户注册失败");
         }
@@ -193,8 +193,8 @@ public class UserService extends ServiceImpl<UserMapper, User> {
             throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "有空参数");
         }
         User user = getCurrentUser();
-        if (passwordEncoder.matches(oldPassword, user.getPassword())) {
-            user.setPassword(passwordEncoder.encode(newPassword));
+        if (BCrypt.checkpw(oldPassword, user.getPassword())) {
+            user.setPassword(BCrypt.hashpw(newPassword));
             if (!this.updateById(user)) {
                 throw new BusinessException(UserErrorConstants.PASSWORD_CHANGE_ERROR, "修改密码时出现错误");
             }

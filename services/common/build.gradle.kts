@@ -6,7 +6,6 @@ dependencies {
     api(libs.spring.boot.starter.web)
     api(libs.sa.token.spring.boot3.starter)
     api(libs.sa.token.redis.jackson)
-    api(libs.spring.security.crypto)
     // api(libs.spring.boot.starter.security)
     api(libs.spring.boot.starter.aop)
     api(libs.spring.boot.starter.validation)
