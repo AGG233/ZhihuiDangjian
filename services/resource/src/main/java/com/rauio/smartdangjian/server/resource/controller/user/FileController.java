@@ -49,7 +49,9 @@ public class FileController {
             summary = "回调接收文件上传（适用于本地中转模式）",
             description = "当 COS 不可用时，upload 接口返回的 uploadUrl 指向本端点。前端应直接对该地址发起 HTTP PUT 请求，将文件二进制内容作为请求体上传。")
     @PutMapping("/upload/callback/{resourceId}")
+    @SaCheckLogin
     @SaCheckRole("STUDENT")
+    @ResourceAccess(id = "#resourceId", type = "RESOURCE_META")
     public Result<Void> uploadCallback(
             @PathVariable String resourceId,
             HttpServletRequest request) throws IOException {

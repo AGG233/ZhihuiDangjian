@@ -121,6 +121,7 @@ public class AuthService {
         if (userMapper.updateById(user) <= 0) {
             throw new BusinessException(AuthErrorConstants.PASSWORD_CHANGE_ERROR, "密码修改失败");
         }
+        StpUtil.getSession().set("user", user);
     }
 
     private void checkEmailRegistered(String email) {

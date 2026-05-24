@@ -3,7 +3,6 @@ package com.rauio.smartdangjian.server.user.service;
 import static com.rauio.smartdangjian.constants.RedisConstants.USER_VO_CACHE_PREFIX;
 
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,9 +31,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
 
     private final PasswordEncoder passwordEncoder;
     private final UserConvertor convertor;
-
-    @Value("${app.dev.default-user-id:}")
-    private String defaultDevUserId;
 
     /**
      * 根据通行凭证识别并查询用户。
@@ -89,7 +85,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      */
     public String getCurrentUserId() {
         if (!StpUtil.isLogin()) {
-            return defaultDevUserId;
+            return null;
         }
         return StpUtil.getLoginIdAsString();
     }
