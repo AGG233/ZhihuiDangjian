@@ -81,6 +81,8 @@ jobs:
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml
+          language: java
+          force-coverage-parser: jacoco
 
       - name: Build server bootJar
         run: ./gradlew --no-daemon :server:bootJar -x test
