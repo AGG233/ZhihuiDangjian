@@ -4,7 +4,9 @@ plugins {
 
 dependencies {
     api(libs.spring.boot.starter.web)
-    api(libs.spring.boot.starter.security)
+    api(libs.sa.token.spring.boot3.starter)
+    api(libs.sa.token.redis.jackson)
+    // api(libs.spring.boot.starter.security)
     api(libs.spring.boot.starter.aop)
     api(libs.spring.boot.starter.validation)
     api(libs.spring.boot.starter.jdbc)
@@ -16,7 +18,7 @@ dependencies {
     api(libs.spring.boot.starter.data.redis)
     api(libs.tika.core)
     api(libs.xfile)
-    api(libs.java.jwt)
+    // api(libs.java.jwt)
     api(libs.hutool.all)
     api(libs.redisson)
     api(libs.springdoc.openapi.starter.webmvc.ui)

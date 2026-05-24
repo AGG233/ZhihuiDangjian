@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.server.quiz.mapper.UserQuizAnswerMapper;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -32,7 +32,7 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param userQuizAnswer 用户答题实体
      * @return 是否更新成功
      */
-    @PermissionAccess(UserType.SCHOOL)
+    @SaCheckRole("SCHOOL")
     public Boolean update(UserQuizAnswer userQuizAnswer) {
         return this.updateById(userQuizAnswer);
     }
@@ -43,7 +43,7 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param userQuizAnswer 用户答题实体
      * @return 是否更新成功
      */
-    @PermissionAccess(UserType.SCHOOL)
+    @SaCheckRole("SCHOOL")
     public Boolean updateByUserIdAndQuizIdAndOptionId(UserQuizAnswer userQuizAnswer) {
         UserQuizAnswer existing = getByUserIdAndQuizIdAndOptionId(
                 userQuizAnswer.getUserId(), userQuizAnswer.getQuizId(), userQuizAnswer.getOptionId());
@@ -60,7 +60,7 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param id 记录 ID
      * @return 是否删除成功
      */
-    @PermissionAccess(UserType.MANAGER)
+    @SaCheckRole("MANAGER")
     public Boolean delete(String id) {
         return this.removeById(id);
     }
@@ -73,7 +73,7 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param optionId 选项 ID
      * @return 是否删除成功
      */
-    @PermissionAccess(UserType.MANAGER)
+    @SaCheckRole("MANAGER")
     public Boolean deleteByUserIdAndQuizIdAndOptionId(String userId, String quizId, String optionId) {
         UserQuizAnswer existing = getByUserIdAndQuizIdAndOptionId(userId, quizId, optionId);
         if (existing == null) {

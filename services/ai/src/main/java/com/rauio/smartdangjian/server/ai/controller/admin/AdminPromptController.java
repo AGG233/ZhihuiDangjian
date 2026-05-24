@@ -6,7 +6,7 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.ai.pojo.response.AiPromptResponse;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptCreateRequest;
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/ai/prompts")
 @RequiredArgsConstructor
-@PermissionAccess(UserType.MANAGER)
+@SaCheckRole("MANAGER")
 public class AdminPromptController {
 
     private final PromptService promptService;

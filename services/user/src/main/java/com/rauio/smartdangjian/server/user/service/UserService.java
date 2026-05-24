@@ -2,19 +2,19 @@ package com.rauio.smartdangjian.server.user.service;
 
 import static com.rauio.smartdangjian.constants.RedisConstants.USER_VO_CACHE_PREFIX;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import cn.hutool.crypto.digest.BCrypt;
+
+import cn.dev33.satoken.stp.StpUtil;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.rauio.smartdangjian.aop.annotation.RequireUser;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
@@ -30,11 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserService extends ServiceImpl<UserMapper, User> {
 
-    private final PasswordEncoder passwordEncoder;
     private final UserConvertor convertor;
-
-    @Value("${app.dev.default-user-id:}")
-    private String defaultDevUserId;
 
     /**
      * 根据通行凭证识别并查询用户。
@@ -74,17 +70,12 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      *
      * @return 当前调用接口的用户
      */
-    @RequireUser
     public User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication != null && authentication.isAuthenticated()) {
-            Object principal = authentication.getPrincipal();
-            if (principal instanceof User) {
-                return (User) principal;
-            }
+        if (!StpUtil.isLogin()) {
+            return null;
         }
-        return null;
+        Object user = StpUtil.getSession().get("user");
+        return user instanceof User ? (User) user : null;
     }
 
     /**
@@ -92,17 +83,11 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      *
      * @return 当前用户 ID，未登录时返回开发环境默认值（如有配置）
      */
-    @RequireUser
     public String getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication != null && authentication.isAuthenticated()) {
-            Object principal = authentication.getPrincipal();
-            if (principal instanceof User) {
-                return ((User) principal).getId();
-            }
+        if (!StpUtil.isLogin()) {
+            return null;
         }
-        return defaultDevUserId;
+        return StpUtil.getLoginIdAsString();
     }
 
     /**
@@ -160,7 +145,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     public void update(String id, User user) {
         user.setId(id);
         if (StringUtils.isNotBlank(user.getPassword())) {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.setPassword(BCrypt.hashpw(user.getPassword()));
         }
         if (!this.updateById(user)) {
             throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户更新失败");
@@ -190,7 +175,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         checkPhoneRegistered(user.getPhone());
         checkUsernameOccupied(user.getUsername());
         checkPartyMemberId(String.valueOf(user.getPartyMemberId()));
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(BCrypt.hashpw(user.getPassword()));
         if (!this.save(user)) {
             throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户注册失败");
         }
@@ -208,8 +193,8 @@ public class UserService extends ServiceImpl<UserMapper, User> {
             throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "有空参数");
         }
         User user = getCurrentUser();
-        if (passwordEncoder.matches(oldPassword, user.getPassword())) {
-            user.setPassword(passwordEncoder.encode(newPassword));
+        if (BCrypt.checkpw(oldPassword, user.getPassword())) {
+            user.setPassword(BCrypt.hashpw(newPassword));
             if (!this.updateById(user)) {
                 throw new BusinessException(UserErrorConstants.PASSWORD_CHANGE_ERROR, "修改密码时出现错误");
             }

@@ -2,11 +2,9 @@ package com.rauio.smartdangjian.server.auth.service;
 
 import java.time.LocalDateTime;
 
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import cn.hutool.crypto.digest.BCrypt;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
@@ -19,40 +17,56 @@ import com.rauio.smartdangjian.server.auth.pojo.response.LoginResponse;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
-import com.rauio.smartdangjian.utils.SecurityUtils;
 
+import cn.dev33.satoken.stp.SaLoginModel;
+import cn.dev33.satoken.stp.StpUtil;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
     private final CaptchaService captchaService;
     private final UserMapper userMapper;
-    private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
     public LoginResponse login(LoginRequest loginRequest) {
         if (!captchaService.validate(loginRequest.getCaptchaUUID(), loginRequest.getCaptchaCode())) {
             throw new BusinessException(AuthErrorConstants.CAPTCHA_ERROR, "验证码错误");
         }
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getPassport(), loginRequest.getPassword()));
 
-            User user = (User) authentication.getPrincipal();
-            String accessToken = jwtService.generateAccessToken(user, loginRequest.getPlatform());
+        User user = userService.getByPassport(loginRequest.getPassport());
+        if (user == null) {
+            throw new BusinessException(AuthErrorConstants.USER_NOT_FOUND, "用户不存在");
+        }
 
-            return LoginResponse.builder().accessToken(accessToken).build();
-        } catch (Exception e) {
+        if (user.getStatus() == AccountStatus.BANNED) {
+            throw new BusinessException(AuthErrorConstants.UNAUTHORIZED, "账号已被封禁");
+        }
+        if (user.getStatus() == AccountStatus.INACTIVE) {
+            throw new BusinessException(AuthErrorConstants.UNAUTHORIZED, "账号未激活");
+        }
+
+        if (!BCrypt.checkpw(loginRequest.getPassword(), user.getPassword())) {
             throw new BusinessException(AuthErrorConstants.PASSWORD_ERROR, "密码错误");
         }
+
+        String platform = loginRequest.getPlatform() != null ? loginRequest.getPlatform() : "web";
+        long timeout = "app".equals(platform) ? 2592000L : 7200L;
+
+        StpUtil.login(user.getId(), SaLoginModel.create()
+                .setDevice(platform)
+                .setTimeout(timeout));
+
+        StpUtil.getSession().set("user", user);
+
+        return LoginResponse.builder().accessToken(StpUtil.getTokenValue()).build();
     }
 
-    public void logout(String token) {
-        jwtService.logout(token);
+    public void logout() {
+        StpUtil.logout();
     }
 
     public Result<Object> register(RegisterRequest registerRequest) {
@@ -67,7 +81,7 @@ public class AuthService {
 
         User user = User.builder()
                 .username(registerRequest.getUsername())
-                .password(passwordEncoder.encode(registerRequest.getPassword()))
+                .password(BCrypt.hashpw(registerRequest.getPassword()))
                 .realName(registerRequest.getRealName())
                 .idCard(registerRequest.getIdCard())
                 .partyMemberId(registerRequest.getPartyMemberId())
@@ -88,7 +102,7 @@ public class AuthService {
     }
 
     public void changePassword(ChangePasswordRequest request) {
-        String userId = SecurityUtils.getCurrentUserId();
+        String userId = StpUtil.getLoginIdAsString();
         if (userId == null) {
             throw new BusinessException(AuthErrorConstants.UNAUTHORIZED, "未登录或登录已过期");
         }
@@ -98,16 +112,16 @@ public class AuthService {
             throw new BusinessException(AuthErrorConstants.USER_NOT_FOUND, "用户不存在");
         }
 
-        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+        if (!BCrypt.checkpw(request.getOldPassword(), user.getPassword())) {
             throw new BusinessException(AuthErrorConstants.OLD_PASSWORD_ERROR, "旧密码错误");
         }
 
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setPassword(BCrypt.hashpw(request.getNewPassword()));
         user.setUpdatedAt(LocalDateTime.now());
-        jwtService.clearUserCache(userId);
         if (userMapper.updateById(user) <= 0) {
             throw new BusinessException(AuthErrorConstants.PASSWORD_CHANGE_ERROR, "密码修改失败");
         }
+        StpUtil.getSession().set("user", user);
     }
 
     private void checkEmailRegistered(String email) {

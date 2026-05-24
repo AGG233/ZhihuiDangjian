@@ -9,6 +9,17 @@ server:
     openai:
       api-key: ${AI_KEY:dummy-key}
 
+dromara:
+  x-file-storage:
+    tencent-cos:
+      - platform: tencent-cos
+        enable-storage: false
+    local:
+      - platform: local-dev
+        enable-storage: true
+        storage-path: ./uploads
+        domain: http://localhost:9000/
+
 logging:
   level:
     root: INFO

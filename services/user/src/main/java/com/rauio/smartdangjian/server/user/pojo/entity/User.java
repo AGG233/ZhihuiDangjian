@@ -1,18 +1,11 @@
 package com.rauio.smartdangjian.server.user.pojo.entity;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Collections;
-
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -33,7 +26,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "用户")
-public class User implements UserDetails, CurrentUserPrincipal {
+public class User implements CurrentUserPrincipal {
 
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
@@ -89,10 +82,4 @@ public class User implements UserDetails, CurrentUserPrincipal {
     @Schema(description = "更新时间")
     private LocalDateTime updatedAt;
 
-    @Override
-    @JsonIgnore
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        String role = "ROLE_" + userType.name();
-        return Collections.singletonList(new SimpleGrantedAuthority(role));
-    }
 }

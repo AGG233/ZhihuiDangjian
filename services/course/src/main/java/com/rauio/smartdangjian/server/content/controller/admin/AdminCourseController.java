@@ -4,14 +4,13 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
-import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.content.pojo.request.CourseRequest;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
-import com.rauio.smartdangjian.utils.spec.UserType;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/content/courses")
 @RequiredArgsConstructor
-@PermissionAccess(UserType.SCHOOL)
+@SaCheckRole("SCHOOL")
 public class AdminCourseController {
 
     private final CourseService courseService;

@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/quiz/answers")
 @RequiredArgsConstructor
-@PermissionAccess(UserType.STUDENT)
+@SaCheckRole("STUDENT")
 public class UserQuizAnswerController {
 
     private final UserQuizAnswerService userQuizAnswerService;

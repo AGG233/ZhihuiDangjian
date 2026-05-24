@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -12,13 +13,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Collections;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -27,7 +29,6 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -35,12 +36,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
 import com.rauio.smartdangjian.server.resource.controller.user.FileController;
 import com.rauio.smartdangjian.server.resource.service.FileService;
-import com.rauio.smartdangjian.utils.spec.UserType;
+
+import cn.dev33.satoken.stp.StpUtil;
+
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = FileControllerTest.TestConfig.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -65,10 +67,6 @@ class FileControllerTest {
             exclude = {
                 DataSourceAutoConfiguration.class,
                 HibernateJpaAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration.class,
-                com.rauio.smartdangjian.config.SecurityCoreAutoConfiguration.class,
-                com.rauio.smartdangjian.config.SecuritySupportAutoConfiguration.class,
                 com.rauio.smartdangjian.config.TransactionConfig.class
             })
     @EnableWebMvc
@@ -84,29 +82,6 @@ class FileControllerTest {
 
     @MockitoBean
     private FileService fileService;
-
-    @BeforeEach
-    void setUpSecurityContext() {
-        CurrentUserPrincipal principal = new CurrentUserPrincipal() {
-            @Override
-            public String getId() {
-                return "user-001";
-            }
-
-            @Override
-            public UserType getUserType() {
-                return UserType.SCHOOL;
-            }
-
-            @Override
-            public String getUniversityId() {
-                return "uni-001";
-            }
-        };
-        org.springframework.security.core.context.SecurityContextHolder.getContext()
-                .setAuthentication(new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                        principal, null, Collections.emptyList()));
-    }
 
     // ═══════════════════════════════════════════════════════════════
     // NormalUploadFlowTests
@@ -254,7 +229,6 @@ class FileControllerTest {
     // BatchOperationTests
     // ═══════════════════════════════════════════════════════════════
 
-    @Nested
     @DisplayName("批量操作场景")
     class BatchOperationTests {
 
@@ -318,7 +292,6 @@ class FileControllerTest {
     // DeleteFlowTests
     // ═══════════════════════════════════════════════════════════════
 
-    @Nested
     @DisplayName("删除场景")
     class DeleteFlowTests {
 
@@ -359,7 +332,6 @@ class FileControllerTest {
     // ErrorHandlingTests
     // ═══════════════════════════════════════════════════════════════
 
-    @Nested
     @DisplayName("异常和错误处理场景")
     class ErrorHandlingTests {
 
@@ -458,7 +430,6 @@ class FileControllerTest {
     // EdgeCaseTests
     // ═══════════════════════════════════════════════════════════════
 
-    @Nested
     @DisplayName("边界和边缘场景")
     class EdgeCaseTests {
 
@@ -529,7 +500,6 @@ class FileControllerTest {
     // SecurityTests
     // ═══════════════════════════════════════════════════════════════
 
-    @Nested
     @DisplayName("安全相关场景")
     class SecurityTests {
 

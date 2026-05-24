@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
@@ -26,7 +26,7 @@ public class UserLearningGraphSyncController {
 
     @Operation(summary = "同步用户学习图谱", description = "将用户已学习内容同步到Neo4j图谱")
     @PostMapping("/users/{userId}/sync")
-    @PermissionAccess(UserType.STUDENT)
+    @SaCheckRole("STUDENT")
     @ResourceAccess(id = "#userId")
     public Result<Integer> syncUserGraph(
             @Parameter(name = "userId", description = "用户ID") @PathVariable String userId) {

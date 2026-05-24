@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -109,7 +110,7 @@ class FileServiceTest {
         }
 
         @Test
-        @DisplayName("COS 异常：generatePresignedUrl 抛出异常，抛出 BusinessException(RESOURCE_CREATE_FAILED)")
+        @DisplayName("COS 异常：generatePresignedUrl 抛出异常，回退到本地中转 URL")
         void uploadCosException() {
             ResourceMeta meta = createResourceMeta();
             when(resourceMetaService.create(any())).thenReturn(meta);
@@ -118,12 +119,15 @@ class FileServiceTest {
             RuntimeException cosException = new RuntimeException("COS SecretId/Key 配置错误");
             when(pretreatment.generatePresignedUrl()).thenThrow(cosException);
 
-            assertThatThrownBy(() -> fileService.upload(createUploadRequest()))
-                    .isInstanceOf(BusinessException.class)
-                    .hasFieldOrPropertyWithValue("code", ResourceErrorConstants.RESOURCE_CREATE_FAILED)
-                    .hasMessageContaining("文件存储服务暂不可用");
+            FileUploadResponse response = fileService.upload(createUploadRequest());
 
-            verify(resourceMetaService).delete(RESOURCE_ID);
+            assertThat(response).isNotNull();
+            assertThat(response.getResourceId()).isEqualTo(RESOURCE_ID);
+            assertThat(response.getUploadUrl()).startsWith("/api/resource/files/upload/callback/");
+            assertThat(response.getUploadUrl()).endsWith(RESOURCE_ID);
+            assertThat(response.getExpiration()).isEqualTo(-1L);
+
+            verify(resourceMetaService, never()).delete(any());
         }
     }
 

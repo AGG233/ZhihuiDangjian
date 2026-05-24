@@ -27,12 +27,14 @@ auth:
   captcha:
     test-code: TEST8888
 
-tencent-cos:
-  - platform: tencent-cos
-    enable-storage: false
-    secret-id: test
-    secret-key: test
-    region: ap-guangzhou
-    bucket: test-bucket
-    domain: http://localhost
-    base-path: /
+dromara:
+  x-file-storage:
+    tencent-cos:
+      - platform: tencent-cos
+        enable-storage: false
+        secret-id: test
+        secret-key: test
+        region: ap-guangzhou
+        bucket: test-bucket
+        domain: http://localhost
+        base-path: /

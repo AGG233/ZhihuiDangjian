@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian;
+package com.rauio.smartdangjian.crosslayer;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -16,10 +16,11 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.utils.spec.UserType;
+
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
-
-import com.rauio.smartdangjian.utils.spec.UserType;
 
 @AutoConfigureMockMvc(addFilters = false)
 @TestPropertySource(
@@ -33,9 +34,10 @@ import com.rauio.smartdangjian.utils.spec.UserType;
             "DATABASE_PASSWORD=",
             "NEO4J_URI=bolt://localhost:7687",
             "NEO4J_USERNAME=neo4j",
-            "NEO4J_PASSWORD=password"
+            "NEO4J_PASSWORD=password",
+            "app.security.enabled=false"
         })
-public abstract class BaseControllerTest {
+public abstract class CrossLayerTestBase {
 
     @Autowired
     protected MockMvc mockMvc;
@@ -43,34 +45,51 @@ public abstract class BaseControllerTest {
     private MockedStatic<StpUtil> stpUtilMock;
 
     @BeforeEach
-    void defaultSecurityContext() {
-        stpUtilMock = mockStatic(StpUtil.class);
-        setSecurityContext(UserType.SCHOOL, "admin1", "uni1");
+    void clearSecurityContext() {
+        closeMock();
     }
 
     @AfterEach
-    void clearSecurityContext() {
+    void tearDown() {
+        closeMock();
+    }
+
+    private void closeMock() {
         if (stpUtilMock != null) {
             stpUtilMock.close();
+            stpUtilMock = null;
         }
     }
 
     protected void setSecurityContext(UserType userType, String userId, String universityId) {
-        if (stpUtilMock == null) {
-            stpUtilMock = mockStatic(StpUtil.class);
-        }
+        closeMock();
+        stpUtilMock = mockStatic(StpUtil.class);
         stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
         stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn(userId);
+        CurrentUserPrincipal principal = new CurrentUserPrincipal() {
+            @Override public String getId() { return userId; }
+            @Override public UserType getUserType() { return userType; }
+            @Override public String getUniversityId() { return universityId; }
+        };
         SaSession session = mock(SaSession.class);
+        when(session.get("user")).thenReturn(principal);
         stpUtilMock.when(StpUtil::getSession).thenReturn(session);
     }
 
+    protected void setStudentContext(String userId, String universityId) {
+        setSecurityContext(UserType.STUDENT, userId, universityId);
+    }
+
+    protected void setSchoolContext(String userId, String universityId) {
+        setSecurityContext(UserType.SCHOOL, userId, universityId);
+    }
+
+    protected void setManagerContext(String userId, String universityId) {
+        setSecurityContext(UserType.MANAGER, userId, universityId);
+    }
+
     protected void setAnonymousContext() {
-        if (stpUtilMock != null) {
-            stpUtilMock.close();
-        }
-        stpUtilMock = mockStatic(StpUtil.class);
-        stpUtilMock.when(StpUtil::isLogin).thenReturn(false);
+        closeMock();
     }
 
     @EnableWebMvc
@@ -80,5 +99,5 @@ public abstract class BaseControllerTest {
                 HibernateJpaAutoConfiguration.class,
                 com.rauio.smartdangjian.config.TransactionConfig.class
             })
-    protected static class CommonTestConfig {}
+    protected static class CrossLayerTestConfig {}
 }

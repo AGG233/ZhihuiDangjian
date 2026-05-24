@@ -65,8 +65,8 @@ public class AuthController {
 
     @Operation(summary = "用户登出", description = "登出成功后将返回一个空的响应体")
     @PostMapping("/logout")
-    public Result logout(@RequestParam String token) {
-        authService.logout(token);
+    public Result logout() {
+        authService.logout();
         return Result.ok("");
     }
 }

@@ -14,7 +14,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,11 +22,10 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.util.ReflectionTestUtils;
+
+import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.session.SaSession;
+import cn.hutool.crypto.digest.BCrypt;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -43,19 +41,11 @@ import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 class UserServiceTest {
 
     @Mock
-    private PasswordEncoder passwordEncoder;
-
-    @Mock
     private UserConvertor convertor;
 
     @Spy
     @InjectMocks
     private UserService userService;
-
-    @BeforeEach
-    void setUp() {
-        ReflectionTestUtils.setField(userService, "defaultDevUserId", "default-dev-id");
-    }
 
     // ---------- helpers ----------
 
@@ -152,18 +142,15 @@ class UserServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("getCurrentUser 认证成功且principal为User时返回该User")
+    @DisplayName("getCurrentUser 已登录且session中有User时返回该User")
     void getCurrentUserAuthenticatedReturnsUser() {
         User user = createUser("u1", "testuser", "test@example.com", "13800138000");
 
-        try (MockedStatic<SecurityContextHolder> mockedStatic = mockStatic(SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-            Authentication authentication = mock(Authentication.class);
-
-            mockedStatic.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.isAuthenticated()).thenReturn(true);
-            when(authentication.getPrincipal()).thenReturn(user);
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            SaSession session = mock(SaSession.class);
+            when(session.get("user")).thenReturn(user);
+            stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
+            stpUtilMock.when(StpUtil::getSession).thenReturn(session);
 
             User result = userService.getCurrentUser();
 
@@ -172,16 +159,13 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("getCurrentUser principal不是User实例时返回null")
+    @DisplayName("getCurrentUser session中的user不是User实例时返回null")
     void getCurrentUserPrincipalNotUserReturnsNull() {
-        try (MockedStatic<SecurityContextHolder> mockedStatic = mockStatic(SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-            Authentication authentication = mock(Authentication.class);
-
-            mockedStatic.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.isAuthenticated()).thenReturn(true);
-            when(authentication.getPrincipal()).thenReturn("not-a-user-instance");
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            SaSession session = mock(SaSession.class);
+            when(session.get("user")).thenReturn("not-a-user-instance");
+            stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
+            stpUtilMock.when(StpUtil::getSession).thenReturn(session);
 
             User result = userService.getCurrentUser();
 
@@ -190,13 +174,10 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("getCurrentUser authentication为null时返回null")
+    @DisplayName("getCurrentUser 未登录时返回null")
     void getCurrentUserNullAuthenticationReturnsNull() {
-        try (MockedStatic<SecurityContextHolder> mockedStatic = mockStatic(SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-
-            mockedStatic.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(null);
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            stpUtilMock.when(StpUtil::isLogin).thenReturn(false);
 
             User result = userService.getCurrentUser();
 
@@ -209,18 +190,11 @@ class UserServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("getCurrentUserId 认证成功时返回用户ID")
+    @DisplayName("getCurrentUserId 已登录时返回用户ID")
     void getCurrentUserIdAuthenticatedReturnsId() {
-        User user = createUser("user-id-123", "testuser", "test@example.com", "13800138000");
-
-        try (MockedStatic<SecurityContextHolder> mockedStatic = mockStatic(SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-            Authentication authentication = mock(Authentication.class);
-
-            mockedStatic.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.isAuthenticated()).thenReturn(true);
-            when(authentication.getPrincipal()).thenReturn(user);
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
+            stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("user-id-123");
 
             String result = userService.getCurrentUserId();
 
@@ -229,17 +203,14 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("getCurrentUserId 未认证时返回默认开发用户ID")
+    @DisplayName("getCurrentUserId 未登录时返回null")
     void getCurrentUserIdNotAuthenticatedReturnsDefaultId() {
-        try (MockedStatic<SecurityContextHolder> mockedStatic = mockStatic(SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-
-            mockedStatic.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(null);
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            stpUtilMock.when(StpUtil::isLogin).thenReturn(false);
 
             String result = userService.getCurrentUserId();
 
-            assertThat(result).isEqualTo("default-dev-id");
+            assertThat(result).isNull();
         }
     }
 
@@ -318,7 +289,6 @@ class UserServiceTest {
         userService.update("u1", user);
 
         assertThat(user.getId()).isEqualTo("u1");
-        verify(passwordEncoder, never()).encode(anyString());
         verify(userService).updateById(user);
     }
 
@@ -328,14 +298,16 @@ class UserServiceTest {
         User user = createUser(null, "testuser", "test@example.com", "13800138000");
         user.setPassword("plainPassword");
 
-        when(passwordEncoder.encode("plainPassword")).thenReturn("encodedNewPassword");
-        doReturn(true).when(userService).updateById(any(User.class));
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.hashpw("plainPassword")).thenReturn("encodedNewPassword");
+            doReturn(true).when(userService).updateById(any(User.class));
 
-        userService.update("u1", user);
+            userService.update("u1", user);
 
-        assertThat(user.getId()).isEqualTo("u1");
-        assertThat(user.getPassword()).isEqualTo("encodedNewPassword");
-        verify(passwordEncoder).encode("plainPassword");
+            assertThat(user.getId()).isEqualTo("u1");
+            assertThat(user.getPassword()).isEqualTo("encodedNewPassword");
+            bcryptMock.verify(() -> BCrypt.hashpw("plainPassword"));
+        }
         verify(userService).updateById(user);
     }
 
@@ -347,9 +319,11 @@ class UserServiceTest {
 
         doReturn(true).when(userService).updateById(any(User.class));
 
-        userService.update("u1", user);
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            userService.update("u1", user);
 
-        verify(passwordEncoder, never()).encode(anyString());
+            bcryptMock.verify(() -> BCrypt.hashpw(anyString()), never());
+        }
     }
 
     // ================================================================
@@ -388,13 +362,16 @@ class UserServiceTest {
         user.setPassword("plainPassword");
 
         doReturn(false).when(userService).exists(any(LambdaQueryWrapper.class));
-        when(passwordEncoder.encode("plainPassword")).thenReturn("encodedPassword");
         doReturn(true).when(userService).save(any(User.class));
 
-        userService.register(user);
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.hashpw("plainPassword")).thenReturn("encodedPassword");
 
-        assertThat(user.getPassword()).isEqualTo("encodedPassword");
-        verify(passwordEncoder).encode("plainPassword");
+            userService.register(user);
+
+            assertThat(user.getPassword()).isEqualTo("encodedPassword");
+            bcryptMock.verify(() -> BCrypt.hashpw("plainPassword"));
+        }
         verify(userService).save(user);
     }
 
@@ -484,15 +461,18 @@ class UserServiceTest {
         user.setPassword("encodedOldPassword");
 
         doReturn(user).when(userService).getCurrentUser();
-        when(passwordEncoder.matches("oldPassword", "encodedOldPassword")).thenReturn(true);
-        when(passwordEncoder.encode("newPassword")).thenReturn("encodedNewPassword");
         doReturn(true).when(userService).updateById(any(User.class));
 
-        userService.changePassword("oldPassword", "newPassword");
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.checkpw("oldPassword", "encodedOldPassword")).thenReturn(true);
+            bcryptMock.when(() -> BCrypt.hashpw("newPassword")).thenReturn("encodedNewPassword");
 
-        assertThat(user.getPassword()).isEqualTo("encodedNewPassword");
-        verify(passwordEncoder).matches("oldPassword", "encodedOldPassword");
-        verify(passwordEncoder).encode("newPassword");
+            userService.changePassword("oldPassword", "newPassword");
+
+            assertThat(user.getPassword()).isEqualTo("encodedNewPassword");
+            bcryptMock.verify(() -> BCrypt.checkpw("oldPassword", "encodedOldPassword"));
+            bcryptMock.verify(() -> BCrypt.hashpw("newPassword"));
+        }
         verify(userService).updateById(user);
     }
 
@@ -503,14 +483,17 @@ class UserServiceTest {
         user.setPassword("encodedOldPassword");
 
         doReturn(user).when(userService).getCurrentUser();
-        when(passwordEncoder.matches("wrongPassword", "encodedOldPassword")).thenReturn(false);
 
-        assertThatThrownBy(() -> userService.changePassword("wrongPassword", "newPassword"))
-                .isInstanceOf(BusinessException.class)
-                .extracting("code")
-                .isEqualTo(UserErrorConstants.PASSWORD_CHANGE_ERROR);
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.checkpw("wrongPassword", "encodedOldPassword")).thenReturn(false);
 
-        verify(passwordEncoder, never()).encode(anyString());
+            assertThatThrownBy(() -> userService.changePassword("wrongPassword", "newPassword"))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("code")
+                    .isEqualTo(UserErrorConstants.PASSWORD_CHANGE_ERROR);
+
+            bcryptMock.verify(() -> BCrypt.hashpw(anyString()), never());
+        }
         verify(userService, never()).updateById(any(User.class));
     }
 

@@ -20,8 +20,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
-import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.rauio.smartdangjian.pojo.response.Result;
+
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotRoleException;
 
 class GlobalExceptionHandlerTest {
 
@@ -85,14 +87,25 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    @DisplayName("handleTokenExpiredException 返回 401 和过期信息")
-    void handleTokenExpiredException() {
-        TokenExpiredException ex = mock(TokenExpiredException.class);
+    @DisplayName("handleNotLoginException 返回 401 和未登录信息")
+    void handleNotLoginException() {
+        NotLoginException ex = new NotLoginException("", "", "");
 
-        Result<?> result = handler.handleTokenExpiredException(ex);
+        Result<?> result = handler.handleNotLoginException(ex);
 
         assertThat(result.getCode()).isEqualTo("401");
-        assertThat(result.getMessage()).isEqualTo("登录已过期，请重新登录");
+        assertThat(result.getMessage()).isEqualTo("未登录或登录已过期，请重新登录");
+    }
+
+    @Test
+    @DisplayName("handleNotRoleException 返回 403 和无权限信息")
+    void handleNotRoleException() {
+        NotRoleException ex = new NotRoleException("ADMIN");
+
+        Result<?> result = handler.handleNotRoleException(ex);
+
+        assertThat(result.getCode()).isEqualTo("403");
+        assertThat(result.getMessage()).isEqualTo("无权限访问该资源");
     }
 
     @Test

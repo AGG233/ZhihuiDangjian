@@ -117,9 +117,9 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/logout - 登出成功")
         void logoutSuccess() throws Exception {
-            doNothing().when(authService).logout("test-token");
+            doNothing().when(authService).logout();
 
-            mockMvc.perform(post("/api/auth/logout").param("token", "test-token"))
+            mockMvc.perform(post("/api/auth/logout"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));
         }
@@ -228,9 +228,9 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/logout - Service 抛出 BusinessException 返回 400")
         void logoutThrowsBusinessException() throws Exception {
-            doThrow(new BusinessException(4000, "令牌无效")).when(authService).logout("invalid-token");
+            doThrow(new BusinessException(4000, "令牌无效")).when(authService).logout();
 
-            mockMvc.perform(post("/api/auth/logout").param("token", "invalid-token"))
+            mockMvc.perform(post("/api/auth/logout"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("令牌无效"));

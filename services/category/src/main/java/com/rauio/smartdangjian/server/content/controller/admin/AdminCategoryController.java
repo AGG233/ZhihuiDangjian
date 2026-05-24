@@ -7,14 +7,13 @@ import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
-import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.content.pojo.request.CategoryRequest;
 import com.rauio.smartdangjian.server.content.service.category.CategoryService;
-import com.rauio.smartdangjian.utils.spec.UserType;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/content/categories")
 @RequiredArgsConstructor
-@PermissionAccess(UserType.SCHOOL)
+@SaCheckRole("SCHOOL")
 @Tag(name = "管理员目录接口", description = "系统管理员可维护全部分类；高校管理员仅可维护本校分类。学校归属由当前登录用户自动判定，不从请求参数读取。")
 @Validated
 public class AdminCategoryController {

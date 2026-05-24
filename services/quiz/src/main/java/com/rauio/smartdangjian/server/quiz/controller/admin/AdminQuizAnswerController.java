@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.rauio.smartdangjian.aop.annotation.PermissionAccess;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/quiz/answers")
 @RequiredArgsConstructor
-@PermissionAccess(UserType.MANAGER)
+@SaCheckRole("MANAGER")
 public class AdminQuizAnswerController {
 
     private final UserQuizAnswerService userQuizAnswerService;

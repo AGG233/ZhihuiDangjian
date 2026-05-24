@@ -10,31 +10,25 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
+import cn.dev33.satoken.session.SaSession;
+import cn.dev33.satoken.stp.StpUtil;
+
 class SecurityUtilsTest {
 
-    private MockedStatic<SecurityContextHolder> securityContextMock;
-    private SecurityContext securityContext;
-    private Authentication authentication;
+    private MockedStatic<StpUtil> stpUtilMock;
 
     @BeforeEach
     void setUp() {
-        securityContextMock = mockStatic(SecurityContextHolder.class);
-        securityContext = mock(SecurityContext.class);
-        authentication = mock(Authentication.class);
-        securityContextMock.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-        when(securityContext.getAuthentication()).thenReturn(authentication);
+        stpUtilMock = mockStatic(StpUtil.class);
     }
 
     @AfterEach
     void tearDown() {
-        securityContextMock.close();
+        stpUtilMock.close();
     }
 
     // ================================================================
@@ -42,9 +36,9 @@ class SecurityUtilsTest {
     // ================================================================
 
     @Test
-    @DisplayName("getCurrentUser authentication 为 null 时返回 null")
-    void getCurrentUserReturnsNullWhenAuthenticationNull() {
-        when(securityContext.getAuthentication()).thenReturn(null);
+    @DisplayName("getCurrentUser 未登录时返回 null")
+    void getCurrentUserReturnsNullWhenNotLoggedIn() {
+        stpUtilMock.when(StpUtil::isLogin).thenReturn(false);
 
         CurrentUserPrincipal result = SecurityUtils.getCurrentUser();
 
@@ -52,32 +46,13 @@ class SecurityUtilsTest {
     }
 
     @Test
-    @DisplayName("getCurrentUser 未认证时返回 null")
-    void getCurrentUserReturnsNullWhenNotAuthenticated() {
-        when(authentication.isAuthenticated()).thenReturn(false);
-
-        CurrentUserPrincipal result = SecurityUtils.getCurrentUser();
-
-        assertThat(result).isNull();
-    }
-
-    @Test
-    @DisplayName("getCurrentUser principal 为 anonymousUser 字符串时返回 null")
-    void getCurrentUserReturnsNullForAnonymousUser() {
-        when(authentication.isAuthenticated()).thenReturn(true);
-        when(authentication.getPrincipal()).thenReturn("anonymousUser");
-
-        CurrentUserPrincipal result = SecurityUtils.getCurrentUser();
-
-        assertThat(result).isNull();
-    }
-
-    @Test
-    @DisplayName("getCurrentUser principal 为 CurrentUserPrincipal 实例时返回该实例")
-    void getCurrentUserReturnsPrincipalWhenValid() {
+    @DisplayName("getCurrentUser 已登录时返回 Session 中的 user")
+    void getCurrentUserReturnsUserFromSession() {
         CurrentUserPrincipal mockPrincipal = mock(CurrentUserPrincipal.class);
-        when(authentication.isAuthenticated()).thenReturn(true);
-        when(authentication.getPrincipal()).thenReturn(mockPrincipal);
+        SaSession session = mock(SaSession.class);
+        when(session.get("user")).thenReturn(mockPrincipal);
+        stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
+        stpUtilMock.when(StpUtil::getSession).thenReturn(session);
 
         CurrentUserPrincipal result = SecurityUtils.getCurrentUser();
 
@@ -85,10 +60,12 @@ class SecurityUtilsTest {
     }
 
     @Test
-    @DisplayName("getCurrentUser principal 不是 CurrentUserPrincipal 类型时返回 null")
-    void getCurrentUserReturnsNullWhenPrincipalNotUserPrincipal() {
-        when(authentication.isAuthenticated()).thenReturn(true);
-        when(authentication.getPrincipal()).thenReturn("some-other-principal");
+    @DisplayName("getCurrentUser Session 中没有 user 时返回 null")
+    void getCurrentUserReturnsNullWhenUserNotInSession() {
+        SaSession session = mock(SaSession.class);
+        when(session.get("user")).thenReturn(null);
+        stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
+        stpUtilMock.when(StpUtil::getSession).thenReturn(session);
 
         CurrentUserPrincipal result = SecurityUtils.getCurrentUser();
 
@@ -100,12 +77,10 @@ class SecurityUtilsTest {
     // ================================================================
 
     @Test
-    @DisplayName("getCurrentUserId 用户已认证时返回用户 ID")
-    void getCurrentUserIdReturnsIdWhenAuthenticated() {
-        CurrentUserPrincipal mockPrincipal = mock(CurrentUserPrincipal.class);
-        when(mockPrincipal.getId()).thenReturn("user-id-123");
-        when(authentication.isAuthenticated()).thenReturn(true);
-        when(authentication.getPrincipal()).thenReturn(mockPrincipal);
+    @DisplayName("getCurrentUserId 已登录时返回用户 ID")
+    void getCurrentUserIdReturnsIdWhenLoggedIn() {
+        stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
+        stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("user-id-123");
 
         String result = SecurityUtils.getCurrentUserId();
 
@@ -113,9 +88,9 @@ class SecurityUtilsTest {
     }
 
     @Test
-    @DisplayName("getCurrentUserId 用户未认证时返回 null")
-    void getCurrentUserIdReturnsNullWhenNotAuthenticated() {
-        when(authentication.isAuthenticated()).thenReturn(false);
+    @DisplayName("getCurrentUserId 未登录时返回 null")
+    void getCurrentUserIdReturnsNullWhenNotLoggedIn() {
+        stpUtilMock.when(StpUtil::isLogin).thenReturn(false);
 
         String result = SecurityUtils.getCurrentUserId();
 
@@ -127,12 +102,14 @@ class SecurityUtilsTest {
     // ================================================================
 
     @Test
-    @DisplayName("getCurrentUserType 用户已认证时返回用户类型")
-    void getCurrentUserTypeReturnsTypeWhenAuthenticated() {
+    @DisplayName("getCurrentUserType 已登录时返回用户类型")
+    void getCurrentUserTypeReturnsTypeWhenLoggedIn() {
         CurrentUserPrincipal mockPrincipal = mock(CurrentUserPrincipal.class);
         when(mockPrincipal.getUserType()).thenReturn(UserType.MANAGER);
-        when(authentication.isAuthenticated()).thenReturn(true);
-        when(authentication.getPrincipal()).thenReturn(mockPrincipal);
+        SaSession session = mock(SaSession.class);
+        when(session.get("user")).thenReturn(mockPrincipal);
+        stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
+        stpUtilMock.when(StpUtil::getSession).thenReturn(session);
 
         UserType result = SecurityUtils.getCurrentUserType();
 
@@ -140,9 +117,9 @@ class SecurityUtilsTest {
     }
 
     @Test
-    @DisplayName("getCurrentUserType 用户未认证时返回 null")
-    void getCurrentUserTypeReturnsNullWhenNotAuthenticated() {
-        when(authentication.isAuthenticated()).thenReturn(false);
+    @DisplayName("getCurrentUserType 未登录时返回 null")
+    void getCurrentUserTypeReturnsNullWhenNotLoggedIn() {
+        stpUtilMock.when(StpUtil::isLogin).thenReturn(false);
 
         UserType result = SecurityUtils.getCurrentUserType();
 
