@@ -87,6 +87,14 @@ jobs:
       - name: Build server bootJar
         run: ./gradlew --no-daemon :server:bootJar -x test
 
+      - name: Apply Flyway migrations
+        env:
+          MYSQL_PWD: root
+        run: |
+          for f in server/src/main/resources/db/migration/V*.sql; do
+            mysql -h127.0.0.1 -P3306 -uroot zhdj < "$f"
+          done
+
       - name: Seed smoke database
         env:
           MYSQL_PWD: root
