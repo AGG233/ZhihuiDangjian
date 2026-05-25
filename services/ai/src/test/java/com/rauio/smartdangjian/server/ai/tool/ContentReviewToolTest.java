@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.server.ai.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -64,13 +65,13 @@ class ContentReviewToolTest {
                 .build();
         ContentBlockResponse block = new ContentBlockResponse();
 
-        when(courseService.getById(1L)).thenReturn(course);
+        when(courseService.getById(any())).thenReturn(course);
         when(chapterService.getByCourseId(1L)).thenReturn(List.of(chapter));
         when(contentBlockService.getByChapterId(1L)).thenReturn(List.of(block));
 
-        Map<String, Object> result = contentReviewTool.reviewCourseContent("course-1");
+        Map<String, Object> result = contentReviewTool.reviewCourseContent("1");
 
-        assertThat(result).containsEntry("id", "course-1");
+        assertThat(result).containsEntry("id", 1L);
         assertThat(result).containsEntry("title", "党建课程");
         assertThat(result).containsEntry("difficulty", "easy");
         assertThat(result).containsKey("chapters");
@@ -79,9 +80,9 @@ class ContentReviewToolTest {
     @Test
     @DisplayName("reviewCourseContent 课程不存在时抛出 BusinessException")
     void reviewCourseContentNotFound() {
-        when(courseService.getById(1L)).thenReturn(null);
+        when(courseService.getById(any())).thenReturn(null);
 
-        assertThatThrownBy(() -> contentReviewTool.reviewCourseContent("nonexistent"))
+        assertThatThrownBy(() -> contentReviewTool.reviewCourseContent("1"))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("课程不存在");
     }
@@ -104,10 +105,10 @@ class ContentReviewToolTest {
                 .isCorrect(true)
                 .build();
 
-        when(quizService.getById(1L)).thenReturn(quiz);
+        when(quizService.getById(any())).thenReturn(quiz);
         when(quizOptionService.getByQuizId(1L)).thenReturn(List.of(option));
 
-        Map<String, Object> result = contentReviewTool.reviewQuizQuality("quiz-1");
+        Map<String, Object> result = contentReviewTool.reviewQuizQuality("1");
 
         assertThat(result).containsEntry("question", "测试题目");
         assertThat(result).containsEntry("questionType", "single_choice");
@@ -118,9 +119,9 @@ class ContentReviewToolTest {
     @Test
     @DisplayName("reviewQuizQuality 题目不存在时抛出 BusinessException")
     void reviewQuizQualityNotFound() {
-        when(quizService.getById(1L)).thenReturn(null);
+        when(quizService.getById(any())).thenReturn(null);
 
-        assertThatThrownBy(() -> contentReviewTool.reviewQuizQuality("nonexistent"))
+        assertThatThrownBy(() -> contentReviewTool.reviewQuizQuality("1"))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("题目不存在");
     }

@@ -3,6 +3,7 @@ package com.rauio.smartdangjian.server.ai.tool;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -47,7 +48,7 @@ class ArticleDetailToolTest {
         List<Map<String, Object>> result = articleDetailTool.searchArticles("党建");
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0)).containsEntry("id", "article-1");
+        assertThat(result.get(0)).containsEntry("id", 1L);
         assertThat(result.get(0)).containsEntry("title", "党建理论学习");
         assertThat(result.get(0)).containsEntry("summary", "深入理解党的理论");
     }
@@ -71,12 +72,12 @@ class ArticleDetailToolTest {
                 .summary("深入理解党的理论")
                 .build();
 
-        when(articleService.getById(1L)).thenReturn(article);
-        when(contentBlockService.getByArticleId(1L)).thenReturn(List.of());
+        when(articleService.getById(any())).thenReturn(article);
+        when(contentBlockService.getByArticleId(anyLong())).thenReturn(List.of());
 
-        Map<String, Object> result = articleDetailTool.getArticleDetail("article-1");
+        Map<String, Object> result = articleDetailTool.getArticleDetail("1");
 
-        assertThat(result).containsEntry("id", "article-1");
+        assertThat(result).containsEntry("id", 1L);
         assertThat(result).containsEntry("title", "党建理论学习");
         assertThat(result).containsKey("contentBlocks");
     }
@@ -84,9 +85,9 @@ class ArticleDetailToolTest {
     @Test
     @DisplayName("getArticleDetail 文章不存在时抛出 BusinessException")
     void getArticleDetailNotFound() {
-        when(articleService.getById(1L)).thenReturn(null);
+        when(articleService.getById(any())).thenReturn(null);
 
-        assertThatThrownBy(() -> articleDetailTool.getArticleDetail("nonexistent"))
+        assertThatThrownBy(() -> articleDetailTool.getArticleDetail("1"))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("文章不存在");
     }

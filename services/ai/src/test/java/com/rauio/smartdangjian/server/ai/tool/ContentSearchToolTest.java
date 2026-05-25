@@ -39,7 +39,7 @@ class ContentSearchToolTest {
                 .description("Intro to Java")
                 .build();
         Course course2 = Course.builder()
-                .id(1L)
+                .id(2L)
                 .title("Advanced Java")
                 .description("Deep dive")
                 .build();
@@ -54,10 +54,10 @@ class ContentSearchToolTest {
         List<Map<String, Object>> result = contentSearchTool.searchCourses("Java");
 
         assertThat(result).hasSize(2);
-        assertThat(result.get(0)).containsEntry("id", "course-1");
+        assertThat(result.get(0)).containsEntry("id", 1L);
         assertThat(result.get(0)).containsEntry("title", "Java Basics");
         assertThat(result.get(0)).containsEntry("description", "Intro to Java");
-        assertThat(result.get(1)).containsEntry("id", "course-2");
+        assertThat(result.get(1)).containsEntry("id", 2L);
         assertThat(result.get(1)).containsEntry("title", "Advanced Java");
         verify(courseService, times(1)).list(any(LambdaQueryWrapper.class));
     }
