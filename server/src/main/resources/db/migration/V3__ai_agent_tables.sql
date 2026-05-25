@@ -62,5 +62,5 @@ CREATE TABLE IF NOT EXISTS ai_chat_message
   CHARSET = utf8mb4
   ROW_FORMAT = DYNAMIC COMMENT 'AI智能问答聊天记录表';
 
-CREATE INDEX IF NOT EXISTS idx_ai_chat_message_session ON ai_chat_message (session_id);
-CREATE INDEX IF NOT EXISTS idx_ai_chat_message_user_time ON ai_chat_message (user_id, created_at);
+CREATE INDEX idx_ai_chat_message_session ON ai_chat_message (session_id);
+CREATE INDEX idx_ai_chat_message_user_time ON ai_chat_message (user_id, created_at);
