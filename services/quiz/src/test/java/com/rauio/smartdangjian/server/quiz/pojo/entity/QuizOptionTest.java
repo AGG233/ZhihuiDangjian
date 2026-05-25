@@ -71,7 +71,7 @@ class QuizOptionTest {
 
         String str = option.toString();
 
-        assertThat(str).contains("opt-1", "qz-1", "选项A");
+        assertThat(str).contains("id=1", "quizId=1", "选项A");
     }
 
     @Test
@@ -92,7 +92,7 @@ class QuizOptionTest {
                 .orderIndex("A")
                 .build();
         QuizOption opt3 = QuizOption.builder()
-                .id(1L)
+                .id(2L)
                 .quizId(1L)
                 .optionText("选项A")
                 .isCorrect(true)
@@ -101,7 +101,7 @@ class QuizOptionTest {
         QuizOption opt4 = QuizOption.builder()
                 .id(1L)
                 .quizId(1L)
-                .optionText("选项A")
+                .optionText("选项B")
                 .isCorrect(true)
                 .orderIndex("A")
                 .build();

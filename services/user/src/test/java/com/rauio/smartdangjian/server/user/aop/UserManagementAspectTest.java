@@ -347,7 +347,7 @@ class UserManagementAspectTest {
     void updateStudentOtherThrows() {
         stubAction(DataScopeAction.UPDATE);
         stubStudentUser(1L);
-        User target = User.builder().id(1L).build();
+        User target = User.builder().id(2L).build();
         User payload = User.builder().build();
         when(access.id()).thenReturn("#id");
         when(access.body()).thenReturn("#user");

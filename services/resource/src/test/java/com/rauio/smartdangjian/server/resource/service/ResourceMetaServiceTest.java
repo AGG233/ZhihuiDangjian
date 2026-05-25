@@ -43,7 +43,7 @@ class ResourceMetaServiceTest {
     @DisplayName("create 创建资源成功")
     void createSuccess() {
         ResourceMetaCreateRequest request = new ResourceMetaCreateRequest();
-        request.setUploaderId("user-1");
+        request.setUploaderId("1");
         request.setOriginalName("test.png");
         request.setHash(HASH);
         request.setObjectKey(OBJECT_KEY);
@@ -63,7 +63,7 @@ class ResourceMetaServiceTest {
     @DisplayName("create 指定状态时不覆盖")
     void createWithStatus() {
         ResourceMetaCreateRequest request = new ResourceMetaCreateRequest();
-        request.setUploaderId("user-1");
+        request.setUploaderId("1");
         request.setOriginalName("test.png");
         request.setHash(HASH);
         request.setObjectKey(OBJECT_KEY);
@@ -82,7 +82,7 @@ class ResourceMetaServiceTest {
     @DisplayName("create 哈希重复抛出异常")
     void createDuplicateHash() {
         ResourceMetaCreateRequest request = new ResourceMetaCreateRequest();
-        request.setUploaderId("user-1");
+        request.setUploaderId("1");
         request.setOriginalName("test.png");
         request.setHash(HASH);
         request.setObjectKey(OBJECT_KEY);
@@ -101,7 +101,7 @@ class ResourceMetaServiceTest {
     @DisplayName("create 保存失败抛出异常")
     void createSaveFailed() {
         ResourceMetaCreateRequest request = new ResourceMetaCreateRequest();
-        request.setUploaderId("user-1");
+        request.setUploaderId("1");
         request.setOriginalName("test.png");
         request.setHash(HASH);
         request.setObjectKey(OBJECT_KEY);

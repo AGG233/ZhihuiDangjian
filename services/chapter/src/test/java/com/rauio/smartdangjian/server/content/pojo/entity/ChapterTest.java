@@ -95,7 +95,7 @@ class ChapterTest {
     @DisplayName("两个不同 id 的 Chapter 不相等")
     void chaptersWithDifferentIdsAreNotEqual() {
         Chapter c1 = Chapter.builder().id(1L).title("章节").build();
-        Chapter c2 = Chapter.builder().id(1L).title("章节").build();
+        Chapter c2 = Chapter.builder().id(2L).title("章节").build();
 
         assertThat(c1).isNotEqualTo(c2);
     }
@@ -111,6 +111,6 @@ class ChapterTest {
 
         String str = chapter.toString();
 
-        assertThat(str).contains("ch-001", "第一章", "published");
+        assertThat(str).contains("id=1", "第一章", "published");
     }
 }

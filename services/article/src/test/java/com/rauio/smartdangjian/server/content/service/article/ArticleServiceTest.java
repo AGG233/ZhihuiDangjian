@@ -67,7 +67,7 @@ class ArticleServiceTest {
     @Test
     @DisplayName("get 文章不存在时抛出 BusinessException")
     void getThrowsWhenArticleNotFound() {
-        doReturn(null).when(articleService).getById(1L);
+        doReturn(null).when(articleService).getById(9999L);
 
         assertThatThrownBy(() -> articleService.get(9999L))
                 .isInstanceOf(BusinessException.class)
@@ -90,8 +90,8 @@ class ArticleServiceTest {
         List<CategoryArticle> result = articleService.getByCategoryId(1L);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getCategoryId()).isEqualTo("cat-001");
-        assertThat(result.get(0).getArticleId()).isEqualTo("art-001");
+        assertThat(result.get(0).getCategoryId()).isEqualTo(1L);
+        assertThat(result.get(0).getArticleId()).isEqualTo(1L);
     }
 
     @Test
@@ -246,7 +246,7 @@ class ArticleServiceTest {
     @Test
     @DisplayName("delete 删除不存在文章时抛出 BusinessException")
     void deleteThrowsWhenArticleNotFound() {
-        doReturn(false).when(articleService).removeById(1L);
+        doReturn(false).when(articleService).removeById(9999L);
 
         assertThatThrownBy(() -> articleService.delete(9999L))
                 .isInstanceOf(BusinessException.class)

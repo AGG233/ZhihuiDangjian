@@ -67,7 +67,7 @@ class CategoryServiceTest {
     @Test
     @DisplayName("get 查询不存在的目录抛出 BusinessException 3001")
     void getWhenCategoryNotFoundThrowsBusinessException() {
-        doReturn(null).when(categoryService).getById(1L);
+        doReturn(null).when(categoryService).getById(9999L);
 
         assertThatThrownBy(() -> categoryService.get(9999L))
                 .isInstanceOf(BusinessException.class)
@@ -130,14 +130,14 @@ class CategoryServiceTest {
         doReturn(category).when(categoryService).getById(1L);
         doReturn(parentVO).when(convertor).toResponse(category);
         // 递归调用 get("2") 时
-        doReturn(childCategory).when(categoryService).getById(1L);
+        doReturn(childCategory).when(categoryService).getById(2L);
         doReturn(retrievedChildVO).when(convertor).toResponse(childCategory);
 
         CategoryResponse result = categoryService.get(1L);
 
         assertThat(result).isNotNull();
         verify(categoryService, times(1)).getById(1L);
-        verify(categoryService, times(1)).getById(1L);
+        verify(categoryService, times(1)).getById(2L);
     }
 
     // ==================== getRootList ====================
@@ -276,7 +276,7 @@ class CategoryServiceTest {
         assertThat(result).isTrue();
         assertThat(category.getLevel()).isEqualTo(0);
         assertThat(category.getParentId()).isNull();
-        assertThat(category.getUniversityId()).isEqualTo(1L);
+        assertThat(category.getUniversityId()).isEqualTo("uni123");
         verify(categoryService).save(category);
     }
 
@@ -296,7 +296,7 @@ class CategoryServiceTest {
         Boolean result = categoryService.create(dto);
 
         assertThat(result).isTrue();
-        assertThat(category.getUniversityId()).isEqualTo(1L);
+        assertThat(category.getUniversityId()).isEqualTo("uni456");
         assertThat(category.getLevel()).isEqualTo(0);
         assertThat(category.getParentId()).isNull();
     }
@@ -319,7 +319,7 @@ class CategoryServiceTest {
         // createByParentId 会查询父目录以创建子目录
         Category parent = createCategory(10L, "根目录", 0, null);
         parent.setUniversityId("uni123");
-        doReturn(parent).when(categoryService).getById(1L);
+        doReturn(parent).when(categoryService).getById(10L);
         doReturn(createCategory(null, "子目录", null, null)).when(convertor).toEntity(childDto);
 
         Boolean result = categoryService.create(dto);
@@ -328,7 +328,7 @@ class CategoryServiceTest {
         // 验证保存了根目录
         verify(categoryService).save(category);
         // 验证 createByParentId 查询了父目录
-        verify(categoryService).getById(1L);
+        verify(categoryService).getById(10L);
     }
 
     // ==================== createByParentId ====================
@@ -336,7 +336,7 @@ class CategoryServiceTest {
     @Test
     @DisplayName("createByParentId 父目录不存在时抛出 BusinessException 3003")
     void createByParentIdWhenParentNotFoundThrowsBusinessException() {
-        doReturn(null).when(categoryService).getById(1L);
+        doReturn(null).when(categoryService).getById(10L);
 
         List<CategoryRequest> children = List.of(CategoryRequest.builder()
                 .name("子目录")
@@ -356,7 +356,7 @@ class CategoryServiceTest {
     @DisplayName("createByParentId children 为 null 时抛出 BusinessException 3003")
     void createByParentIdWhenChildrenIsNullThrowsBusinessException() {
         Category parent = createCategory(10L, "父目录", 0, null);
-        doReturn(parent).when(categoryService).getById(1L);
+        doReturn(parent).when(categoryService).getById(10L);
 
         assertThatThrownBy(() -> categoryService.createByParentId(null, 10L))
                 .isInstanceOf(BusinessException.class)
@@ -370,7 +370,7 @@ class CategoryServiceTest {
     @DisplayName("createByParentId 父目录层级已达最大时抛出 BusinessException 3004")
     void createByParentIdWhenParentLevelMaxThrowsBusinessException() {
         Category parent = createCategory(10L, "父目录", 3, null);
-        doReturn(parent).when(categoryService).getById(1L);
+        doReturn(parent).when(categoryService).getById(10L);
 
         List<CategoryRequest> children = List.of(CategoryRequest.builder()
                 .name("子目录")
@@ -392,7 +392,7 @@ class CategoryServiceTest {
         // 父目录 level=2，子目录 level=3，3 < MAX_LEVEL(3) 为 false
         Category parent = createCategory(10L, "父目录", 2, null);
         parent.setUniversityId("uni123");
-        doReturn(parent).when(categoryService).getById(1L);
+        doReturn(parent).when(categoryService).getById(10L);
 
         CategoryRequest childDto = CategoryRequest.builder()
                 .name("超限子目录")
@@ -415,7 +415,7 @@ class CategoryServiceTest {
     void createByParentIdCreatesSingleChildSuccessfully() {
         Category parent = createCategory(10L, "父目录", 0, null);
         parent.setUniversityId("uni123");
-        doReturn(parent).when(categoryService).getById(1L);
+        doReturn(parent).when(categoryService).getById(10L);
 
         CategoryRequest childDto = CategoryRequest.builder()
                 .name("子目录")
@@ -431,8 +431,8 @@ class CategoryServiceTest {
 
         assertThat(result).isTrue();
         assertThat(childEntity.getLevel()).isEqualTo(1);
-        assertThat(childEntity.getParentId()).isEqualTo(1L);
-        assertThat(childEntity.getUniversityId()).isEqualTo(1L);
+        assertThat(childEntity.getParentId()).isEqualTo(10L);
+        assertThat(childEntity.getUniversityId()).isEqualTo("uni123");
         verify(categoryService).save(childEntity);
     }
 
@@ -441,7 +441,7 @@ class CategoryServiceTest {
     void createByParentIdCreatesMultipleChildrenSuccessfully() {
         Category parent = createCategory(10L, "父目录", 0, null);
         parent.setUniversityId("uni123");
-        doReturn(parent).when(categoryService).getById(1L);
+        doReturn(parent).when(categoryService).getById(10L);
 
         CategoryRequest child1 = CategoryRequest.builder()
                 .name("子目录1")
@@ -471,7 +471,7 @@ class CategoryServiceTest {
     void createByParentIdWithGrandchildrenRecursivelyCreates() {
         Category parent = createCategory(10L, "父目录", 0, null);
         parent.setUniversityId("uni123");
-        doReturn(parent).when(categoryService).getById(1L);
+        doReturn(parent).when(categoryService).getById(10L);
 
         CategoryRequest grandchildDto = CategoryRequest.builder()
                 .name("孙子目录")
@@ -489,14 +489,14 @@ class CategoryServiceTest {
         doReturn(grandchildEntity).when(convertor).toEntity(grandchildDto);
         doReturn(true).when(categoryService).save(any(Category.class));
         // 递归调用 createByParentId 时也需要查询子目录作为父目录
-        doReturn(childEntity).when(categoryService).getById(1L);
+        doReturn(childEntity).when(categoryService).getById(11L);
 
         Boolean result = categoryService.createByParentId(children, 10L);
 
         assertThat(result).isTrue();
         verify(categoryService).save(childEntity);
         verify(categoryService).save(grandchildEntity);
-        verify(categoryService).getById(1L);
+        verify(categoryService).getById(11L);
     }
 
     // ==================== delete ====================
@@ -521,12 +521,12 @@ class CategoryServiceTest {
     @DisplayName("delete 目录无子目录时删除成功")
     void deleteWhenNoChildrenRemovesSuccessfully() {
         doReturn(Collections.emptyList()).when(categoryService).list(any(LambdaQueryWrapper.class));
-        doReturn(true).when(categoryService).removeById(1L);
+        doReturn(true).when(categoryService).removeById(10L);
 
         Boolean result = categoryService.delete(10L);
 
         assertThat(result).isTrue();
-        verify(categoryService).removeById(1L);
+        verify(categoryService).removeById(10L);
     }
 
     // ==================== deleteByIdWithChildren ====================
@@ -534,7 +534,7 @@ class CategoryServiceTest {
     @Test
     @DisplayName("deleteByIdWithChildren 目录不存在时抛出 BusinessException 3001")
     void deleteByIdWithChildrenWhenCategoryNotFoundThrowsBusinessException() {
-        doReturn(null).when(categoryService).getById(1L);
+        doReturn(null).when(categoryService).getById(9999L);
 
         assertThatThrownBy(() -> categoryService.deleteByIdWithChildren(9999L))
                 .isInstanceOf(BusinessException.class)
@@ -549,14 +549,14 @@ class CategoryServiceTest {
     @DisplayName("deleteByIdWithChildren 目录无子目录时直接删除")
     void deleteByIdWithChildrenWhenNoChildrenRemovesDirectly() {
         Category category = createCategory(10L, "目录", 0, null);
-        doReturn(category).when(categoryService).getById(1L);
+        doReturn(category).when(categoryService).getById(10L);
         doReturn(Collections.emptyList()).when(categoryService).list(any(LambdaQueryWrapper.class));
-        doReturn(true).when(categoryService).removeById(1L);
+        doReturn(true).when(categoryService).removeById(10L);
 
         Boolean result = categoryService.deleteByIdWithChildren(10L);
 
         assertThat(result).isTrue();
-        verify(categoryService).removeById(1L);
+        verify(categoryService).removeById(10L);
     }
 
     // ==================== update ====================
@@ -605,7 +605,7 @@ class CategoryServiceTest {
 
         assertThat(result).isTrue();
         assertThat(updatedEntity.getId()).isEqualTo(1L);
-        assertThat(updatedEntity.getUniversityId()).isEqualTo(1L);
+        assertThat(updatedEntity.getUniversityId()).isEqualTo("uni123");
         assertThat(updatedEntity.getLevel()).isEqualTo(0);
         assertThat(updatedEntity.getParentId()).isNull();
         verify(categoryService).updateById(updatedEntity);

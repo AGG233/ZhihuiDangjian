@@ -106,7 +106,7 @@ class UserQuizAnswerTest {
 
         String str = answer.toString();
 
-        assertThat(str).contains("a-1", "u-1", "q-1");
+        assertThat(str).contains("id=1", "userId=1", "quizId=1");
     }
 
     @Test
@@ -125,7 +125,7 @@ class UserQuizAnswerTest {
                 .isCorrect(1)
                 .build();
         UserQuizAnswer a3 = UserQuizAnswer.builder()
-                .id(1L)
+                .id(2L)
                 .quizId(1L)
                 .userId(1L)
                 .isCorrect(1)
@@ -134,7 +134,7 @@ class UserQuizAnswerTest {
                 .id(1L)
                 .quizId(1L)
                 .userId(1L)
-                .isCorrect(1)
+                .isCorrect(0)
                 .build();
 
         assertThat(a1).isEqualTo(a2);

@@ -343,7 +343,7 @@ class UserServiceTest {
     @Test
     @DisplayName("delete 删除不存在的用户时抛出 BusinessException")
     void deleteNonExistentThrows() {
-        doReturn(false).when(userService).removeById(1L);
+        doReturn(false).when(userService).removeById(9999L);
 
         assertThatThrownBy(() -> userService.delete(9999L))
                 .isInstanceOf(BusinessException.class)
@@ -514,11 +514,11 @@ class UserServiceTest {
     @DisplayName("isUserBelongsSchool 用户存在且universityId匹配时返回true")
     void isUserBelongsSchoolReturnsTrueWhenMatch() {
         User user = createUser(1L, "testuser", "test@example.com", "13800138000");
-        user.setUniversityId("school-1");
+        user.setUniversityId("1");
 
         doReturn(user).when(userService).getById(1L);
 
-        Boolean result = userService.isUserBelongsSchool(1L, 1L);
+        Boolean result = userService.isUserBelongsSchool(1L, "1");
 
         assertThat(result).isTrue();
     }
@@ -526,9 +526,9 @@ class UserServiceTest {
     @Test
     @DisplayName("isUserBelongsSchool 用户不存在时返回false")
     void isUserBelongsSchoolReturnsFalseWhenUserNotFound() {
-        doReturn(null).when(userService).getById(1L);
+        doReturn(null).when(userService).getById(9999L);
 
-        Boolean result = userService.isUserBelongsSchool(9999L, 1L);
+        Boolean result = userService.isUserBelongsSchool(9999L, "1");
 
         assertThat(result).isFalse();
     }
@@ -541,7 +541,7 @@ class UserServiceTest {
 
         doReturn(user).when(userService).getById(1L);
 
-        Boolean result = userService.isUserBelongsSchool(1L, 1L);
+        Boolean result = userService.isUserBelongsSchool(1L, "1");
 
         assertThat(result).isFalse();
     }
@@ -554,7 +554,7 @@ class UserServiceTest {
 
         doReturn(user).when(userService).getById(1L);
 
-        Boolean result = userService.isUserBelongsSchool(1L, 1L);
+        Boolean result = userService.isUserBelongsSchool(1L, "1");
 
         assertThat(result).isFalse();
     }

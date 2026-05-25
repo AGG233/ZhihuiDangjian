@@ -46,7 +46,7 @@ class QuizServiceTest {
     @Test
     @DisplayName("get 测验不存在时返回 null")
     void getReturnsNullWhenQuizNotFound() {
-        doReturn(null).when(quizService).getById(1L);
+        doReturn(null).when(quizService).getById(999L);
 
         Quiz result = quizService.get(999L);
 

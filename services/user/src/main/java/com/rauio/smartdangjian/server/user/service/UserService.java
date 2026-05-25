@@ -208,7 +208,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param schoolId 学校id
      * @return 是否属于该学校
      */
-    public Boolean isUserBelongsSchool(Long id, Long schoolId) {
+    public Boolean isUserBelongsSchool(Long id, String schoolId) {
         if (schoolId == null) {
             throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "有空参数");
         }

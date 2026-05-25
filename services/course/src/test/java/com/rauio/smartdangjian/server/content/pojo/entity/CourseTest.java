@@ -103,7 +103,7 @@ class CourseTest {
     @DisplayName("两个不同 id 的 Course 不相等")
     void coursesWithDifferentIdsAreNotEqual() {
         Course c1 = Course.builder().id(1L).title("课程").build();
-        Course c2 = Course.builder().id(1L).title("课程").build();
+        Course c2 = Course.builder().id(2L).title("课程").build();
 
         assertThat(c1).isNotEqualTo(c2);
     }

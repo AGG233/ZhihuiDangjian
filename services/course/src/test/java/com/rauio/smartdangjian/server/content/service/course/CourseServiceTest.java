@@ -80,7 +80,7 @@ class CourseServiceTest {
     @Test
     @DisplayName("get 课程不存在时抛出 BusinessException")
     void getThrowsExceptionWhenCourseNotFound() {
-        doReturn(null).when(courseService).getById(1L);
+        doReturn(null).when(courseService).getById(999L);
 
         assertThatThrownBy(() -> courseService.get(999L))
                 .isInstanceOf(BusinessException.class)
@@ -297,7 +297,7 @@ class CourseServiceTest {
     @DisplayName("delete 删除不存在的课程抛出 BusinessException")
     void deleteThrowsExceptionWhenCourseNotFound() {
         when(categoryCourseMapper.delete(any(LambdaQueryWrapper.class))).thenReturn(0);
-        doReturn(false).when(courseService).removeById(1L);
+        doReturn(false).when(courseService).removeById(999L);
 
         assertThatThrownBy(() -> courseService.delete(999L))
                 .isInstanceOf(BusinessException.class)
@@ -386,7 +386,7 @@ class CourseServiceTest {
     @DisplayName("getPage 返回分页结果含 CourseResponse 列表")
     void getPageReturnsPageResponse() {
         Course c1 = Course.builder().id(1L).title("课程1").build();
-        Course c2 = Course.builder().id(1L).title("课程2").build();
+        Course c2 = Course.builder().id(2L).title("课程2").build();
         CourseResponse vo1 =
                 CourseResponse.builder().id(1L).title("课程1").build();
         CourseResponse vo2 =
@@ -455,8 +455,8 @@ class CourseServiceTest {
                 .categoryId(1L)
                 .build();
         CategoryCourse cc2 = CategoryCourse.builder()
-                .courseId(1L)
-                .categoryId(1L)
+                .courseId(2L)
+                .categoryId(2L)
                 .build();
         when(categoryCourseMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(List.of(cc1, cc2));
 
@@ -496,7 +496,7 @@ class CourseServiceTest {
                 .build();
         CategoryCourse cc2 = CategoryCourse.builder()
                 .courseId(1L)
-                .categoryId(1L)
+                .categoryId(2L)
                 .build();
         when(categoryCourseMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(List.of(cc1, cc2));
 
@@ -530,11 +530,11 @@ class CourseServiceTest {
     @DisplayName("toCourseResponseList 将 Course 列表转为 CourseResponse 列表且填充 categoryId")
     void toCourseResponseListConvertsAndFillsCategoryIds() {
         Course c1 = Course.builder().id(1L).title("课程1").build();
-        Course c2 = Course.builder().id(1L).title("课程2").build();
+        Course c2 = Course.builder().id(2L).title("课程2").build();
         CourseResponse vo1 =
                 CourseResponse.builder().id(1L).title("课程1").build();
         CourseResponse vo2 =
-                CourseResponse.builder().id(1L).title("课程2").build();
+                CourseResponse.builder().id(2L).title("课程2").build();
 
         CategoryCourse cc = CategoryCourse.builder()
                 .courseId(1L)

@@ -86,7 +86,7 @@ class ArticleTest {
 
         String str = article.toString();
 
-        assertThat(str).contains("art-001", "文章标题", "Published");
+        assertThat(str).contains("id=1", "文章标题", "Published");
     }
 
     @Test
@@ -111,7 +111,7 @@ class ArticleTest {
     @DisplayName("两个不同 id 的 Article 不相等")
     void articlesWithDifferentIdsAreNotEqual() {
         Article a1 = Article.builder().id(1L).title("标题").build();
-        Article a2 = Article.builder().id(1L).title("标题").build();
+        Article a2 = Article.builder().id(2L).title("标题").build();
 
         assertThat(a1).isNotEqualTo(a2);
     }

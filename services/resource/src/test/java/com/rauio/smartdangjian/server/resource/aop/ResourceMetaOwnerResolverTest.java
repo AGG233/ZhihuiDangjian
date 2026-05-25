@@ -36,7 +36,7 @@ class ResourceMetaOwnerResolverTest {
                 .thenReturn(
                         ResourceMeta.builder().id(1L).uploaderId(1L).build());
 
-        String owner = resolver.findResourceOwner("r-1");
+        String owner = resolver.findResourceOwner("1");
 
         assertThat(owner).isEqualTo("1");
     }

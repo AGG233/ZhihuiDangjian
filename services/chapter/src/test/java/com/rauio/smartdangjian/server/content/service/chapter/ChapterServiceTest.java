@@ -101,12 +101,12 @@ class ChapterServiceTest {
         when(chapterConvertor.toEntity(dto)).thenReturn(chapter);
         doReturn(true).when(chapterService).save(chapter);
         when(contentBlockConvertor.toEntity(any(ContentBlockDto.class))).thenReturn(block);
-        doReturn(true).when(contentService).save(any(ChapterContentBlock.class));
+        doReturn(true).when(contentService).create(any(ChapterContentBlock.class));
 
         Boolean result = chapterService.create(dto);
 
         assertThat(result).isTrue();
-        verify(contentService).save(any(ChapterContentBlock.class));
+        verify(contentService).create(any(ChapterContentBlock.class));
     }
 
     @Test

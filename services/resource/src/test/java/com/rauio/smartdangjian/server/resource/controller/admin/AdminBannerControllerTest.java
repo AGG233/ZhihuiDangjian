@@ -50,8 +50,8 @@ class AdminBannerControllerTest {
     @Test
     @DisplayName("create 使用 resourceId 创建轮播图")
     void createByResourceId() {
-        BannerCreateRequest request = new BannerCreateRequest("r-1", null);
-        when(bannerService.create("r-1"))
+        BannerCreateRequest request = new BannerCreateRequest("1", null);
+        when(bannerService.create("1"))
                 .thenReturn(ResourceMeta.builder().id(1L).build());
 
         var result = controller.create(request);
@@ -74,7 +74,7 @@ class AdminBannerControllerTest {
     @Test
     @DisplayName("update 使用 resourceId 更新轮播图")
     void updateByResourceId() {
-        BannerUpdateRequest request = new BannerUpdateRequest("r-1", null);
+        BannerUpdateRequest request = new BannerUpdateRequest("1", null);
         when(bannerService.update(1, "1"))
                 .thenReturn(ResourceMeta.builder().id(1L).build());
 

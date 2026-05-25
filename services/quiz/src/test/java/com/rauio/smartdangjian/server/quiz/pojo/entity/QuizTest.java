@@ -75,7 +75,7 @@ class QuizTest {
 
         String str = quiz.toString();
 
-        assertThat(str).contains("qz-1", "测试题目", "ch-1");
+        assertThat(str).contains("id=1", "测试题目", "chapterId=1");
     }
 
     @Test
@@ -94,7 +94,7 @@ class QuizTest {
                 .score(5)
                 .build();
         Quiz quiz3 = Quiz.builder()
-                .id(1L)
+                .id(2L)
                 .question("Q1")
                 .chapterId(1L)
                 .score(5)

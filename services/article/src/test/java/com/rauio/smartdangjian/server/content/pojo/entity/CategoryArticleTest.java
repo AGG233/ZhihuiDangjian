@@ -42,6 +42,6 @@ class CategoryArticleTest {
 
         String str = ca.toString();
 
-        assertThat(str).contains("cat-001", "art-001");
+        assertThat(str).contains("categoryId=1", "articleId=1");
     }
 }
