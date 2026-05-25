@@ -1,6 +1,6 @@
 ---
 engines:
-  sqlint:
+  - name: sqlint
     enabled: false
-  tsqllint:
+  - name: tsqllint
     enabled: false
