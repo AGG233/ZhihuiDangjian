@@ -1,7 +1,7 @@
 package com.rauio.smartdangjian.controller.admin;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -66,7 +66,7 @@ class AdminQuizControllerTest extends BaseControllerTest {
         void updateQuizSuccess() throws Exception {
             when(quizService.update(any(Quiz.class))).thenReturn(true);
 
-            mockMvc.perform(put("/api/admin/quiz/quizzes/quiz-1")
+            mockMvc.perform(put("/api/admin/quiz/quizzes/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(QuizTestDataFactory.toJson(QuizTestDataFactory.createQuiz())))
                     .andExpect(status().isOk())
@@ -77,9 +77,9 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("DELETE /api/admin/quiz/quizzes/{id} - 删除试题成功")
         void deleteQuizSuccess() throws Exception {
-            when(quizService.delete("quiz-1")).thenReturn(true);
+            when(quizService.delete(1L)).thenReturn(true);
 
-            mockMvc.perform(delete("/api/admin/quiz/quizzes/quiz-1"))
+            mockMvc.perform(delete("/api/admin/quiz/quizzes/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(true));
@@ -88,9 +88,9 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /api/admin/quiz/quizzes/{id}/options - 创建选项成功")
         void createQuizOptionSuccess() throws Exception {
-            when(quizOptionService.create(anyString(), any(QuizOption.class))).thenReturn(true);
+            when(quizOptionService.create(anyLong(), any(QuizOption.class))).thenReturn(true);
 
-            mockMvc.perform(post("/api/admin/quiz/quizzes/quiz-1/options")
+            mockMvc.perform(post("/api/admin/quiz/quizzes/1/options")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(QuizTestDataFactory.toJson(QuizTestDataFactory.createQuizOption())))
                     .andExpect(status().isOk())
@@ -101,9 +101,9 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /api/admin/quiz/quizzes/{quizId}/options/{optionId} - 更新选项成功")
         void updateQuizOptionSuccess() throws Exception {
-            when(quizOptionService.update(eq("opt-1"), any(QuizOption.class))).thenReturn(true);
+            when(quizOptionService.update(eq(1L), any(QuizOption.class))).thenReturn(true);
 
-            mockMvc.perform(put("/api/admin/quiz/quizzes/quiz-1/options/opt-1")
+            mockMvc.perform(put("/api/admin/quiz/quizzes/1/options/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(QuizTestDataFactory.toJson(QuizTestDataFactory.createQuizOption())))
                     .andExpect(status().isOk())
@@ -114,9 +114,9 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("DELETE /api/admin/quiz/quizzes/{quizId}/options/{optionId} - 删除选项成功")
         void deleteQuizOptionSuccess() throws Exception {
-            when(quizOptionService.delete("opt-1")).thenReturn(true);
+            when(quizOptionService.delete(1L)).thenReturn(true);
 
-            mockMvc.perform(delete("/api/admin/quiz/quizzes/quiz-1/options/opt-1"))
+            mockMvc.perform(delete("/api/admin/quiz/quizzes/1/options/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(true));
@@ -157,7 +157,7 @@ class AdminQuizControllerTest extends BaseControllerTest {
         void updateQuizReturnsFalse() throws Exception {
             when(quizService.update(any(Quiz.class))).thenReturn(false);
 
-            mockMvc.perform(put("/api/admin/quiz/quizzes/nonexistent")
+            mockMvc.perform(put("/api/admin/quiz/quizzes/9999")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(QuizTestDataFactory.toJson(QuizTestDataFactory.createQuiz())))
                     .andExpect(status().isOk())
@@ -169,9 +169,9 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("删除试题 - Service 返回 false 则 code 为 400")
         void deleteQuizReturnsFalse() throws Exception {
-            when(quizService.delete("nonexistent")).thenReturn(false);
+            when(quizService.delete(anyLong())).thenReturn(false);
 
-            mockMvc.perform(delete("/api/admin/quiz/quizzes/nonexistent"))
+            mockMvc.perform(delete("/api/admin/quiz/quizzes/9999"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false))
@@ -181,9 +181,9 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("创建选项 - Service 返回 false 则 code 为 400")
         void createQuizOptionReturnsFalse() throws Exception {
-            when(quizOptionService.create(anyString(), any(QuizOption.class))).thenReturn(false);
+            when(quizOptionService.create(anyLong(), any(QuizOption.class))).thenReturn(false);
 
-            mockMvc.perform(post("/api/admin/quiz/quizzes/quiz-1/options")
+            mockMvc.perform(post("/api/admin/quiz/quizzes/1/options")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(QuizTestDataFactory.toJson(QuizTestDataFactory.createQuizOption())))
                     .andExpect(status().isOk())
@@ -195,9 +195,9 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("更新选项 - Service 返回 false 则 code 为 400")
         void updateQuizOptionReturnsFalse() throws Exception {
-            when(quizOptionService.update(anyString(), any(QuizOption.class))).thenReturn(false);
+            when(quizOptionService.update(anyLong(), any(QuizOption.class))).thenReturn(false);
 
-            mockMvc.perform(put("/api/admin/quiz/quizzes/quiz-1/options/nonexistent")
+            mockMvc.perform(put("/api/admin/quiz/quizzes/1/options/9999")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(QuizTestDataFactory.toJson(QuizTestDataFactory.createQuizOption())))
                     .andExpect(status().isOk())
@@ -209,9 +209,9 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("删除选项 - Service 返回 false 则 code 为 400")
         void deleteQuizOptionReturnsFalse() throws Exception {
-            when(quizOptionService.delete("nonexistent")).thenReturn(false);
+            when(quizOptionService.delete(anyLong())).thenReturn(false);
 
-            mockMvc.perform(delete("/api/admin/quiz/quizzes/quiz-1/options/nonexistent"))
+            mockMvc.perform(delete("/api/admin/quiz/quizzes/1/options/9999"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false))
@@ -237,7 +237,7 @@ class AdminQuizControllerTest extends BaseControllerTest {
         void createWithChineseQuestion() throws Exception {
             when(quizService.create(any(Quiz.class))).thenReturn(true);
             Quiz quiz = Quiz.builder()
-                    .chapterId("chapter-1")
+                    .chapterId(1L)
                     .question("习近平新时代中国特色社会主义思想的核心要义是什么？")
                     .questionType("single_choice")
                     .score(5)
@@ -255,7 +255,7 @@ class AdminQuizControllerTest extends BaseControllerTest {
         void createWithSpecialChars() throws Exception {
             when(quizService.create(any(Quiz.class))).thenReturn(true);
             Quiz quiz = Quiz.builder()
-                    .chapterId("chapter-1")
+                    .chapterId(1L)
                     .question("test_@#$%^&*()")
                     .questionType("single_choice")
                     .score(5)
@@ -273,7 +273,7 @@ class AdminQuizControllerTest extends BaseControllerTest {
         void createWithLongQuestion() throws Exception {
             when(quizService.create(any(Quiz.class))).thenReturn(true);
             Quiz quiz = Quiz.builder()
-                    .chapterId("chapter-1")
+                    .chapterId(1L)
                     .question("a".repeat(1000))
                     .questionType("single_choice")
                     .score(5)
@@ -291,7 +291,7 @@ class AdminQuizControllerTest extends BaseControllerTest {
         void createWithEmptyExplanation() throws Exception {
             when(quizService.create(any(Quiz.class))).thenReturn(true);
             Quiz quiz = Quiz.builder()
-                    .chapterId("chapter-1")
+                    .chapterId(1L)
                     .question("test question")
                     .questionType("single_choice")
                     .score(5)
@@ -308,14 +308,14 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("创建选项 - optionText 含超长文本正常处理")
         void createOptionWithLongText() throws Exception {
-            when(quizOptionService.create(anyString(), any(QuizOption.class))).thenReturn(true);
+            when(quizOptionService.create(anyLong(), any(QuizOption.class))).thenReturn(true);
             QuizOption option = QuizOption.builder()
                     .optionText("a".repeat(500))
                     .isCorrect(true)
                     .orderIndex("A")
                     .build();
 
-            mockMvc.perform(post("/api/admin/quiz/quizzes/quiz-1/options")
+            mockMvc.perform(post("/api/admin/quiz/quizzes/1/options")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(QuizTestDataFactory.toJson(option)))
                     .andExpect(status().isOk())
@@ -332,7 +332,7 @@ class AdminQuizControllerTest extends BaseControllerTest {
         void xssInQuestion() throws Exception {
             when(quizService.create(any(Quiz.class))).thenReturn(true);
             Quiz quiz = Quiz.builder()
-                    .chapterId("chapter-1")
+                    .chapterId(1L)
                     .question("<script>alert('xss')</script>")
                     .questionType("single_choice")
                     .score(5)
@@ -349,7 +349,7 @@ class AdminQuizControllerTest extends BaseControllerTest {
         void sqlInjectionInQuestion() throws Exception {
             when(quizService.create(any(Quiz.class))).thenReturn(true);
             Quiz quiz = Quiz.builder()
-                    .chapterId("chapter-1")
+                    .chapterId(1L)
                     .question("' OR '1'='1")
                     .questionType("single_choice")
                     .score(5)

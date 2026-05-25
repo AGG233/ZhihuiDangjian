@@ -32,7 +32,7 @@ public class LearningTool {
     public List<UserLearningRecord> getLearningRecordOfCourse(
             @ToolParam(description = "课程 ID") String courseId, ToolContext toolContext) {
         return userLearningRecordService.getByUserIdAndCourseId(
-                ToolContextUtil.getUserId(toolContext, userService), courseId);
+                Long.valueOf(ToolContextUtil.getUserId(toolContext, userService)), Long.valueOf(courseId));
     }
 
     @Tool(description = "获取用户某一课程的章节学习情况")
@@ -41,6 +41,6 @@ public class LearningTool {
             @ToolParam(description = "章节 ID") String chapterId,
             ToolContext toolContext) {
         return userLearningRecordService.getByUserIdAndCourseIdAndChapterId(
-                ToolContextUtil.getUserId(toolContext, userService), courseId, chapterId);
+                Long.valueOf(ToolContextUtil.getUserId(toolContext, userService)), Long.valueOf(courseId), Long.valueOf(chapterId));
     }
 }

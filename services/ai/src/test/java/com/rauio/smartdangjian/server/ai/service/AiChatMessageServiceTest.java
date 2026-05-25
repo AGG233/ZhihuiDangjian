@@ -33,17 +33,17 @@ class AiChatMessageServiceTest {
     @DisplayName("AiChatMessage 实体构建")
     void buildMessage() {
         AiChatMessage message = AiChatMessage.builder()
-                .id("msg-1")
-                .sessionId("session-1")
-                .userId("user-1")
+                .id(1L)
+                .sessionId("1")
+                .userId(1L)
                 .agentType("CHAT")
                 .senderType("user")
                 .content("你好")
                 .build();
 
-        assertThat(message.getId()).isEqualTo("msg-1");
-        assertThat(message.getSessionId()).isEqualTo("session-1");
-        assertThat(message.getUserId()).isEqualTo("user-1");
+        assertThat(message.getId()).isEqualTo(1L);
+        assertThat(message.getSessionId()).isEqualTo("1");
+        assertThat(message.getUserId()).isEqualTo(1L);
         assertThat(message.getAgentType()).isEqualTo("CHAT");
         assertThat(message.getContent()).isEqualTo("你好");
     }

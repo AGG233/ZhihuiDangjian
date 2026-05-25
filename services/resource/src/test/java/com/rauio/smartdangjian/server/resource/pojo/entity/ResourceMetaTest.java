@@ -12,8 +12,8 @@ class ResourceMetaTest {
     @DisplayName("使用 builder 构造实体")
     void buildEntity() {
         ResourceMeta meta = ResourceMeta.builder()
-                .id("r-1")
-                .uploaderId("user-1")
+                .id(1L)
+                .uploaderId(1L)
                 .originalName("test.png")
                 .hash("abc123")
                 .objectKey("image/abc123.png")
@@ -21,8 +21,8 @@ class ResourceMetaTest {
                 .status(1)
                 .build();
 
-        assertThat(meta.getId()).isEqualTo("r-1");
-        assertThat(meta.getUploaderId()).isEqualTo("user-1");
+        assertThat(meta.getId()).isEqualTo(1L);
+        assertThat(meta.getUploaderId()).isEqualTo(1L);
         assertThat(meta.getOriginalName()).isEqualTo("test.png");
         assertThat(meta.getHash()).isEqualTo("abc123");
         assertThat(meta.getObjectKey()).isEqualTo("image/abc123.png");

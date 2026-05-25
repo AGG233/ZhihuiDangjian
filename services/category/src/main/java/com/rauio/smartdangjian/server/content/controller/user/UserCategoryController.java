@@ -37,7 +37,7 @@ public class UserCategoryController {
     @Operation(summary = "获取目录", description = "普通用户和高校管理员只能读取公共分类与本校分类；系统管理员可读取全部分类。")
     @GetMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.CATEGORY, action = DataScopeAction.READ, id = "#id")
-    public Result<CategoryResponse> get(@PathVariable String id) {
+    public Result<CategoryResponse> get(@PathVariable Long id) {
         return Result.ok(categoryService.get(id));
     }
 
@@ -58,21 +58,21 @@ public class UserCategoryController {
     @Operation(summary = "获取子目录", description = "仅返回当前用户有权访问的父分类下的子目录。")
     @GetMapping("/{id}/children")
     @DataScopeAccess(resource = DataScopeResources.CATEGORY, action = DataScopeAction.READ, id = "#id")
-    public Result<List<CategoryResponse>> getByParentId(@PathVariable String id) {
+    public Result<List<CategoryResponse>> getByParentId(@PathVariable Long id) {
         return Result.ok(categoryService.getByParentId(id));
     }
 
     @Operation(summary = "获取目录下的所有课程ID", description = "仅允许访问当前用户可见分类下的课程关联。")
     @GetMapping("/{categoryId}/courses")
     @DataScopeAccess(resource = DataScopeResources.CATEGORY, action = DataScopeAction.READ, id = "#categoryId")
-    public Result<List<CategoryCourse>> getByCategoryIdCourses(@PathVariable String categoryId) {
+    public Result<List<CategoryCourse>> getByCategoryIdCourses(@PathVariable Long categoryId) {
         return Result.ok(courseService.getByCategoryId(categoryId));
     }
 
     @Operation(summary = "获取目录下的所有文章ID", description = "仅允许访问当前用户可见分类下的文章关联。")
     @GetMapping("/{categoryId}/articles")
     @DataScopeAccess(resource = DataScopeResources.CATEGORY, action = DataScopeAction.READ, id = "#categoryId")
-    public Result<List<CategoryArticle>> getByCategoryIdArticles(@PathVariable String categoryId) {
+    public Result<List<CategoryArticle>> getByCategoryIdArticles(@PathVariable Long categoryId) {
         return Result.ok(articleService.getByCategoryId(categoryId));
     }
 }

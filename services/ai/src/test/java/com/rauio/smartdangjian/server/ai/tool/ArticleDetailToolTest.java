@@ -18,7 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.pojo.entity.Article;
-import com.rauio.smartdangjian.server.content.service.ContentBlockService;
+import com.rauio.smartdangjian.server.content.service.ArticleContentBlockService;
 import com.rauio.smartdangjian.server.content.service.article.ArticleService;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,7 +28,7 @@ class ArticleDetailToolTest {
     private ArticleService articleService;
 
     @Mock
-    private ContentBlockService contentBlockService;
+    private ArticleContentBlockService contentBlockService;
 
     @InjectMocks
     private ArticleDetailTool articleDetailTool;
@@ -37,7 +37,7 @@ class ArticleDetailToolTest {
     @DisplayName("searchArticles 根据关键词搜索文章并返回映射列表")
     void searchArticles() {
         Article article = Article.builder()
-                .id("article-1")
+                .id(1L)
                 .title("党建理论学习")
                 .summary("深入理解党的理论")
                 .build();
@@ -66,13 +66,13 @@ class ArticleDetailToolTest {
     @DisplayName("getArticleDetail 返回文章详情和内容块")
     void getArticleDetail() {
         Article article = Article.builder()
-                .id("article-1")
+                .id(1L)
                 .title("党建理论学习")
                 .summary("深入理解党的理论")
                 .build();
 
-        when(articleService.getById("article-1")).thenReturn(article);
-        when(contentBlockService.getByParentId("article-1")).thenReturn(List.of());
+        when(articleService.getById(1L)).thenReturn(article);
+        when(contentBlockService.getByArticleId(1L)).thenReturn(List.of());
 
         Map<String, Object> result = articleDetailTool.getArticleDetail("article-1");
 
@@ -84,7 +84,7 @@ class ArticleDetailToolTest {
     @Test
     @DisplayName("getArticleDetail 文章不存在时抛出 BusinessException")
     void getArticleDetailNotFound() {
-        when(articleService.getById("nonexistent")).thenReturn(null);
+        when(articleService.getById(1L)).thenReturn(null);
 
         assertThatThrownBy(() -> articleDetailTool.getArticleDetail("nonexistent"))
                 .isInstanceOf(BusinessException.class)

@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.controller.user;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -54,39 +55,39 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 获取学习记录成功")
         void getSuccess() throws Exception {
-            UserLearningRecordResponse vo = LearningTestDataFactory.createLearningRecordVO("rec-001");
-            when(recordService.get("rec-001")).thenReturn(vo);
+            UserLearningRecordResponse vo = LearningTestDataFactory.createLearningRecordVO(1L);
+            when(recordService.get(1L)).thenReturn(vo);
 
-            mockMvc.perform(get("/api/learning/records/rec-001"))
+            mockMvc.perform(get("/api/learning/records/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data.id").value("rec-001"))
-                    .andExpect(jsonPath("$.data.userId").value("user-001"))
-                    .andExpect(jsonPath("$.data.chapterId").value("ch-001"));
+                    .andExpect(jsonPath("$.data.id").value("1"))
+                    .andExpect(jsonPath("$.data.userId").value("1"))
+                    .andExpect(jsonPath("$.data.chapterId").value("1"));
         }
 
         @Test
         @DisplayName("GET /user/{userId} - 获取用户所有学习记录成功")
         void getByUserIdSuccess() throws Exception {
-            UserLearningRecordResponse vo = LearningTestDataFactory.createLearningRecordVO("rec-001");
-            when(recordService.getByUserId("user-001")).thenReturn(List.of(vo));
+            UserLearningRecordResponse vo = LearningTestDataFactory.createLearningRecordVO(1L);
+            when(recordService.getByUserId(1L)).thenReturn(List.of(vo));
 
-            mockMvc.perform(get("/api/learning/records/users/user-001"))
+            mockMvc.perform(get("/api/learning/records/users/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data[0].id").value("rec-001"));
+                    .andExpect(jsonPath("$.data[0].id").value("1"));
         }
 
         @Test
         @DisplayName("GET /user/{userId}/chapter/{chapterId} - 获取用户章节学习记录成功")
         void getByUserIdAndChapterIdSuccess() throws Exception {
-            UserLearningRecordResponse vo = LearningTestDataFactory.createLearningRecordVO("rec-001");
-            when(recordService.getByUserIdAndChapterId("user-001", "ch-001")).thenReturn(List.of(vo));
+            UserLearningRecordResponse vo = LearningTestDataFactory.createLearningRecordVO(1L);
+            when(recordService.getByUserIdAndChapterId(1L, 1L)).thenReturn(List.of(vo));
 
-            mockMvc.perform(get("/api/learning/records/users/user-001/chapters/ch-001"))
+            mockMvc.perform(get("/api/learning/records/users/1/chapters/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data[0].id").value("rec-001"));
+                    .andExpect(jsonPath("$.data[0].id").value("1"));
         }
 
         @Test
@@ -110,7 +111,7 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
             mockMvc.perform(put("/api/learning/records")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(LearningTestDataFactory.toJson(
-                                    LearningTestDataFactory.createLearningRecordUpdateDto("rec-001"))))
+                                    LearningTestDataFactory.createLearningRecordUpdateDto(1L))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(true));
@@ -128,9 +129,9 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 BusinessException 返回 400")
         void getThrowsBusinessException() throws Exception {
-            when(recordService.get("rec-001")).thenThrow(new BusinessException(4000, "学习记录不存在"));
+            when(recordService.get(1L)).thenThrow(new BusinessException(4000, "学习记录不存在"));
 
-            mockMvc.perform(get("/api/learning/records/rec-001"))
+            mockMvc.perform(get("/api/learning/records/1"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("学习记录不存在"));
@@ -139,9 +140,9 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 RuntimeException 返回 500")
         void getThrowsRuntimeException() throws Exception {
-            when(recordService.get("rec-001")).thenThrow(new RuntimeException("数据库异常"));
+            when(recordService.get(1L)).thenThrow(new RuntimeException("数据库异常"));
 
-            mockMvc.perform(get("/api/learning/records/rec-001"))
+            mockMvc.perform(get("/api/learning/records/1"))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("500"));
         }
@@ -195,7 +196,7 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
             mockMvc.perform(put("/api/learning/records")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(LearningTestDataFactory.toJson(
-                                    LearningTestDataFactory.createLearningRecordUpdateDto("nonexistent"))))
+                                    LearningTestDataFactory.createLearningRecordUpdateDto(9999L))))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("学习记录不存在"));
@@ -209,7 +210,7 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
             mockMvc.perform(put("/api/learning/records")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(LearningTestDataFactory.toJson(
-                                    LearningTestDataFactory.createLearningRecordUpdateDto("rec-001"))))
+                                    LearningTestDataFactory.createLearningRecordUpdateDto(1L))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false))
@@ -237,9 +238,9 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /user/{userId} - 空结果集返回空列表")
         void getByUserIdEmptyResult() throws Exception {
-            when(recordService.getByUserId("user-empty")).thenReturn(List.of());
+            when(recordService.getByUserId(9999L)).thenReturn(List.of());
 
-            mockMvc.perform(get("/api/learning/records/users/user-empty"))
+            mockMvc.perform(get("/api/learning/records/users/9999"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").isArray())
@@ -250,11 +251,11 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
         @DisplayName("GET /user/{userId} - 多学习记录返回")
         void getByUserIdMultipleRecords() throws Exception {
             List<UserLearningRecordResponse> list = List.of(
-                    LearningTestDataFactory.createLearningRecordVO("rec-001", "user-001", "ch-001"),
-                    LearningTestDataFactory.createLearningRecordVO("rec-002", "user-001", "ch-002"));
-            when(recordService.getByUserId("user-001")).thenReturn(list);
+                    LearningTestDataFactory.createLearningRecordVO(1L, 1L, 1L),
+                    LearningTestDataFactory.createLearningRecordVO(2L, 1L, 2L));
+            when(recordService.getByUserId(1L)).thenReturn(list);
 
-            mockMvc.perform(get("/api/learning/records/users/user-001"))
+            mockMvc.perform(get("/api/learning/records/users/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.length()").value(2));
@@ -263,10 +264,10 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /user/{userId}/chapter/{chapterId} - 空结果集返回空列表")
         void getByUserIdAndChapterIdEmptyResult() throws Exception {
-            when(recordService.getByUserIdAndChapterId("user-empty", "ch-empty"))
+            when(recordService.getByUserIdAndChapterId(9999L, 9999L))
                     .thenReturn(List.of());
 
-            mockMvc.perform(get("/api/learning/records/users/user-empty/chapters/ch-empty"))
+            mockMvc.perform(get("/api/learning/records/users/9999/chapters/9999"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").isArray())
@@ -280,7 +281,7 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
 
             mockMvc.perform(put("/api/learning/records")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content("{\"id\":\"rec-001\",\"duration\":7200}"))
+                            .content("{\"id\":1,\"duration\":7200}"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));
         }
@@ -297,16 +298,16 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 注入在路径参数中")
         void xssInPath() throws Exception {
-            when(recordService.get("<script>alert('xss')</script>")).thenThrow(new BusinessException(4000, "学习记录不存在"));
+            when(recordService.get(anyLong())).thenThrow(new BusinessException(4000, "学习记录不存在"));
 
-            mockMvc.perform(get(URI.create("/api/learning/records/%3Cscript%3Ealert('xss')%3C%2Fscript%3E")))
+            mockMvc.perform(get(URI.create("/api/learning/records/%3Cscript%3Ealert('xss')%3E")))
                     .andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("SQL 注入在路径参数中")
         void sqlInjectionInPath() throws Exception {
-            when(recordService.get("' OR '1'='1")).thenThrow(new BusinessException(4000, "学习记录不存在"));
+            when(recordService.get(anyLong())).thenThrow(new BusinessException(4000, "学习记录不存在"));
 
             mockMvc.perform(get("/api/learning/records/{id}", "' OR '1'='1")).andExpect(status().isBadRequest());
         }
@@ -314,7 +315,7 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("DELETE 请求获取接口返回 405")
         void getWithWrongMethod() throws Exception {
-            mockMvc.perform(delete("/api/learning/records/rec-001")).andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(delete("/api/learning/records/1")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test

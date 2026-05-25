@@ -53,7 +53,7 @@ public class FileController {
     @SaCheckRole("STUDENT")
     @ResourceAccess(id = "#resourceId", type = "RESOURCE_META")
     public Result<Void> uploadCallback(
-            @PathVariable String resourceId,
+            @PathVariable Long resourceId,
             HttpServletRequest request) throws IOException {
         fileService.handleUploadCallback(resourceId, request.getInputStream());
         return Result.ok(null);
@@ -66,13 +66,13 @@ public class FileController {
     @PostMapping("/confirm/{resourceId}")
     @SaCheckRole("STUDENT")
     @ResourceAccess(id = "#resourceId", type = "RESOURCE_META")
-    public Result<ResourceMeta> confirmUpload(@PathVariable String resourceId) {
+    public Result<ResourceMeta> confirmUpload(@PathVariable Long resourceId) {
         return Result.ok(fileService.confirmUpload(resourceId));
     }
 
     @Operation(summary = "根据资源ID获取文件信息", description = "根据资源ID查询文件元数据，并返回包含预签名下载链接的文件信息。下载链接具有时效性，过期后需重新调用。")
     @GetMapping("/by-id/{id}")
-    public Result<FileInfoResponse> getById(@PathVariable String id) {
+    public Result<FileInfoResponse> getById(@PathVariable Long id) {
         return Result.ok(fileService.getFileInfo(id));
     }
 
@@ -87,13 +87,13 @@ public class FileController {
             description = "根据资源ID生成COS预签名下载链接。前端拿到返回的URL后，可直接发起GET请求下载或预览文件；链接具有时效性，过期后需重新调用本接口获取。")
     @SaCheckLogin
     @GetMapping("/{id}/download")
-    public Result<String> getDownloadUrl(@PathVariable String id) {
+    public Result<String> getDownloadUrl(@PathVariable Long id) {
         return Result.ok(fileService.getDownloadUrl(id));
     }
 
     @Operation(summary = "批量根据资源ID获取下载链接", description = "上传一个资源ID列表，返回对应的预签名下载链接列表。顺序与输入列表一致。")
     @PostMapping("/batch/id")
-    public Result<List<String>> getBatchById(@RequestBody @Valid List<String> ids) {
+    public Result<List<String>> getBatchById(@RequestBody @Valid List<Long> ids) {
         return Result.ok(fileService.getBatchByIds(ids));
     }
 
@@ -108,7 +108,7 @@ public class FileController {
     @DeleteMapping("/{id}")
     @SaCheckRole("STUDENT")
     @ResourceAccess(id = "#id", type = "RESOURCE_META")
-    public Result<Boolean> delete(@PathVariable String id) {
+    public Result<Boolean> delete(@PathVariable Long id) {
         fileService.delete(id);
         return Result.ok(true);
     }

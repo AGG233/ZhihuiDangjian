@@ -43,7 +43,7 @@ class UserLearningRecordServiceTest {
         });
 
         UserLearningRecordRequest dto =
-                UserLearningRecordRequest.builder().userId("user-001").build();
+                UserLearningRecordRequest.builder().userId(1L).build();
         service.getPage(dto, 1, 10);
 
         org.mockito.ArgumentCaptor<Wrapper<UserLearningRecord>> captor =

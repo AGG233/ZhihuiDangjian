@@ -37,15 +37,15 @@ class RegisterRequestTest {
         assertThat(request.getUsername()).isEqualTo("testuser");
         assertThat(request.getPassword()).isEqualTo("Test@1234");
         assertThat(request.getRealName()).isEqualTo("张三");
-        assertThat(request.getIdCard()).isEqualTo("110101199001011234");
-        assertThat(request.getPartyMemberId()).isEqualTo("12345678901234567890");
+        assertThat(request.getIdCard()).isEqualTo(1L);
+        assertThat(request.getPartyMemberId()).isEqualTo(1L);
         assertThat(request.getPartyStatus()).isEqualTo(PartyStatus.FORMAL_MEMBER);
         assertThat(request.getBranchName()).isEqualTo("某某党支部");
         assertThat(request.getEmail()).isEqualTo("test@example.com");
         assertThat(request.getPhone()).isEqualTo("13800138000");
         assertThat(request.getCaptchaUUID()).isEqualTo("uuid-123");
         assertThat(request.getCaptchaCode()).isEqualTo("ABCD");
-        assertThat(request.getUniversityId()).isEqualTo("univ-1");
+        assertThat(request.getUniversityId()).isEqualTo(1L);
         assertThat(request.getJoinPartyDate()).isEqualTo(joinDate);
     }
 

@@ -29,22 +29,22 @@ class UserLearningRecordControllerTest {
     @DisplayName("get 委托 service 获取学习记录")
     void get() {
         UserLearningRecordResponse vo =
-                UserLearningRecordResponse.builder().id("r-1").build();
-        when(recordService.get("r-1")).thenReturn(vo);
+                UserLearningRecordResponse.builder().id(1L).build();
+        when(recordService.get(1L)).thenReturn(vo);
 
-        var result = controller.get("r-1");
+        var result = controller.get(1L);
 
-        assertThat(result.getData().getId()).isEqualTo("r-1");
+        assertThat(result.getData().getId()).isEqualTo(1L);
     }
 
     @Test
     @DisplayName("getByUserId 委托 service 获取用户所有记录")
     void getByUserId() {
-        when(recordService.getByUserId("user-1"))
+        when(recordService.getByUserId(1L))
                 .thenReturn(
-                        List.of(UserLearningRecordResponse.builder().id("r-1").build()));
+                        List.of(UserLearningRecordResponse.builder().id(1L).build()));
 
-        var result = controller.getByUserId("user-1");
+        var result = controller.getByUserId(1L);
 
         assertThat(result.getData()).hasSize(1);
     }
@@ -52,11 +52,11 @@ class UserLearningRecordControllerTest {
     @Test
     @DisplayName("getByUserIdAndChapterId 委托 service 获取用户章节记录")
     void getByUserIdAndChapterId() {
-        when(recordService.getByUserIdAndChapterId("user-1", "ch-1"))
+        when(recordService.getByUserIdAndChapterId(1L, 2L))
                 .thenReturn(
-                        List.of(UserLearningRecordResponse.builder().id("r-1").build()));
+                        List.of(UserLearningRecordResponse.builder().id(1L).build()));
 
-        var result = controller.getByUserIdAndChapterId("user-1", "ch-1");
+        var result = controller.getByUserIdAndChapterId(1L, 2L);
 
         assertThat(result.getData()).hasSize(1);
     }
@@ -65,8 +65,8 @@ class UserLearningRecordControllerTest {
     @DisplayName("create 委托 service 创建记录")
     void create() {
         UserLearningRecordRequest dto = UserLearningRecordRequest.builder()
-                .userId("user-1")
-                .chapterId("ch-1")
+                .userId(1L)
+                .chapterId(1L)
                 .build();
         when(recordService.create(dto)).thenReturn(true);
 
@@ -79,7 +79,7 @@ class UserLearningRecordControllerTest {
     @DisplayName("update 委托 service 更新记录")
     void update() {
         UserLearningRecordRequest dto =
-                UserLearningRecordRequest.builder().id("r-1").build();
+                UserLearningRecordRequest.builder().id(1L).build();
         when(recordService.update(dto)).thenReturn(true);
 
         var result = controller.update(dto);

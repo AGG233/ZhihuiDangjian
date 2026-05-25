@@ -52,10 +52,11 @@ public class SearchController {
     @Operation(summary = "获取个性化推荐课程", description = "融合协同过滤、知识图谱和画像的综合推荐")
     @GetMapping("/recommend")
     @SaCheckRole("STUDENT")
-    public Result<Page<String>> recommend(
+    public Result<Page<Long>> recommend(
             @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
             @Parameter(name = "pageSize", description = "每页条数") @RequestParam(defaultValue = "10") int pageSize) {
-        String userId = userProfileService.getCurrentUserProfile().getUserId();
+        String userIdStr = userProfileService.getCurrentUserProfile().getUserId();
+        Long userId = Long.valueOf(userIdStr);
         return Result.ok(recommendService.recommend(userId, pageNum, pageSize));
     }
 

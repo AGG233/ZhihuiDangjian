@@ -22,7 +22,7 @@ public class UserProfileResponse {
     private KnowledgeStats knowledge;
 
     @Schema(description = "兴趣分类ID列表")
-    private List<String> interestCategoryIds;
+    private List<Long> interestCategoryIds;
 
     @Schema(description = "答题统计信息")
     private QuizStats quiz;
@@ -58,7 +58,7 @@ public class UserProfileResponse {
         private double completionRate;
 
         @Schema(description = "薄弱章节ID列表")
-        private List<String> weakChapterIds;
+        private List<Long> weakChapterIds;
     }
 
     @Data

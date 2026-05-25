@@ -19,7 +19,7 @@ class UserResponseTest {
         LocalDateTime joinDate = LocalDateTime.of(2025, 3, 15, 9, 30);
         UserResponse response = new UserResponse();
 
-        response.setId("user-1");
+        response.setId(1L);
         response.setUsername("testuser");
         response.setRealName("张三");
         response.setPartyMemberId("pm-001");
@@ -27,12 +27,12 @@ class UserResponseTest {
         response.setBranchName("党支部A");
         response.setUserType(UserType.STUDENT);
         response.setStatus(AccountStatus.ACTIVE);
-        response.setUniversityId("univ-1");
+        response.setUniversityId(1L);
         response.setJoinPartyDate(joinDate);
         response.setEmail("test@example.com");
         response.setPhone("13800138000");
 
-        assertThat(response.getId()).isEqualTo("user-1");
+        assertThat(response.getId()).isEqualTo(1L);
         assertThat(response.getUsername()).isEqualTo("testuser");
         assertThat(response.getRealName()).isEqualTo("张三");
         assertThat(response.getPartyMemberId()).isEqualTo("pm-001");
@@ -40,7 +40,7 @@ class UserResponseTest {
         assertThat(response.getBranchName()).isEqualTo("党支部A");
         assertThat(response.getUserType()).isEqualTo(UserType.STUDENT);
         assertThat(response.getStatus()).isEqualTo(AccountStatus.ACTIVE);
-        assertThat(response.getUniversityId()).isEqualTo("univ-1");
+        assertThat(response.getUniversityId()).isEqualTo(1L);
         assertThat(response.getJoinPartyDate()).isEqualTo(joinDate);
         assertThat(response.getEmail()).isEqualTo("test@example.com");
         assertThat(response.getPhone()).isEqualTo("13800138000");

@@ -77,11 +77,11 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /{id}/children - 创建子目录成功")
         void createChildrenSuccess() throws Exception {
-            when(categoryService.createByParentId(any(List.class), eq("cat-001")))
+            when(categoryService.createByParentId(any(List.class), eq(1L)))
                     .thenReturn(true);
 
             List<CategoryRequest> children = CategoryTestDataFactory.createSingleChildCategoryRequestList("子分类A");
-            mockMvc.perform(post("/api/admin/content/categories/cat-001/children")
+            mockMvc.perform(post("/api/admin/content/categories/1/children")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CategoryTestDataFactory.listToJson(children)))
                     .andExpect(status().isOk())
@@ -92,10 +92,10 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - 更新目录成功")
         void updateCategorySuccess() throws Exception {
-            when(categoryService.update(any(CategoryRequest.class), eq("cat-001"))).thenReturn(true);
+            when(categoryService.update(any(CategoryRequest.class), eq(1L))).thenReturn(true);
 
             CategoryRequest dto = CategoryTestDataFactory.createCategoryRequest("更新后名称");
-            mockMvc.perform(put("/api/admin/content/categories/cat-001")
+            mockMvc.perform(put("/api/admin/content/categories/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CategoryTestDataFactory.toJson(dto)))
                     .andExpect(status().isOk())
@@ -106,9 +106,9 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("DELETE /{id} - 删除目录成功")
         void deleteCategorySuccess() throws Exception {
-            when(categoryService.delete("cat-001")).thenReturn(true);
+            when(categoryService.delete(1L)).thenReturn(true);
 
-            mockMvc.perform(delete("/api/admin/content/categories/cat-001"))
+            mockMvc.perform(delete("/api/admin/content/categories/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(true));
@@ -117,9 +117,9 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("DELETE /{id}/all - 递归删除目录成功")
         void deleteCategoryWithChildrenSuccess() throws Exception {
-            when(categoryService.deleteByIdWithChildren("cat-001")).thenReturn(true);
+            when(categoryService.deleteByIdWithChildren(1L)).thenReturn(true);
 
-            mockMvc.perform(delete("/api/admin/content/categories/cat-001/all"))
+            mockMvc.perform(delete("/api/admin/content/categories/1/all"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(true));
@@ -167,10 +167,10 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /{id}/children - 请求体为空数组返回 200（空操作）")
         void createChildrenWithEmptyList() throws Exception {
-            when(categoryService.createByParentId(any(List.class), eq("cat-001")))
+            when(categoryService.createByParentId(any(List.class), eq(1L)))
                     .thenReturn(true);
 
-            mockMvc.perform(post("/api/admin/content/categories/cat-001/children")
+            mockMvc.perform(post("/api/admin/content/categories/1/children")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("[]"))
                     .andExpect(status().isOk())
@@ -181,7 +181,7 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @DisplayName("PUT /{id} - name 为空返回 400")
         void updateWithBlankName() throws Exception {
             CategoryRequest dto = CategoryTestDataFactory.createCategoryRequest("");
-            mockMvc.perform(put("/api/admin/content/categories/cat-001")
+            mockMvc.perform(put("/api/admin/content/categories/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CategoryTestDataFactory.toJson(dto)))
                     .andExpect(status().isBadRequest());
@@ -253,9 +253,9 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("DELETE /{id} - service 返回 false 时 code 为 400")
         void deleteCategoryReturnsFalse() throws Exception {
-            when(categoryService.delete("nonexistent")).thenReturn(false);
+            when(categoryService.delete(9999L)).thenReturn(false);
 
-            mockMvc.perform(delete("/api/admin/content/categories/nonexistent"))
+            mockMvc.perform(delete("/api/admin/content/categories/9999"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));
         }
@@ -263,10 +263,10 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - description 为 null 正常处理")
         void updateWithNullDescription() throws Exception {
-            when(categoryService.update(any(CategoryRequest.class), eq("cat-001"))).thenReturn(true);
+            when(categoryService.update(any(CategoryRequest.class), eq(1L))).thenReturn(true);
 
             String json = "{\"name\": \"测试分类\"}";
-            mockMvc.perform(put("/api/admin/content/categories/cat-001")
+            mockMvc.perform(put("/api/admin/content/categories/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(json))
                     .andExpect(status().isOk())
@@ -276,11 +276,11 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /{id}/children - 批量创建多个子目录成功")
         void createMultipleChildrenSuccess() throws Exception {
-            when(categoryService.createByParentId(any(List.class), eq("cat-001")))
+            when(categoryService.createByParentId(any(List.class), eq(1L)))
                     .thenReturn(true);
 
             List<CategoryRequest> children = CategoryTestDataFactory.createCategoryRequestList(5);
-            mockMvc.perform(post("/api/admin/content/categories/cat-001/children")
+            mockMvc.perform(post("/api/admin/content/categories/1/children")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CategoryTestDataFactory.listToJson(children)))
                     .andExpect(status().isOk())
@@ -301,8 +301,8 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         void studentUserAccessDenied() throws Exception {
             CurrentUserPrincipal student = new CurrentUserPrincipal() {
                 @Override
-                public String getId() {
-                    return "stu-001";
+                public Long getId() {
+                    return 1L;
                 }
 
                 @Override
@@ -315,7 +315,7 @@ class AdminCategoryControllerTest extends BaseControllerTest {
                     return "uni1";
                 }
             };
-            setSecurityContext(UserType.STUDENT, "student1", "uni1");
+            setSecurityContext(UserType.STUDENT, 1L, "uni1");
             when(categoryService.create(any(CategoryRequest.class))).thenReturn(true);
             mockMvc.perform(post("/api/admin/content/categories/root")
                             .contentType(MediaType.APPLICATION_JSON)

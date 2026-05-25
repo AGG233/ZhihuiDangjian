@@ -15,9 +15,9 @@ class UserLearningRecordResponseTest {
     void buildResponse() {
         Date now = new Date();
         UserLearningRecordResponse response = UserLearningRecordResponse.builder()
-                .id("r-1")
-                .userId("user-1")
-                .chapterId("ch-1")
+                .id(1L)
+                .userId(1L)
+                .chapterId(1L)
                 .startTime(now)
                 .endTime(now)
                 .duration(1800)
@@ -25,8 +25,8 @@ class UserLearningRecordResponseTest {
                 .createdAt(now)
                 .build();
 
-        assertThat(response.getId()).isEqualTo("r-1");
-        assertThat(response.getUserId()).isEqualTo("user-1");
+        assertThat(response.getId()).isEqualTo(1L);
+        assertThat(response.getUserId()).isEqualTo(1L);
         assertThat(response.getDuration()).isEqualTo(1800);
         assertThat(response.getDeviceType()).isEqualTo("mobile");
     }

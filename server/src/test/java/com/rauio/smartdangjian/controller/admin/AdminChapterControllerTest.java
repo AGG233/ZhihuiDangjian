@@ -70,9 +70,9 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("删除章节返回成功")
         void deleteChapterSuccess() throws Exception {
-            when(chapterService.delete("ch-1")).thenReturn(true);
+            when(chapterService.delete(1L)).thenReturn(true);
 
-            mockMvc.perform(delete("/api/admin/content/chapters/ch-1"))
+            mockMvc.perform(delete("/api/admin/content/chapters/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(true));
@@ -81,38 +81,38 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET 根据章节 ID 获取章节详情成功")
         void getByIdSuccess() throws Exception {
-            var vo = CourseTestDataFactory.createChapterResponse("ch-1");
-            when(chapterService.get("ch-1")).thenReturn(vo);
+            var vo = CourseTestDataFactory.createChapterResponse(1L);
+            when(chapterService.get(1L)).thenReturn(vo);
 
-            mockMvc.perform(get("/api/admin/content/chapters/ch-1"))
+            mockMvc.perform(get("/api/admin/content/chapters/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data.id").value("ch-1"))
+                    .andExpect(jsonPath("$.data.id").value("1"))
                     .andExpect(jsonPath("$.data.title").value("test-chapter"))
-                    .andExpect(jsonPath("$.data.courseId").value("course-1"));
+                    .andExpect(jsonPath("$.data.courseId").value("1"));
         }
 
         @Test
         @DisplayName("GET 根据课程 ID 获取章节列表成功")
         void getByCourseIdSuccess() throws Exception {
-            var vo1 = CourseTestDataFactory.createChapterResponse("ch-1");
-            var vo2 = CourseTestDataFactory.createChapterResponse("ch-2");
-            when(chapterService.getByCourseId("course-1")).thenReturn(List.of(vo1, vo2));
+            var vo1 = CourseTestDataFactory.createChapterResponse(1L);
+            var vo2 = CourseTestDataFactory.createChapterResponse(2L);
+            when(chapterService.getByCourseId(1L)).thenReturn(List.of(vo1, vo2));
 
-            mockMvc.perform(get("/api/admin/content/chapters/by-course/course-1"))
+            mockMvc.perform(get("/api/admin/content/chapters/by-course/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").isArray())
-                    .andExpect(jsonPath("$.data[0].id").value("ch-1"))
-                    .andExpect(jsonPath("$.data[1].id").value("ch-2"));
+                    .andExpect(jsonPath("$.data[0].id").value("1"))
+                    .andExpect(jsonPath("$.data[1].id").value("2"));
         }
 
         @Test
         @DisplayName("GET 课程下无章节时返回空列表")
         void getByCourseIdReturnsEmptyList() throws Exception {
-            when(chapterService.getByCourseId("empty-course")).thenReturn(List.of());
+            when(chapterService.getByCourseId(1L)).thenReturn(List.of());
 
-            mockMvc.perform(get("/api/admin/content/chapters/by-course/empty-course"))
+            mockMvc.perform(get("/api/admin/content/chapters/by-course/9999"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").isArray())
@@ -161,9 +161,9 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("删除章节时 Service 返回 false 则 code 为 400")
         void deleteReturnsFalse() throws Exception {
-            when(chapterService.delete("nonexistent")).thenReturn(false);
+            when(chapterService.delete(9999L)).thenReturn(false);
 
-            mockMvc.perform(delete("/api/admin/content/chapters/nonexistent"))
+            mockMvc.perform(delete("/api/admin/content/chapters/9999"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false))
@@ -189,7 +189,7 @@ class AdminChapterControllerTest extends BaseControllerTest {
         void createWithChineseTitle() throws Exception {
             when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
             ChapterRequest dto = ChapterRequest.builder()
-                    .courseId("course-1")
+                    .courseId("11")
                     .title("党的二十大报告解读")
                     .description("test-description")
                     .duration(1800)
@@ -208,7 +208,7 @@ class AdminChapterControllerTest extends BaseControllerTest {
         void createWithSpecialChars() throws Exception {
             when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
             ChapterRequest dto = ChapterRequest.builder()
-                    .courseId("course-1")
+                    .courseId("11")
                     .title("test_@#$%^&*()")
                     .description("test-description")
                     .duration(1800)
@@ -227,7 +227,7 @@ class AdminChapterControllerTest extends BaseControllerTest {
         void createWithLongTitle() throws Exception {
             when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
             ChapterRequest dto = ChapterRequest.builder()
-                    .courseId("course-1")
+                    .courseId("11")
                     .title("a".repeat(1000))
                     .description("test-description")
                     .duration(1800)
@@ -258,7 +258,7 @@ class AdminChapterControllerTest extends BaseControllerTest {
         void xssInTitle() throws Exception {
             when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
             ChapterRequest dto = ChapterRequest.builder()
-                    .courseId("course-1")
+                    .courseId("11")
                     .title("<script>alert('xss')</script>")
                     .description("test")
                     .duration(1800)
@@ -277,7 +277,7 @@ class AdminChapterControllerTest extends BaseControllerTest {
         void sqlInjectionInTitle() throws Exception {
             when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
             ChapterRequest dto = ChapterRequest.builder()
-                    .courseId("course-1")
+                    .courseId("11")
                     .title("' OR '1'='1")
                     .description("test")
                     .duration(1800)
@@ -300,7 +300,7 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST 请求删除接口返回 405")
         void deleteWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/admin/content/chapters/ch-1")).andExpect(status().is4xxClientError());
+            mockMvc.perform(post("/api/admin/content/chapters/1")).andExpect(status().is4xxClientError());
         }
 
         private com.rauio.smartdangjian.server.content.pojo.dto.ContentBlockDto createSimpleContentBlock() {

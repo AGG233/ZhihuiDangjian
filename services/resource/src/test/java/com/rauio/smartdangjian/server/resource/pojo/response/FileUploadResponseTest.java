@@ -12,13 +12,13 @@ class FileUploadResponseTest {
     @DisplayName("使用 builder 构造响应")
     void buildResponse() {
         FileUploadResponse resp = FileUploadResponse.builder()
-                .resourceId("r-1")
+                .resourceId("1")
                 .uploadUrl("https://example.com/upload")
                 .objectKey("image/test.png")
                 .expiration(1714291200000L)
                 .build();
 
-        assertThat(resp.getResourceId()).isEqualTo("r-1");
+        assertThat(resp.getResourceId()).isEqualTo("1");
         assertThat(resp.getUploadUrl()).isEqualTo("https://example.com/upload");
         assertThat(resp.getObjectKey()).isEqualTo("image/test.png");
         assertThat(resp.getExpiration()).isEqualTo(1714291200000L);

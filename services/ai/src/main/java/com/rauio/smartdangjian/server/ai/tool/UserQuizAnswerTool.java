@@ -26,7 +26,8 @@ public class UserQuizAnswerTool {
     public List<UserQuizAnswer> getRecentQuizAnswers(
             @ToolParam(description = "返回记录条数，默认10条") Integer limit, ToolContext toolContext) {
         int safeLimit = limit == null || limit <= 0 ? 10 : limit;
-        return userQuizAnswerService.getByUserId(ToolContextUtil.getUserId(toolContext, userService)).stream()
+        Long userId = Long.valueOf(ToolContextUtil.getUserId(toolContext, userService));
+        return userQuizAnswerService.getByUserId(userId).stream()
                 .sorted(Comparator.comparing(
                         UserQuizAnswer::getAnswerTime, Comparator.nullsLast(Comparator.reverseOrder())))
                 .limit(safeLimit)
@@ -36,6 +37,7 @@ public class UserQuizAnswerTool {
     @Tool(description = "获取当前用户在指定测验下的答题记录")
     public List<UserQuizAnswer> getQuizAnswersByQuizId(
             @ToolParam(description = "测验ID") String quizId, ToolContext toolContext) {
-        return userQuizAnswerService.getByUserIdAndQuizId(ToolContextUtil.getUserId(toolContext, userService), quizId);
+        Long userId = Long.valueOf(ToolContextUtil.getUserId(toolContext, userService));
+        return userQuizAnswerService.getByUserIdAndQuizId(userId, Long.valueOf(quizId));
     }
 }

@@ -21,5 +21,5 @@ public interface CourseMapper extends BaseMapper<Course>, MPJBaseMapper<Course> 
             JOIN user_chapter_progress ucp ON ucp.chapter_id = ch.id
             WHERE ucp.user_id = #{userId}
             """)
-    List<Course> selectLearnedCoursesByUserId(@Param("userId") String userId);
+    List<Course> selectLearnedCoursesByUserId(@Param("userId") Long userId);
 }

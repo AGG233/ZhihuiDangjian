@@ -21,10 +21,10 @@ public class Article {
 
     @TableId
     @Schema(description = "文章ID")
-    private String id;
+    private Long id;
 
     @Schema(description = "作者ID")
-    private String authorId;
+    private Long authorId;
 
     @Schema(description = "文章标题")
     private String title;

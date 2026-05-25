@@ -21,13 +21,13 @@ public class UserSimilarity {
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
     @Schema(description = "记录ID")
-    private String id;
+    private Long id;
 
     @Schema(description = "用户1 ID")
-    private String userId1;
+    private Long userId1;
 
     @Schema(description = "用户2 ID")
-    private String userId2;
+    private Long userId2;
 
     @Schema(description = "相似度分值", example = "0.82")
     private BigDecimal similarityScore;

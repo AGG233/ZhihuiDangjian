@@ -16,16 +16,16 @@ class ArticleResponseTest {
     void builderCreatesArticleResponseCorrectly() {
         LocalDateTime now = LocalDateTime.of(2025, 1, 1, 12, 0);
         ArticleResponse response = ArticleResponse.builder()
-                .id("art-001")
-                .authorId("user-001")
+                .id(1L)
+                .authorId(1L)
                 .title("测试文章")
                 .summary("测试摘要")
                 .status(ArticleStatus.Published)
                 .publishedAt(now)
                 .build();
 
-        assertThat(response.getId()).isEqualTo("art-001");
-        assertThat(response.getAuthorId()).isEqualTo("user-001");
+        assertThat(response.getId()).isEqualTo(1L);
+        assertThat(response.getAuthorId()).isEqualTo(1L);
         assertThat(response.getTitle()).isEqualTo("测试文章");
         assertThat(response.getSummary()).isEqualTo("测试摘要");
         assertThat(response.getStatus()).isEqualTo(ArticleStatus.Published);
@@ -36,8 +36,8 @@ class ArticleResponseTest {
     @DisplayName("builder 构造 ArticleResponse 发布时间可为 null")
     void builderCreatesArticleResponseWithNullPublishedAt() {
         ArticleResponse response = ArticleResponse.builder()
-                .id("art-001")
-                .authorId("user-001")
+                .id(1L)
+                .authorId(1L)
                 .title("未发布文章")
                 .status(ArticleStatus.Draft)
                 .build();

@@ -31,14 +31,14 @@ public class AdminChapterProgressController {
     @GetMapping("/chapter/{chapterId}")
     @DataScopeAccess(resource = DataScopeResources.CHAPTER_PROGRESS, action = DataScopeAction.FILTER, id = "#chapterId")
     public Result<List<UserChapterProgressResponse>> getByChapterId(
-            @Parameter(name = "chapterId", description = "章节ID") @PathVariable String chapterId) {
+            @Parameter(name = "chapterId", description = "章节ID") @PathVariable Long chapterId) {
         return Result.ok(progressService.getByChapterId(chapterId));
     }
 
     @Operation(summary = "删除进度记录")
     @DeleteMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.CHAPTER_PROGRESS, action = DataScopeAction.DELETE, id = "#id")
-    public Result<Boolean> delete(@Parameter(name = "id", description = "进度ID") @PathVariable String id) {
+    public Result<Boolean> delete(@Parameter(name = "id", description = "进度ID") @PathVariable Long id) {
         return Result.ok(progressService.delete(id));
     }
 }

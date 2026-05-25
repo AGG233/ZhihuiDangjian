@@ -69,7 +69,7 @@ public final class CategoryTestDataFactory {
 
     // ── CategoryResponse builders ────────────────────────────────────────
 
-    public static CategoryResponse createCategoryResponse(String id, String name, String parentId) {
+    public static CategoryResponse createCategoryResponse(Long id, String name, Long parentId) {
         CategoryResponse vo = new CategoryResponse();
         vo.setId(id);
         vo.setName(name);
@@ -81,7 +81,7 @@ public final class CategoryTestDataFactory {
         return vo;
     }
 
-    public static CategoryResponse createCategoryResponse(String id, String name, String parentId, List<CategoryResponse> children) {
+    public static CategoryResponse createCategoryResponse(Long id, String name, Long parentId, List<CategoryResponse> children) {
         CategoryResponse vo = createCategoryResponse(id, name, parentId);
         vo.setChildren(children);
         return vo;
@@ -90,20 +90,20 @@ public final class CategoryTestDataFactory {
     public static List<CategoryResponse> createCategoryResponseList(int count) {
         List<CategoryResponse> list = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
-            list.add(createCategoryResponse("cat-" + i, "分类" + i, null));
+            list.add(createCategoryResponse((long) i, "分类" + i, null));
         }
         return list;
     }
 
-    public static List<CategoryResponse> createCategoryResponseList(int count, String parentId) {
+    public static List<CategoryResponse> createCategoryResponseList(int count, Long parentId) {
         List<CategoryResponse> list = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
-            list.add(createCategoryResponse("child-" + i, "子分类" + i, parentId));
+            list.add(createCategoryResponse((long) i, "子分类" + i, parentId));
         }
         return list;
     }
 
-    public static CategoryResponse createCategoryWithChildren(String id, String name, int childCount) {
+    public static CategoryResponse createCategoryWithChildren(Long id, String name, int childCount) {
         CategoryResponse vo = createCategoryResponse(id, name, null);
         vo.setChildren(createCategoryResponseList(childCount, id));
         return vo;
@@ -111,34 +111,34 @@ public final class CategoryTestDataFactory {
 
     // ── CategoryCourse builders ────────────────────────────────────
 
-    public static CategoryCourse createCategoryCourse(String categoryId, String courseId) {
+    public static CategoryCourse createCategoryCourse(Long categoryId, Long courseId) {
         return CategoryCourse.builder()
                 .categoryId(categoryId)
                 .courseId(courseId)
                 .build();
     }
 
-    public static List<CategoryCourse> createCategoryCourseList(String categoryId, int count) {
+    public static List<CategoryCourse> createCategoryCourseList(Long categoryId, int count) {
         List<CategoryCourse> list = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
-            list.add(createCategoryCourse(categoryId, "course-" + String.format("%03d", i)));
+            list.add(createCategoryCourse(categoryId, (long) i));
         }
         return list;
     }
 
     // ── CategoryArticle builders ───────────────────────────────────
 
-    public static CategoryArticle createCategoryArticle(String categoryId, String articleId) {
+    public static CategoryArticle createCategoryArticle(Long categoryId, Long articleId) {
         CategoryArticle ca = new CategoryArticle();
         ca.setCategoryId(categoryId);
         ca.setArticleId(articleId);
         return ca;
     }
 
-    public static List<CategoryArticle> createCategoryArticleList(String categoryId, int count) {
+    public static List<CategoryArticle> createCategoryArticleList(Long categoryId, int count) {
         List<CategoryArticle> list = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
-            list.add(createCategoryArticle(categoryId, "article-" + String.format("%03d", i)));
+            list.add(createCategoryArticle(categoryId, (long) i));
         }
         return list;
     }

@@ -27,11 +27,11 @@ class AdminChapterProgressControllerTest {
     @Test
     @DisplayName("getByChapterId 委托 service 获取章节进度")
     void getByChapterId() {
-        when(progressService.getByChapterId("ch-1"))
+        when(progressService.getByChapterId(1L))
                 .thenReturn(
-                        List.of(UserChapterProgressResponse.builder().id("p-1").build()));
+                        List.of(UserChapterProgressResponse.builder().id(1L).build()));
 
-        var result = controller.getByChapterId("ch-1");
+        var result = controller.getByChapterId(1L);
 
         assertThat(result.getData()).hasSize(1);
     }
@@ -39,9 +39,9 @@ class AdminChapterProgressControllerTest {
     @Test
     @DisplayName("delete 委托 service 删除进度")
     void delete() {
-        when(progressService.delete("p-1")).thenReturn(true);
+        when(progressService.delete(1L)).thenReturn(true);
 
-        var result = controller.delete("p-1");
+        var result = controller.delete(1L);
 
         assertThat(result.getData()).isTrue();
     }

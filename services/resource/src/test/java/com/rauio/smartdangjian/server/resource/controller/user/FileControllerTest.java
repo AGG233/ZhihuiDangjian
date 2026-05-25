@@ -38,35 +38,35 @@ class FileControllerTest {
 
         when(fileService.upload(any(UploadFileRequest.class)))
                 .thenReturn(FileUploadResponse.builder()
-                        .resourceId("r-1")
+                        .resourceId("1")
                         .uploadUrl("https://example.com/upload")
                         .build());
 
         var result = controller.upload(request);
 
-        assertThat(result.getData().getResourceId()).isEqualTo("r-1");
+        assertThat(result.getData().getResourceId()).isEqualTo("1");
     }
 
     @Test
     @DisplayName("confirmUpload 委托 service 确认上传")
     void confirmUpload() {
-        when(fileService.confirmUpload("r-1"))
-                .thenReturn(ResourceMeta.builder().id("r-1").build());
+        when(fileService.confirmUpload(1L))
+                .thenReturn(ResourceMeta.builder().id(1L).build());
 
-        var result = controller.confirmUpload("r-1");
+        var result = controller.confirmUpload(1L);
 
-        assertThat(result.getData().getId()).isEqualTo("r-1");
+        assertThat(result.getData().getId()).isEqualTo(1L);
     }
 
     @Test
     @DisplayName("getById 委托 service 获取文件信息")
     void getById() {
-        when(fileService.getFileInfo("r-1"))
-                .thenReturn(FileInfoResponse.builder().resourceId("r-1").build());
+        when(fileService.getFileInfo(1L))
+                .thenReturn(FileInfoResponse.builder().resourceId("1").build());
 
-        var result = controller.getById("r-1");
+        var result = controller.getById(1L);
 
-        assertThat(result.getData().getResourceId()).isEqualTo("r-1");
+        assertThat(result.getData().getResourceId()).isEqualTo("1");
     }
 
     @Test
@@ -74,7 +74,7 @@ class FileControllerTest {
     void getByHash() {
         when(fileService.getFileInfoByHash("hash123"))
                 .thenReturn(FileInfoResponse.builder()
-                        .resourceId("r-1")
+                        .resourceId("1")
                         .hash("hash123")
                         .build());
 
@@ -86,9 +86,9 @@ class FileControllerTest {
     @Test
     @DisplayName("getDownloadUrl 委托 service 获取下载链接")
     void getDownloadUrl() {
-        when(fileService.getDownloadUrl("r-1")).thenReturn("https://example.com/download");
+        when(fileService.getDownloadUrl(1L)).thenReturn("https://example.com/download");
 
-        var result = controller.getDownloadUrl("r-1");
+        var result = controller.getDownloadUrl(1L);
 
         assertThat(result.getData()).isEqualTo("https://example.com/download");
     }
@@ -98,7 +98,7 @@ class FileControllerTest {
     void getBatchById() {
         when(fileService.getBatchByIds(anyList())).thenReturn(List.of("url1", "url2"));
 
-        var result = controller.getBatchById(List.of("r-1", "r-2"));
+        var result = controller.getBatchById(List.of(1L, 2L));
 
         assertThat(result.getData()).hasSize(2);
     }
@@ -116,9 +116,9 @@ class FileControllerTest {
     @Test
     @DisplayName("delete 委托 service 删除文件")
     void delete() {
-        doNothing().when(fileService).delete("r-1");
+        doNothing().when(fileService).delete(1L);
 
-        var result = controller.delete("r-1");
+        var result = controller.delete(1L);
 
         assertThat(result.getData()).isTrue();
     }

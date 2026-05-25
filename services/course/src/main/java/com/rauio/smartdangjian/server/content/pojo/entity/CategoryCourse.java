@@ -11,15 +11,15 @@ import lombok.Data;
 
 @Data
 @Builder
-@TableName("category_couse")
+@TableName("category_course")
 @Schema(description = "分类-课程关联")
 public class CategoryCourse {
 
     @Schema(description = "分类ID")
-    private String categoryId;
+    private Long categoryId;
 
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
     @Schema(description = "课程ID")
-    private String courseId;
+    private Long courseId;
 }

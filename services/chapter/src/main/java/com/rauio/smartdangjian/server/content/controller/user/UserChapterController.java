@@ -27,13 +27,13 @@ public class UserChapterController {
 
     @Operation(summary = "获取章节详情")
     @GetMapping("/{id}")
-    public Result<ChapterResponse> get(@PathVariable String id) {
+    public Result<ChapterResponse> get(@PathVariable Long id) {
         return Result.ok(chapterService.get(id));
     }
 
     @Operation(summary = "获取课程下的章节列表")
     @GetMapping("/by-course/{courseId}")
-    public Result<List<ChapterResponse>> getByCourseId(@PathVariable String courseId) {
+    public Result<List<ChapterResponse>> getByCourseId(@PathVariable Long courseId) {
         return Result.ok(chapterService.getByCourseId(courseId));
     }
 }

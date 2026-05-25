@@ -21,7 +21,7 @@ class UserRequestTest {
         UserRequest request = new UserRequest();
         String testPassword = "pwd-" + ThreadLocalRandom.current().nextInt(100000, 999999);
 
-        request.setUserId("user-1");
+        request.setUserId("1");
         request.setUsername("testuser");
         request.setRealName("张三");
         request.setPassword(testPassword);
@@ -36,7 +36,7 @@ class UserRequestTest {
         request.setPhone("13800138000");
         request.setIdCard("110101199001011234");
 
-        assertThat(request.getUserId()).isEqualTo("user-1");
+        assertThat(request.getUserId()).isEqualTo("1");
         assertThat(request.getUsername()).isEqualTo("testuser");
         assertThat(request.getRealName()).isEqualTo("张三");
         assertThat(request.getPassword()).isEqualTo(testPassword);

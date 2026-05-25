@@ -30,7 +30,7 @@ public class UserQuizAnswerController {
     @GetMapping("/users/{id}")
     @ResourceAccess(id = "#id")
     public Result<List<UserQuizAnswerResponse>> getByUserIdQuizAnswers(
-            @Parameter(name = "id", description = "用户ID") @PathVariable String id) {
+            @Parameter(name = "id", description = "用户ID") @PathVariable Long id) {
         List<UserQuizAnswerResponse> responses = userQuizAnswerService.getByUserId(id).stream()
                 .map(this::toUserQuizAnswerResponse)
                 .toList();
@@ -41,8 +41,8 @@ public class UserQuizAnswerController {
     @GetMapping("/users/{id}/quizzes/{quizId}")
     @ResourceAccess(id = "#id")
     public Result<List<UserQuizAnswerResponse>> getByQuizIdQuizAnswers(
-            @Parameter(name = "id", description = "用户ID") @PathVariable String id,
-            @Parameter(name = "quizId", description = "试题ID") @PathVariable String quizId) {
+            @Parameter(name = "id", description = "用户ID") @PathVariable Long id,
+            @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId) {
         List<UserQuizAnswerResponse> responses = userQuizAnswerService.getByUserIdAndQuizId(id, quizId).stream()
                 .map(this::toUserQuizAnswerResponse)
                 .toList();
@@ -53,9 +53,9 @@ public class UserQuizAnswerController {
     @GetMapping("/users/{id}/quizzes/{quizId}/options/{optionId}")
     @ResourceAccess(id = "#id")
     public Result<UserQuizAnswerResponse> getByUserIdAndQuizIdAndOptionIdQuizAnswer(
-            @Parameter(name = "id", description = "用户ID") @PathVariable String id,
-            @Parameter(name = "quizId", description = "试题ID") @PathVariable String quizId,
-            @Parameter(name = "optionId", description = "选项ID") @PathVariable String optionId) {
+            @Parameter(name = "id", description = "用户ID") @PathVariable Long id,
+            @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId,
+            @Parameter(name = "optionId", description = "选项ID") @PathVariable Long optionId) {
         return Result.ok(
                 toUserQuizAnswerResponse(userQuizAnswerService.getByUserIdAndQuizIdAndOptionId(id, quizId, optionId)));
     }
@@ -64,9 +64,9 @@ public class UserQuizAnswerController {
     @PostMapping("/users/{id}/quizzes/{quizId}/options/{optionId}")
     @ResourceAccess(id = "#id")
     public Result<Boolean> createQuizAnswer(
-            @Parameter(name = "id", description = "用户ID") @PathVariable String id,
-            @Parameter(name = "quizId", description = "试题ID") @PathVariable String quizId,
-            @Parameter(name = "optionId", description = "选项ID") @PathVariable String optionId) {
+            @Parameter(name = "id", description = "用户ID") @PathVariable Long id,
+            @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId,
+            @Parameter(name = "optionId", description = "选项ID") @PathVariable Long optionId) {
         UserQuizAnswer userQuizAnswer = UserQuizAnswer.builder().build();
         userQuizAnswer.setUserId(id);
         userQuizAnswer.setQuizId(quizId);
@@ -78,9 +78,9 @@ public class UserQuizAnswerController {
     @PutMapping("/users/{id}/quizzes/{quizId}/options/{optionId}")
     @ResourceAccess(id = "#id")
     public Result<Boolean> updateQuizAnswer(
-            @Parameter(name = "id", description = "用户ID") @PathVariable String id,
-            @Parameter(name = "quizId", description = "试题ID") @PathVariable String quizId,
-            @Parameter(name = "optionId", description = "选项ID") @PathVariable String optionId) {
+            @Parameter(name = "id", description = "用户ID") @PathVariable Long id,
+            @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId,
+            @Parameter(name = "optionId", description = "选项ID") @PathVariable Long optionId) {
         UserQuizAnswer userQuizAnswer = UserQuizAnswer.builder().build();
         userQuizAnswer.setUserId(id);
         userQuizAnswer.setQuizId(quizId);

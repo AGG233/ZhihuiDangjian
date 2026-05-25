@@ -36,9 +36,9 @@ class UserChapterProgressServiceTest {
     @InjectMocks
     private UserChapterProgressService progressService;
 
-    private static final String PROGRESS_ID = "p-1";
-    private static final String USER_ID = "user-1";
-    private static final String CHAPTER_ID = "ch-1";
+    private static final Long PROGRESS_ID = 1L;
+    private static final Long USER_ID = 1L;
+    private static final Long CHAPTER_ID = 1L;
 
     // ==================== get ====================
 
@@ -193,7 +193,7 @@ class UserChapterProgressServiceTest {
                 .userId(USER_ID)
                 .chapterId(CHAPTER_ID)
                 .build();
-        doReturn(UserChapterProgress.builder().id("existing").build())
+        doReturn(UserChapterProgress.builder().id(1L).build())
                 .when(progressService)
                 .getOne(any(QueryWrapper.class));
 

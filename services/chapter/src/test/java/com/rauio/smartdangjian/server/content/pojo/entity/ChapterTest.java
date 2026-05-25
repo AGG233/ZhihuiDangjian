@@ -14,8 +14,8 @@ class ChapterTest {
     void builderCreatesChapterCorrectly() {
         LocalDateTime now = LocalDateTime.of(2025, 6, 1, 12, 0);
         Chapter chapter = Chapter.builder()
-                .id("ch-001")
-                .courseId("course-001")
+                .id(1L)
+                .courseId(1L)
                 .title("第一章")
                 .description("章节描述")
                 .duration(1800)
@@ -26,8 +26,8 @@ class ChapterTest {
                 .updatedAt(now)
                 .build();
 
-        assertThat(chapter.getId()).isEqualTo("ch-001");
-        assertThat(chapter.getCourseId()).isEqualTo("course-001");
+        assertThat(chapter.getId()).isEqualTo(1L);
+        assertThat(chapter.getCourseId()).isEqualTo(1L);
         assertThat(chapter.getTitle()).isEqualTo("第一章");
         assertThat(chapter.getDescription()).isEqualTo("章节描述");
         assertThat(chapter.getDuration()).isEqualTo(1800);
@@ -42,8 +42,8 @@ class ChapterTest {
     @DisplayName("builder 构造 Chapter 状态为 draft")
     void builderCreatesChapterWithDraftStatus() {
         Chapter chapter = Chapter.builder()
-                .id("ch-002")
-                .courseId("course-001")
+                .id(1L)
+                .courseId(1L)
                 .title("草稿章节")
                 .chapterStatus("draft")
                 .isOptional(true)
@@ -56,7 +56,7 @@ class ChapterTest {
     @Test
     @DisplayName("setter 修改 title 后 getter 返回新值")
     void setterAndGetterWorkForTitle() {
-        Chapter chapter = Chapter.builder().id("ch-001").title("旧标题").build();
+        Chapter chapter = Chapter.builder().id(1L).title("旧标题").build();
 
         chapter.setTitle("新标题");
 
@@ -66,7 +66,7 @@ class ChapterTest {
     @Test
     @DisplayName("setter 修改 orderIndex 后 getter 返回新值")
     void setterAndGetterWorkForOrderIndex() {
-        Chapter chapter = Chapter.builder().id("ch-001").orderIndex(1).build();
+        Chapter chapter = Chapter.builder().id(1L).orderIndex(1).build();
 
         chapter.setOrderIndex(9);
 
@@ -77,13 +77,13 @@ class ChapterTest {
     @DisplayName("两个相同字段的 Chapter equals 和 hashCode 行为符合 @Data 预期")
     void equalsAndHashCodeBehavior() {
         Chapter c1 = Chapter.builder()
-                .id("ch-001")
-                .courseId("course-001")
+                .id(1L)
+                .courseId(1L)
                 .title("章节")
                 .build();
         Chapter c2 = Chapter.builder()
-                .id("ch-001")
-                .courseId("course-001")
+                .id(1L)
+                .courseId(1L)
                 .title("章节")
                 .build();
 
@@ -94,8 +94,8 @@ class ChapterTest {
     @Test
     @DisplayName("两个不同 id 的 Chapter 不相等")
     void chaptersWithDifferentIdsAreNotEqual() {
-        Chapter c1 = Chapter.builder().id("ch-001").title("章节").build();
-        Chapter c2 = Chapter.builder().id("ch-002").title("章节").build();
+        Chapter c1 = Chapter.builder().id(1L).title("章节").build();
+        Chapter c2 = Chapter.builder().id(1L).title("章节").build();
 
         assertThat(c1).isNotEqualTo(c2);
     }
@@ -104,7 +104,7 @@ class ChapterTest {
     @DisplayName("toString 包含主要字段")
     void toStringContainsKeyFields() {
         Chapter chapter = Chapter.builder()
-                .id("ch-001")
+                .id(1L)
                 .title("第一章")
                 .chapterStatus("published")
                 .build();

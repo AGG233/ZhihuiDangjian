@@ -1,7 +1,9 @@
 package com.rauio.smartdangjian.controller.admin;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -89,8 +91,8 @@ class AdminUserControllerTest extends BaseControllerTest {
     void setUpSecurityContext() {
         CurrentUserPrincipal principal = new CurrentUserPrincipal() {
             @Override
-            public String getId() {
-                return "admin1";
+            public Long getId() {
+                return 1L;
             }
 
             @Override
@@ -140,7 +142,7 @@ class AdminUserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("按真实姓名模糊搜索返回匹配用户")
         void searchByRealName() throws Exception {
-            User vo = UserTestDataFactory.createUser("user-002", "lisi", "李四", UserType.STUDENT);
+            User vo = UserTestDataFactory.createUser(2L, "lisi", "李四", UserType.STUDENT);
             Page<User> page = UserTestDataFactory.createPage(List.of(vo), 1, 10, 1);
 
             when(userService.getAdminPage(any(UserRequest.class), anyInt(), anyInt()))
@@ -417,10 +419,10 @@ class AdminUserControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.records[0].id").value("user-001"))
+                    .andExpect(jsonPath("$.data.records[0].id").value(1))
                     .andExpect(jsonPath("$.data.records[0].username").value("zhangsan"))
                     .andExpect(jsonPath("$.data.records[0].realName").value("张三"))
-                    .andExpect(jsonPath("$.data.records[0].partyMemberId").value("PM-user-001"))
+                    .andExpect(jsonPath("$.data.records[0].partyMemberId").value("PM-1"))
                     .andExpect(jsonPath("$.data.records[0].partyStatus").value("正式党员"))
                     .andExpect(jsonPath("$.data.records[0].branchName").value("第一党支部"))
                     .andExpect(jsonPath("$.data.records[0].userType").value("学生"))
@@ -433,8 +435,8 @@ class AdminUserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("响应保持服务端返回的记录顺序")
         void searchPreservesRecordOrder() throws Exception {
-            User first = UserTestDataFactory.createUser("user-003", "user003", "赵六", UserType.STUDENT);
-            User second = UserTestDataFactory.createUser("user-001", "user001", "张三", UserType.STUDENT);
+            User first = UserTestDataFactory.createUser(1L, "user003", "赵六", UserType.STUDENT);
+            User second = UserTestDataFactory.createUser(2L, "user001", "张三", UserType.STUDENT);
             Page<User> page = UserTestDataFactory.createPage(List.of(first, second), 1, 10, 2);
 
             when(userService.getAdminPage(any(UserRequest.class), anyInt(), anyInt()))
@@ -444,8 +446,8 @@ class AdminUserControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.records[0].id").value("user-003"))
-                    .andExpect(jsonPath("$.data.records[1].id").value("user-001"));
+                    .andExpect(jsonPath("$.data.records[0].id").value(1))
+                    .andExpect(jsonPath("$.data.records[1].id").value(2));
         }
 
         @Test
@@ -453,12 +455,12 @@ class AdminUserControllerTest extends BaseControllerTest {
         void getUserDetailSuccessfully() throws Exception {
             User user = UserTestDataFactory.createManagerUser();
 
-            when(userService.getById("1001")).thenReturn(user);
+            when(userService.getById(anyLong())).thenReturn(user);
 
             mockMvc.perform(get("/api/admin/users/1001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data.id").value("manager-001"))
+                    .andExpect(jsonPath("$.data.id").value(3))
                     .andExpect(jsonPath("$.data.username").value("superadmin"))
                     .andExpect(jsonPath("$.data.userType").value("管理员"));
         }
@@ -480,7 +482,7 @@ class AdminUserControllerTest extends BaseControllerTest {
                             .param("pageSize", "10")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
@@ -708,7 +710,7 @@ class AdminUserControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(UserTestDataFactory.toJson(dto)))
-                    .andExpect(status().isOk());
+                                        .andExpect(status().isOk());
         }
 
         @Test
@@ -724,7 +726,7 @@ class AdminUserControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(UserTestDataFactory.toJson(dto)))
-                    .andExpect(status().isOk());
+                                        .andExpect(status().isOk());
         }
 
         @Test
@@ -740,7 +742,7 @@ class AdminUserControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(UserTestDataFactory.toJson(dto)))
-                    .andExpect(status().isOk());
+                                        .andExpect(status().isOk());
         }
     }
 
@@ -767,7 +769,7 @@ class AdminUserControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(UserTestDataFactory.toJson(dto)))
-                    .andExpect(status().isOk());
+                                        .andExpect(status().isOk());
         }
 
         @Test
@@ -783,7 +785,7 @@ class AdminUserControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(UserTestDataFactory.toJson(dto)))
-                    .andExpect(status().isOk());
+                                        .andExpect(status().isOk());
         }
 
         @Test
@@ -801,7 +803,7 @@ class AdminUserControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(UserTestDataFactory.toJson(dto)))
-                    .andExpect(status().isOk());
+                                        .andExpect(status().isOk());
         }
 
         @Test
@@ -818,7 +820,7 @@ class AdminUserControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(UserTestDataFactory.toJson(dto)))
-                    .andExpect(status().isOk());
+                                        .andExpect(status().isOk());
         }
 
         @Test
@@ -834,7 +836,7 @@ class AdminUserControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(UserTestDataFactory.toJson(dto)))
-                    .andExpect(status().isOk());
+                                        .andExpect(status().isOk());
         }
 
         /**
@@ -858,8 +860,8 @@ class AdminUserControllerTest extends BaseControllerTest {
         void studentUserAccessContract() throws Exception {
             CurrentUserPrincipal student = new CurrentUserPrincipal() {
                 @Override
-                public String getId() {
-                    return "stu-001";
+                public Long getId() {
+                    return 1L;
                 }
 
                 @Override
@@ -879,7 +881,7 @@ class AdminUserControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
-                    .andExpect(status().isOk());
+                                        .andExpect(status().isOk());
         }
 
         /**

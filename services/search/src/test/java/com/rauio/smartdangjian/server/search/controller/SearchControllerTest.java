@@ -38,7 +38,7 @@ class SearchControllerTest {
     @DisplayName("searchCourses 委托 Service 搜索课程")
     void searchCoursesDelegates() {
         Page<CourseResponse> page = new Page<>(1, 10);
-        page.setRecords(List.of(CourseResponse.builder().id("c-1").title("测试课程").build()));
+        page.setRecords(List.of(CourseResponse.builder().id(1L).title("测试课程").build()));
         when(searchService.searchCourses("测试", "cat-1", "medium", 1, 10)).thenReturn(page);
 
         var result = searchController.searchCourses("测试", "cat-1", "medium", 1, 10);
@@ -75,28 +75,28 @@ class SearchControllerTest {
     @DisplayName("recommend 委托 Service 返回推荐")
     void recommendDelegates() {
         UserProfileResponse profile =
-                UserProfileResponse.builder().userId("user-1").build();
+                UserProfileResponse.builder().userId("1").build();
         when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
-        Page<String> recPage = new Page<>(1, 10);
-        recPage.setRecords(List.of("course-1"));
-        when(recommendService.recommend("user-1", 1, 10)).thenReturn(recPage);
+        Page<Long> recPage = new Page<>(1, 10);
+        recPage.setRecords(List.of(1L));
+        when(recommendService.recommend(1L, 1, 10)).thenReturn(recPage);
 
         var result = searchController.recommend(1, 10);
 
         assertThat(result).isNotNull();
-        assertThat(result.getData().getRecords()).contains("course-1");
+        assertThat(result.getData().getRecords()).contains(1L);
     }
 
     @Test
     @DisplayName("getProfile 委托 Service 返回用户画像")
     void getProfileDelegates() {
         UserProfileResponse profile =
-                UserProfileResponse.builder().userId("user-1").build();
+                UserProfileResponse.builder().userId("1").build();
         when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
 
         var result = searchController.getProfile();
 
         assertThat(result).isNotNull();
-        assertThat(result.getData().getUserId()).isEqualTo("user-1");
+        assertThat(result.getData().getUserId()).isEqualTo("1");
     }
 }

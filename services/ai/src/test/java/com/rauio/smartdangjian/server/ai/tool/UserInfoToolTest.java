@@ -37,20 +37,20 @@ class UserInfoToolTest {
         when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-1");
 
         User user = new User();
-        user.setId("user-1");
+        user.setId(1L);
         user.setUsername("testuser");
 
         UserResponse userVO = new UserResponse();
-        userVO.setId("user-1");
+        userVO.setId(1L);
         userVO.setUsername("testuser");
 
-        when(userService.getById("user-1")).thenReturn(user);
+        when(userService.getById(1L)).thenReturn(user);
         when(userConvertor.toResponse(user)).thenReturn(userVO);
 
         UserResponse result = userInfoTool.getUserInfo(toolContext);
 
         assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo("user-1");
+        assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getUsername()).isEqualTo("testuser");
     }
 }

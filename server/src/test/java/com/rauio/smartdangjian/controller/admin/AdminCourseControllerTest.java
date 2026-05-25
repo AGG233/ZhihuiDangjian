@@ -60,9 +60,9 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("更新课程返回成功")
         void updateCourseSuccess() throws Exception {
-            doNothing().when(courseService).update(any(CourseRequest.class), eq("course-1"));
+            doNothing().when(courseService).update(any(CourseRequest.class), eq(1L));
 
-            mockMvc.perform(put("/api/admin/content/courses/course-1")
+            mockMvc.perform(put("/api/admin/content/courses/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createCourseRequest())))
                     .andExpect(status().isOk())
@@ -72,9 +72,9 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("删除课程返回成功")
         void deleteCourseSuccess() throws Exception {
-            doNothing().when(courseService).delete("course-1");
+            doNothing().when(courseService).delete(1L);
 
-            mockMvc.perform(delete("/api/admin/content/courses/course-1"))
+            mockMvc.perform(delete("/api/admin/content/courses/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));
         }
@@ -114,9 +114,9 @@ class AdminCourseControllerTest extends BaseControllerTest {
         void updateThrowsBusinessException() throws Exception {
             doThrow(new BusinessException(4000, "课程不存在"))
                     .when(courseService)
-                    .update(any(CourseRequest.class), eq("nonexistent"));
+                    .update(any(CourseRequest.class), eq(9999L));
 
-            mockMvc.perform(put("/api/admin/content/courses/nonexistent")
+            mockMvc.perform(put("/api/admin/content/courses/9999")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createCourseRequest())))
                     .andExpect(status().isBadRequest())
@@ -127,9 +127,9 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("删除课程时 Service 抛出 BusinessException 返回 400")
         void deleteThrowsBusinessException() throws Exception {
-            doThrow(new BusinessException(4000, "课程不存在")).when(courseService).delete("nonexistent");
+            doThrow(new BusinessException(4000, "课程不存在")).when(courseService).delete(9999L);
 
-            mockMvc.perform(delete("/api/admin/content/courses/nonexistent"))
+            mockMvc.perform(delete("/api/admin/content/courses/9999"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("课程不存在"));
@@ -156,7 +156,7 @@ class AdminCourseControllerTest extends BaseControllerTest {
             CourseRequest dto = CourseRequest.builder()
                     .title("习近平新时代中国特色社会主义思想")
                     .description("test-description")
-                    .categoryId("cat-1")
+                    .categoryId(1L)
                     .build();
 
             mockMvc.perform(post("/api/admin/content/courses")
@@ -173,7 +173,7 @@ class AdminCourseControllerTest extends BaseControllerTest {
             CourseRequest dto = CourseRequest.builder()
                     .title("test_@#$%^&*()")
                     .description("test-description")
-                    .categoryId("cat-1")
+                    .categoryId(1L)
                     .build();
 
             mockMvc.perform(post("/api/admin/content/courses")
@@ -190,7 +190,7 @@ class AdminCourseControllerTest extends BaseControllerTest {
             CourseRequest dto = CourseRequest.builder()
                     .title("a".repeat(1000))
                     .description("test-description")
-                    .categoryId("cat-1")
+                    .categoryId(1L)
                     .build();
 
             mockMvc.perform(post("/api/admin/content/courses")
@@ -207,7 +207,7 @@ class AdminCourseControllerTest extends BaseControllerTest {
             CourseRequest dto = CourseRequest.builder()
                     .title("test-course")
                     .description("")
-                    .categoryId("cat-1")
+                    .categoryId(1L)
                     .build();
 
             mockMvc.perform(post("/api/admin/content/courses")
@@ -229,7 +229,7 @@ class AdminCourseControllerTest extends BaseControllerTest {
             CourseRequest dto = CourseRequest.builder()
                     .title("<script>alert('xss')</script>")
                     .description("test")
-                    .categoryId("cat-1")
+                    .categoryId(1L)
                     .build();
 
             mockMvc.perform(post("/api/admin/content/courses")
@@ -245,7 +245,7 @@ class AdminCourseControllerTest extends BaseControllerTest {
             CourseRequest dto = CourseRequest.builder()
                     .title("' OR '1'='1")
                     .description("test")
-                    .categoryId("cat-1")
+                    .categoryId(1L)
                     .build();
 
             mockMvc.perform(post("/api/admin/content/courses")
@@ -263,7 +263,7 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST 请求删除接口返回 405")
         void deleteWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/admin/content/courses/course-1")).andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/admin/content/courses/1")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

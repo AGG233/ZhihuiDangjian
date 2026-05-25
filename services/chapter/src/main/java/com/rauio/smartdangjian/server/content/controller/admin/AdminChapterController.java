@@ -30,14 +30,14 @@ public class AdminChapterController {
     @Operation(summary = "获取章节详情", description = "根据章节ID获取章节详情")
     @GetMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.CHAPTER_ADMIN, action = DataScopeAction.READ, id = "#id")
-    public Result<ChapterResponse> get(@PathVariable String id) {
+    public Result<ChapterResponse> get(@PathVariable Long id) {
         return Result.ok(chapterService.get(id));
     }
 
     @Operation(summary = "获取课程下的章节列表", description = "根据课程ID获取该课程下的所有章节列表")
     @GetMapping("/by-course/{courseId}")
     @DataScopeAccess(resource = DataScopeResources.CHAPTER_ADMIN, action = DataScopeAction.READ, id = "#courseId")
-    public Result<List<ChapterResponse>> getByCourseId(@PathVariable String courseId) {
+    public Result<List<ChapterResponse>> getByCourseId(@PathVariable Long courseId) {
         return Result.ok(chapterService.getByCourseId(courseId));
     }
 
@@ -60,7 +60,7 @@ public class AdminChapterController {
     @Operation(summary = "删除章节", description = "根据章节ID删除章节")
     @DeleteMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.CHAPTER_ADMIN, action = DataScopeAction.DELETE, id = "#id")
-    public Result<Boolean> delete(@PathVariable String id) {
+    public Result<Boolean> delete(@PathVariable Long id) {
         Boolean result = chapterService.delete(id);
         return Result.ok(result);
     }

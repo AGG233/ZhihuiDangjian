@@ -23,8 +23,8 @@ public final class QuizTestDataFactory {
 
     public static Quiz createQuiz() {
         return Quiz.builder()
-                .id("quiz-1")
-                .chapterId("chapter-1")
+                .id(1L)
+                .chapterId(1L)
                 .question("党的最高理想和最终目标是什么？")
                 .questionType("single_choice")
                 .score(5)
@@ -34,7 +34,7 @@ public final class QuizTestDataFactory {
                 .build();
     }
 
-    public static Quiz createQuiz(String id) {
+    public static Quiz createQuiz(Long id) {
         Quiz q = createQuiz();
         q.setId(id);
         return q;
@@ -44,8 +44,8 @@ public final class QuizTestDataFactory {
 
     public static QuizOption createQuizOption() {
         return QuizOption.builder()
-                .id("opt-1")
-                .quizId("quiz-1")
+                .id(1L)
+                .quizId(1L)
                 .optionText("实现共产主义")
                 .isCorrect(true)
                 .orderIndex("A")
@@ -53,7 +53,7 @@ public final class QuizTestDataFactory {
     }
 
     public static QuizOption createQuizOption(
-            String id, String quizId, String optionText, Boolean isCorrect, String orderIndex) {
+            Long id, Long quizId, String optionText, Boolean isCorrect, String orderIndex) {
         return QuizOption.builder()
                 .id(id)
                 .quizId(quizId)
@@ -67,20 +67,20 @@ public final class QuizTestDataFactory {
 
     public static UserQuizAnswer createUserQuizAnswer() {
         return UserQuizAnswer.builder()
-                .id("answer-1")
-                .userId("user-1")
-                .quizId("quiz-1")
-                .optionId("opt-1")
+                .id(1L)
+                .userId(1L)
+                .quizId(1L)
+                .optionId(1L)
                 .userAnswer("A")
                 .isCorrect(1)
                 .scoreObtained(5)
                 .timeSpent(30)
-                .sessionId("session-1")
+                .sessionId("1")
                 .answerTime(LocalDateTime.now())
                 .build();
     }
 
-    public static UserQuizAnswer createUserQuizAnswer(String id, String userId, String quizId, String optionId) {
+    public static UserQuizAnswer createUserQuizAnswer(Long id, Long userId, Long quizId, Long optionId) {
         return UserQuizAnswer.builder()
                 .id(id)
                 .userId(userId)

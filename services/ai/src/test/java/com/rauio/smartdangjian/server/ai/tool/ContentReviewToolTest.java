@@ -18,7 +18,7 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
-import com.rauio.smartdangjian.server.content.service.ContentBlockService;
+import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
 import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
@@ -36,7 +36,7 @@ class ContentReviewToolTest {
     private ChapterService chapterService;
 
     @Mock
-    private ContentBlockService contentBlockService;
+    private ChapterContentBlockService contentBlockService;
 
     @Mock
     private QuizService quizService;
@@ -51,22 +51,22 @@ class ContentReviewToolTest {
     @DisplayName("reviewCourseContent 返回课程完整内容")
     void reviewCourseContent() {
         Course course = Course.builder()
-                .id("course-1")
+                .id(1L)
                 .title("党建课程")
                 .description("课程描述")
                 .difficulty("easy")
                 .build();
         ChapterResponse chapter = ChapterResponse.builder()
-                .id("ch-1")
+                .id(1L)
                 .title("第一章")
                 .description("章节描述")
                 .orderIndex(1)
                 .build();
         ContentBlockResponse block = new ContentBlockResponse();
 
-        when(courseService.getById("course-1")).thenReturn(course);
-        when(chapterService.getByCourseId("course-1")).thenReturn(List.of(chapter));
-        when(contentBlockService.getByParentId("ch-1")).thenReturn(List.of(block));
+        when(courseService.getById(1L)).thenReturn(course);
+        when(chapterService.getByCourseId(1L)).thenReturn(List.of(chapter));
+        when(contentBlockService.getByChapterId(1L)).thenReturn(List.of(block));
 
         Map<String, Object> result = contentReviewTool.reviewCourseContent("course-1");
 
@@ -79,7 +79,7 @@ class ContentReviewToolTest {
     @Test
     @DisplayName("reviewCourseContent 课程不存在时抛出 BusinessException")
     void reviewCourseContentNotFound() {
-        when(courseService.getById("nonexistent")).thenReturn(null);
+        when(courseService.getById(1L)).thenReturn(null);
 
         assertThatThrownBy(() -> contentReviewTool.reviewCourseContent("nonexistent"))
                 .isInstanceOf(BusinessException.class)
@@ -90,7 +90,7 @@ class ContentReviewToolTest {
     @DisplayName("reviewQuizQuality 返回题目详情及选项")
     void reviewQuizQuality() {
         Quiz quiz = Quiz.builder()
-                .id("quiz-1")
+                .id(1L)
                 .question("测试题目")
                 .questionType("single_choice")
                 .difficulty("easy")
@@ -98,14 +98,14 @@ class ContentReviewToolTest {
                 .explanation("解析内容")
                 .build();
         QuizOption option = QuizOption.builder()
-                .id("opt-1")
-                .quizId("quiz-1")
+                .id(1L)
+                .quizId(1L)
                 .optionText("选项A")
                 .isCorrect(true)
                 .build();
 
-        when(quizService.getById("quiz-1")).thenReturn(quiz);
-        when(quizOptionService.getByQuizId("quiz-1")).thenReturn(List.of(option));
+        when(quizService.getById(1L)).thenReturn(quiz);
+        when(quizOptionService.getByQuizId(1L)).thenReturn(List.of(option));
 
         Map<String, Object> result = contentReviewTool.reviewQuizQuality("quiz-1");
 
@@ -118,7 +118,7 @@ class ContentReviewToolTest {
     @Test
     @DisplayName("reviewQuizQuality 题目不存在时抛出 BusinessException")
     void reviewQuizQualityNotFound() {
-        when(quizService.getById("nonexistent")).thenReturn(null);
+        when(quizService.getById(1L)).thenReturn(null);
 
         assertThatThrownBy(() -> contentReviewTool.reviewQuizQuality("nonexistent"))
                 .isInstanceOf(BusinessException.class)

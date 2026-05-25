@@ -44,8 +44,8 @@ public class AdminQuizController {
             id = "#id",
             query = "'QUIZ'")
     public Result<Boolean> updateQuiz(
-            @Parameter(name = "id", description = "试题ID") @PathVariable String id, @RequestBody @Valid Quiz quiz) {
-        quiz.setId(id);
+            @Parameter(name = "id", description = "试题ID") @PathVariable Long id, @RequestBody @Valid Quiz quiz) {
+        quiz.setId(Long.valueOf(id));
         return Result.ok(quizService.update(quiz));
     }
 
@@ -56,16 +56,16 @@ public class AdminQuizController {
             action = DataScopeAction.DELETE,
             id = "#id",
             query = "'QUIZ'")
-    public Result<Boolean> deleteQuiz(@Parameter(name = "id", description = "试题ID") @PathVariable String id) {
-        return Result.ok(quizService.delete(id));
+    public Result<Boolean> deleteQuiz(@Parameter(name = "id", description = "试题ID") @PathVariable Long id) {
+        return Result.ok(quizService.delete(Long.valueOf(id)));
     }
 
     @Operation(summary = "创建选项", description = "为指定试题创建一个选项")
     @PostMapping("/{id}/options")
     public Result<Boolean> createQuizOption(
-            @Parameter(name = "id", description = "试题ID") @PathVariable String id,
+            @Parameter(name = "id", description = "试题ID") @PathVariable Long id,
             @RequestBody @Valid QuizOption quizOption) {
-        return Result.ok(quizOptionService.create(id, quizOption));
+        return Result.ok(quizOptionService.create(Long.valueOf(id), quizOption));
     }
 
     @Operation(summary = "更新选项", description = "根据选项ID更新选项信息")
@@ -76,9 +76,9 @@ public class AdminQuizController {
             id = "#optionId",
             query = "'OPTION'")
     public Result<Boolean> updateQuizOption(
-            @Parameter(name = "optionId", description = "选项ID") @PathVariable String optionId,
+            @Parameter(name = "optionId", description = "选项ID") @PathVariable Long optionId,
             @RequestBody @Valid QuizOption quizOption) {
-        return Result.ok(quizOptionService.update(optionId, quizOption));
+        return Result.ok(quizOptionService.update(Long.valueOf(optionId), quizOption));
     }
 
     @Operation(summary = "删除选项", description = "根据选项ID删除选项")
@@ -89,7 +89,7 @@ public class AdminQuizController {
             id = "#optionId",
             query = "'OPTION'")
     public Result<Boolean> deleteQuizOption(
-            @Parameter(name = "optionId", description = "选项ID") @PathVariable String optionId) {
-        return Result.ok(quizOptionService.delete(optionId));
+            @Parameter(name = "optionId", description = "选项ID") @PathVariable Long optionId) {
+        return Result.ok(quizOptionService.delete(Long.valueOf(optionId)));
     }
 }

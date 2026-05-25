@@ -44,10 +44,10 @@ class UserLearningRecordServiceTest {
     @InjectMocks
     private UserLearningRecordService recordService;
 
-    private static final String RECORD_ID = "r-1";
-    private static final String USER_ID = "user-1";
-    private static final String CHAPTER_ID = "ch-1";
-    private static final String COURSE_ID = "course-1";
+    private static final Long RECORD_ID = 1L;
+    private static final Long USER_ID = 1L;
+    private static final Long CHAPTER_ID = 1L;
+    private static final Long COURSE_ID = 1L;
 
     // ==================== get ====================
 
@@ -138,7 +138,7 @@ class UserLearningRecordServiceTest {
                 UserLearningRecord.builder().id(RECORD_ID).userId(USER_ID).build());
         doReturn(list).when(recordService).list(any(LambdaQueryWrapper.class));
 
-        List<UserLearningRecord> result = recordService.getRecentByUserId(USER_ID, 7);
+        List<UserLearningRecord> result = recordService.getRecentByUserId("1", 7);
 
         assertThat(result).hasSize(1);
     }
@@ -148,7 +148,7 @@ class UserLearningRecordServiceTest {
     void getRecentByUserIdDefaultDays() {
         doReturn(List.of()).when(recordService).list(any(LambdaQueryWrapper.class));
 
-        List<UserLearningRecord> result = recordService.getRecentByUserId(USER_ID, null);
+        List<UserLearningRecord> result = recordService.getRecentByUserId("1", null);
 
         assertThat(result).isEmpty();
     }
@@ -215,7 +215,7 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("getByUserIdAndCourseId courseId为空返回空列表")
     void getByUserIdAndCourseIdBlankCourseId() {
-        List<UserLearningRecord> result = recordService.getByUserIdAndCourseId(USER_ID, "");
+        List<UserLearningRecord> result = recordService.getByUserIdAndCourseId(USER_ID, null);
 
         assertThat(result).isEmpty();
     }
@@ -241,9 +241,9 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("getByUserIdAndCourseIdAndChapterId 参数为空返回空列表")
     void getByUserIdAndCourseIdAndChapterIdBlankParams() {
-        assertThat(recordService.getByUserIdAndCourseIdAndChapterId(USER_ID, "", CHAPTER_ID))
+        assertThat(recordService.getByUserIdAndCourseIdAndChapterId(USER_ID, null, CHAPTER_ID))
                 .isEmpty();
-        assertThat(recordService.getByUserIdAndCourseIdAndChapterId(USER_ID, COURSE_ID, ""))
+        assertThat(recordService.getByUserIdAndCourseIdAndChapterId(USER_ID, COURSE_ID, null))
                 .isEmpty();
     }
 
@@ -259,16 +259,16 @@ class UserLearningRecordServiceTest {
                         .chapterId(CHAPTER_ID)
                         .build(),
                 UserLearningRecord.builder()
-                        .id("r-2")
+                        .id(1L)
                         .userId(USER_ID)
-                        .chapterId("ch-2")
+                        .chapterId(1L)
                         .build());
         doReturn(records).when(recordService).list(any(QueryWrapper.class));
 
         int result = recordService.syncUserLearningGraph(USER_ID);
 
         assertThat(result).isEqualTo(2);
-        verify(knowledgeGraphService, times(2)).upsertLearningGraph(anyString(), anyString());
+        verify(knowledgeGraphService, times(2)).upsertLearningGraph(anyLong(), anyLong());
     }
 
     // ==================== create ====================

@@ -57,7 +57,7 @@ public class UserManagementAspect implements DataScopeResolver {
                 }
             }
             case STUDENT -> {
-                query.setUserId(currentUser.getId());
+                query.setUserId(String.valueOf(currentUser.getId()));
                 query.setUniversityId(currentUser.getUniversityId());
             }
         }

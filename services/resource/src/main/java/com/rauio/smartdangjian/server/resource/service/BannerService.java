@@ -86,7 +86,7 @@ public class BannerService {
     }
 
     public ResourceMeta create(String resourceId) {
-        ResourceMeta meta = resourceMetaService.get(resourceId);
+        ResourceMeta meta = resourceMetaService.get(Long.valueOf(resourceId));
         appendBanner(meta.getHash());
         return meta;
     }
@@ -99,7 +99,7 @@ public class BannerService {
 
     public ResourceMeta update(int order, String resourceId) {
         validateOrder(order);
-        ResourceMeta meta = resourceMetaService.get(resourceId);
+        ResourceMeta meta = resourceMetaService.get(Long.valueOf(resourceId));
         replaceBanner(order, meta.getHash());
         return meta;
     }
@@ -169,7 +169,7 @@ public class BannerService {
         String downloadUrl = fileService.getDownloadUrl(meta.getId());
         return new BannerResourceResponse(
                 order,
-                meta.getId(),
+                String.valueOf(meta.getId()),
                 meta.getOriginalName(),
                 meta.getHash(),
                 meta.getObjectKey(),

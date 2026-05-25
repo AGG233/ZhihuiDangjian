@@ -108,7 +108,7 @@ public class UserProfileService {
                 .count();
         double completionRate = progresses.isEmpty() ? 0 : (double) completedCount / progresses.size();
 
-        List<String> weakChapterIds = progresses.stream()
+        List<Long> weakChapterIds = progresses.stream()
                 .filter(p -> p.getProgress() != null && p.getProgress() < 50)
                 .map(UserChapterProgress::getChapterId)
                 .toList();
@@ -120,7 +120,7 @@ public class UserProfileService {
                 .build();
     }
 
-    private List<String> buildInterestCategoryIds(String userId) {
+    private List<Long> buildInterestCategoryIds(String userId) {
         // 获取用户学过的章节对应的课程分类
         List<UserLearningRecord> records = learningRecordMapper.selectList(new LambdaQueryWrapper<UserLearningRecord>()
                 .eq(UserLearningRecord::getUserId, userId)
@@ -128,7 +128,7 @@ public class UserProfileService {
 
         if (records.isEmpty()) return Collections.emptyList();
 
-        Set<String> chapterIds = records.stream()
+        Set<Long> chapterIds = records.stream()
                 .map(UserLearningRecord::getChapterId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -138,7 +138,7 @@ public class UserProfileService {
         List<Chapter> chapters = chapterMapper.selectList(
                 new LambdaQueryWrapper<Chapter>().in(Chapter::getId, chapterIds).select(Chapter::getCourseId));
 
-        Set<String> courseIds = chapters.stream()
+        Set<Long> courseIds = chapters.stream()
                 .map(Chapter::getCourseId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -155,7 +155,7 @@ public class UserProfileService {
                 .collect(Collectors.groupingBy(categoryId -> categoryId, Collectors.counting()))
                 .entrySet()
                 .stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
                 .map(Map.Entry::getKey)
                 .limit(5)
                 .toList();
@@ -179,7 +179,7 @@ public class UserProfileService {
         // 按难度分组统计正确率
         Map<String, Double> byDifficulty = new HashMap<>();
         if (!answers.isEmpty()) {
-            Set<String> quizIds = answers.stream()
+            Set<Long> quizIds = answers.stream()
                     .map(UserQuizAnswer::getQuizId)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
@@ -187,7 +187,7 @@ public class UserProfileService {
                 List<Quiz> quizzes = quizMapper.selectList(new LambdaQueryWrapper<Quiz>()
                         .in(Quiz::getId, quizIds)
                         .select(Quiz::getId, Quiz::getDifficulty));
-                Map<String, String> quizDifficultyMap = quizzes.stream()
+                Map<Long, String> quizDifficultyMap = quizzes.stream()
                         .filter(q -> q.getDifficulty() != null)
                         .collect(Collectors.toMap(Quiz::getId, Quiz::getDifficulty));
 

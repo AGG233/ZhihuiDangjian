@@ -27,7 +27,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
     public ResourceMeta create(ResourceMetaCreateRequest request) {
         validateDuplicate(null, request.getHash(), request.getObjectKey());
         ResourceMeta meta = ResourceMeta.builder()
-                .uploaderId(request.getUploaderId())
+                .uploaderId(Long.valueOf(request.getUploaderId()))
                 .originalName(request.getOriginalName())
                 .hash(request.getHash())
                 .objectKey(request.getObjectKey())
@@ -40,7 +40,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return meta;
     }
 
-    public ResourceMeta get(String id) {
+    public ResourceMeta get(Long id) {
         ResourceMeta meta = this.getById(id);
         if (meta == null) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在");
@@ -64,9 +64,9 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
     }
 
     public List<ResourceMeta> list(
-            String uploaderId, String originalName, String hash, Integer resourceType, Integer status) {
+            Long uploaderId, String originalName, String hash, Integer resourceType, Integer status) {
         LambdaQueryWrapper<ResourceMeta> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(StringUtils.isNotBlank(uploaderId), ResourceMeta::getUploaderId, uploaderId)
+        wrapper.eq(uploaderId != null, ResourceMeta::getUploaderId, uploaderId)
                 .like(StringUtils.isNotBlank(originalName), ResourceMeta::getOriginalName, originalName)
                 .eq(StringUtils.isNotBlank(hash), ResourceMeta::getHash, hash)
                 .eq(resourceType != null, ResourceMeta::getResourceType, resourceType)
@@ -75,7 +75,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return this.list(wrapper);
     }
 
-    public Boolean update(String id, ResourceMetaUpdateRequest request) {
+    public Boolean update(Long id, ResourceMetaUpdateRequest request) {
         ResourceMeta existing = this.get(id);
         validateDuplicate(id, existing.getHash(), existing.getObjectKey());
 
@@ -102,7 +102,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return true;
     }
 
-    public Boolean delete(String id) {
+    public Boolean delete(Long id) {
         this.get(id);
 
         if (!this.removeById(id)) {
@@ -128,7 +128,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return true;
     }
 
-    private void validateDuplicate(String currentId, String hash, String objectKey) {
+    private void validateDuplicate(Long currentId, String hash, String objectKey) {
         ResourceMeta sameHash = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
                 .eq(StringUtils.isNotBlank(hash), ResourceMeta::getHash, hash)
                 .last("limit 1"));

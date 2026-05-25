@@ -30,7 +30,7 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
      * @param quizOption 选项实体
      * @return 是否更新成功
      */
-    public Boolean update(String id, QuizOption quizOption) {
+    public Boolean update(Long id, QuizOption quizOption) {
         quizOption.setId(id);
         return this.updateById(quizOption);
     }
@@ -42,7 +42,7 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
      * @param option 选项实体
      * @return 是否创建成功
      */
-    public Boolean create(String quizId, QuizOption option) {
+    public Boolean create(Long quizId, QuizOption option) {
         option.setQuizId(quizId);
         return this.save(option);
     }
@@ -53,7 +53,7 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
      * @param quizId 测验 ID
      * @return 选项列表
      */
-    public List<QuizOption> getByQuizId(String quizId) {
+    public List<QuizOption> getByQuizId(Long quizId) {
         LambdaQueryWrapper<QuizOption> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(QuizOption::getQuizId, quizId);
         return this.list(wrapper);
@@ -65,7 +65,7 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
      * @param id 选项 ID
      * @return 选项实体；学生未答题时会隐藏正确答案字段
      */
-    public QuizOption get(String id) {
+    public QuizOption get(Long id) {
         User user = userService.getCurrentUser();
         QuizOption quizOption = this.getById(id);
 
@@ -84,7 +84,7 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
      * @param optionId 选项 ID
      * @return 是否删除成功
      */
-    public Boolean delete(String optionId) {
+    public Boolean delete(Long optionId) {
         return this.removeById(optionId);
     }
 }

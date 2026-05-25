@@ -37,7 +37,7 @@ public class KnowledgeGraphService {
      * @param userId 用户 ID
      * @param chapterId 章节 ID
      */
-    public void upsertLearningGraph(String userId, String chapterId) {
+    public void upsertLearningGraph(Long userId, Long chapterId) {
         User user = userMapper.selectById(userId);
         if (user == null) {
             throw new BusinessException(GraphErrorConstants.USER_NOT_FOUND, "用户不存在");

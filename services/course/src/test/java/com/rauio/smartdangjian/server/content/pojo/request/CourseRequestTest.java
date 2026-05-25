@@ -13,8 +13,8 @@ class CourseRequestTest {
         CourseRequest dto = CourseRequest.builder()
                 .title("课程标题")
                 .description("课程描述")
-                .coverImageId("img-001")
-                .categoryId("cat-001")
+                .coverImageId(1L)
+                .categoryId(1L)
                 .difficulty("beginner")
                 .estimatedDuration(60)
                 .isPublished(true)
@@ -22,8 +22,8 @@ class CourseRequestTest {
 
         assertThat(dto.getTitle()).isEqualTo("课程标题");
         assertThat(dto.getDescription()).isEqualTo("课程描述");
-        assertThat(dto.getCoverImageId()).isEqualTo("img-001");
-        assertThat(dto.getCategoryId()).isEqualTo("cat-001");
+        assertThat(dto.getCoverImageId()).isEqualTo(1L);
+        assertThat(dto.getCategoryId()).isEqualTo(1L);
         assertThat(dto.getDifficulty()).isEqualTo("beginner");
         assertThat(dto.getEstimatedDuration()).isEqualTo(60);
         assertThat(dto.getIsPublished()).isTrue();
@@ -34,7 +34,7 @@ class CourseRequestTest {
     void builderCreatesUnpublishedCourseRequest() {
         CourseRequest dto = CourseRequest.builder()
                 .title("草稿课程")
-                .categoryId("cat-001")
+                .categoryId(1L)
                 .isPublished(false)
                 .build();
 
@@ -45,7 +45,7 @@ class CourseRequestTest {
     @DisplayName("description 和 coverImageId 可为 null")
     void optionalFieldsCanBeNull() {
         CourseRequest dto =
-                CourseRequest.builder().title("最简课程").categoryId("cat-001").build();
+                CourseRequest.builder().title("最简课程").categoryId(1L).build();
 
         assertThat(dto.getDescription()).isNull();
         assertThat(dto.getCoverImageId()).isNull();
@@ -56,7 +56,7 @@ class CourseRequestTest {
     @DisplayName("setter 修改 title 后 getter 返回新值")
     void setterAndGetterWorkForTitle() {
         CourseRequest dto =
-                CourseRequest.builder().title("旧标题").categoryId("cat-001").build();
+                CourseRequest.builder().title("旧标题").categoryId(1L).build();
 
         dto.setTitle("新标题");
 

@@ -22,11 +22,11 @@ class CurrentUserRequestTest {
     @Test
     @DisplayName("CurrentUserRequest 全参构造器正确设置字段")
     void allArgsConstructor() {
-        CurrentUserRequest request = new CurrentUserRequest("user-1", UserType.STUDENT, "univ-1");
+        CurrentUserRequest request = new CurrentUserRequest(1L, UserType.STUDENT, 1L);
 
-        assertThat(request.getId()).isEqualTo("user-1");
+        assertThat(request.getId()).isEqualTo(1L);
         assertThat(request.getUserType()).isEqualTo(UserType.STUDENT);
-        assertThat(request.getUniversityId()).isEqualTo("univ-1");
+        assertThat(request.getUniversityId()).isEqualTo(1L);
     }
 
     @Test
@@ -34,12 +34,12 @@ class CurrentUserRequestTest {
     void settersAndGetters() {
         CurrentUserRequest request = new CurrentUserRequest();
 
-        request.setId("user-2");
+        request.setId(1L);
         request.setUserType(UserType.MANAGER);
-        request.setUniversityId("univ-2");
+        request.setUniversityId(2L);
 
-        assertThat(request.getId()).isEqualTo("user-2");
+        assertThat(request.getId()).isEqualTo(1L);
         assertThat(request.getUserType()).isEqualTo(UserType.MANAGER);
-        assertThat(request.getUniversityId()).isEqualTo("univ-2");
+        assertThat(request.getUniversityId()).isEqualTo(2L);
     }
 }

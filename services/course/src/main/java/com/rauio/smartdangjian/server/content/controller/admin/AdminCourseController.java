@@ -32,7 +32,7 @@ public class AdminCourseController {
             action = DataScopeAction.UPDATE,
             id = "#id",
             body = "#course")
-    public Result<Void> update(@RequestBody @Valid CourseRequest course, @PathVariable String id) {
+    public Result<Void> update(@RequestBody @Valid CourseRequest course, @PathVariable Long id) {
         courseService.update(course, id);
         return Result.ok();
     }
@@ -48,7 +48,7 @@ public class AdminCourseController {
     @Operation(summary = "删除课程", description = "根据课程ID删除指定课程")
     @DeleteMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.COURSE_ADMIN, action = DataScopeAction.DELETE, id = "#id")
-    public Result<Void> delete(@PathVariable String id) {
+    public Result<Void> delete(@PathVariable Long id) {
         courseService.delete(id);
         return Result.ok();
     }

@@ -34,12 +34,12 @@ class ContentSearchToolTest {
     @DisplayName("searchCourses 使用 like 查询匹配标题并返回映射列表")
     void searchCoursesReturnsMappedResults() {
         Course course1 = Course.builder()
-                .id("course-1")
+                .id(1L)
                 .title("Java Basics")
                 .description("Intro to Java")
                 .build();
         Course course2 = Course.builder()
-                .id("course-2")
+                .id(1L)
                 .title("Advanced Java")
                 .description("Deep dive")
                 .build();

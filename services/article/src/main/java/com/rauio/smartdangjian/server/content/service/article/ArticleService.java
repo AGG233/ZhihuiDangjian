@@ -27,7 +27,7 @@ public class ArticleService extends ServiceImpl<ArticleMapper, Article> {
     private final UserService userService;
     private final ArticleConvertor convertor;
 
-    public Article get(String id) {
+    public Article get(Long id) {
         Article article = this.getById(id);
         if (article == null) {
             throw new BusinessException(ArticleErrorConstants.ARTICLE_NOT_FOUND, "文章不存在");
@@ -35,7 +35,7 @@ public class ArticleService extends ServiceImpl<ArticleMapper, Article> {
         return article;
     }
 
-    public List<CategoryArticle> getByCategoryId(String id) {
+    public List<CategoryArticle> getByCategoryId(Long id) {
         return categoryArticleMapper.selectList(
                 new LambdaQueryWrapper<CategoryArticle>().eq(CategoryArticle::getCategoryId, id));
     }
@@ -65,7 +65,7 @@ public class ArticleService extends ServiceImpl<ArticleMapper, Article> {
         }
     }
 
-    public void delete(String id) {
+    public void delete(Long id) {
         if (!this.removeById(id)) {
             throw new BusinessException(ArticleErrorConstants.ARTICLE_DELETE_FAILED, "文章删除失败");
         }

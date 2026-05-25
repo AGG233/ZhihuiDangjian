@@ -52,12 +52,12 @@ class BannerServiceTest {
         when(listOperations.range(ResourceConstant.BANNER_PREFIX, 0, -1)).thenReturn(List.of(HASH, HASH2));
 
         ResourceMeta meta1 = ResourceMeta.builder()
-                .id("r-1")
+                .id(1L)
                 .hash(HASH)
                 .originalName("b1.png")
                 .build();
         ResourceMeta meta2 = ResourceMeta.builder()
-                .id("r-2")
+                .id(1L)
                 .hash(HASH2)
                 .originalName("b2.png")
                 .build();
@@ -77,7 +77,7 @@ class BannerServiceTest {
         when(listOperations.range(ResourceConstant.BANNER_PREFIX, 0, -1)).thenReturn(List.of(HASH, "invalid"));
 
         when(resourceMetaService.getByHash(HASH))
-                .thenReturn(ResourceMeta.builder().id("r-1").hash(HASH).build());
+                .thenReturn(ResourceMeta.builder().id(1L).hash(HASH).build());
         when(resourceMetaService.getByHash("invalid")).thenThrow(new BusinessException(5002, "资源不存在"));
 
         List<ResourceMeta> result = bannerService.getList();
@@ -105,7 +105,7 @@ class BannerServiceTest {
         when(listOperations.size(ResourceConstant.BANNER_PREFIX)).thenReturn(5L);
         when(listOperations.index(ResourceConstant.BANNER_PREFIX, 0)).thenReturn(HASH);
         when(resourceMetaService.getByHash(HASH))
-                .thenReturn(ResourceMeta.builder().id("r-1").hash(HASH).build());
+                .thenReturn(ResourceMeta.builder().id(1L).hash(HASH).build());
 
         ResourceMeta result = bannerService.get(0);
 
@@ -131,7 +131,7 @@ class BannerServiceTest {
         when(redisTemplate.opsForList()).thenReturn(listOperations);
         when(listOperations.range(ResourceConstant.BANNER_PREFIX, 0, -1)).thenReturn(List.of(HASH));
         when(resourceMetaService.getByHash(HASH))
-                .thenReturn(ResourceMeta.builder().id("r-1").hash(HASH).build());
+                .thenReturn(ResourceMeta.builder().id(1L).hash(HASH).build());
 
         ResourceMeta result = bannerService.get(HASH);
 
@@ -158,14 +158,14 @@ class BannerServiceTest {
         when(listOperations.range(ResourceConstant.BANNER_PREFIX, 0, -1)).thenReturn(List.of(HASH));
         when(resourceMetaService.getByHash(HASH))
                 .thenReturn(ResourceMeta.builder()
-                        .id("r-1")
+                        .id(1L)
                         .hash(HASH)
                         .originalName("b.png")
                         .objectKey("image/b.png")
                         .resourceType(0)
                         .status(1)
                         .build());
-        when(fileService.getDownloadUrl("r-1")).thenReturn(DOWNLOAD_URL);
+        when(fileService.getDownloadUrl(1L)).thenReturn(DOWNLOAD_URL);
 
         List<BannerResourceResponse> result = bannerService.getUserList();
 
@@ -182,11 +182,11 @@ class BannerServiceTest {
         when(listOperations.index(ResourceConstant.BANNER_PREFIX, 0)).thenReturn(HASH);
         when(resourceMetaService.getByHash(HASH))
                 .thenReturn(ResourceMeta.builder()
-                        .id("r-1")
+                        .id(1L)
                         .hash(HASH)
                         .originalName("b.png")
                         .build());
-        when(fileService.getDownloadUrl("r-1")).thenReturn(DOWNLOAD_URL);
+        when(fileService.getDownloadUrl(1L)).thenReturn(DOWNLOAD_URL);
 
         BannerResourceResponse result = bannerService.getUser(0);
 
@@ -198,18 +198,18 @@ class BannerServiceTest {
     @Test
     @DisplayName("create 基于资源ID添加轮播图")
     void createByResourceId() {
-        ResourceMeta meta = ResourceMeta.builder().id("r-1").hash(HASH).build();
-        when(resourceMetaService.get("r-1")).thenReturn(meta);
+        ResourceMeta meta = ResourceMeta.builder().id(1L).hash(HASH).build();
+        when(resourceMetaService.get(1L)).thenReturn(meta);
 
         when(redisTemplate.opsForList()).thenReturn(listOperations);
         when(listOperations.size(ResourceConstant.BANNER_PREFIX)).thenReturn(0L);
         when(listOperations.range(ResourceConstant.BANNER_PREFIX, 0, -1)).thenReturn(List.of());
         when(listOperations.rightPush(ResourceConstant.BANNER_PREFIX, HASH)).thenReturn(1L);
 
-        ResourceMeta result = bannerService.create("r-1");
+        ResourceMeta result = bannerService.create("1");
 
         assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo("r-1");
+        assertThat(result.getId()).isEqualTo(1L);
     }
 
     @SuppressWarnings("unchecked")
@@ -217,7 +217,7 @@ class BannerServiceTest {
     @DisplayName("create 基于哈希添加轮播图")
     void createByHash() {
         when(resourceMetaService.getByHash(HASH))
-                .thenReturn(ResourceMeta.builder().id("r-1").hash(HASH).build());
+                .thenReturn(ResourceMeta.builder().id(1L).hash(HASH).build());
 
         when(redisTemplate.opsForList()).thenReturn(listOperations);
         when(listOperations.size(ResourceConstant.BANNER_PREFIX)).thenReturn(0L);
@@ -235,10 +235,10 @@ class BannerServiceTest {
     void createMaxSize() {
         when(redisTemplate.opsForList()).thenReturn(listOperations);
         when(listOperations.size(ResourceConstant.BANNER_PREFIX)).thenReturn(100L);
-        when(resourceMetaService.get("r-1"))
-                .thenReturn(ResourceMeta.builder().id("r-1").hash(HASH).build());
+        when(resourceMetaService.get(1L))
+                .thenReturn(ResourceMeta.builder().id(1L).hash(HASH).build());
 
-        assertThatThrownBy(() -> bannerService.create("r-1"))
+        assertThatThrownBy(() -> bannerService.create("1"))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("数量已达上限");
     }
@@ -249,12 +249,12 @@ class BannerServiceTest {
     void createAlreadyExists() {
         when(redisTemplate.opsForList()).thenReturn(listOperations);
         when(listOperations.size(ResourceConstant.BANNER_PREFIX)).thenReturn(5L);
-        when(resourceMetaService.get("r-1"))
-                .thenReturn(ResourceMeta.builder().id("r-1").hash(HASH).build());
+        when(resourceMetaService.get(1L))
+                .thenReturn(ResourceMeta.builder().id(1L).hash(HASH).build());
 
         when(listOperations.range(ResourceConstant.BANNER_PREFIX, 0, -1)).thenReturn(List.of("other", HASH));
 
-        assertThatThrownBy(() -> bannerService.create("r-1"))
+        assertThatThrownBy(() -> bannerService.create("1"))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("该资源已存在于轮播图中");
     }
@@ -266,12 +266,12 @@ class BannerServiceTest {
         when(redisTemplate.opsForList()).thenReturn(listOperations);
         when(listOperations.size(ResourceConstant.BANNER_PREFIX)).thenReturn(5L);
 
-        when(resourceMetaService.get("r-1"))
-                .thenReturn(ResourceMeta.builder().id("r-1").hash(HASH).build());
+        when(resourceMetaService.get(1L))
+                .thenReturn(ResourceMeta.builder().id(1L).hash(HASH).build());
         when(listOperations.index(ResourceConstant.BANNER_PREFIX, 2)).thenReturn("old-hash");
         when(listOperations.range(ResourceConstant.BANNER_PREFIX, 0, -1)).thenReturn(List.of("h1", "h2"));
 
-        ResourceMeta result = bannerService.update(2, "r-1");
+        ResourceMeta result = bannerService.update(2, "1");
 
         assertThat(result).isNotNull();
         verify(listOperations).set(ResourceConstant.BANNER_PREFIX, 2, HASH);
@@ -283,11 +283,11 @@ class BannerServiceTest {
     void updateSameHash() {
         when(redisTemplate.opsForList()).thenReturn(listOperations);
         when(listOperations.size(ResourceConstant.BANNER_PREFIX)).thenReturn(5L);
-        when(resourceMetaService.get("r-1"))
-                .thenReturn(ResourceMeta.builder().id("r-1").hash(HASH).build());
+        when(resourceMetaService.get(1L))
+                .thenReturn(ResourceMeta.builder().id(1L).hash(HASH).build());
         when(listOperations.index(ResourceConstant.BANNER_PREFIX, 0)).thenReturn(HASH);
 
-        bannerService.update(0, "r-1");
+        bannerService.update(0, "1");
 
         verify(listOperations, never()).set(anyString(), anyLong(), anyString());
     }

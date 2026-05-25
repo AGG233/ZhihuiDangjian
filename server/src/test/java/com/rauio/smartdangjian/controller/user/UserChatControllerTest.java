@@ -107,9 +107,9 @@ class UserChatControllerTest extends BaseControllerTest {
         void listMessagesSuccess() throws Exception {
             when(userService.getCurrentUserId()).thenReturn("stu-001");
             List<AiChatMessageResponse> messages = List.of(AiChatMessageResponse.builder()
-                    .id("msg-1")
+                    .id(1L)
                     .sessionId("session-1")
-                    .userId("stu-001")
+                    .userId(1L)
                     .agentType("CHAT")
                     .senderType("USER")
                     .content("你好")
@@ -122,7 +122,7 @@ class UserChatControllerTest extends BaseControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.length()").value(1))
-                    .andExpect(jsonPath("$.data[0].id").value("msg-1"));
+                    .andExpect(jsonPath("$.data[0].id").value("1"));
         }
 
         @Test

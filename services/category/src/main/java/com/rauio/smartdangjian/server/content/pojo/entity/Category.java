@@ -3,7 +3,6 @@ package com.rauio.smartdangjian.server.content.pojo.entity;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -17,10 +16,10 @@ import lombok.Data;
 @Schema(description = "分类/目录")
 public class Category implements Serializable {
 
-    @TableId(type = IdType.AUTO)
+    @TableId
     @JsonSerialize(using = ToStringSerializer.class)
     @Schema(description = "分类ID")
-    private String id;
+    private Long id;
 
     @Schema(description = "所属学校ID")
     private String universityId;
@@ -35,7 +34,7 @@ public class Category implements Serializable {
     private String description;
 
     @Schema(description = "父分类ID")
-    private String parentId;
+    private Long parentId;
 
     @Schema(description = "排序序号")
     private Integer sortOrder;

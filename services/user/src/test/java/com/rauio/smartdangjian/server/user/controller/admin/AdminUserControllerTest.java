@@ -31,15 +31,15 @@ class AdminUserControllerTest {
     @Test
     @DisplayName("get 根据用户ID返回用户详情")
     void get() {
-        User user = User.builder().id("user-1").username("admin").build();
-        when(userService.getById("user-1")).thenReturn(user);
+        User user = User.builder().id(1L).username("admin").build();
+        when(userService.getById(1L)).thenReturn(user);
 
-        var result = controller.get("user-1");
+        var result = controller.get(1L);
 
         assertThat(result).isNotNull();
         assertThat(result.getCode()).isEqualTo("200");
         assertThat(result.getData()).isEqualTo(user);
-        verify(userService).getById("user-1");
+        verify(userService).getById(1L);
     }
 
     @Test
@@ -89,12 +89,12 @@ class AdminUserControllerTest {
     @DisplayName("update 委托 service 更新用户信息")
     void update() {
         User user = User.builder().realName("新名字").build();
-        doNothing().when(userService).update("user-1", user);
+        doNothing().when(userService).update(1L, user);
 
-        var result = controller.update("user-1", user);
+        var result = controller.update(1L, user);
 
         assertThat(result).isNotNull();
         assertThat(result.getCode()).isEqualTo("200");
-        verify(userService).update("user-1", user);
+        verify(userService).update(1L, user);
     }
 }

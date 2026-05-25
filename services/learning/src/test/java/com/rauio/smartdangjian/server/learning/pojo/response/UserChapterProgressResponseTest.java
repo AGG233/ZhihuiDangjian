@@ -15,16 +15,16 @@ class UserChapterProgressResponseTest {
     void buildResponse() {
         Date now = new Date();
         UserChapterProgressResponse response = UserChapterProgressResponse.builder()
-                .id("p-1")
-                .userId("user-1")
-                .chapterId("ch-1")
+                .id(1L)
+                .userId(1L)
+                .chapterId(1L)
                 .progress(80)
                 .status("completed")
                 .completedAt(now)
                 .build();
 
-        assertThat(response.getId()).isEqualTo("p-1");
-        assertThat(response.getUserId()).isEqualTo("user-1");
+        assertThat(response.getId()).isEqualTo(1L);
+        assertThat(response.getUserId()).isEqualTo(1L);
         assertThat(response.getProgress()).isEqualTo(80);
         assertThat(response.getStatus()).isEqualTo("completed");
         assertThat(response.getCompletedAt()).isEqualTo(now);

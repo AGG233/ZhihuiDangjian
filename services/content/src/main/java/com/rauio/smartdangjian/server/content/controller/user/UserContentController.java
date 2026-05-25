@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
-import com.rauio.smartdangjian.server.content.service.ContentBlockService;
+import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,13 +20,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserContentController {
 
-    private static final String CAROUSEL_PARENT_ID = "1145141919810";
+    private static final Long CAROUSEL_PARENT_ID = 1145141919810L;
 
-    private final ContentBlockService contentBlockService;
+    private final ChapterContentBlockService chapterContentBlockService;
 
     @Operation(summary = "获取轮播图列表")
     @GetMapping("/carousel")
     public Result<List<ContentBlockResponse>> getCarousel() {
-        return Result.ok(contentBlockService.getByParentId(CAROUSEL_PARENT_ID));
+        return Result.ok(chapterContentBlockService.getByChapterId(CAROUSEL_PARENT_ID));
     }
 }

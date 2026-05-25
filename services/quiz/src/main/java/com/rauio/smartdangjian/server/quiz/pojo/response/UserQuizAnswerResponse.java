@@ -16,16 +16,16 @@ import lombok.NoArgsConstructor;
 public class UserQuizAnswerResponse {
 
     @Schema(description = "答题记录ID")
-    private String id;
+    private Long id;
 
     @Schema(description = "用户ID")
-    private String userId;
+    private Long userId;
 
     @Schema(description = "选项ID")
-    private String optionId;
+    private Long optionId;
 
     @Schema(description = "题目ID")
-    private String quizId;
+    private Long quizId;
 
     @Schema(description = "用户答案")
     private String userAnswer;

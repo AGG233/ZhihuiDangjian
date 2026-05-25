@@ -47,7 +47,7 @@ class FileServiceTest {
 
     private GeneratePresignedUrlPretreatment pretreatment;
 
-    private static final String RESOURCE_ID = "res-001";
+    private static final Long RESOURCE_ID = 1L;
     private static final String OBJECT_KEY = "image/test-uuid.png";
     private static final String FILE_NAME = "test.png";
     private static final String MIME_TYPE = "image/png";
@@ -68,7 +68,7 @@ class FileServiceTest {
     private ResourceMeta createResourceMeta() {
         return ResourceMeta.builder()
                 .id(RESOURCE_ID)
-                .uploaderId("user-001")
+                .uploaderId(1L)
                 .originalName(FILE_NAME)
                 .hash("uuid-hash")
                 .objectKey(OBJECT_KEY)
@@ -79,7 +79,7 @@ class FileServiceTest {
 
     private UploadFileRequest createUploadRequest() {
         UploadFileRequest request = new UploadFileRequest();
-        request.setUserId("user-001");
+        request.setUserId("1");
         request.setFileName(FILE_NAME);
         request.setMimeType(MIME_TYPE);
         return request;
@@ -103,7 +103,7 @@ class FileServiceTest {
             FileUploadResponse response = fileService.upload(createUploadRequest());
 
             assertThat(response).isNotNull();
-            assertThat(response.getResourceId()).isEqualTo(RESOURCE_ID);
+            assertThat(response.getResourceId()).isEqualTo("1");
             assertThat(response.getUploadUrl()).isEqualTo(COS_URL);
             assertThat(response.getObjectKey()).startsWith("image/").endsWith(".png");
             assertThat(response.getExpiration()).isPositive();
@@ -122,9 +122,9 @@ class FileServiceTest {
             FileUploadResponse response = fileService.upload(createUploadRequest());
 
             assertThat(response).isNotNull();
-            assertThat(response.getResourceId()).isEqualTo(RESOURCE_ID);
+            assertThat(response.getResourceId()).isEqualTo("1");
             assertThat(response.getUploadUrl()).startsWith("/api/resource/files/upload/callback/");
-            assertThat(response.getUploadUrl()).endsWith(RESOURCE_ID);
+            assertThat(response.getUploadUrl()).endsWith("1");
             assertThat(response.getExpiration()).isEqualTo(-1L);
 
             verify(resourceMetaService, never()).delete(any());

@@ -16,8 +16,8 @@ class ArticleTest {
     void builderCreatesArticleCorrectly() {
         LocalDateTime now = LocalDateTime.of(2025, 6, 1, 12, 0);
         Article article = Article.builder()
-                .id("art-001")
-                .authorId("user-001")
+                .id(1L)
+                .authorId(1L)
                 .title("测试文章标题")
                 .summary("测试文章摘要")
                 .status(ArticleStatus.Published)
@@ -26,8 +26,8 @@ class ArticleTest {
                 .updatedAt(now)
                 .build();
 
-        assertThat(article.getId()).isEqualTo("art-001");
-        assertThat(article.getAuthorId()).isEqualTo("user-001");
+        assertThat(article.getId()).isEqualTo(1L);
+        assertThat(article.getAuthorId()).isEqualTo(1L);
         assertThat(article.getTitle()).isEqualTo("测试文章标题");
         assertThat(article.getSummary()).isEqualTo("测试文章摘要");
         assertThat(article.getStatus()).isEqualTo(ArticleStatus.Published);
@@ -40,7 +40,7 @@ class ArticleTest {
     @DisplayName("builder 构造 Article Status 为 Draft")
     void builderCreatesArticleWithDraftStatus() {
         Article article =
-                Article.builder().id("art-002").status(ArticleStatus.Draft).build();
+                Article.builder().id(1L).status(ArticleStatus.Draft).build();
 
         assertThat(article.getStatus()).isEqualTo(ArticleStatus.Draft);
     }
@@ -49,7 +49,7 @@ class ArticleTest {
     @DisplayName("builder 构造 Article Status 为 Deleted(archived)")
     void builderCreatesArticleWithArchivedStatus() {
         Article article =
-                Article.builder().id("art-003").status(ArticleStatus.Deleted).build();
+                Article.builder().id(1L).status(ArticleStatus.Deleted).build();
 
         assertThat(article.getStatus()).isEqualTo(ArticleStatus.Deleted);
     }
@@ -57,7 +57,7 @@ class ArticleTest {
     @Test
     @DisplayName("setter 修改 title 后 getter 返回新值")
     void setterAndGetterWorkForTitle() {
-        Article article = Article.builder().id("art-001").title("旧标题").build();
+        Article article = Article.builder().id(1L).title("旧标题").build();
 
         article.setTitle("新标题");
 
@@ -68,7 +68,7 @@ class ArticleTest {
     @DisplayName("setter 修改 status 后 getter 返回新值")
     void setterAndGetterWorkForStatus() {
         Article article =
-                Article.builder().id("art-001").status(ArticleStatus.Draft).build();
+                Article.builder().id(1L).status(ArticleStatus.Draft).build();
 
         article.setStatus(ArticleStatus.Published);
 
@@ -79,7 +79,7 @@ class ArticleTest {
     @DisplayName("toString 包含所有主要字段")
     void toStringContainsKeyFields() {
         Article article = Article.builder()
-                .id("art-001")
+                .id(1L)
                 .title("文章标题")
                 .status(ArticleStatus.Published)
                 .build();
@@ -93,12 +93,12 @@ class ArticleTest {
     @DisplayName("两个相同字段的 Article equals 和 hashCode 行为符合 @Data 预期")
     void equalsAndHashCodeBehavior() {
         Article a1 = Article.builder()
-                .id("art-001")
+                .id(1L)
                 .title("标题")
                 .status(ArticleStatus.Draft)
                 .build();
         Article a2 = Article.builder()
-                .id("art-001")
+                .id(1L)
                 .title("标题")
                 .status(ArticleStatus.Draft)
                 .build();
@@ -110,8 +110,8 @@ class ArticleTest {
     @Test
     @DisplayName("两个不同 id 的 Article 不相等")
     void articlesWithDifferentIdsAreNotEqual() {
-        Article a1 = Article.builder().id("art-001").title("标题").build();
-        Article a2 = Article.builder().id("art-002").title("标题").build();
+        Article a1 = Article.builder().id(1L).title("标题").build();
+        Article a2 = Article.builder().id(1L).title("标题").build();
 
         assertThat(a1).isNotEqualTo(a2);
     }
@@ -120,7 +120,7 @@ class ArticleTest {
     @DisplayName("publishedAt 为 null 时 builder 正常工作")
     void builderWithNullPublishedAt() {
         Article article = Article.builder()
-                .id("art-001")
+                .id(1L)
                 .title("草稿")
                 .status(ArticleStatus.Draft)
                 .publishedAt(null)

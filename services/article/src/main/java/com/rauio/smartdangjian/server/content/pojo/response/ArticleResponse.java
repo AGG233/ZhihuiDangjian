@@ -2,6 +2,8 @@ package com.rauio.smartdangjian.server.content.pojo.response;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.rauio.smartdangjian.server.content.spec.ArticleStatus;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,10 +16,12 @@ import lombok.Data;
 public class ArticleResponse {
 
     @Schema(description = "文章ID")
-    private String id;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long id;
 
     @Schema(description = "作者ID")
-    private String authorId;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long authorId;
 
     @Schema(description = "文章标题")
     private String title;

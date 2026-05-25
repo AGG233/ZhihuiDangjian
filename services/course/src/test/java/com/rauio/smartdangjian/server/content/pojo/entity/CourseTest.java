@@ -15,13 +15,13 @@ class CourseTest {
     void builderCreatesCourseCorrectly() {
         LocalDateTime now = LocalDateTime.of(2025, 6, 1, 12, 0);
         Course course = Course.builder()
-                .id("course-001")
+                .id(1L)
                 .title("课程标题")
                 .description("课程描述")
-                .coverImageId("img-001")
+                .coverImageId(1L)
                 .difficulty("beginner")
                 .estimatedDuration(60)
-                .creatorId("user-001")
+                .creatorId(1L)
                 .enrollmentCount(100)
                 .averageRating(new BigDecimal("4.5"))
                 .isPublished(true)
@@ -30,13 +30,13 @@ class CourseTest {
                 .updatedAt(now)
                 .build();
 
-        assertThat(course.getId()).isEqualTo("course-001");
+        assertThat(course.getId()).isEqualTo(1L);
         assertThat(course.getTitle()).isEqualTo("课程标题");
         assertThat(course.getDescription()).isEqualTo("课程描述");
-        assertThat(course.getCoverImageId()).isEqualTo("img-001");
+        assertThat(course.getCoverImageId()).isEqualTo(1L);
         assertThat(course.getDifficulty()).isEqualTo("beginner");
         assertThat(course.getEstimatedDuration()).isEqualTo(60);
-        assertThat(course.getCreatorId()).isEqualTo("user-001");
+        assertThat(course.getCreatorId()).isEqualTo(1L);
         assertThat(course.getEnrollmentCount()).isEqualTo(100);
         assertThat(course.getAverageRating()).isEqualTo(new BigDecimal("4.5"));
         assertThat(course.getIsPublished()).isTrue();
@@ -49,7 +49,7 @@ class CourseTest {
     @DisplayName("builder 构造未发布课程")
     void builderCreatesUnpublishedCourse() {
         Course course = Course.builder()
-                .id("course-002")
+                .id(1L)
                 .title("草稿课程")
                 .isPublished(false)
                 .enrollmentCount(0)
@@ -64,7 +64,7 @@ class CourseTest {
     @Test
     @DisplayName("setter 修改 title 后 getter 返回新值")
     void setterAndGetterWorkForTitle() {
-        Course course = Course.builder().id("course-001").title("旧标题").build();
+        Course course = Course.builder().id(1L).title("旧标题").build();
 
         course.setTitle("新标题");
 
@@ -74,7 +74,7 @@ class CourseTest {
     @Test
     @DisplayName("setter 修改 difficulty 后 getter 返回新值")
     void setterAndGetterWorkForDifficulty() {
-        Course course = Course.builder().id("course-001").difficulty("beginner").build();
+        Course course = Course.builder().id(1L).difficulty("beginner").build();
 
         course.setDifficulty("advanced");
 
@@ -85,12 +85,12 @@ class CourseTest {
     @DisplayName("两个相同字段的 Course equals 和 hashCode 行为符合 @Data 预期")
     void equalsAndHashCodeBehavior() {
         Course c1 = Course.builder()
-                .id("course-001")
+                .id(1L)
                 .title("课程")
                 .difficulty("beginner")
                 .build();
         Course c2 = Course.builder()
-                .id("course-001")
+                .id(1L)
                 .title("课程")
                 .difficulty("beginner")
                 .build();
@@ -102,8 +102,8 @@ class CourseTest {
     @Test
     @DisplayName("两个不同 id 的 Course 不相等")
     void coursesWithDifferentIdsAreNotEqual() {
-        Course c1 = Course.builder().id("course-001").title("课程").build();
-        Course c2 = Course.builder().id("course-002").title("课程").build();
+        Course c1 = Course.builder().id(1L).title("课程").build();
+        Course c2 = Course.builder().id(1L).title("课程").build();
 
         assertThat(c1).isNotEqualTo(c2);
     }
@@ -112,7 +112,7 @@ class CourseTest {
     @DisplayName("isPublished 为 null 时 builder 正常工作")
     void builderWithNullIsPublished() {
         Course course =
-                Course.builder().id("course-001").title("课程").isPublished(null).build();
+                Course.builder().id(1L).title("课程").isPublished(null).build();
 
         assertThat(course.getIsPublished()).isNull();
     }

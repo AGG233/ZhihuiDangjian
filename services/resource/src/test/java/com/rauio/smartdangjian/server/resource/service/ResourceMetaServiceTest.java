@@ -33,7 +33,7 @@ class ResourceMetaServiceTest {
     @InjectMocks
     private ResourceMetaService resourceMetaService;
 
-    private static final String RESOURCE_ID = "r-1";
+    private static final Long RESOURCE_ID = 1L;
     private static final String HASH = "abc123";
     private static final String OBJECT_KEY = "image/abc123.png";
 
@@ -88,7 +88,7 @@ class ResourceMetaServiceTest {
         request.setObjectKey(OBJECT_KEY);
         request.setResourceType(0);
 
-        doReturn(ResourceMeta.builder().id("existing").hash(HASH).build())
+        doReturn(ResourceMeta.builder().id(1L).hash(HASH).build())
                 .when(resourceMetaService)
                 .getOne(any(LambdaQueryWrapper.class));
 
@@ -185,7 +185,7 @@ class ResourceMetaServiceTest {
         List<ResourceMeta> list = List.of(ResourceMeta.builder().id(RESOURCE_ID).build());
         doReturn(list).when(resourceMetaService).list(any(LambdaQueryWrapper.class));
 
-        List<ResourceMeta> result = resourceMetaService.list("user-1", null, null, null, null);
+        List<ResourceMeta> result = resourceMetaService.list(1L, null, null, null, null);
 
         assertThat(result).hasSize(1);
     }
@@ -197,7 +197,7 @@ class ResourceMetaServiceTest {
     void updateSuccess() {
         ResourceMeta existing = ResourceMeta.builder()
                 .id(RESOURCE_ID)
-                .uploaderId("user-1")
+                .uploaderId(1L)
                 .hash(HASH)
                 .objectKey(OBJECT_KEY)
                 .originalName("old.png")

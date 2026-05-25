@@ -15,7 +15,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.pojo.entity.Article;
 import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
-import com.rauio.smartdangjian.server.content.service.ContentBlockService;
+import com.rauio.smartdangjian.server.content.service.ArticleContentBlockService;
 import com.rauio.smartdangjian.server.content.service.article.ArticleService;
 
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class ArticleDetailTool {
 
     private final ArticleService articleService;
-    private final ContentBlockService contentBlockService;
+    private final ArticleContentBlockService articleContentBlockService;
 
     @Tool(name = "searchArticles", description = "根据关键词搜索文章（匹配标题）")
     public List<Map<String, Object>> searchArticles(@ToolParam(description = "搜索关键词") String keyword) {
@@ -48,7 +48,7 @@ public class ArticleDetailTool {
         if (article == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "文章不存在");
         }
-        List<ContentBlockResponse> blocks = contentBlockService.getByParentId(articleId);
+        List<ContentBlockResponse> blocks = articleContentBlockService.getByArticleId(Long.valueOf(articleId));
 
         Map<String, Object> result = new HashMap<>();
         result.put("id", article.getId());

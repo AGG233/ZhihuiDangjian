@@ -90,9 +90,7 @@ jobs:
       - name: Seed smoke database
         env:
           MYSQL_PWD: root
-        run: |
-          mysql -h127.0.0.1 -P3306 -uroot zhdj < ddl.sql
-          mysql -h127.0.0.1 -P3306 -uroot zhdj < .github/sql/ci-seed.sql
+        run: mysql -h127.0.0.1 -P3306 -uroot zhdj < .github/sql/ci-seed.sql
 
       - name: Start server for API smoke
         env:

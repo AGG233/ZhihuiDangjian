@@ -15,9 +15,9 @@ class UserLearningRecordRequestTest {
     void buildRequest() {
         LocalDateTime now = LocalDateTime.now();
         UserLearningRecordRequest request = UserLearningRecordRequest.builder()
-                .id("r-1")
-                .userId("user-1")
-                .chapterId("ch-1")
+                .id(1L)
+                .userId(1L)
+                .chapterId(1L)
                 .startTime(now)
                 .endTime(now.plusSeconds(3600))
                 .duration(3600)
@@ -25,8 +25,8 @@ class UserLearningRecordRequestTest {
                 .createdAt(now)
                 .build();
 
-        assertThat(request.getId()).isEqualTo("r-1");
-        assertThat(request.getUserId()).isEqualTo("user-1");
+        assertThat(request.getId()).isEqualTo(1L);
+        assertThat(request.getUserId()).isEqualTo(1L);
         assertThat(request.getDuration()).isEqualTo(3600);
         assertThat(request.getDeviceType()).isEqualTo("web");
     }

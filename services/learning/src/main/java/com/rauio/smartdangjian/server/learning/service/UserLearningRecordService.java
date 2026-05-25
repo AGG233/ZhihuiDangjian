@@ -37,7 +37,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @param id 学习记录 ID
      * @return 学习记录视图对象
      */
-    public UserLearningRecordResponse get(String id) {
+    public UserLearningRecordResponse get(Long id) {
         UserLearningRecord record = this.getById(id);
         if (record == null) {
             throw new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "学习记录不存在");
@@ -58,8 +58,8 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
         Page<UserLearningRecord> pageInfo = new Page<>(pageNum, pageSize);
 
         LambdaQueryWrapper<UserLearningRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(StringUtils.isNotBlank(dto.getUserId()), UserLearningRecord::getUserId, dto.getUserId())
-                .like(StringUtils.isNotBlank(dto.getChapterId()), UserLearningRecord::getChapterId, dto.getChapterId())
+        wrapper.eq(dto.getUserId() != null, UserLearningRecord::getUserId, dto.getUserId())
+                .eq(dto.getChapterId() != null, UserLearningRecord::getChapterId, dto.getChapterId())
                 .eq(StringUtils.isNotBlank(dto.getDeviceType()), UserLearningRecord::getDeviceType, dto.getDeviceType())
                 .like(dto.getCreatedAt() != null, UserLearningRecord::getCreatedAt, dto.getCreatedAt());
 
@@ -72,7 +72,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @param userId 用户 ID
      * @return 学习记录列表
      */
-    public List<UserLearningRecordResponse> getByUserId(String userId) {
+    public List<UserLearningRecordResponse> getByUserId(Long userId) {
         QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId).orderByDesc("created_at");
         List<UserLearningRecord> list = this.list(wrapper);
@@ -102,7 +102,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @param chapterId 章节 ID
      * @return 学习记录列表
      */
-    public List<UserLearningRecordResponse> getByChapterId(String chapterId) {
+    public List<UserLearningRecordResponse> getByChapterId(Long chapterId) {
         QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
         wrapper.eq("chapter_id", chapterId).orderByDesc("created_at");
         List<UserLearningRecord> list = this.list(wrapper);
@@ -116,7 +116,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @param chapterId 章节 ID
      * @return 学习记录列表
      */
-    public List<UserLearningRecordResponse> getByUserIdAndChapterId(String userId, String chapterId) {
+    public List<UserLearningRecordResponse> getByUserIdAndChapterId(Long userId, Long chapterId) {
         QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId).eq("chapter_id", chapterId).orderByDesc("created_at");
         List<UserLearningRecord> list = this.list(wrapper);
@@ -130,15 +130,14 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @param courseId 课程 ID
      * @return 学习记录列表
      */
-    public List<UserLearningRecord> getByUserIdAndCourseId(String userId, String courseId) {
-        if (org.apache.commons.lang3.StringUtils.isBlank(courseId)) {
+    public List<UserLearningRecord> getByUserIdAndCourseId(Long userId, Long courseId) {
+        if (courseId == null) {
             return List.of();
         }
-        String safeCourseId = courseId.replace("'", "''");
 
         QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId)
-                .inSql("chapter_id", "select id from chapter where course_id = '" + safeCourseId + "'")
+                .inSql("chapter_id", "select id from chapter where course_id = " + courseId)
                 .orderByDesc("created_at");
         return this.list(wrapper);
     }
@@ -152,22 +151,20 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @return 学习记录列表
      */
     public List<UserLearningRecord> getByUserIdAndCourseIdAndChapterId(
-            String userId, String courseId, String chapterId) {
-        if (org.apache.commons.lang3.StringUtils.isBlank(courseId)
-                || org.apache.commons.lang3.StringUtils.isBlank(chapterId)) {
+            Long userId, Long courseId, Long chapterId) {
+        if (courseId == null || chapterId == null) {
             return List.of();
         }
-        String safeCourseId = courseId.replace("'", "''");
 
         QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId)
                 .eq("chapter_id", chapterId)
-                .inSql("chapter_id", "select id from chapter where course_id = '" + safeCourseId + "'")
+                .inSql("chapter_id", "select id from chapter where course_id = " + courseId)
                 .orderByDesc("created_at");
         return this.list(wrapper);
     }
 
-    public int syncUserLearningGraph(String userId) {
+    public int syncUserLearningGraph(Long userId) {
         QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId);
         List<UserLearningRecord> records = this.list(wrapper);
@@ -246,7 +243,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @param id 学习记录 ID
      * @return 是否删除成功
      */
-    public Boolean delete(String id) {
+    public Boolean delete(Long id) {
         UserLearningRecord existing = this.getById(id);
         if (existing == null) {
             throw new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "学习记录不存在");

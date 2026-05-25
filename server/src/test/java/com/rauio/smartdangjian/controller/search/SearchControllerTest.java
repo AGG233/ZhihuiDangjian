@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.controller.search;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -56,7 +57,7 @@ class SearchControllerTest extends BaseControllerTest {
     private Page<CourseResponse> createCoursePage(int count) {
         Page<CourseResponse> page = new Page<>(1, 10, count);
         if (count > 0) {
-            page.setRecords(List.of(CourseTestDataFactory.createCourseResponse("course-1")));
+            page.setRecords(List.of(CourseTestDataFactory.createCourseResponse(1L)));
         } else {
             page.setRecords(List.of());
         }
@@ -100,12 +101,12 @@ class SearchControllerTest extends BaseControllerTest {
         @DisplayName("GET /recommend - 个性化推荐成功")
         void recommendSuccess() throws Exception {
             UserProfileResponse profile =
-                    UserProfileResponse.builder().userId("stu-001").build();
+                    UserProfileResponse.builder().userId("1").build();
             when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
 
-            Page<String> recommendPage = new Page<>(1, 10, 2);
-            recommendPage.setRecords(List.of("course-1", "course-2"));
-            when(recommendService.recommend(eq("stu-001"), anyInt(), anyInt())).thenReturn(recommendPage);
+            Page<Long> recommendPage = new Page<>(1, 10, 2);
+            recommendPage.setRecords(List.of(1L, 2L));
+            when(recommendService.recommend(eq(1L), anyInt(), anyInt())).thenReturn(recommendPage);
 
             mockMvc.perform(get("/api/search/recommend").param("pageNum", "1").param("pageSize", "10"))
                     .andExpect(status().isOk())
@@ -117,7 +118,7 @@ class SearchControllerTest extends BaseControllerTest {
         @DisplayName("GET /profile - 获取用户画像成功")
         void getProfileSuccess() throws Exception {
             UserProfileResponse profile = UserProfileResponse.builder()
-                    .userId("stu-001")
+                    .userId("1")
                     .learning(UserProfileResponse.LearningStats.builder()
                             .totalDuration(3600)
                             .avgDuration(600)
@@ -131,7 +132,7 @@ class SearchControllerTest extends BaseControllerTest {
             mockMvc.perform(get("/api/search/profile"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data.userId").value("stu-001"));
+                    .andExpect(jsonPath("$.data.userId").value("1"));
         }
     }
 
@@ -198,12 +199,12 @@ class SearchControllerTest extends BaseControllerTest {
         @DisplayName("GET /recommend - 推荐结果为空")
         void recommendEmpty() throws Exception {
             UserProfileResponse profile =
-                    UserProfileResponse.builder().userId("stu-001").build();
+                    UserProfileResponse.builder().userId("1").build();
             when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
 
-            Page<String> emptyPage = new Page<>(1, 10, 0);
+            Page<Long> emptyPage = new Page<>(1, 10, 0);
             emptyPage.setRecords(List.of());
-            when(recommendService.recommend(anyString(), anyInt(), anyInt())).thenReturn(emptyPage);
+            when(recommendService.recommend(anyLong(), anyInt(), anyInt())).thenReturn(emptyPage);
 
             mockMvc.perform(get("/api/search/recommend"))
                     .andExpect(status().isOk())

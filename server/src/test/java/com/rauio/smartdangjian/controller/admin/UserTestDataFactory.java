@@ -26,10 +26,10 @@ public final class UserTestDataFactory {
     // ── Single-user builders ──────────────────────────────────────
 
     public static User createDefaultUser() {
-        return createUser("user-001", "zhangsan", "张三", UserType.STUDENT);
+        return createUser(1L, "zhangsan", "张三", UserType.STUDENT);
     }
 
-    public static User createUser(String id, String username, String realName, UserType userType) {
+    public static User createUser(Long id, String username, String realName, UserType userType) {
         User user = new User();
         user.setId(id);
         user.setUsername(username);
@@ -49,27 +49,27 @@ public final class UserTestDataFactory {
     }
 
     public static User createSchoolUser() {
-        User user = createUser("school-001", "schooladmin", "学校管理员", UserType.SCHOOL);
+        User user = createUser(2L, "schooladmin", "学校管理员", UserType.SCHOOL);
         user.setEmail("schooladmin@school.edu.cn");
         user.setBranchName("校党委");
         return user;
     }
 
     public static User createManagerUser() {
-        User user = createUser("manager-001", "superadmin", "系统管理员", UserType.MANAGER);
+        User user = createUser(3L, "superadmin", "系统管理员", UserType.MANAGER);
         user.setEmail("superadmin@system.cn");
         user.setBranchName("系统管理");
         return user;
     }
 
     public static User createInactiveUser() {
-        User user = createUser("user-inactive", "lisi", "李四", UserType.STUDENT);
+        User user = createUser(4L, "lisi", "李四", UserType.STUDENT);
         user.setStatus(AccountStatus.INACTIVE);
         return user;
     }
 
     public static User createBannedUser() {
-        User user = createUser("user-banned", "wangwu", "王五", UserType.STUDENT);
+        User user = createUser(5L, "wangwu", "王五", UserType.STUDENT);
         user.setStatus(AccountStatus.BANNED);
         return user;
     }
@@ -91,7 +91,7 @@ public final class UserTestDataFactory {
         for (int i = 0; i < count; i++) {
             int idx = i + 1;
             User user = new User();
-            user.setId("user-" + String.format("%03d", idx));
+            user.setId(1000L + idx);
             user.setUsername("user" + String.format("%03d", idx));
             user.setRealName(names[i % names.length]);
             user.setPartyMemberId("PM-2024" + String.format("%04d", idx));

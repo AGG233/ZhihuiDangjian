@@ -45,7 +45,7 @@ public abstract class BaseControllerTest {
     @BeforeEach
     void defaultSecurityContext() {
         stpUtilMock = mockStatic(StpUtil.class);
-        setSecurityContext(UserType.SCHOOL, "admin1", "uni1");
+        setSecurityContext(UserType.SCHOOL, 1L, "uni1");
     }
 
     @AfterEach
@@ -55,12 +55,12 @@ public abstract class BaseControllerTest {
         }
     }
 
-    protected void setSecurityContext(UserType userType, String userId, String universityId) {
+    protected void setSecurityContext(UserType userType, Long userId, String universityId) {
         if (stpUtilMock == null) {
             stpUtilMock = mockStatic(StpUtil.class);
         }
         stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
-        stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn(userId);
+        stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn(String.valueOf(userId));
         SaSession session = mock(SaSession.class);
         stpUtilMock.when(StpUtil::getSession).thenReturn(session);
     }

@@ -1,5 +1,7 @@
 package com.rauio.smartdangjian.server.user.pojo.response;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,7 +12,8 @@ import lombok.Data;
 public class UserPublicResponse {
 
     @Schema(description = "用户ID")
-    private String id;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long id;
 
     @Schema(description = "用户名")
     private String username;

@@ -2,6 +2,8 @@ package com.rauio.smartdangjian.server.user.pojo.response;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.rauio.smartdangjian.annotation.validation.Sensitive;
 import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
@@ -15,7 +17,8 @@ import lombok.Data;
 public class UserResponse {
 
     @Schema(description = "用户ID")
-    private String id;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long id;
 
     @Schema(description = "用户名")
     private String username;
@@ -39,7 +42,8 @@ public class UserResponse {
     private AccountStatus status;
 
     @Schema(description = "学校ID")
-    private String universityId;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long universityId;
 
     @Schema(description = "入党时间")
     private LocalDateTime joinPartyDate;

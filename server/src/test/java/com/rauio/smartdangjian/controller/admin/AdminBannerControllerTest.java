@@ -53,7 +53,7 @@ class AdminBannerControllerTest extends BaseControllerTest {
         @DisplayName("GET / - 获取轮播图列表成功")
         void listBannersSuccess() throws Exception {
             List<ResourceMeta> banners = List.of(
-                    BannerTestDataFactory.createResourceMeta("r-1"), BannerTestDataFactory.createResourceMeta("r-2"));
+                    BannerTestDataFactory.createResourceMeta(1L), BannerTestDataFactory.createResourceMeta(2L));
             when(bannerService.getList()).thenReturn(banners);
 
             mockMvc.perform(get("/api/admin/resource/banners"))
@@ -65,39 +65,39 @@ class AdminBannerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{order} - 获取单个轮播图成功")
         void getBannerSuccess() throws Exception {
-            when(bannerService.get(0)).thenReturn(BannerTestDataFactory.createResourceMeta("r-1"));
+            when(bannerService.get(0)).thenReturn(BannerTestDataFactory.createResourceMeta(1L));
 
             mockMvc.perform(get("/api/admin/resource/banners/0"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data.id").value("r-1"));
+                    .andExpect(jsonPath("$.data.id").value("1"));
         }
 
         @Test
         @DisplayName("POST / - 创建轮播图成功")
         void createBannerSuccess() throws Exception {
-            when(bannerService.create(any(String.class))).thenReturn(BannerTestDataFactory.createResourceMeta("r-1"));
+            when(bannerService.create(any(String.class))).thenReturn(BannerTestDataFactory.createResourceMeta(1L));
 
             mockMvc.perform(post("/api/admin/resource/banners")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(BannerTestDataFactory.toJson(BannerTestDataFactory.createBannerCreateRequest())))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data.id").value("r-1"));
+                    .andExpect(jsonPath("$.data.id").value("1"));
         }
 
         @Test
         @DisplayName("PUT /{order} - 更新轮播图成功")
         void updateBannerSuccess() throws Exception {
             when(bannerService.update(anyInt(), any(String.class)))
-                    .thenReturn(BannerTestDataFactory.createResourceMeta("r-1"));
+                    .thenReturn(BannerTestDataFactory.createResourceMeta(1L));
 
             mockMvc.perform(put("/api/admin/resource/banners/0")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(BannerTestDataFactory.toJson(BannerTestDataFactory.createBannerUpdateRequest())))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data.id").value("r-1"));
+                    .andExpect(jsonPath("$.data.id").value("1"));
         }
 
         @Test
@@ -184,7 +184,7 @@ class AdminBannerControllerTest extends BaseControllerTest {
         @DisplayName("POST / - 通过 hash 创建轮播图")
         void createBannerByHash() throws Exception {
             when(bannerService.createByHash(any(String.class)))
-                    .thenReturn(BannerTestDataFactory.createResourceMeta("r-1"));
+                    .thenReturn(BannerTestDataFactory.createResourceMeta(1L));
 
             mockMvc.perform(post("/api/admin/resource/banners")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -198,7 +198,7 @@ class AdminBannerControllerTest extends BaseControllerTest {
         @DisplayName("PUT /{order} - 通过 hash 更新轮播图")
         void updateBannerByHash() throws Exception {
             when(bannerService.updateByHash(anyInt(), any(String.class)))
-                    .thenReturn(BannerTestDataFactory.createResourceMeta("r-1"));
+                    .thenReturn(BannerTestDataFactory.createResourceMeta(1L));
 
             mockMvc.perform(put("/api/admin/resource/banners/0")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -216,7 +216,7 @@ class AdminBannerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 注入在 resourceId 字段")
         void xssInResourceId() throws Exception {
-            when(bannerService.create(any(String.class))).thenReturn(BannerTestDataFactory.createResourceMeta("r-1"));
+            when(bannerService.create(any(String.class))).thenReturn(BannerTestDataFactory.createResourceMeta(1L));
 
             String json = "{\"resourceId\": \"<script>alert('xss')</script>\"}";
             mockMvc.perform(post("/api/admin/resource/banners")
@@ -228,7 +228,7 @@ class AdminBannerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入在 resourceId 字段")
         void sqlInjectionInResourceId() throws Exception {
-            when(bannerService.create(any(String.class))).thenReturn(BannerTestDataFactory.createResourceMeta("r-1"));
+            when(bannerService.create(any(String.class))).thenReturn(BannerTestDataFactory.createResourceMeta(1L));
 
             String json = "{\"resourceId\": \"' OR '1'='1\"}";
             mockMvc.perform(post("/api/admin/resource/banners")

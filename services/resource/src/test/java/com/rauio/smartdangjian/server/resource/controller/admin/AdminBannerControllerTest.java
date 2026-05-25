@@ -30,7 +30,7 @@ class AdminBannerControllerTest {
     @DisplayName("list 委托 service 获取轮播图列表")
     void list() {
         when(bannerService.getList())
-                .thenReturn(List.of(ResourceMeta.builder().id("r-1").build()));
+                .thenReturn(List.of(ResourceMeta.builder().id(1L).build()));
 
         var result = controller.list();
 
@@ -40,11 +40,11 @@ class AdminBannerControllerTest {
     @Test
     @DisplayName("get 委托 service 获取单个轮播图")
     void get() {
-        when(bannerService.get(1)).thenReturn(ResourceMeta.builder().id("r-1").build());
+        when(bannerService.get(1)).thenReturn(ResourceMeta.builder().id(1L).build());
 
         var result = controller.get(1);
 
-        assertThat(result.getData().getId()).isEqualTo("r-1");
+        assertThat(result.getData().getId()).isEqualTo(1L);
     }
 
     @Test
@@ -52,11 +52,11 @@ class AdminBannerControllerTest {
     void createByResourceId() {
         BannerCreateRequest request = new BannerCreateRequest("r-1", null);
         when(bannerService.create("r-1"))
-                .thenReturn(ResourceMeta.builder().id("r-1").build());
+                .thenReturn(ResourceMeta.builder().id(1L).build());
 
         var result = controller.create(request);
 
-        assertThat(result.getData().getId()).isEqualTo("r-1");
+        assertThat(result.getData().getId()).isEqualTo(1L);
     }
 
     @Test
@@ -64,7 +64,7 @@ class AdminBannerControllerTest {
     void createByHash() {
         BannerCreateRequest request = new BannerCreateRequest(null, "hash123");
         when(bannerService.createByHash("hash123"))
-                .thenReturn(ResourceMeta.builder().id("r-1").build());
+                .thenReturn(ResourceMeta.builder().id(1L).build());
 
         var result = controller.create(request);
 
@@ -75,12 +75,12 @@ class AdminBannerControllerTest {
     @DisplayName("update 使用 resourceId 更新轮播图")
     void updateByResourceId() {
         BannerUpdateRequest request = new BannerUpdateRequest("r-1", null);
-        when(bannerService.update(1, "r-1"))
-                .thenReturn(ResourceMeta.builder().id("r-1").build());
+        when(bannerService.update(1, "1"))
+                .thenReturn(ResourceMeta.builder().id(1L).build());
 
         var result = controller.update(1, request);
 
-        assertThat(result.getData().getId()).isEqualTo("r-1");
+        assertThat(result.getData().getId()).isEqualTo(1L);
     }
 
     @Test

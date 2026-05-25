@@ -28,7 +28,7 @@ public class UserCourseController {
 
     @Operation(summary = "获取课程详情", description = "根据课程ID获取课程详细信息")
     @GetMapping("/{id}")
-    public Result<CourseResponse> get(@PathVariable String id) throws JsonProcessingException {
+    public Result<CourseResponse> get(@PathVariable Long id) throws JsonProcessingException {
         return Result.ok(courseService.get(id));
     }
 
@@ -44,7 +44,7 @@ public class UserCourseController {
     @GetMapping("/learned/{id}")
     @SaCheckRole("STUDENT")
     @ResourceAccess(id = "#id")
-    public Result<List<Course>> getByUserIdCourses(@PathVariable String id) {
+    public Result<List<Course>> getByUserIdCourses(@PathVariable Long id) {
         return Result.ok(courseService.getByUserId(id));
     }
 }

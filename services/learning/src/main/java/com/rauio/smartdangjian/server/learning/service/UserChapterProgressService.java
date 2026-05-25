@@ -31,7 +31,7 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      * @param id 进度记录 ID
      * @return 进度记录视图对象
      */
-    public UserChapterProgressResponse get(String id) {
+    public UserChapterProgressResponse get(Long id) {
         UserChapterProgress progress = this.getById(id);
         if (progress == null) {
             throw new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在");
@@ -45,7 +45,7 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      * @param userId 用户 ID
      * @return 进度记录列表
      */
-    public List<UserChapterProgressResponse> getByUserId(String userId) {
+    public List<UserChapterProgressResponse> getByUserId(Long userId) {
         QueryWrapper<UserChapterProgress> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId);
         List<UserChapterProgress> list = this.list(wrapper);
@@ -58,7 +58,7 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      * @param chapterId 章节 ID
      * @return 进度记录列表
      */
-    public List<UserChapterProgressResponse> getByChapterId(String chapterId) {
+    public List<UserChapterProgressResponse> getByChapterId(Long chapterId) {
         QueryWrapper<UserChapterProgress> wrapper = new QueryWrapper<>();
         wrapper.eq("chapter_id", chapterId);
         List<UserChapterProgress> list = this.list(wrapper);
@@ -72,7 +72,7 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      * @param chapterId 章节 ID
      * @return 进度记录视图对象
      */
-    public UserChapterProgressResponse getByUserIdAndChapterId(String userId, String chapterId) {
+    public UserChapterProgressResponse getByUserIdAndChapterId(Long userId, Long chapterId) {
         QueryWrapper<UserChapterProgress> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId).eq("chapter_id", chapterId);
         UserChapterProgress progress = this.getOne(wrapper);
@@ -148,7 +148,7 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      * @param id 进度记录 ID
      * @return 是否删除成功
      */
-    public Boolean delete(String id) {
+    public Boolean delete(Long id) {
         UserChapterProgress existing = this.getById(id);
         if (existing == null) {
             throw new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在");

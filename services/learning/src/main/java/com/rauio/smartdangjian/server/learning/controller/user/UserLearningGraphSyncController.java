@@ -29,7 +29,7 @@ public class UserLearningGraphSyncController {
     @SaCheckRole("STUDENT")
     @ResourceAccess(id = "#userId")
     public Result<Integer> syncUserGraph(
-            @Parameter(name = "userId", description = "用户ID") @PathVariable String userId) {
+            @Parameter(name = "userId", description = "用户ID") @PathVariable Long userId) {
         return Result.ok(userLearningRecordService.syncUserLearningGraph(userId));
     }
 }

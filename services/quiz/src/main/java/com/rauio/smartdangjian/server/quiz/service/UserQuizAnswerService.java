@@ -61,7 +61,7 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @return 是否删除成功
      */
     @SaCheckRole("MANAGER")
-    public Boolean delete(String id) {
+    public Boolean delete(Long id) {
         return this.removeById(id);
     }
 
@@ -74,7 +74,7 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @return 是否删除成功
      */
     @SaCheckRole("MANAGER")
-    public Boolean deleteByUserIdAndQuizIdAndOptionId(String userId, String quizId, String optionId) {
+    public Boolean deleteByUserIdAndQuizIdAndOptionId(Long userId, Long quizId, Long optionId) {
         UserQuizAnswer existing = getByUserIdAndQuizIdAndOptionId(userId, quizId, optionId);
         if (existing == null) {
             return false;
@@ -88,7 +88,7 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param quizId 测验 ID
      * @return 答题记录列表
      */
-    public List<UserQuizAnswer> getByQuizId(String quizId) {
+    public List<UserQuizAnswer> getByQuizId(Long quizId) {
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
         wrapper.eq(UserQuizAnswer::getQuizId, quizId);
         return this.list(wrapper);
@@ -100,7 +100,7 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param optionId 选项 ID
      * @return 答题记录
      */
-    public UserQuizAnswer getByOptionId(String optionId) {
+    public UserQuizAnswer getByOptionId(Long optionId) {
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
         wrapper.eq(UserQuizAnswer::getOptionId, optionId);
         return this.getOne(wrapper);
@@ -112,7 +112,7 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param userId 用户 ID
      * @return 答题记录列表
      */
-    public List<UserQuizAnswer> getByUserId(String userId) {
+    public List<UserQuizAnswer> getByUserId(Long userId) {
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
         wrapper.eq(UserQuizAnswer::getUserId, userId);
         return this.list(wrapper);
@@ -125,7 +125,7 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param quizId 测验 ID
      * @return 答题记录列表
      */
-    public List<UserQuizAnswer> getByUserIdAndQuizId(String userId, String quizId) {
+    public List<UserQuizAnswer> getByUserIdAndQuizId(Long userId, Long quizId) {
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
         wrapper.eq(UserQuizAnswer::getUserId, userId);
         wrapper.eq(UserQuizAnswer::getQuizId, quizId);
@@ -140,7 +140,7 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param optionId 选项 ID
      * @return 答题记录
      */
-    public UserQuizAnswer getByUserIdAndQuizIdAndOptionId(String userId, String quizId, String optionId) {
+    public UserQuizAnswer getByUserIdAndQuizIdAndOptionId(Long userId, Long quizId, Long optionId) {
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
         wrapper.eq(UserQuizAnswer::getUserId, userId);
         wrapper.eq(UserQuizAnswer::getQuizId, quizId);

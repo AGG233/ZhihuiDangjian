@@ -38,10 +38,10 @@ public final class BannerTestDataFactory {
 
     // ── ResourceMeta ────────────────────────────────────────────────
 
-    public static ResourceMeta createResourceMeta(String id) {
+    public static ResourceMeta createResourceMeta(Long id) {
         return ResourceMeta.builder()
                 .id(id)
-                .uploaderId("admin1")
+                .uploaderId(1L)
                 .originalName("banner.png")
                 .hash("hash-123")
                 .objectKey("image/hash-123.png")

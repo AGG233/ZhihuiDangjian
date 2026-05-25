@@ -57,9 +57,9 @@ public class QuizAdminAccessAspect implements DataScopeResolver {
     }
 
     private void assertSameUniversity(CurrentUserPrincipal currentUser, String resource, String resourceId) {
-        String quizId =
+        Long quizId =
                 switch (resource) {
-                    case "QUIZ" -> resourceId;
+                    case "QUIZ" -> Long.parseLong(resourceId);
                     case "OPTION" -> {
                         QuizOption option = quizOptionMapper.selectById(resourceId);
                         if (option == null) {

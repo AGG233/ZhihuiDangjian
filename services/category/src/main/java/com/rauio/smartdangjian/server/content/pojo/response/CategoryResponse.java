@@ -2,6 +2,9 @@ package com.rauio.smartdangjian.server.content.pojo.response;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -10,7 +13,8 @@ import lombok.Data;
 public class CategoryResponse {
 
     @Schema(description = "分类ID")
-    private String id;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long id;
 
     @Schema(description = "所属学校ID")
     private String universityId;
@@ -22,7 +26,8 @@ public class CategoryResponse {
     private String description;
 
     @Schema(description = "父分类ID")
-    private String parentId;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long parentId;
 
     @Schema(description = "排序序号")
     private Integer sortOrder;

@@ -35,7 +35,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      * @param id 目录id
      * @return  目录以及它的子目录
      */
-    public CategoryResponse get(String id) {
+    public CategoryResponse get(Long id) {
         Category category = super.getById(id);
         List<CategoryResponse> children;
         if (category == null) {
@@ -71,7 +71,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      * @param categoryId 父目录Id
      * @return 父目录的子目录
      * */
-    public List<CategoryResponse> getByParentId(String categoryId) {
+    public List<CategoryResponse> getByParentId(Long categoryId) {
         return convertor.toResponseList(
                 this.list(new LambdaQueryWrapper<Category>().eq(Category::getParentId, categoryId)));
     }
@@ -119,7 +119,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      * @param parentId    子目录列表所属的父目录的ID
      * @return 添加结构
      * */
-    public Boolean createByParentId(List<CategoryRequest> children, String parentId) {
+    public Boolean createByParentId(List<CategoryRequest> children, Long parentId) {
         Category parent = super.getById(parentId);
         if (parent == null || children == null) {
             throw new BusinessException(CategoryErrorConstants.CATEGORY_OR_CHILD_NOT_FOUND, "目录或子目录不存在");
@@ -154,7 +154,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      * @param categoryId 目录id
      * @return 删除结果
      */
-    public Boolean delete(String categoryId) {
+    public Boolean delete(Long categoryId) {
         if (!this.list(new LambdaQueryWrapper<Category>().eq(Category::getParentId, categoryId))
                 .isEmpty()) {
             throw new BusinessException(CategoryErrorConstants.CATEGORY_HAS_CHILDREN, "该目录有子目录，请先删除子目录");
@@ -168,7 +168,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      * @param categoryId 目录id
      * @return 删除结果
      * */
-    public Boolean deleteByIdWithChildren(String categoryId) {
+    public Boolean deleteByIdWithChildren(Long categoryId) {
         Category category = super.getById(categoryId);
         if (category == null) {
             throw new BusinessException(CategoryErrorConstants.CATEGORY_NOT_FOUND, "目录不存在");
@@ -188,7 +188,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      * @param dto 前端传入的目录
      * @return 修改结果
      */
-    public Boolean update(CategoryRequest dto, String id) {
+    public Boolean update(CategoryRequest dto, Long id) {
         if (dto == null) {
             throw new BusinessException(CategoryErrorConstants.CATEGORY_ARGS_ERROR, "参数错误");
         }

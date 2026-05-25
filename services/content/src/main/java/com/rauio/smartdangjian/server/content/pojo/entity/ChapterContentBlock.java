@@ -8,7 +8,6 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.rauio.smartdangjian.server.content.spec.BlockType;
-import com.rauio.smartdangjian.server.content.spec.ParentType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -18,24 +17,20 @@ import lombok.ToString;
 @Data
 @Builder
 @ToString
-@TableName("content_block")
-@Schema(description = "内容块")
-public class ContentBlock {
+@TableName("chapter_content_block")
+@Schema(description = "章节内容块")
+public class ChapterContentBlock {
 
     @TableId
     @Schema(description = "内容块ID")
     @JsonSerialize(using = ToStringSerializer.class)
-    private String id;
+    private Long id;
 
-    @Schema(description = "父实体ID，例如章节ID或文章ID")
-    private String parentId;
+    @Schema(description = "所属章节ID")
+    private Long chapterId;
 
     @Schema(description = "内容块排序序号")
     private Integer orderIndex;
-
-    @EnumValue
-    @Schema(description = "父级内容块类型")
-    private ParentType parentType;
 
     @EnumValue
     @Schema(description = "内容块类型")
@@ -45,7 +40,7 @@ public class ContentBlock {
     private String textContent;
 
     @Schema(description = "内容块的资源ID")
-    private String resourceId;
+    private Long resourceId;
 
     @Schema(description = "内容块的额外说明")
     private String caption;

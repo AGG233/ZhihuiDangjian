@@ -2,6 +2,9 @@ package com.rauio.smartdangjian.server.learning.pojo.request;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
@@ -12,13 +15,16 @@ import lombok.Data;
 public class UserLearningRecordRequest {
 
     @Schema(description = "记录ID，更新时需要")
-    private String id;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long id;
 
     @Schema(description = "用户ID")
-    private String userId;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long userId;
 
     @Schema(description = "章节ID")
-    private String chapterId;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long chapterId;
 
     @Schema(description = "开始学习时间")
     private LocalDateTime startTime;

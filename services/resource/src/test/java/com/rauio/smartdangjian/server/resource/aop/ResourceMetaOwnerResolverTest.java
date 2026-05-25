@@ -32,12 +32,12 @@ class ResourceMetaOwnerResolverTest {
     @Test
     @DisplayName("findResourceOwner 返回上传人ID")
     void findResourceOwner() {
-        when(resourceMetaService.get("r-1"))
+        when(resourceMetaService.get(1L))
                 .thenReturn(
-                        ResourceMeta.builder().id("r-1").uploaderId("user-1").build());
+                        ResourceMeta.builder().id(1L).uploaderId(1L).build());
 
         String owner = resolver.findResourceOwner("r-1");
 
-        assertThat(owner).isEqualTo("user-1");
+        assertThat(owner).isEqualTo("1");
     }
 }

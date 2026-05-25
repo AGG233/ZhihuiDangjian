@@ -128,21 +128,21 @@ class FileControllerTest {
         @Test
         @DisplayName("POST /confirm/{id} — 确认上传成功，返回状态为 PUBLIC")
         void confirmUploadReturnsUpdatedMeta() throws Exception {
-            when(fileService.confirmUpload("file-res-001")).thenReturn(FileTestDataFactory.createPublicResourceMeta());
+            when(fileService.confirmUpload(1L)).thenReturn(FileTestDataFactory.createPublicResourceMeta());
 
-            mockMvc.perform(post("/api/resource/files/confirm/file-res-001"))
+            mockMvc.perform(post("/api/resource/files/confirm/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data.id").value("file-res-001"))
+                    .andExpect(jsonPath("$.data.id").value("1"))
                     .andExpect(jsonPath("$.data.status").value(1));
         }
 
         @Test
         @DisplayName("POST /confirm/{id} — 已确认的资源再次确认仍返回 PUBLIC（幂等）")
         void confirmAlreadyPublicUploadReturnsMetaUnchanged() throws Exception {
-            when(fileService.confirmUpload("file-res-001")).thenReturn(FileTestDataFactory.createPublicResourceMeta());
+            when(fileService.confirmUpload(1L)).thenReturn(FileTestDataFactory.createPublicResourceMeta());
 
-            mockMvc.perform(post("/api/resource/files/confirm/file-res-001"))
+            mockMvc.perform(post("/api/resource/files/confirm/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.status").value(1));
         }
@@ -151,9 +151,9 @@ class FileControllerTest {
         @DisplayName("GET /by-id/{id} — 根据资源 ID 获取文件信息，返回所有字段")
         void getByIdReturnsFileInfoResponse() throws Exception {
             FileInfoResponse info = FileTestDataFactory.createFileInfoResponse();
-            when(fileService.getFileInfo("file-res-001")).thenReturn(info);
+            when(fileService.getFileInfo(1L)).thenReturn(info);
 
-            mockMvc.perform(get("/api/resource/files/by-id/file-res-001"))
+            mockMvc.perform(get("/api/resource/files/by-id/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.resourceId").value("file-res-001"))
@@ -181,10 +181,10 @@ class FileControllerTest {
         @Test
         @DisplayName("GET /{id}/download — 获取文件下载链接")
         void getDownloadUrlReturnsUrlString() throws Exception {
-            when(fileService.getDownloadUrl("file-res-001"))
+            when(fileService.getDownloadUrl(1L))
                     .thenReturn("https://cos.example.com/image/uuid-test.png?sign=xyz");
 
-            mockMvc.perform(get("/api/resource/files/file-res-001/download"))
+            mockMvc.perform(get("/api/resource/files/1/download"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").isString());
@@ -195,9 +195,9 @@ class FileControllerTest {
         void fullUploadLifecycle() throws Exception {
             FileUploadResponse uploadResp = FileTestDataFactory.createUploadResponse();
             when(fileService.upload(any())).thenReturn(uploadResp);
-            when(fileService.confirmUpload("file-res-001")).thenReturn(FileTestDataFactory.createPublicResourceMeta());
-            when(fileService.getFileInfo("file-res-001")).thenReturn(FileTestDataFactory.createFileInfoResponse());
-            when(fileService.getDownloadUrl("file-res-001"))
+            when(fileService.confirmUpload(1L)).thenReturn(FileTestDataFactory.createPublicResourceMeta());
+            when(fileService.getFileInfo(1L)).thenReturn(FileTestDataFactory.createFileInfoResponse());
+            when(fileService.getDownloadUrl(1L))
                     .thenReturn("https://cos.example.com/image/uuid-test.png?sign=xyz");
 
             mockMvc.perform(post("/api/resource/files/upload")
@@ -206,22 +206,22 @@ class FileControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.resourceId").value("file-res-001"));
 
-            mockMvc.perform(post("/api/resource/files/confirm/file-res-001"))
+            mockMvc.perform(post("/api/resource/files/confirm/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.status").value(1));
 
-            mockMvc.perform(get("/api/resource/files/by-id/file-res-001"))
+            mockMvc.perform(get("/api/resource/files/by-id/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.downloadUrl").isString());
 
-            mockMvc.perform(get("/api/resource/files/file-res-001/download"))
+            mockMvc.perform(get("/api/resource/files/1/download"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data").isString());
 
             verify(fileService).upload(any());
-            verify(fileService).confirmUpload("file-res-001");
-            verify(fileService).getFileInfo("file-res-001");
-            verify(fileService).getDownloadUrl("file-res-001");
+            verify(fileService).confirmUpload(1L);
+            verify(fileService).getFileInfo(1L);
+            verify(fileService).getDownloadUrl(1L);
         }
     }
 
@@ -298,9 +298,9 @@ class FileControllerTest {
         @Test
         @DisplayName("DELETE /{id} — 删除文件返回 true")
         void deleteByIdReturnsTrue() throws Exception {
-            doNothing().when(fileService).delete("file-res-001");
+            doNothing().when(fileService).delete(1L);
 
-            mockMvc.perform(delete("/api/resource/files/file-res-001"))
+            mockMvc.perform(delete("/api/resource/files/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(true));
@@ -309,19 +309,19 @@ class FileControllerTest {
         @Test
         @DisplayName("DELETE /{id} — 验证服务层 delete 被精确调用一次")
         void deleteCallsServiceDelete() throws Exception {
-            doNothing().when(fileService).delete("file-res-001");
+            doNothing().when(fileService).delete(1L);
 
-            mockMvc.perform(delete("/api/resource/files/file-res-001")).andExpect(status().isOk());
+            mockMvc.perform(delete("/api/resource/files/1")).andExpect(status().isOk());
 
-            verify(fileService).delete("file-res-001");
+            verify(fileService).delete(1L);
         }
 
         @Test
         @DisplayName("DELETE /{id} — 删除不存在的资源返回 400")
         void deleteNonExistentResource() throws Exception {
-            doThrow(new BusinessException(4000, "资源不存在")).when(fileService).delete("ghost-id");
+            doThrow(new BusinessException(4000, "资源不存在")).when(fileService).delete(999999L);
 
-            mockMvc.perform(delete("/api/resource/files/ghost-id"))
+            mockMvc.perform(delete("/api/resource/files/999999"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("资源不存在"));
@@ -359,9 +359,9 @@ class FileControllerTest {
         @Test
         @DisplayName("POST /confirm/{id} — 确认不存在的资源返回 400")
         void confirmUploadResourceNotFound() throws Exception {
-            when(fileService.confirmUpload("ghost")).thenThrow(new BusinessException(4000, "资源不存在"));
+            when(fileService.confirmUpload(999999L)).thenThrow(new BusinessException(4000, "资源不存在"));
 
-            mockMvc.perform(post("/api/resource/files/confirm/ghost"))
+            mockMvc.perform(post("/api/resource/files/confirm/999999"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("资源不存在"));
@@ -370,9 +370,9 @@ class FileControllerTest {
         @Test
         @DisplayName("GET /by-id/{id} — 根据不存在的 ID 查询返回 400")
         void getByIdResourceNotFound() throws Exception {
-            when(fileService.getFileInfo("ghost")).thenThrow(new BusinessException(4000, "资源不存在"));
+            when(fileService.getFileInfo(999999L)).thenThrow(new BusinessException(4000, "资源不存在"));
 
-            mockMvc.perform(get("/api/resource/files/by-id/ghost"))
+            mockMvc.perform(get("/api/resource/files/by-id/999999"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("资源不存在"));
@@ -392,9 +392,9 @@ class FileControllerTest {
         @Test
         @DisplayName("GET /{id}/download — 不存在的资源下载返回 400")
         void getDownloadUrlResourceNotFound() throws Exception {
-            when(fileService.getDownloadUrl("ghost")).thenThrow(new BusinessException(4000, "资源不存在"));
+            when(fileService.getDownloadUrl(999999L)).thenThrow(new BusinessException(4000, "资源不存在"));
 
-            mockMvc.perform(get("/api/resource/files/ghost/download"))
+            mockMvc.perform(get("/api/resource/files/999999/download"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("资源不存在"));
@@ -403,9 +403,9 @@ class FileControllerTest {
         @Test
         @DisplayName("Service 抛出 RuntimeException 返回 500")
         void serviceThrowsRuntimeException() throws Exception {
-            when(fileService.getDownloadUrl("boom")).thenThrow(new RuntimeException("数据库连接失败"));
+            when(fileService.getDownloadUrl(999998L)).thenThrow(new RuntimeException("数据库连接失败"));
 
-            mockMvc.perform(get("/api/resource/files/boom/download"))
+            mockMvc.perform(get("/api/resource/files/999998/download"))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("500"));
         }
@@ -475,9 +475,9 @@ class FileControllerTest {
         void getByIdReturnsFileInfoWithNullSize() throws Exception {
             FileInfoResponse info = FileTestDataFactory.createFileInfoResponse(
                     "file-res-001", "test.png", "abc123", "image/test.png", 0, 1, "https://cos.example.com/dl", null);
-            when(fileService.getFileInfo("file-res-001")).thenReturn(info);
+            when(fileService.getFileInfo(1L)).thenReturn(info);
 
-            mockMvc.perform(get("/api/resource/files/by-id/file-res-001"))
+            mockMvc.perform(get("/api/resource/files/by-id/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.size").doesNotExist());
         }

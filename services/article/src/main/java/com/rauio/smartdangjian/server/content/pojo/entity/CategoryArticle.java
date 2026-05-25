@@ -14,10 +14,10 @@ import lombok.Data;
 public class CategoryArticle {
 
     @Schema(description = "分类ID")
-    private String categoryId;
+    private Long categoryId;
 
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
     @Schema(description = "文章ID")
-    private String articleId;
+    private Long articleId;
 }

@@ -61,7 +61,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @return 用户视图对象
      */
     @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#id")
-    public UserResponse get(String id) {
+    public UserResponse get(Long id) {
         return convertor.toResponse(this.getById(id));
     }
 
@@ -142,7 +142,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @throws BusinessException 如果更新失败
      */
     @CachePut(value = USER_VO_CACHE_PREFIX, key = "#id")
-    public void update(String id, User user) {
+    public void update(Long id, User user) {
         user.setId(id);
         if (StringUtils.isNotBlank(user.getPassword())) {
             user.setPassword(BCrypt.hashpw(user.getPassword()));
@@ -158,7 +158,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param id 用户 ID
      * @throws BusinessException 如果删除失败
      */
-    public void delete(String id) {
+    public void delete(Long id) {
         if (!this.removeById(id)) {
             throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户删除失败");
         }
@@ -174,7 +174,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         checkEmailRegistered(user.getEmail());
         checkPhoneRegistered(user.getPhone());
         checkUsernameOccupied(user.getUsername());
-        checkPartyMemberId(String.valueOf(user.getPartyMemberId()));
+        checkPartyMemberId(user.getPartyMemberId());
         user.setPassword(BCrypt.hashpw(user.getPassword()));
         if (!this.save(user)) {
             throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户注册失败");
@@ -208,7 +208,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param schoolId 学校id
      * @return 是否属于该学校
      */
-    public Boolean isUserBelongsSchool(String id, String schoolId) {
+    public Boolean isUserBelongsSchool(Long id, Long schoolId) {
         if (schoolId == null) {
             throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "有空参数");
         }

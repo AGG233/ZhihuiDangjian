@@ -15,8 +15,8 @@ class QuizTest {
         LocalDateTime now = LocalDateTime.now();
 
         Quiz quiz = Quiz.builder()
-                .id("quiz-123")
-                .chapterId("chapter-456")
+                .id(1L)
+                .chapterId(1L)
                 .question("什么是党的根本宗旨？")
                 .questionType("single_choice")
                 .score(5)
@@ -27,8 +27,8 @@ class QuizTest {
                 .updatedAt(now)
                 .build();
 
-        assertThat(quiz.getId()).isEqualTo("quiz-123");
-        assertThat(quiz.getChapterId()).isEqualTo("chapter-456");
+        assertThat(quiz.getId()).isEqualTo(1L);
+        assertThat(quiz.getChapterId()).isEqualTo(1L);
         assertThat(quiz.getQuestion()).isEqualTo("什么是党的根本宗旨？");
         assertThat(quiz.getQuestionType()).isEqualTo("single_choice");
         assertThat(quiz.getScore()).isEqualTo(5);
@@ -44,8 +44,8 @@ class QuizTest {
     void settersAndGettersWorkCorrectly() {
         Quiz quiz = Quiz.builder().build();
 
-        quiz.setId("new-id");
-        quiz.setChapterId("new-chapter");
+        quiz.setId(1L);
+        quiz.setChapterId(1L);
         quiz.setQuestion("新问题");
         quiz.setQuestionType("multi_choice");
         quiz.setScore(10);
@@ -53,8 +53,8 @@ class QuizTest {
         quiz.setExplanation("新的解释");
         quiz.setIsActive(false);
 
-        assertThat(quiz.getId()).isEqualTo("new-id");
-        assertThat(quiz.getChapterId()).isEqualTo("new-chapter");
+        assertThat(quiz.getId()).isEqualTo(1L);
+        assertThat(quiz.getChapterId()).isEqualTo(1L);
         assertThat(quiz.getQuestion()).isEqualTo("新问题");
         assertThat(quiz.getQuestionType()).isEqualTo("multi_choice");
         assertThat(quiz.getScore()).isEqualTo(10);
@@ -67,9 +67,9 @@ class QuizTest {
     @DisplayName("toString 包含所有字段值")
     void toStringContainsAllFieldValues() {
         Quiz quiz = Quiz.builder()
-                .id("qz-1")
+                .id(1L)
                 .question("测试题目")
-                .chapterId("ch-1")
+                .chapterId(1L)
                 .score(5)
                 .build();
 
@@ -82,27 +82,27 @@ class QuizTest {
     @DisplayName("equals 比较所有字段相同的 Quiz 视为相等")
     void equalsComparesAllFields() {
         Quiz quiz1 = Quiz.builder()
-                .id("quiz-1")
+                .id(1L)
                 .question("Q1")
-                .chapterId("ch-1")
+                .chapterId(1L)
                 .score(5)
                 .build();
         Quiz quiz2 = Quiz.builder()
-                .id("quiz-1")
+                .id(1L)
                 .question("Q1")
-                .chapterId("ch-1")
+                .chapterId(1L)
                 .score(5)
                 .build();
         Quiz quiz3 = Quiz.builder()
-                .id("quiz-2")
+                .id(1L)
                 .question("Q1")
-                .chapterId("ch-1")
+                .chapterId(1L)
                 .score(5)
                 .build();
         Quiz quiz4 = Quiz.builder()
-                .id("quiz-1")
+                .id(1L)
                 .question("different")
-                .chapterId("ch-1")
+                .chapterId(1L)
                 .score(5)
                 .build();
 
@@ -115,15 +115,15 @@ class QuizTest {
     @DisplayName("hashCode 所有字段相同时产生相同哈希值")
     void hashCodeBasedOnAllFields() {
         Quiz quiz1 = Quiz.builder()
-                .id("qz-1")
+                .id(1L)
                 .question("Q1")
-                .chapterId("ch-1")
+                .chapterId(1L)
                 .score(5)
                 .build();
         Quiz quiz2 = Quiz.builder()
-                .id("qz-1")
+                .id(1L)
                 .question("Q1")
-                .chapterId("ch-1")
+                .chapterId(1L)
                 .score(5)
                 .build();
 

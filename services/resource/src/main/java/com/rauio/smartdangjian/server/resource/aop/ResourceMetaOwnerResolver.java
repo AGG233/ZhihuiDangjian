@@ -23,7 +23,8 @@ public class ResourceMetaOwnerResolver implements ResourceOwnerResolver {
 
     @Override
     public String findResourceOwner(Object resourceId) {
-        ResourceMeta meta = resourceMetaService.get(String.valueOf(resourceId));
-        return meta.getUploaderId();
+        Long id = resourceId instanceof Long ? (Long) resourceId : Long.valueOf(String.valueOf(resourceId));
+        ResourceMeta meta = resourceMetaService.get(id);
+        return String.valueOf(meta.getUploaderId());
     }
 }
