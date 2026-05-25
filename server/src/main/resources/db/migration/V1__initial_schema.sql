@@ -74,8 +74,8 @@ CREATE TABLE category
   CHARSET = utf8mb4
   ROW_FORMAT = DYNAMIC COMMENT '课程分类表（树形结构）';
 
-CREATE INDEX IF NOT EXISTS idx_category_university_parent ON category (university_id, parent_id);
-CREATE INDEX IF NOT EXISTS idx_category_parent ON category (parent_id);
+CREATE INDEX idx_category_university_parent ON category (university_id, parent_id);
+CREATE INDEX idx_category_parent ON category (parent_id);
 
 -- -----------------------------------------------------------
 -- 4. resource_meta — 统一资源元数据
@@ -98,7 +98,7 @@ CREATE TABLE resource_meta
   CHARSET = utf8mb4
   ROW_FORMAT = DYNAMIC COMMENT '统一资源元数据表';
 
-CREATE INDEX IF NOT EXISTS idx_resource_meta_uploader ON resource_meta (uploader_id);
+CREATE INDEX idx_resource_meta_uploader ON resource_meta (uploader_id);
 
 -- -----------------------------------------------------------
 -- 5. course — 课程
@@ -126,10 +126,10 @@ CREATE TABLE course
   CHARSET = utf8mb4
   ROW_FORMAT = DYNAMIC COMMENT '课程信息表';
 
-CREATE FULLTEXT INDEX IF NOT EXISTS ft_course_title_desc ON course (title, description);
-CREATE INDEX IF NOT EXISTS idx_course_cover ON course (cover_image_id);
-CREATE INDEX IF NOT EXISTS idx_course_creator ON course (creator_id);
-CREATE INDEX IF NOT EXISTS idx_course_published ON course (is_published, published_at);
+CREATE FULLTEXT INDEX ft_course_title_desc ON course (title, description);
+CREATE INDEX idx_course_cover ON course (cover_image_id);
+CREATE INDEX idx_course_creator ON course (creator_id);
+CREATE INDEX idx_course_published ON course (is_published, published_at);
 
 -- -----------------------------------------------------------
 -- 6. category_course — 分类-课程关联
@@ -148,7 +148,7 @@ CREATE TABLE category_course
   CHARSET = utf8mb4
   ROW_FORMAT = DYNAMIC COMMENT '分类-课程关联表';
 
-CREATE INDEX IF NOT EXISTS idx_category_course_category ON category_course (category_id);
+CREATE INDEX idx_category_course_category ON category_course (category_id);
 
 -- -----------------------------------------------------------
 -- 7. chapter — 课程章节
@@ -171,8 +171,8 @@ CREATE TABLE chapter
   CHARSET = utf8mb4
   ROW_FORMAT = DYNAMIC COMMENT '课程章节表';
 
-CREATE FULLTEXT INDEX IF NOT EXISTS ft_chapter_title_desc ON chapter (title, description);
-CREATE INDEX IF NOT EXISTS idx_chapter_course ON chapter (course_id);
+CREATE FULLTEXT INDEX ft_chapter_title_desc ON chapter (title, description);
+CREATE INDEX idx_chapter_course ON chapter (course_id);
 
 -- -----------------------------------------------------------
 -- 8. chapter_content_block — 章节内容块
@@ -196,8 +196,8 @@ CREATE TABLE chapter_content_block
   CHARSET = utf8mb4
   ROW_FORMAT = DYNAMIC COMMENT '章节内容块表';
 
-CREATE FULLTEXT INDEX IF NOT EXISTS ft_chapter_cb_text ON chapter_content_block (text_content, caption);
-CREATE INDEX IF NOT EXISTS idx_chapter_cb_chapter ON chapter_content_block (chapter_id, order_index);
+CREATE FULLTEXT INDEX ft_chapter_cb_text ON chapter_content_block (text_content, caption);
+CREATE INDEX idx_chapter_cb_chapter ON chapter_content_block (chapter_id, order_index);
 
 -- -----------------------------------------------------------
 -- 9. article — 图文文章
@@ -218,8 +218,8 @@ CREATE TABLE article
   CHARSET = utf8mb4
   ROW_FORMAT = DYNAMIC COMMENT '独立图文文章表';
 
-CREATE INDEX IF NOT EXISTS idx_article_author ON article (author_id);
-CREATE INDEX IF NOT EXISTS idx_article_status ON article (status);
+CREATE INDEX idx_article_author ON article (author_id);
+CREATE INDEX idx_article_status ON article (status);
 
 -- -----------------------------------------------------------
 -- 10. category_article — 分类-文章关联
@@ -238,7 +238,7 @@ CREATE TABLE category_article
   CHARSET = utf8mb4
   ROW_FORMAT = DYNAMIC COMMENT '分类-文章关联表';
 
-CREATE INDEX IF NOT EXISTS idx_category_article_category ON category_article (category_id);
+CREATE INDEX idx_category_article_category ON category_article (category_id);
 
 -- -----------------------------------------------------------
 -- 11. article_content_block — 文章内容块
@@ -262,8 +262,8 @@ CREATE TABLE article_content_block
   CHARSET = utf8mb4
   ROW_FORMAT = DYNAMIC COMMENT '文章内容块表';
 
-CREATE FULLTEXT INDEX IF NOT EXISTS ft_article_cb_text ON article_content_block (text_content, caption);
-CREATE INDEX IF NOT EXISTS idx_article_cb_article ON article_content_block (article_id, order_index);
+CREATE FULLTEXT INDEX ft_article_cb_text ON article_content_block (text_content, caption);
+CREATE INDEX idx_article_cb_article ON article_content_block (article_id, order_index);
 
 -- -----------------------------------------------------------
 -- 12. quiz — 章节测试题
@@ -286,7 +286,7 @@ CREATE TABLE quiz
   CHARSET = utf8mb4
   ROW_FORMAT = DYNAMIC COMMENT '章节测试题表';
 
-CREATE INDEX IF NOT EXISTS idx_quiz_chapter ON quiz (chapter_id);
+CREATE INDEX idx_quiz_chapter ON quiz (chapter_id);
 
 -- -----------------------------------------------------------
 -- 13. quiz_option — 试题选项
@@ -306,7 +306,7 @@ CREATE TABLE quiz_option
   CHARSET = utf8mb4
   ROW_FORMAT = DYNAMIC COMMENT '试题选项表';
 
-CREATE INDEX IF NOT EXISTS idx_quiz_option_quiz ON quiz_option (quiz_id);
+CREATE INDEX idx_quiz_option_quiz ON quiz_option (quiz_id);
 
 -- -----------------------------------------------------------
 -- 14. user_chapter_progress — 用户章节学习进度
@@ -330,7 +330,7 @@ CREATE TABLE user_chapter_progress
   CHARSET = utf8mb4
   ROW_FORMAT = DYNAMIC COMMENT '用户章节学习进度表';
 
-CREATE INDEX IF NOT EXISTS idx_user_chapter_progress_chapter ON user_chapter_progress (chapter_id);
+CREATE INDEX idx_user_chapter_progress_chapter ON user_chapter_progress (chapter_id);
 
 -- -----------------------------------------------------------
 -- 15. user_learning_record — 用户学习行为记录
@@ -353,9 +353,9 @@ CREATE TABLE user_learning_record
   CHARSET = utf8mb4
   ROW_FORMAT = DYNAMIC COMMENT '用户学习行为记录表';
 
-CREATE INDEX IF NOT EXISTS idx_user_learning_record_chapter ON user_learning_record (chapter_id);
-CREATE INDEX IF NOT EXISTS idx_user_learning_record_user_chapter ON user_learning_record (user_id, chapter_id);
-CREATE INDEX IF NOT EXISTS idx_user_learning_record_user_time ON user_learning_record (user_id, start_time);
+CREATE INDEX idx_user_learning_record_chapter ON user_learning_record (chapter_id);
+CREATE INDEX idx_user_learning_record_user_chapter ON user_learning_record (user_id, chapter_id);
+CREATE INDEX idx_user_learning_record_user_time ON user_learning_record (user_id, start_time);
 
 -- -----------------------------------------------------------
 -- 16. user_quiz_answer — 用户答题记录
@@ -383,11 +383,11 @@ CREATE TABLE user_quiz_answer
   CHARSET = utf8mb4
   ROW_FORMAT = DYNAMIC COMMENT '用户答题记录表';
 
-CREATE INDEX IF NOT EXISTS idx_user_quiz_answer_quiz ON user_quiz_answer (quiz_id);
-CREATE INDEX IF NOT EXISTS idx_user_quiz_answer_option ON user_quiz_answer (option_id);
-CREATE INDEX IF NOT EXISTS idx_user_quiz_answer_session ON user_quiz_answer (session_id);
-CREATE INDEX IF NOT EXISTS idx_user_quiz_answer_user_quiz ON user_quiz_answer (user_id, quiz_id);
-CREATE INDEX IF NOT EXISTS idx_user_quiz_answer_user_option ON user_quiz_answer (user_id, option_id);
+CREATE INDEX idx_user_quiz_answer_quiz ON user_quiz_answer (quiz_id);
+CREATE INDEX idx_user_quiz_answer_option ON user_quiz_answer (option_id);
+CREATE INDEX idx_user_quiz_answer_session ON user_quiz_answer (session_id);
+CREATE INDEX idx_user_quiz_answer_user_quiz ON user_quiz_answer (user_id, quiz_id);
+CREATE INDEX idx_user_quiz_answer_user_option ON user_quiz_answer (user_id, option_id);
 
 -- -----------------------------------------------------------
 -- 17. user_similarity — 用户相似度（协同过滤推荐）
@@ -414,5 +414,5 @@ CREATE TABLE user_similarity
   CHARSET = utf8mb4
   ROW_FORMAT = DYNAMIC COMMENT '用户相似度表（协同过滤推荐）';
 
-CREATE INDEX IF NOT EXISTS idx_user_similarity_user1 ON user_similarity (user_id1, similarity_type, similarity_score DESC);
-CREATE INDEX IF NOT EXISTS idx_user_similarity_user2 ON user_similarity (user_id2, similarity_type, similarity_score DESC);
+CREATE INDEX idx_user_similarity_user1 ON user_similarity (user_id1, similarity_type, similarity_score DESC);
+CREATE INDEX idx_user_similarity_user2 ON user_similarity (user_id2, similarity_type, similarity_score DESC);
