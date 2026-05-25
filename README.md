@@ -1,0 +1,2 @@
+# ZhihuiDangjian
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d1057eebcb1843f9b34f9c256d27315d)](https://app.codacy.com/gh/AGG233/ZhihuiDangjian?utm_source=github.com&utm_medium=referral&utm_content=AGG233/ZhihuiDangjian&utm_campaign=Badge_Grade)
