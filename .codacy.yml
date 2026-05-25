@@ -1,6 +1,5 @@
 ---
-engines:
-  - name: sqlint
-    enabled: false
-  - name: tsqllint
-    enabled: false
+exclude_paths:
+  - "server/src/main/resources/db/migration/.*"
+  - ".github/sql/.*"
+  - "services/.*/src/main/resources/sql/.*"
