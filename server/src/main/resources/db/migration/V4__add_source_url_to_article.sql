@@ -14,4 +14,4 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
-CREATE INDEX IF NOT EXISTS idx_article_source_url ON article (source_url);
+CREATE INDEX idx_article_source_url ON article (source_url);
