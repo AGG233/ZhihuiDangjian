@@ -105,8 +105,8 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
             cd /www/server/panel/data/compose/test
-            docker compose pull
-            docker compose up -d
+            docker-compose pull
+            docker-compose up -d
             docker image prune -f
 
   # ── Summary ──────────────────────────────────────────────────────────
