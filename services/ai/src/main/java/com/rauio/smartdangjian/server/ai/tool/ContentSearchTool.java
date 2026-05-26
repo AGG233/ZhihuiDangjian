@@ -12,6 +12,7 @@ import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.pojo.entity.Article;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
@@ -81,11 +82,11 @@ public class ContentSearchTool {
 
     @Tool(name = "getCourseDetail", description = "获取课程详情及其章节列表")
     public Map<String, Object> getCourseDetail(@ToolParam(description = "课程ID") String courseId) {
-        CourseResponse course = courseService.get(Long.valueOf(courseId));
+        CourseResponse course = courseService.get(IdUtil.parse(courseId));
         if (course == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "课程不存在");
         }
-        List<ChapterResponse> chapters = chapterService.getByCourseId(Long.valueOf(courseId));
+        List<ChapterResponse> chapters = chapterService.getByCourseId(IdUtil.parse(courseId));
 
         Map<String, Object> result = new HashMap<>();
         result.put("id", course.getId());
@@ -109,11 +110,11 @@ public class ContentSearchTool {
 
     @Tool(name = "getChapterDetail", description = "获取章节详情及其内容块")
     public Map<String, Object> getChapterDetail(@ToolParam(description = "章节ID") String chapterId) {
-        ChapterResponse chapter = chapterService.get(Long.valueOf(chapterId));
+        ChapterResponse chapter = chapterService.get(IdUtil.parse(chapterId));
         if (chapter == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "章节不存在");
         }
-        List<ContentBlockResponse> blocks = chapterContentBlockService.getByChapterId(Long.valueOf(chapterId));
+        List<ContentBlockResponse> blocks = chapterContentBlockService.getByChapterId(IdUtil.parse(chapterId));
 
         Map<String, Object> result = new HashMap<>();
         result.put("id", chapter.getId());

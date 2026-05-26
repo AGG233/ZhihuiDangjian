@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 import com.rauio.smartdangjian.server.resource.constants.ResourceStatusConstants;
@@ -27,7 +28,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
     public ResourceMeta create(ResourceMetaCreateRequest request) {
         validateDuplicate(null, request.getHash(), request.getObjectKey());
         ResourceMeta meta = ResourceMeta.builder()
-                .uploaderId(Long.valueOf(request.getUploaderId()))
+                .uploaderId(IdUtil.parse(request.getUploaderId()))
                 .originalName(request.getOriginalName())
                 .hash(request.getHash())
                 .objectKey(request.getObjectKey())

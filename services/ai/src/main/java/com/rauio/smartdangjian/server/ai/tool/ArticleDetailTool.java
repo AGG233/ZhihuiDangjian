@@ -12,6 +12,7 @@ import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.pojo.entity.Article;
 import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
@@ -48,7 +49,7 @@ public class ArticleDetailTool {
         if (article == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "文章不存在");
         }
-        List<ContentBlockResponse> blocks = articleContentBlockService.getByArticleId(Long.valueOf(articleId));
+        List<ContentBlockResponse> blocks = articleContentBlockService.getByArticleId(IdUtil.parse(articleId));
 
         Map<String, Object> result = new HashMap<>();
         result.put("id", article.getId());
