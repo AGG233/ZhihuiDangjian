@@ -1,5 +1,5 @@
 ---
 exclude_paths:
-  - "server/src/main/resources/db/migration/.*"
-  - ".github/sql/.*"
-  - "services/.*/src/main/resources/sql/.*"
+  - "server/src/main/resources/db/migration/**"
+  - ".github/sql/**"
+  - "services/**/src/main/resources/sql/**"
