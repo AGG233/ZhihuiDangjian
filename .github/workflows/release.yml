@@ -104,14 +104,9 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
-            docker pull ghcr.io/${{ github.repository_owner }}/zhihuidangjian:${{ needs.release.outputs.version }}
-            docker stop zhihuidangjian 2>/dev/null || true
-            docker rm zhihuidangjian 2>/dev/null || true
-            docker run -d --name zhihuidangjian \
-              --restart unless-stopped \
-              -p 9000:9000 \
-              --env-file /www/zhihuidangjian/.env \
-              ghcr.io/${{ github.repository_owner }}/zhihuidangjian:${{ needs.release.outputs.version }}
+            cd /www/server/panel/data/compose/test
+            docker compose pull
+            docker compose up -d
             docker image prune -f
 
   # ── Summary ──────────────────────────────────────────────────────────
