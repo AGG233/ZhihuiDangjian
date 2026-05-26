@@ -93,21 +93,16 @@ jobs:
   # ── Stage 2: Deploy to Server ────────────────────────────────────────
   deploy:
     name: Deploy to Server
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: [ release ]
     if: github.ref_type == 'tag'
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_KEY }}
-          script: |
-            cd /www/server/panel/data/compose/test
-            docker-compose pull
-            docker-compose up -d
-            docker image prune -f
+      - name: Deploy via docker-compose
+        working-directory: /www/server/panel/data/compose/test
+        run: |
+          docker-compose pull
+          docker-compose up -d
+          docker image prune -f
 
   # ── Summary ──────────────────────────────────────────────────────────
   summary:
