@@ -13,7 +13,7 @@ class ChapterRequestTest {
     @DisplayName("builder 构造 ChapterRequest 所有字段值正确")
     void builderCreatesChapterRequestCorrectly() {
         ChapterRequest dto = ChapterRequest.builder()
-                .courseId("course-001")
+                .courseId("1")
                 .title("章节标题")
                 .description("章节描述")
                 .duration(1800)
@@ -23,7 +23,7 @@ class ChapterRequestTest {
                 .content(List.of())
                 .build();
 
-        assertThat(dto.getCourseId()).isEqualTo("course-001");
+        assertThat(dto.getCourseId()).isEqualTo("1");
         assertThat(dto.getTitle()).isEqualTo("章节标题");
         assertThat(dto.getDescription()).isEqualTo("章节描述");
         assertThat(dto.getDuration()).isEqualTo(1800);
@@ -37,7 +37,7 @@ class ChapterRequestTest {
     @DisplayName("builder 默认 duration 为 -1")
     void defaultDurationIsMinusOne() {
         ChapterRequest dto = ChapterRequest.builder()
-                .courseId("course-001")
+                .courseId("1")
                 .title("标题")
                 .description("描述")
                 .orderIndex(1)
@@ -51,7 +51,7 @@ class ChapterRequestTest {
     @DisplayName("builder 默认 isOptional 为 false")
     void defaultIsOptionalIsFalse() {
         ChapterRequest dto = ChapterRequest.builder()
-                .courseId("course-001")
+                .courseId("1")
                 .title("标题")
                 .description("描述")
                 .orderIndex(1)
@@ -65,7 +65,7 @@ class ChapterRequestTest {
     @DisplayName("builder 默认 chapterStatus 为 draft")
     void defaultChapterStatusIsDraft() {
         ChapterRequest dto = ChapterRequest.builder()
-                .courseId("course-001")
+                .courseId("1")
                 .title("标题")
                 .description("描述")
                 .orderIndex(1)
@@ -79,7 +79,7 @@ class ChapterRequestTest {
     @DisplayName("setter 修改 title 后 getter 返回新值")
     void setterAndGetterWorkForTitle() {
         ChapterRequest dto = ChapterRequest.builder()
-                .courseId("course-001")
+                .courseId("1")
                 .title("旧标题")
                 .description("描述")
                 .orderIndex(1)

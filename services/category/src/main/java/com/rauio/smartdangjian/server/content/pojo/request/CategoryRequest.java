@@ -6,6 +6,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
@@ -28,7 +31,8 @@ public class CategoryRequest {
     private String description;
 
     @Schema(description = "分类父级ID，由路径参数或系统自动维护", accessMode = Schema.AccessMode.READ_ONLY)
-    private String parentId;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long parentId;
 
     @Schema(description = "分类排序，使用非负整数表示")
     private Integer sortOrder;

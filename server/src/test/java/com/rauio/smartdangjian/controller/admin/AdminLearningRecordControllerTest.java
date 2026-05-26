@@ -1,5 +1,6 @@
 package com.rauio.smartdangjian.controller.admin;
 
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -14,6 +15,7 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import java.net.URI;
 import java.util.List;
 
 import com.rauio.smartdangjian.BaseControllerTest;
@@ -59,23 +61,23 @@ class AdminLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /chapter/{chapterId} - 获取章节所有学习记录成功")
         void getByChapterIdSuccess() throws Exception {
-            UserLearningRecordResponse vo = LearningTestDataFactory.createLearningRecordVO("rec-001");
-            when(recordService.getByChapterId("ch-001")).thenReturn(List.of(vo));
+            UserLearningRecordResponse vo = LearningTestDataFactory.createLearningRecordVO(1L);
+            when(recordService.getByChapterId(1L)).thenReturn(List.of(vo));
 
-            mockMvc.perform(get("/api/admin/learning/records/chapter/ch-001"))
+            mockMvc.perform(get("/api/admin/learning/records/chapter/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data[0].id").value("rec-001"))
-                    .andExpect(jsonPath("$.data[0].userId").value("user-001"))
-                    .andExpect(jsonPath("$.data[0].chapterId").value("ch-001"));
+                    .andExpect(jsonPath("$.data[0].id").value("1"))
+                    .andExpect(jsonPath("$.data[0].userId").value("1"))
+                    .andExpect(jsonPath("$.data[0].chapterId").value("1"));
         }
 
         @Test
         @DisplayName("DELETE /{id} - 删除学习记录成功")
         void deleteSuccess() throws Exception {
-            when(recordService.delete("rec-001")).thenReturn(true);
+            when(recordService.delete(1L)).thenReturn(true);
 
-            mockMvc.perform(delete("/api/admin/learning/records/rec-001"))
+            mockMvc.perform(delete("/api/admin/learning/records/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(true));
@@ -93,9 +95,9 @@ class AdminLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /chapter/{chapterId} - Service 抛出 BusinessException 返回 400")
         void getByChapterIdThrowsBusinessException() throws Exception {
-            when(recordService.getByChapterId("ch-001")).thenThrow(new BusinessException(4000, "章节不存在"));
+            when(recordService.getByChapterId(1L)).thenThrow(new BusinessException(4000, "章节不存在"));
 
-            mockMvc.perform(get("/api/admin/learning/records/chapter/ch-001"))
+            mockMvc.perform(get("/api/admin/learning/records/chapter/1"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("章节不存在"));
@@ -104,9 +106,9 @@ class AdminLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("DELETE /{id} - Service 抛出 BusinessException 返回 400")
         void deleteThrowsBusinessException() throws Exception {
-            when(recordService.delete("nonexistent")).thenThrow(new BusinessException(4000, "学习记录不存在"));
+            when(recordService.delete(9999L)).thenThrow(new BusinessException(4000, "学习记录不存在"));
 
-            mockMvc.perform(delete("/api/admin/learning/records/nonexistent"))
+            mockMvc.perform(delete("/api/admin/learning/records/9999"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("学习记录不存在"));
@@ -115,9 +117,9 @@ class AdminLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /chapter/{chapterId} - Service 抛出 RuntimeException 返回 500")
         void getByChapterIdThrowsRuntimeException() throws Exception {
-            when(recordService.getByChapterId("ch-001")).thenThrow(new RuntimeException("数据库异常"));
+            when(recordService.getByChapterId(1L)).thenThrow(new RuntimeException("数据库异常"));
 
-            mockMvc.perform(get("/api/admin/learning/records/chapter/ch-001"))
+            mockMvc.perform(get("/api/admin/learning/records/chapter/1"))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("500"));
         }
@@ -125,9 +127,9 @@ class AdminLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("DELETE /{id} - Service 抛出 RuntimeException 返回 500")
         void deleteThrowsRuntimeException() throws Exception {
-            when(recordService.delete("rec-001")).thenThrow(new RuntimeException("数据库异常"));
+            when(recordService.delete(1L)).thenThrow(new RuntimeException("数据库异常"));
 
-            mockMvc.perform(delete("/api/admin/learning/records/rec-001"))
+            mockMvc.perform(delete("/api/admin/learning/records/1"))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("500"));
         }
@@ -135,9 +137,9 @@ class AdminLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("DELETE /{id} - Service 返回 false 时 code 为 400")
         void deleteReturnsFalse() throws Exception {
-            when(recordService.delete("nonexistent")).thenReturn(false);
+            when(recordService.delete(9999L)).thenReturn(false);
 
-            mockMvc.perform(delete("/api/admin/learning/records/nonexistent"))
+            mockMvc.perform(delete("/api/admin/learning/records/9999"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false))
@@ -156,9 +158,9 @@ class AdminLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /chapter/{chapterId} - 空结果集返回空列表")
         void getByChapterIdEmptyResult() throws Exception {
-            when(recordService.getByChapterId("ch-empty")).thenReturn(List.of());
+            when(recordService.getByChapterId(1L)).thenReturn(List.of());
 
-            mockMvc.perform(get("/api/admin/learning/records/chapter/ch-empty"))
+            mockMvc.perform(get("/api/admin/learning/records/chapter/9999"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").isArray())
@@ -169,12 +171,12 @@ class AdminLearningRecordControllerTest extends BaseControllerTest {
         @DisplayName("GET /chapter/{chapterId} - 多记录返回")
         void getByChapterIdMultipleRecords() throws Exception {
             List<UserLearningRecordResponse> list = List.of(
-                    LearningTestDataFactory.createLearningRecordVO("rec-001", "user-001", "ch-001"),
-                    LearningTestDataFactory.createLearningRecordVO("rec-002", "user-002", "ch-001"),
-                    LearningTestDataFactory.createLearningRecordVO("rec-003", "user-003", "ch-001"));
-            when(recordService.getByChapterId("ch-001")).thenReturn(list);
+                    LearningTestDataFactory.createLearningRecordVO(1L, 1L, 1L),
+                    LearningTestDataFactory.createLearningRecordVO(2L, 2L, 1L),
+                    LearningTestDataFactory.createLearningRecordVO(3L, 3L, 1L));
+            when(recordService.getByChapterId(1L)).thenReturn(list);
 
-            mockMvc.perform(get("/api/admin/learning/records/chapter/ch-001"))
+            mockMvc.perform(get("/api/admin/learning/records/chapter/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.length()").value(3));
@@ -194,8 +196,8 @@ class AdminLearningRecordControllerTest extends BaseControllerTest {
         void studentUserAccessDenied() throws Exception {
             CurrentUserPrincipal student = new CurrentUserPrincipal() {
                 @Override
-                public String getId() {
-                    return "stu-001";
+                public Long getId() {
+                    return 1L;
                 }
 
                 @Override
@@ -210,21 +212,21 @@ class AdminLearningRecordControllerTest extends BaseControllerTest {
             };
             setSecurityContext(UserType.STUDENT, student.getId(), student.getUniversityId());
 
-            when(recordService.getByChapterId("ch-001")).thenReturn(java.util.List.of());
-            mockMvc.perform(get("/api/admin/learning/records/chapter/ch-001")).andExpect(status().isOk());
+            when(recordService.getByChapterId(1L)).thenReturn(java.util.List.of());
+            mockMvc.perform(get("/api/admin/learning/records/chapter/1")).andExpect(status().isOk());
         }
 
         @Test
         @DisplayName("XSS 注入在路径参数中返回 404（特殊字符导致 URL 不匹配）")
         void xssInPath() throws Exception {
-            mockMvc.perform(get("/api/admin/learning/records/chapter/<script>alert('xss')</script>"))
-                    .andExpect(status().isNotFound());
+            mockMvc.perform(get("/api/admin/learning/records/chapter/%3Cscript%3Ealert('xss')%3E"))
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("SQL 注入在路径参数中")
         void sqlInjectionInPath() throws Exception {
-            when(recordService.getByChapterId("' OR '1'='1")).thenThrow(new BusinessException(4000, "章节不存在"));
+            when(recordService.getByChapterId(anyLong())).thenThrow(new BusinessException(4000, "章节不存在"));
 
             mockMvc.perform(get("/api/admin/learning/records/chapter/' OR '1'='1"))
                     .andExpect(status().isBadRequest());
@@ -233,14 +235,14 @@ class AdminLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST 请求获取接口返回 405")
         void getWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/admin/learning/records/chapter/ch-001"))
+            mockMvc.perform(post("/api/admin/learning/records/chapter/1"))
                     .andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("POST 请求删除接口返回 405")
         void deleteWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/admin/learning/records/rec-001")).andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/admin/learning/records/1")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

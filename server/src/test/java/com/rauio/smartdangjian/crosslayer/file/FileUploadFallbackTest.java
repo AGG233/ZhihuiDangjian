@@ -56,7 +56,7 @@ class FileUploadFallbackTest extends CrossLayerTestBase {
     @DisplayName("COS不可用时回退到本地中转上传")
     void cosFailureFallsBackToLocalUpload() throws Exception {
         // given - setup security context as STUDENT
-        setSecurityContext(UserType.STUDENT, "user-001", "uni-001");
+        setSecurityContext(UserType.STUDENT, 1L, "uni-001");
 
         // given - mock GeneratePresignedUrlPretreatment chain
         GeneratePresignedUrlPretreatment pretreatment = mock(GeneratePresignedUrlPretreatment.class);
@@ -74,8 +74,8 @@ class FileUploadFallbackTest extends CrossLayerTestBase {
 
         // given - resourceMetaService.create returns a pre-built ResourceMeta
         ResourceMeta meta = ResourceMeta.builder()
-                .id("file-res-001")
-                .uploaderId("user-001")
+                .id(1L)
+                .uploaderId(1L)
                 .originalName("test.png")
                 .hash("uuid-hash")
                 .objectKey("image/uuid-test.png")
@@ -92,8 +92,8 @@ class FileUploadFallbackTest extends CrossLayerTestBase {
         // then
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("200"))
-                .andExpect(jsonPath("$.data.resourceId").value("file-res-001"))
-                .andExpect(jsonPath("$.data.uploadUrl").value("/api/resource/files/upload/callback/file-res-001"))
+                .andExpect(jsonPath("$.data.resourceId").value("1"))
+                .andExpect(jsonPath("$.data.uploadUrl").value("/api/resource/files/upload/callback/1"))
                 .andExpect(jsonPath("$.data.expiration").value(-1));
     }
 }

@@ -61,13 +61,13 @@ public abstract class CrossLayerTestBase {
         }
     }
 
-    protected void setSecurityContext(UserType userType, String userId, String universityId) {
+    protected void setSecurityContext(UserType userType, Long userId, String universityId) {
         closeMock();
         stpUtilMock = mockStatic(StpUtil.class);
         stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
-        stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn(userId);
+        stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn(String.valueOf(userId));
         CurrentUserPrincipal principal = new CurrentUserPrincipal() {
-            @Override public String getId() { return userId; }
+            @Override public Long getId() { return userId; }
             @Override public UserType getUserType() { return userType; }
             @Override public String getUniversityId() { return universityId; }
         };
@@ -76,15 +76,15 @@ public abstract class CrossLayerTestBase {
         stpUtilMock.when(StpUtil::getSession).thenReturn(session);
     }
 
-    protected void setStudentContext(String userId, String universityId) {
+    protected void setStudentContext(Long userId, String universityId) {
         setSecurityContext(UserType.STUDENT, userId, universityId);
     }
 
-    protected void setSchoolContext(String userId, String universityId) {
+    protected void setSchoolContext(Long userId, String universityId) {
         setSecurityContext(UserType.SCHOOL, userId, universityId);
     }
 
-    protected void setManagerContext(String userId, String universityId) {
+    protected void setManagerContext(Long userId, String universityId) {
         setSecurityContext(UserType.MANAGER, userId, universityId);
     }
 

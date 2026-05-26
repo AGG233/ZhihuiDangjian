@@ -53,35 +53,35 @@ public class RecommendService {
     /**
      * 综合推荐：融合协同过滤、知识图谱、画像推荐结果
      */
-    public Page<String> recommend(String userId, int pageNum, int pageSize) {
+    public Page<Long> recommend(Long userId, int pageNum, int pageSize) {
         List<ScoredItem> merged = new ArrayList<>();
 
         // 协同过滤 (权重 0.4)
-        Page<String> cfPage = recommendByCF(userId, 1, pageSize);
+        Page<Long> cfPage = recommendByCF(userId, 1, pageSize);
         for (int i = 0; i < cfPage.getRecords().size(); i++) {
             merged.add(new ScoredItem(cfPage.getRecords().get(i), 0.4 * (pageSize - i)));
         }
 
         // 知识图谱推荐 (权重 0.3)
-        Page<String> graphPage = recommendByGraph(userId, 1, pageSize);
+        Page<Long> graphPage = recommendByGraph(userId, 1, pageSize);
         for (int i = 0; i < graphPage.getRecords().size(); i++) {
             merged.add(new ScoredItem(graphPage.getRecords().get(i), 0.3 * (pageSize - i)));
         }
 
         // 画像推荐 (权重 0.3)
-        Page<String> profilePage = recommendByProfile(userId, 1, pageSize);
+        Page<Long> profilePage = recommendByProfile(userId, 1, pageSize);
         for (int i = 0; i < profilePage.getRecords().size(); i++) {
             merged.add(new ScoredItem(profilePage.getRecords().get(i), 0.3 * (pageSize - i)));
         }
 
         // 合并相同 ID 的分数并排序
-        Map<String, Double> scoreMap = new HashMap<>();
+        Map<Long, Double> scoreMap = new HashMap<>();
         for (ScoredItem item : merged) {
             scoreMap.merge(item.id, item.score, Double::sum);
         }
 
-        List<String> sorted = scoreMap.entrySet().stream()
-                .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
+        List<Long> sorted = scoreMap.entrySet().stream()
+                .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())
                 .map(Map.Entry::getKey)
                 .toList();
 
@@ -90,7 +90,7 @@ public class RecommendService {
 
     // ==================== 协同过滤推荐 ====================
 
-    public Page<String> recommendByCF(String userId, int pageNum, int pageSize) {
+    public Page<Long> recommendByCF(Long userId, int pageNum, int pageSize) {
         int neighborSize = 10;
         Page<UserSimilarity> similarityPage = userSimilarityMapper.selectPage(
                 new Page<>(1, neighborSize),
@@ -103,10 +103,10 @@ public class RecommendService {
             return new Page<>(pageNum, pageSize);
         }
 
-        List<String> similarUserIds =
+        List<Long> similarUserIds =
                 similarityList.stream().map(UserSimilarity::getUserId2).collect(Collectors.toList());
 
-        Set<String> userLearnedCourseIds = getLearnedCourseIdsByUserId(userId);
+        Set<Long> userLearnedCourseIds = getLearnedCourseIdsByUserId(userId);
 
         List<UserLearningRecord> records =
                 userLearningRecordMapper.selectList(new LambdaQueryWrapper<UserLearningRecord>()
@@ -117,7 +117,7 @@ public class RecommendService {
                         .in(UserChapterProgress::getUserId, similarUserIds)
                         .select(UserChapterProgress::getChapterId, UserChapterProgress::getUserId));
 
-        Set<String> allInvolvedChapterIds = new HashSet<>();
+        Set<Long> allInvolvedChapterIds = new HashSet<>();
         allInvolvedChapterIds.addAll(
                 records.stream().map(UserLearningRecord::getChapterId).toList());
         allInvolvedChapterIds.addAll(
@@ -128,13 +128,13 @@ public class RecommendService {
         }
 
         List<Chapter> chapters = chapterMapper.selectByIds(allInvolvedChapterIds);
-        Map<String, String> chapterToCourseMap =
+        Map<Long, Long> chapterToCourseMap =
                 chapters.stream().collect(Collectors.toMap(Chapter::getId, Chapter::getCourseId));
 
-        Map<String, Double> courseScoreMap = new HashMap<>();
+        Map<Long, Double> courseScoreMap = new HashMap<>();
 
-        Consumer<String> addScore = (chapterId) -> {
-            String courseId = chapterToCourseMap.get(chapterId);
+        Consumer<Long> addScore = (chapterId) -> {
+            Long courseId = chapterToCourseMap.get(chapterId);
             if (courseId != null && !userLearnedCourseIds.contains(courseId)) {
                 courseScoreMap.merge(courseId, 1.0, Double::sum);
             }
@@ -143,8 +143,8 @@ public class RecommendService {
         records.forEach(r -> addScore.accept(r.getChapterId()));
         progresses.forEach(p -> addScore.accept(p.getChapterId()));
 
-        List<String> sorted = courseScoreMap.entrySet().stream()
-                .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
+        List<Long> sorted = courseScoreMap.entrySet().stream()
+                .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())
                 .map(Map.Entry::getKey)
                 .toList();
 
@@ -156,7 +156,7 @@ public class RecommendService {
     /**
      * 基于知识图谱推荐：查找相似用户学过但当前用户未学的课程
      */
-    public Page<String> recommendByGraph(String userId, int pageNum, int pageSize) {
+    public Page<Long> recommendByGraph(Long userId, int pageNum, int pageSize) {
         String cypher =
                 """
                 MATCH (me:User {id: $userId})-[:LEARNED]->(c1:Course)
@@ -167,13 +167,16 @@ public class RecommendService {
                 ORDER BY score DESC
                 """;
 
-        List<String> sorted = new ArrayList<>(neo4jClient
+        List<Long> sorted = neo4jClient
                 .query(cypher)
                 .bind(userId)
                 .to("userId")
                 .fetchAs(String.class)
                 .mappedBy((type, record) -> record.get("courseId").asString())
-                .all());
+                .all()
+                .stream()
+                .map(Long::valueOf)
+                .collect(Collectors.toList());
 
         return paginate(sorted, pageNum, pageSize);
     }
@@ -183,23 +186,23 @@ public class RecommendService {
     /**
      * 基于用户画像的内容推荐：根据兴趣分类和知识水平推荐课程
      */
-    public Page<String> recommendByProfile(String userId, int pageNum, int pageSize) {
-        UserProfileResponse profile = userProfileService.getProfile(userId);
+    public Page<Long> recommendByProfile(Long userId, int pageNum, int pageSize) {
+        UserProfileResponse profile = userProfileService.getProfile(userId.toString());
         if (profile == null) {
             return new Page<>(pageNum, pageSize);
         }
 
         // 获取用户已学的课程 ID，排除
-        Set<String> learnedCourseIds = getLearnedCourseIdsByUserId(userId);
+        Set<Long> learnedCourseIds = getLearnedCourseIdsByUserId(userId);
 
         LambdaQueryWrapper<Course> wrapper = new LambdaQueryWrapper<Course>()
                 .eq(Course::getIsPublished, true)
                 .notIn(!learnedCourseIds.isEmpty(), Course::getId, learnedCourseIds);
 
         // 优先推荐兴趣分类
-        List<String> interestIds = profile.getInterestCategoryIds();
+        List<Long> interestIds = profile.getInterestCategoryIds();
         if (interestIds != null && !interestIds.isEmpty()) {
-            List<String> matchedCourseIds = categoryCourseMapper
+            List<Long> matchedCourseIds = categoryCourseMapper
                     .selectList(new LambdaQueryWrapper<CategoryCourse>().in(CategoryCourse::getCategoryId, interestIds))
                     .stream()
                     .map(CategoryCourse::getCourseId)
@@ -222,10 +225,10 @@ public class RecommendService {
         wrapper.orderByDesc(Course::getEnrollmentCount);
 
         Page<Course> coursePage = courseMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
-        List<String> courseIds =
+        List<Long> courseIds =
                 coursePage.getRecords().stream().map(Course::getId).toList();
 
-        Page<String> result = new Page<>(pageNum, pageSize);
+        Page<Long> result = new Page<>(pageNum, pageSize);
         result.setTotal(coursePage.getTotal());
         result.setRecords(courseIds);
         return result;
@@ -239,26 +242,26 @@ public class RecommendService {
         List<UserBehaviorDto> allBehaviors = userLearningRecordMapper.getAllUserBehaviors();
         if (allBehaviors.isEmpty()) return;
 
-        Map<String, Set<String>> userItemMap = allBehaviors.stream()
+        Map<Long, Set<Long>> userItemMap = allBehaviors.stream()
                 .collect(Collectors.groupingBy(
                         UserBehaviorDto::getUserId,
                         Collectors.mapping(UserBehaviorDto::getChapterId, Collectors.toSet())));
 
-        Map<String, List<String>> itemUserMap = allBehaviors.stream()
+        Map<Long, List<Long>> itemUserMap = allBehaviors.stream()
                 .collect(Collectors.groupingBy(
                         UserBehaviorDto::getChapterId,
                         Collectors.mapping(UserBehaviorDto::getUserId, Collectors.toList())));
 
-        Map<String, Map<String, Integer>> coOccurrenceMap = new HashMap<>();
+        Map<Long, Map<Long, Integer>> coOccurrenceMap = new HashMap<>();
 
-        for (Map.Entry<String, List<String>> entry : itemUserMap.entrySet()) {
-            List<String> userList = entry.getValue();
+        for (Map.Entry<Long, List<Long>> entry : itemUserMap.entrySet()) {
+            List<Long> userList = entry.getValue();
             if (userList.size() < 2) continue;
 
             for (int i = 0; i < userList.size(); i++) {
-                String u1 = userList.get(i);
+                Long u1 = userList.get(i);
                 for (int j = i + 1; j < userList.size(); j++) {
-                    String u2 = userList.get(j);
+                    Long u2 = userList.get(j);
                     coOccurrenceMap.computeIfAbsent(u1, k -> new HashMap<>()).merge(u2, 1, Integer::sum);
                     coOccurrenceMap.computeIfAbsent(u2, k -> new HashMap<>()).merge(u1, 1, Integer::sum);
                 }
@@ -269,16 +272,16 @@ public class RecommendService {
         userSimilarityMapper.delete(new LambdaQueryWrapper<>());
 
         List<UserSimilarity> buffer = new ArrayList<>();
-        for (Map.Entry<String, Map<String, Integer>> entry : coOccurrenceMap.entrySet()) {
-            String userId = entry.getKey();
-            Map<String, Integer> relatedUsers = entry.getValue();
+        for (Map.Entry<Long, Map<Long, Integer>> entry : coOccurrenceMap.entrySet()) {
+            Long userId = entry.getKey();
+            Map<Long, Integer> relatedUsers = entry.getValue();
             double userVectorLen = Math.sqrt(userItemMap.get(userId).size());
 
             PriorityQueue<UserSimilarity> topQueue =
                     new PriorityQueue<>(Comparator.comparing(UserSimilarity::getSimilarityScore));
 
-            for (Map.Entry<String, Integer> relatedEntry : relatedUsers.entrySet()) {
-                String relatedUserId = relatedEntry.getKey();
+            for (Map.Entry<Long, Integer> relatedEntry : relatedUsers.entrySet()) {
+                Long relatedUserId = relatedEntry.getKey();
                 int count = relatedEntry.getValue();
                 double relatedUserVectorLen =
                         Math.sqrt(userItemMap.get(relatedUserId).size());
@@ -315,8 +318,8 @@ public class RecommendService {
 
     // ==================== 工具方法 ====================
 
-    private Set<String> getLearnedCourseIdsByUserId(String userId) {
-        List<String> chapterIds = userLearningRecordMapper
+    private Set<Long> getLearnedCourseIdsByUserId(Long userId) {
+        List<Long> chapterIds = userLearningRecordMapper
                 .selectList(new LambdaQueryWrapper<UserLearningRecord>()
                         .eq(UserLearningRecord::getUserId, userId)
                         .select(UserLearningRecord::getChapterId))
@@ -338,8 +341,8 @@ public class RecommendService {
                 .collect(Collectors.toSet());
     }
 
-    private Page<String> paginate(List<String> sorted, int pageNum, int pageSize) {
-        Page<String> result = new Page<>(pageNum, pageSize);
+    private Page<Long> paginate(List<Long> sorted, int pageNum, int pageSize) {
+        Page<Long> result = new Page<>(pageNum, pageSize);
         result.setTotal(sorted.size());
         int fromIndex = (pageNum - 1) * pageSize;
         if (fromIndex >= sorted.size()) {
@@ -350,5 +353,5 @@ public class RecommendService {
         return result;
     }
 
-    private record ScoredItem(String id, double score) {}
+    private record ScoredItem(Long id, double score) {}
 }

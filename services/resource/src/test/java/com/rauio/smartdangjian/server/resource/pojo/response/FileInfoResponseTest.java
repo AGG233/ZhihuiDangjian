@@ -12,7 +12,7 @@ class FileInfoResponseTest {
     @DisplayName("使用 builder 构造响应")
     void buildResponse() {
         FileInfoResponse resp = FileInfoResponse.builder()
-                .resourceId("r-1")
+                .resourceId("1")
                 .originalName("test.png")
                 .hash("hash123")
                 .objectKey("image/test.png")
@@ -22,7 +22,7 @@ class FileInfoResponseTest {
                 .size(1024L)
                 .build();
 
-        assertThat(resp.getResourceId()).isEqualTo("r-1");
+        assertThat(resp.getResourceId()).isEqualTo("1");
         assertThat(resp.getOriginalName()).isEqualTo("test.png");
         assertThat(resp.getHash()).isEqualTo("hash123");
         assertThat(resp.getObjectKey()).isEqualTo("image/test.png");

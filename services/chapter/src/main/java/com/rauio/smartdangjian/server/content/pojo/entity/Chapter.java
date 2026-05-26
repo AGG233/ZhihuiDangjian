@@ -20,10 +20,10 @@ public class Chapter {
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
     @Schema(description = "章节ID")
-    private String id;
+    private Long id;
 
     @Schema(description = "所属课程ID")
-    private String courseId;
+    private Long courseId;
 
     @Schema(description = "章节标题")
     private String title;

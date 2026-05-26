@@ -20,13 +20,13 @@ public class UserChapterProgress {
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
     @Schema(description = "进度ID")
-    private String id;
+    private Long id;
 
     @Schema(description = "用户ID")
-    private String userId;
+    private Long userId;
 
     @Schema(description = "章节ID")
-    private String chapterId;
+    private Long chapterId;
 
     @Schema(description = "学习进度（0-100）", example = "75")
     private Integer progress;

@@ -38,9 +38,9 @@ class KnowledgeGraphServiceTest {
     @InjectMocks
     private KnowledgeGraphService knowledgeGraphService;
 
-    private static final String USER_ID = "user-1";
-    private static final String CHAPTER_ID = "ch-1";
-    private static final String COURSE_ID = "course-1";
+    private static final Long USER_ID = 1L;
+    private static final Long CHAPTER_ID = 1L;
+    private static final Long COURSE_ID = 1L;
 
     // ==================== upsertLearningGraph ====================
 

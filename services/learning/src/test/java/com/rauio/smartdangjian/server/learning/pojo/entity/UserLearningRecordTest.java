@@ -15,9 +15,9 @@ class UserLearningRecordTest {
     void buildEntity() {
         LocalDateTime now = LocalDateTime.now();
         UserLearningRecord entity = UserLearningRecord.builder()
-                .id("r-1")
-                .userId("user-1")
-                .chapterId("ch-1")
+                .id(1L)
+                .userId(1L)
+                .chapterId(1L)
                 .startTime(now)
                 .endTime(now.plusSeconds(1800))
                 .duration(1800)
@@ -25,9 +25,9 @@ class UserLearningRecordTest {
                 .createdAt(now)
                 .build();
 
-        assertThat(entity.getId()).isEqualTo("r-1");
-        assertThat(entity.getUserId()).isEqualTo("user-1");
-        assertThat(entity.getChapterId()).isEqualTo("ch-1");
+        assertThat(entity.getId()).isEqualTo(1L);
+        assertThat(entity.getUserId()).isEqualTo(1L);
+        assertThat(entity.getChapterId()).isEqualTo(1L);
         assertThat(entity.getDuration()).isEqualTo(1800);
         assertThat(entity.getDeviceType()).isEqualTo("web");
     }

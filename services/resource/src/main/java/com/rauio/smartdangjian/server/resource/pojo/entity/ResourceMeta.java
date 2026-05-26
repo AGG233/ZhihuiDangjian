@@ -19,10 +19,10 @@ public class ResourceMeta {
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
     @Schema(description = "资源ID，系统内资源主键", example = "1919810")
-    private String id;
+    private Long id;
 
     @Schema(description = "上传人ID，标识该资源由哪个用户创建", example = "114514")
-    private String uploaderId;
+    private Long uploaderId;
 
     @Schema(description = "文件原始名称，通常为用户上传时的文件名", example = "党课封面.png")
     private String originalName;
@@ -30,7 +30,7 @@ public class ResourceMeta {
     @Schema(description = "文件内容哈希，用于去重、秒传和资源检索", example = "8f14e45fceea167a5a36dedd4bea2543")
     private String hash;
 
-    @TableField("objectkey")
+    @TableField("object_key")
     @Schema(description = "对象存储键，即文件在COS中的完整存储路径", example = "image/8f14e45fceea167a5a36dedd4bea2543.png")
     private String objectKey;
 

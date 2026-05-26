@@ -35,41 +35,41 @@ class RecommendToolTest {
     @DisplayName("getRecommendedCourses 返回推荐课程 ID 列表字符串")
     void getRecommendedCourses() {
         ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-1");
+        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
 
-        Page<String> page = new Page<>();
-        page.setRecords(List.of("course-1", "course-2", "course-3"));
-        when(recommendService.recommend("user-1", 1, 5)).thenReturn(page);
+        Page<Long> page = new Page<>();
+        page.setRecords(List.of(1L, 2L, 3L));
+        when(recommendService.recommend(1L, 1, 5)).thenReturn(page);
 
         String result = recommendTool.getRecommendedCourses(5, toolContext);
 
-        assertThat(result).contains("course-1", "course-2", "course-3");
+        assertThat(result).contains("1", "2", "3");
     }
 
     @Test
     @DisplayName("getRecommendedCourses 默认返回 10 条推荐")
     void getRecommendedCoursesDefaultLimit() {
         ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-1");
+        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
 
-        Page<String> page = new Page<>();
-        page.setRecords(List.of("course-1"));
-        when(recommendService.recommend("user-1", 1, 10)).thenReturn(page);
+        Page<Long> page = new Page<>();
+        page.setRecords(List.of(1L));
+        when(recommendService.recommend(1L, 1, 10)).thenReturn(page);
 
         String result = recommendTool.getRecommendedCourses(null, toolContext);
 
-        assertThat(result).contains("course-1");
+        assertThat(result).contains("1");
     }
 
     @Test
     @DisplayName("getRecommendedCourses 无推荐时返回提示消息")
     void getRecommendedCoursesEmpty() {
         ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-1");
+        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
 
-        Page<String> page = new Page<>();
+        Page<Long> page = new Page<>();
         page.setRecords(List.of());
-        when(recommendService.recommend("user-1", 1, 10)).thenReturn(page);
+        when(recommendService.recommend(1L, 1, 10)).thenReturn(page);
 
         String result = recommendTool.getRecommendedCourses(null, toolContext);
 

@@ -39,19 +39,19 @@ class AiMemoryServiceTest {
     void saveConversation() {
         doReturn(true).when(aiChatMessageService).save(any(AiChatMessage.class));
 
-        aiMemoryService.saveConversation("user-1", "session-1", "CHAT", "你好", "你好，有什么可以帮助你的？");
+        aiMemoryService.saveConversation("1", "session-1", "CHAT", "你好", "你好，有什么可以帮助你的？");
 
         verify(aiChatMessageService, times(2)).save(messageCaptor.capture());
         List<AiChatMessage> messages = messageCaptor.getAllValues();
 
         assertThat(messages).hasSize(2);
-        assertThat(messages.get(0).getUserId()).isEqualTo("user-1");
+        assertThat(messages.get(0).getUserId()).isEqualTo(1L);
         assertThat(messages.get(0).getSessionId()).isEqualTo("session-1");
         assertThat(messages.get(0).getSenderType()).isEqualTo("user");
         assertThat(messages.get(0).getMessageType()).isEqualTo("text");
         assertThat(messages.get(0).getContent()).isEqualTo("你好");
 
-        assertThat(messages.get(1).getUserId()).isEqualTo("user-1");
+        assertThat(messages.get(1).getUserId()).isEqualTo(1L);
         assertThat(messages.get(1).getSessionId()).isEqualTo("session-1");
         assertThat(messages.get(1).getSenderType()).isEqualTo("ai");
         assertThat(messages.get(1).getContent()).isEqualTo("你好，有什么可以帮助你的？");
@@ -59,7 +59,7 @@ class AiMemoryServiceTest {
 
     @Test
     @DisplayName("saveConversation 用户 ID 为空时直接返回")
-    void saveConversationNullUserId() {
+    void saveConversationBlankUserId() {
         aiMemoryService.saveConversation(null, "session-1", "CHAT", "你好", "回复");
 
         verify(aiChatMessageService, never()).save(any());
@@ -68,7 +68,7 @@ class AiMemoryServiceTest {
     @Test
     @DisplayName("saveConversation 会话 ID 为空时直接返回")
     void saveConversationBlankSessionId() {
-        aiMemoryService.saveConversation("user-1", "", "CHAT", "你好", "回复");
+        aiMemoryService.saveConversation("1", "", "CHAT", "你好", "回复");
 
         verify(aiChatMessageService, never()).save(any());
     }
@@ -78,7 +78,7 @@ class AiMemoryServiceTest {
     void saveConversationBlankOutput() {
         doReturn(true).when(aiChatMessageService).save(any(AiChatMessage.class));
 
-        aiMemoryService.saveConversation("user-1", "session-1", "CHAT", "你好", "");
+        aiMemoryService.saveConversation("1", "session-1", "CHAT", "你好", "");
 
         verify(aiChatMessageService, times(2)).save(messageCaptor.capture());
         assertThat(messageCaptor.getValue().getContent()).isEqualTo("[AI 未返回文本内容]");

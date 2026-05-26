@@ -54,22 +54,22 @@ class ArticleServiceTest {
     @Test
     @DisplayName("get 根据文章 ID 返回文章实体")
     void getReturnsArticleById() {
-        Article article = Article.builder().id("art-001").title("文章标题").build();
-        doReturn(article).when(articleService).getById("art-001");
+        Article article = Article.builder().id(1L).title("文章标题").build();
+        doReturn(article).when(articleService).getById(1L);
 
-        Article result = articleService.get("art-001");
+        Article result = articleService.get(1L);
 
         assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo("art-001");
+        assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getTitle()).isEqualTo("文章标题");
     }
 
     @Test
     @DisplayName("get 文章不存在时抛出 BusinessException")
     void getThrowsWhenArticleNotFound() {
-        doReturn(null).when(articleService).getById("non-existent");
+        doReturn(null).when(articleService).getById(9999L);
 
-        assertThatThrownBy(() -> articleService.get("non-existent"))
+        assertThatThrownBy(() -> articleService.get(9999L))
                 .isInstanceOf(BusinessException.class)
                 .extracting("code")
                 .isEqualTo(ArticleErrorConstants.ARTICLE_NOT_FOUND);
@@ -83,15 +83,15 @@ class ArticleServiceTest {
     @DisplayName("getByCategoryId 根据分类 ID 返回关联列表")
     void getByCategoryIdReturnsCategoryArticles() {
         CategoryArticle ca = new CategoryArticle();
-        ca.setCategoryId("cat-001");
-        ca.setArticleId("art-001");
+        ca.setCategoryId(1L);
+        ca.setArticleId(1L);
         when(categoryArticleMapper.selectList(any())).thenReturn(List.of(ca));
 
-        List<CategoryArticle> result = articleService.getByCategoryId("cat-001");
+        List<CategoryArticle> result = articleService.getByCategoryId(1L);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getCategoryId()).isEqualTo("cat-001");
-        assertThat(result.get(0).getArticleId()).isEqualTo("art-001");
+        assertThat(result.get(0).getCategoryId()).isEqualTo(1L);
+        assertThat(result.get(0).getArticleId()).isEqualTo(1L);
     }
 
     @Test
@@ -99,7 +99,7 @@ class ArticleServiceTest {
     void getByCategoryIdReturnsEmptyListWhenNoArticles() {
         when(categoryArticleMapper.selectList(any())).thenReturn(Collections.emptyList());
 
-        List<CategoryArticle> result = articleService.getByCategoryId("cat-empty");
+        List<CategoryArticle> result = articleService.getByCategoryId(1L);
 
         assertThat(result).isEmpty();
     }
@@ -113,8 +113,8 @@ class ArticleServiceTest {
     void getPageReturnsPagedArticles() {
         Page<Article> page = new Page<>(1, 10);
         page.setRecords(List.of(
-                Article.builder().id("art-001").title("文章1").build(),
-                Article.builder().id("art-002").title("文章2").build()));
+                Article.builder().id(1L).title("文章1").build(),
+                Article.builder().id(1L).title("文章2").build()));
         doReturn(page).when(articleService).page(any(Page.class));
 
         List<Article> result = articleService.getPage(1, 10);
@@ -144,7 +144,7 @@ class ArticleServiceTest {
     @DisplayName("create 创建文章成功")
     void createArticleSuccessfully() {
         User user = User.builder()
-                .id("user-001")
+                .id(1L)
                 .username("testuser")
                 .userType(UserType.SCHOOL)
                 .build();
@@ -166,7 +166,7 @@ class ArticleServiceTest {
     @DisplayName("create 创建文章时 authorId 设置为当前用户 ID")
     void createSetsAuthorIdToCurrentUser() {
         User user = User.builder()
-                .id("user-001")
+                .id(1L)
                 .username("author")
                 .userType(UserType.SCHOOL)
                 .build();
@@ -185,7 +185,7 @@ class ArticleServiceTest {
     @Test
     @DisplayName("create 保存失败时抛出 BusinessException")
     void createThrowsWhenSaveFails() {
-        User user = User.builder().id("user-001").userType(UserType.SCHOOL).build();
+        User user = User.builder().id(1L).userType(UserType.SCHOOL).build();
         when(userService.getCurrentUser()).thenReturn(user);
         doReturn(false).when(articleService).save(any(Article.class));
 
@@ -205,11 +205,11 @@ class ArticleServiceTest {
     @Test
     @DisplayName("update 更新文章成功")
     void updateArticleSuccessfully() {
-        Article entity = Article.builder().id("art-001").title("更新标题").build();
+        Article entity = Article.builder().id(1L).title("更新标题").build();
         when(convertor.toEntity(any(ArticleRequest.class))).thenReturn(entity);
         doReturn(true).when(articleService).updateById(entity);
 
-        ArticleRequest dto = ArticleRequest.builder().id("art-001").title("更新标题").build();
+        ArticleRequest dto = ArticleRequest.builder().id(1L).title("更新标题").build();
 
         articleService.update(dto);
 
@@ -219,11 +219,11 @@ class ArticleServiceTest {
     @Test
     @DisplayName("update 更新失败时抛出 BusinessException")
     void updateThrowsWhenUpdateFails() {
-        Article entity = Article.builder().id("art-001").title("错误更新").build();
+        Article entity = Article.builder().id(1L).title("错误更新").build();
         when(convertor.toEntity(any(ArticleRequest.class))).thenReturn(entity);
         doReturn(false).when(articleService).updateById(entity);
 
-        ArticleRequest dto = ArticleRequest.builder().id("art-001").title("错误更新").build();
+        ArticleRequest dto = ArticleRequest.builder().id(1L).title("错误更新").build();
 
         assertThatThrownBy(() -> articleService.update(dto))
                 .isInstanceOf(BusinessException.class)
@@ -238,17 +238,17 @@ class ArticleServiceTest {
     @Test
     @DisplayName("delete 删除文章成功")
     void deleteArticleSuccessfully() {
-        doReturn(true).when(articleService).removeById("art-001");
+        doReturn(true).when(articleService).removeById(1L);
 
-        articleService.delete("art-001");
+        articleService.delete(1L);
     }
 
     @Test
     @DisplayName("delete 删除不存在文章时抛出 BusinessException")
     void deleteThrowsWhenArticleNotFound() {
-        doReturn(false).when(articleService).removeById("non-existent");
+        doReturn(false).when(articleService).removeById(9999L);
 
-        assertThatThrownBy(() -> articleService.delete("non-existent"))
+        assertThatThrownBy(() -> articleService.delete(9999L))
                 .isInstanceOf(BusinessException.class)
                 .extracting("code")
                 .isEqualTo(ArticleErrorConstants.ARTICLE_DELETE_FAILED);

@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
-import com.rauio.smartdangjian.server.content.service.ContentBlockService;
+import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
 import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
@@ -37,7 +37,7 @@ public class AiQuizGeneratorTool {
 
     private final ObjectProvider<ChatModel> chatModelProvider;
     private final ChapterService chapterService;
-    private final ContentBlockService contentBlockService;
+    private final ChapterContentBlockService chapterContentBlockService;
     private final QuizService quizService;
     private final QuizOptionService quizOptionService;
     private final ObjectMapper objectMapper;
@@ -57,11 +57,11 @@ public class AiQuizGeneratorTool {
         String effectiveChapterId = chapterId;
 
         if (chapterId != null && !chapterId.isBlank()) {
-            ChapterResponse chapter = chapterService.get(chapterId);
+            ChapterResponse chapter = chapterService.get(Long.valueOf(chapterId));
             if (chapter == null) {
                 throw new BusinessException(RESOURCE_NOT_EXISTS, "章节不存在");
             }
-            List<ContentBlockResponse> blocks = contentBlockService.getByParentId(chapterId);
+            List<ContentBlockResponse> blocks = chapterContentBlockService.getByChapterId(Long.valueOf(chapterId));
             StringBuilder sb = new StringBuilder();
             sb.append("章节标题：").append(chapter.getTitle()).append("\n");
             if (chapter.getDescription() != null) {
@@ -116,7 +116,7 @@ public class AiQuizGeneratorTool {
         }
 
         Quiz quiz = Quiz.builder()
-                .chapterId(effectiveChapterId)
+                .chapterId(effectiveChapterId != null && !effectiveChapterId.isBlank() ? Long.valueOf(effectiveChapterId) : null)
                 .question(question)
                 .questionType(effectiveQuestionType)
                 .score(5)

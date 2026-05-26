@@ -37,8 +37,8 @@ class AdminChapterControllerTest {
     @DisplayName("get 根据章节 ID 返回 ChapterResponse")
     void getShouldReturnChapterResponse() {
         ChapterResponse vo = ChapterResponse.builder()
-                .id("ch-001")
-                .courseId("course-001")
+                .id(1L)
+                .courseId(1L)
                 .title("第一章")
                 .description("第一章描述")
                 .duration(1800)
@@ -46,13 +46,13 @@ class AdminChapterControllerTest {
                 .isOptional(false)
                 .chapterStatus("published")
                 .build();
-        when(chapterService.get("ch-001")).thenReturn(vo);
+        when(chapterService.get(1L)).thenReturn(vo);
 
-        Result<ChapterResponse> result = controller.get("ch-001");
+        Result<ChapterResponse> result = controller.get(1L);
 
         assertThat(result).isNotNull();
         assertThat(result.getData()).isNotNull();
-        assertThat(result.getData().getId()).isEqualTo("ch-001");
+        assertThat(result.getData().getId()).isEqualTo(1L);
         assertThat(result.getData().getTitle()).isEqualTo("第一章");
     }
 
@@ -60,13 +60,13 @@ class AdminChapterControllerTest {
     @DisplayName("get 返回的 Result 包含成功状态码")
     void getShouldReturnSuccessResult() {
         ChapterResponse vo = ChapterResponse.builder()
-                .id("ch-001")
-                .courseId("course-001")
+                .id(1L)
+                .courseId(1L)
                 .title("第一章")
                 .build();
-        when(chapterService.get("ch-001")).thenReturn(vo);
+        when(chapterService.get(1L)).thenReturn(vo);
 
-        Result<ChapterResponse> result = controller.get("ch-001");
+        Result<ChapterResponse> result = controller.get(1L);
 
         assertThat(result.getCode()).isEqualTo("200");
         assertThat(result.getMessage()).isEqualTo("OK");
@@ -80,11 +80,11 @@ class AdminChapterControllerTest {
     @DisplayName("getByCourseId 根据课程 ID 返回章节列表")
     void getByCourseIdShouldReturnChapterResponseList() {
         List<ChapterResponse> vos = List.of(
-                ChapterResponse.builder().id("ch-001").title("第一章").build(),
-                ChapterResponse.builder().id("ch-002").title("第二章").build());
-        when(chapterService.getByCourseId("course-001")).thenReturn(vos);
+                ChapterResponse.builder().id(1L).title("第一章").build(),
+                ChapterResponse.builder().id(2L).title("第二章").build());
+        when(chapterService.getByCourseId(1L)).thenReturn(vos);
 
-        Result<List<ChapterResponse>> result = controller.getByCourseId("course-001");
+        Result<List<ChapterResponse>> result = controller.getByCourseId(1L);
 
         assertThat(result).isNotNull();
         assertThat(result.getData()).hasSize(2);
@@ -95,9 +95,9 @@ class AdminChapterControllerTest {
     @Test
     @DisplayName("getByCourseId 课程无章节时返回空列表")
     void getByCourseIdShouldReturnEmptyListWhenNoChapters() {
-        when(chapterService.getByCourseId("empty-course")).thenReturn(Collections.emptyList());
+        when(chapterService.getByCourseId(1L)).thenReturn(Collections.emptyList());
 
-        Result<List<ChapterResponse>> result = controller.getByCourseId("empty-course");
+        Result<List<ChapterResponse>> result = controller.getByCourseId(1L);
 
         assertThat(result).isNotNull();
         assertThat(result.getData()).isEmpty();
@@ -106,9 +106,9 @@ class AdminChapterControllerTest {
     @Test
     @DisplayName("getByCourseId 返回的 Result 包含成功状态码")
     void getByCourseIdShouldReturnSuccessResult() {
-        when(chapterService.getByCourseId("course-001")).thenReturn(Collections.emptyList());
+        when(chapterService.getByCourseId(1L)).thenReturn(Collections.emptyList());
 
-        Result<List<ChapterResponse>> result = controller.getByCourseId("course-001");
+        Result<List<ChapterResponse>> result = controller.getByCourseId(1L);
 
         assertThat(result.getCode()).isEqualTo("200");
         assertThat(result.getMessage()).isEqualTo("OK");
@@ -122,7 +122,7 @@ class AdminChapterControllerTest {
     @DisplayName("create 创建章节成功时返回 true")
     void createShouldReturnTrue() {
         ChapterRequest dto = ChapterRequest.builder()
-                .courseId("course-001")
+                .courseId("1")
                 .title("新章节")
                 .description("描述")
                 .duration(1800)
@@ -141,7 +141,7 @@ class AdminChapterControllerTest {
     @DisplayName("create 创建章节失败时返回 false")
     void createShouldReturnFalseWhenServiceFails() {
         ChapterRequest dto = ChapterRequest.builder()
-                .courseId("course-001")
+                .courseId("1")
                 .title("失败章节")
                 .description("描述")
                 .duration(1800)
@@ -195,9 +195,9 @@ class AdminChapterControllerTest {
     @Test
     @DisplayName("delete 删除章节成功时返回 true")
     void deleteShouldReturnTrue() {
-        when(chapterService.delete("ch-001")).thenReturn(true);
+        when(chapterService.delete(1L)).thenReturn(true);
 
-        Result<Boolean> result = controller.delete("ch-001");
+        Result<Boolean> result = controller.delete(1L);
 
         assertThat(result).isNotNull();
         assertThat(result.getData()).isTrue();
@@ -207,9 +207,9 @@ class AdminChapterControllerTest {
     @Test
     @DisplayName("delete 删除不存在的章节时返回 false")
     void deleteShouldReturnFalseWhenChapterNotFound() {
-        when(chapterService.delete("non-existent")).thenReturn(false);
+        when(chapterService.delete(999L)).thenReturn(false);
 
-        Result<Boolean> result = controller.delete("non-existent");
+        Result<Boolean> result = controller.delete(999L);
 
         assertThat(result).isNotNull();
         assertThat(result.getData()).isFalse();

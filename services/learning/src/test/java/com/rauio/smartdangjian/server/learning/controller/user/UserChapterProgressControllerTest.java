@@ -29,22 +29,22 @@ class UserChapterProgressControllerTest {
     @DisplayName("get 委托 service 获取进度记录")
     void get() {
         UserChapterProgressResponse vo =
-                UserChapterProgressResponse.builder().id("p-1").build();
-        when(progressService.get("p-1")).thenReturn(vo);
+                UserChapterProgressResponse.builder().id(1L).build();
+        when(progressService.get(1L)).thenReturn(vo);
 
-        var result = controller.get("p-1");
+        var result = controller.get(1L);
 
-        assertThat(result.getData().getId()).isEqualTo("p-1");
+        assertThat(result.getData().getId()).isEqualTo(1L);
     }
 
     @Test
     @DisplayName("getByUserId 委托 service 获取用户所有进度")
     void getByUserId() {
-        when(progressService.getByUserId("user-1"))
+        when(progressService.getByUserId(1L))
                 .thenReturn(
-                        List.of(UserChapterProgressResponse.builder().id("p-1").build()));
+                        List.of(UserChapterProgressResponse.builder().id(1L).build()));
 
-        var result = controller.getByUserId("user-1");
+        var result = controller.getByUserId(1L);
 
         assertThat(result.getData()).hasSize(1);
     }
@@ -53,10 +53,10 @@ class UserChapterProgressControllerTest {
     @DisplayName("getByUserIdAndChapterId 委托 service 获取用户章节进度")
     void getByUserIdAndChapterId() {
         UserChapterProgressResponse vo =
-                UserChapterProgressResponse.builder().id("p-1").build();
-        when(progressService.getByUserIdAndChapterId("user-1", "ch-1")).thenReturn(vo);
+                UserChapterProgressResponse.builder().id(1L).build();
+        when(progressService.getByUserIdAndChapterId(1L, 2L)).thenReturn(vo);
 
-        var result = controller.getByUserIdAndChapterId("user-1", "ch-1");
+        var result = controller.getByUserIdAndChapterId(1L, 2L);
 
         assertThat(result.getData()).isNotNull();
     }
@@ -65,8 +65,8 @@ class UserChapterProgressControllerTest {
     @DisplayName("create 委托 service 创建进度")
     void create() {
         UserChapterProgressRequest dto = UserChapterProgressRequest.builder()
-                .userId("user-1")
-                .chapterId("ch-1")
+                .userId(1L)
+                .chapterId(1L)
                 .build();
         when(progressService.create(dto)).thenReturn(true);
 
@@ -79,7 +79,7 @@ class UserChapterProgressControllerTest {
     @DisplayName("update 委托 service 更新进度")
     void update() {
         UserChapterProgressRequest dto =
-                UserChapterProgressRequest.builder().id("p-1").progress(80).build();
+                UserChapterProgressRequest.builder().id(1L).progress(80).build();
         when(progressService.update(dto)).thenReturn(true);
 
         var result = controller.update(dto);

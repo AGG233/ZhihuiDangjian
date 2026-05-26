@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.controller.user;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -54,39 +55,39 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 获取进度记录成功")
         void getSuccess() throws Exception {
-            UserChapterProgressResponse vo = LearningTestDataFactory.createChapterProgressVO("prog-001");
-            when(progressService.get("prog-001")).thenReturn(vo);
+            UserChapterProgressResponse vo = LearningTestDataFactory.createChapterProgressVO(1L);
+            when(progressService.get(1L)).thenReturn(vo);
 
-            mockMvc.perform(get("/api/learning/progress/prog-001"))
+            mockMvc.perform(get("/api/learning/progress/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data.id").value("prog-001"))
-                    .andExpect(jsonPath("$.data.userId").value("user-001"))
-                    .andExpect(jsonPath("$.data.chapterId").value("ch-001"));
+                    .andExpect(jsonPath("$.data.id").value("1"))
+                    .andExpect(jsonPath("$.data.userId").value("1"))
+                    .andExpect(jsonPath("$.data.chapterId").value("1"));
         }
 
         @Test
         @DisplayName("GET /user/{userId} - 获取用户所有进度成功")
         void getByUserIdSuccess() throws Exception {
-            UserChapterProgressResponse vo = LearningTestDataFactory.createChapterProgressVO("prog-001");
-            when(progressService.getByUserId("user-001")).thenReturn(List.of(vo));
+            UserChapterProgressResponse vo = LearningTestDataFactory.createChapterProgressVO(1L);
+            when(progressService.getByUserId(1L)).thenReturn(List.of(vo));
 
-            mockMvc.perform(get("/api/learning/progress/users/user-001"))
+            mockMvc.perform(get("/api/learning/progress/users/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data[0].id").value("prog-001"));
+                    .andExpect(jsonPath("$.data[0].id").value("1"));
         }
 
         @Test
         @DisplayName("GET /user/{userId}/chapter/{chapterId} - 获取用户章节进度成功")
         void getByUserIdAndChapterIdSuccess() throws Exception {
-            UserChapterProgressResponse vo = LearningTestDataFactory.createChapterProgressVO("prog-001");
-            when(progressService.getByUserIdAndChapterId("user-001", "ch-001")).thenReturn(vo);
+            UserChapterProgressResponse vo = LearningTestDataFactory.createChapterProgressVO(1L);
+            when(progressService.getByUserIdAndChapterId(1L, 1L)).thenReturn(vo);
 
-            mockMvc.perform(get("/api/learning/progress/users/user-001/chapters/ch-001"))
+            mockMvc.perform(get("/api/learning/progress/users/1/chapters/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data.id").value("prog-001"));
+                    .andExpect(jsonPath("$.data.id").value("1"));
         }
 
         @Test
@@ -111,7 +112,7 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
             mockMvc.perform(put("/api/learning/progress")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(LearningTestDataFactory.toJson(
-                                    LearningTestDataFactory.createChapterProgressUpdateDto("prog-001"))))
+                                    LearningTestDataFactory.createChapterProgressUpdateDto(1L))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(true));
@@ -129,9 +130,9 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 BusinessException 返回 400")
         void getThrowsBusinessException() throws Exception {
-            when(progressService.get("prog-001")).thenThrow(new BusinessException(4000, "进度记录不存在"));
+            when(progressService.get(1L)).thenThrow(new BusinessException(4000, "进度记录不存在"));
 
-            mockMvc.perform(get("/api/learning/progress/prog-001"))
+            mockMvc.perform(get("/api/learning/progress/1"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("进度记录不存在"));
@@ -140,9 +141,9 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 RuntimeException 返回 500")
         void getThrowsRuntimeException() throws Exception {
-            when(progressService.get("prog-001")).thenThrow(new RuntimeException("数据库异常"));
+            when(progressService.get(1L)).thenThrow(new RuntimeException("数据库异常"));
 
-            mockMvc.perform(get("/api/learning/progress/prog-001"))
+            mockMvc.perform(get("/api/learning/progress/1"))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("500"));
         }
@@ -199,7 +200,7 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
             mockMvc.perform(put("/api/learning/progress")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(LearningTestDataFactory.toJson(
-                                    LearningTestDataFactory.createChapterProgressUpdateDto("nonexistent"))))
+                                    LearningTestDataFactory.createChapterProgressUpdateDto(9999L))))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("进度记录不存在"));
@@ -213,7 +214,7 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
             mockMvc.perform(put("/api/learning/progress")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(LearningTestDataFactory.toJson(
-                                    LearningTestDataFactory.createChapterProgressUpdateDto("prog-001"))))
+                                    LearningTestDataFactory.createChapterProgressUpdateDto(1L))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false))
@@ -241,9 +242,9 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /user/{userId} - 空结果集返回空列表")
         void getByUserIdEmptyResult() throws Exception {
-            when(progressService.getByUserId("user-empty")).thenReturn(List.of());
+            when(progressService.getByUserId(9999L)).thenReturn(List.of());
 
-            mockMvc.perform(get("/api/learning/progress/users/user-empty"))
+            mockMvc.perform(get("/api/learning/progress/users/9999"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").isArray())
@@ -254,11 +255,11 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @DisplayName("GET /user/{userId} - 多进度记录返回")
         void getByUserIdMultipleRecords() throws Exception {
             List<UserChapterProgressResponse> list = List.of(
-                    LearningTestDataFactory.createChapterProgressVO("prog-001", "user-001", "ch-001"),
-                    LearningTestDataFactory.createChapterProgressVO("prog-002", "user-001", "ch-002"));
-            when(progressService.getByUserId("user-001")).thenReturn(list);
+                    LearningTestDataFactory.createChapterProgressVO(1L, 1L, 1L),
+                    LearningTestDataFactory.createChapterProgressVO(2L, 1L, 2L));
+            when(progressService.getByUserId(1L)).thenReturn(list);
 
-            mockMvc.perform(get("/api/learning/progress/users/user-001"))
+            mockMvc.perform(get("/api/learning/progress/users/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.length()").value(2));
@@ -271,7 +272,7 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
 
             mockMvc.perform(put("/api/learning/progress")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content("{\"id\":\"prog-001\"}"))
+                            .content("{\"id\":1}"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));
         }
@@ -288,17 +289,17 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 注入在路径参数中")
         void xssInPath() throws Exception {
-            when(progressService.get("<script>alert('xss')</script>"))
+            when(progressService.get(anyLong()))
                     .thenThrow(new BusinessException(4000, "进度记录不存在"));
 
-            mockMvc.perform(get(URI.create("/api/learning/progress/%3Cscript%3Ealert('xss')%3C%2Fscript%3E")))
+            mockMvc.perform(get(URI.create("/api/learning/progress/%3Cscript%3Ealert('xss')%3E")))
                     .andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("SQL 注入在路径参数中")
         void sqlInjectionInPath() throws Exception {
-            when(progressService.get("' OR '1'='1")).thenThrow(new BusinessException(4000, "进度记录不存在"));
+            when(progressService.get(anyLong())).thenThrow(new BusinessException(4000, "进度记录不存在"));
 
             mockMvc.perform(get("/api/learning/progress/{id}", "' OR '1'='1")).andExpect(status().isBadRequest());
         }
@@ -306,7 +307,7 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("DELETE 请求获取接口返回 405")
         void getWithWrongMethod() throws Exception {
-            mockMvc.perform(delete("/api/learning/progress/prog-001")).andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(delete("/api/learning/progress/1")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test

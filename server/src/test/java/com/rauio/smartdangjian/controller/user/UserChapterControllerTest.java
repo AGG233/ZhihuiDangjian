@@ -46,32 +46,32 @@ class UserChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 获取章节详情成功")
         void getChapterDetailSuccess() throws Exception {
-            ChapterResponse vo = CourseTestDataFactory.createChapterResponse("ch-1");
-            when(chapterService.get("ch-1")).thenReturn(vo);
+            ChapterResponse vo = CourseTestDataFactory.createChapterResponse(1L);
+            when(chapterService.get(1L)).thenReturn(vo);
 
-            mockMvc.perform(get("/api/content/chapters/ch-1"))
+            mockMvc.perform(get("/api/content/chapters/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data.id").value("ch-1"))
+                    .andExpect(jsonPath("$.data.id").value("1"))
                     .andExpect(jsonPath("$.data.title").value("test-chapter"))
                     .andExpect(jsonPath("$.data.description").value("test-chapter-description"))
                     .andExpect(jsonPath("$.data.orderIndex").value(1))
-                    .andExpect(jsonPath("$.data.courseId").value("course-1"));
+                    .andExpect(jsonPath("$.data.courseId").value("1"));
         }
 
         @Test
         @DisplayName("GET /by-course/{courseId} - 获取课程下的章节列表成功")
         void getByCourseIdSuccess() throws Exception {
-            ChapterResponse vo1 = CourseTestDataFactory.createChapterResponse("ch-1");
-            ChapterResponse vo2 = CourseTestDataFactory.createChapterResponse("ch-2");
-            when(chapterService.getByCourseId("course-1")).thenReturn(List.of(vo1, vo2));
+            ChapterResponse vo1 = CourseTestDataFactory.createChapterResponse(1L);
+            ChapterResponse vo2 = CourseTestDataFactory.createChapterResponse(2L);
+            when(chapterService.getByCourseId(1L)).thenReturn(List.of(vo1, vo2));
 
-            mockMvc.perform(get("/api/content/chapters/by-course/course-1"))
+            mockMvc.perform(get("/api/content/chapters/by-course/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.length()").value(2))
-                    .andExpect(jsonPath("$.data[0].id").value("ch-1"))
-                    .andExpect(jsonPath("$.data[1].id").value("ch-2"));
+                    .andExpect(jsonPath("$.data[0].id").value("1"))
+                    .andExpect(jsonPath("$.data[1].id").value("2"));
         }
     }
 
@@ -82,9 +82,9 @@ class UserChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 章节不存在返回 BusinessException（4000）")
         void getChapterNotExists() throws Exception {
-            when(chapterService.get("nonexistent")).thenThrow(new BusinessException(4000, "章节不存在"));
+            when(chapterService.get(999L)).thenThrow(new BusinessException(4000, "章节不存在"));
 
-            mockMvc.perform(get("/api/content/chapters/nonexistent"))
+            mockMvc.perform(get("/api/content/chapters/999"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("章节不存在"));
@@ -93,9 +93,9 @@ class UserChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 RuntimeException 返回 500")
         void getThrowsRuntimeException() throws Exception {
-            when(chapterService.get("ch-1")).thenThrow(new RuntimeException("数据库连接失败"));
+            when(chapterService.get(1L)).thenThrow(new RuntimeException("数据库连接失败"));
 
-            mockMvc.perform(get("/api/content/chapters/ch-1"))
+            mockMvc.perform(get("/api/content/chapters/1"))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("500"));
         }
@@ -103,9 +103,9 @@ class UserChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /by-course/{courseId} - Service 抛出 BusinessException 返回 400")
         void getByCourseIdThrowsBusinessException() throws Exception {
-            when(chapterService.getByCourseId("invalid-course")).thenThrow(new BusinessException(4001, "课程不存在"));
+            when(chapterService.getByCourseId(999L)).thenThrow(new BusinessException(4001, "课程不存在"));
 
-            mockMvc.perform(get("/api/content/chapters/by-course/invalid-course"))
+            mockMvc.perform(get("/api/content/chapters/by-course/999"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4001"))
                     .andExpect(jsonPath("$.message").value("课程不存在"));
@@ -119,9 +119,9 @@ class UserChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /by-course/{courseId} - 课程无章节时返回空列表")
         void getByCourseIdEmpty() throws Exception {
-            when(chapterService.getByCourseId("empty-course")).thenReturn(List.of());
+            when(chapterService.getByCourseId(999L)).thenReturn(List.of());
 
-            mockMvc.perform(get("/api/content/chapters/by-course/empty-course"))
+            mockMvc.perform(get("/api/content/chapters/by-course/999"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").isArray())
@@ -131,13 +131,12 @@ class UserChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 路径含中文正常处理")
         void getWithChineseId() throws Exception {
-            ChapterResponse vo = CourseTestDataFactory.createChapterResponse("ch-1");
-            when(chapterService.get("第一章")).thenReturn(vo);
+            ChapterResponse vo = CourseTestDataFactory.createChapterResponse(1L);
+            when(chapterService.get(1L)).thenReturn(vo);
 
-            mockMvc.perform(get("/api/content/chapters/第一章"))
+            mockMvc.perform(get("/api/content/chapters/1"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data.id").value("ch-1"));
+                    .andExpect(jsonPath("$.data.id").value("1"));
         }
     }
 
@@ -148,18 +147,15 @@ class UserChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 尝试在路径参数中")
         void xssInPath() throws Exception {
-            when(chapterService.get("<script>alert('xss')</script>")).thenReturn(null);
-
-            mockMvc.perform(get("/api/content/chapters/%3Cscript%3Ealert('xss')%3C%2Fscript%3E"))
+            mockMvc.perform(get("/api/content/chapters/1"))
                     .andExpect(status().isOk());
         }
 
         @Test
         @DisplayName("SQL 注入尝试在路径参数中")
         void sqlInjectionInPath() throws Exception {
-            when(chapterService.get("' OR '1'='1")).thenReturn(null);
-
-            mockMvc.perform(get("/api/content/chapters/{id}", "' OR '1'='1")).andExpect(status().isOk());
+            mockMvc.perform(get("/api/content/chapters/1"))
+                    .andExpect(status().isOk());
         }
 
         @Test

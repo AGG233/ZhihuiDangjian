@@ -33,7 +33,7 @@ class ResourceMetaServiceTest {
     @InjectMocks
     private ResourceMetaService resourceMetaService;
 
-    private static final String RESOURCE_ID = "r-1";
+    private static final Long RESOURCE_ID = 1L;
     private static final String HASH = "abc123";
     private static final String OBJECT_KEY = "image/abc123.png";
 
@@ -43,7 +43,7 @@ class ResourceMetaServiceTest {
     @DisplayName("create 创建资源成功")
     void createSuccess() {
         ResourceMetaCreateRequest request = new ResourceMetaCreateRequest();
-        request.setUploaderId("user-1");
+        request.setUploaderId("1");
         request.setOriginalName("test.png");
         request.setHash(HASH);
         request.setObjectKey(OBJECT_KEY);
@@ -63,7 +63,7 @@ class ResourceMetaServiceTest {
     @DisplayName("create 指定状态时不覆盖")
     void createWithStatus() {
         ResourceMetaCreateRequest request = new ResourceMetaCreateRequest();
-        request.setUploaderId("user-1");
+        request.setUploaderId("1");
         request.setOriginalName("test.png");
         request.setHash(HASH);
         request.setObjectKey(OBJECT_KEY);
@@ -82,13 +82,13 @@ class ResourceMetaServiceTest {
     @DisplayName("create 哈希重复抛出异常")
     void createDuplicateHash() {
         ResourceMetaCreateRequest request = new ResourceMetaCreateRequest();
-        request.setUploaderId("user-1");
+        request.setUploaderId("1");
         request.setOriginalName("test.png");
         request.setHash(HASH);
         request.setObjectKey(OBJECT_KEY);
         request.setResourceType(0);
 
-        doReturn(ResourceMeta.builder().id("existing").hash(HASH).build())
+        doReturn(ResourceMeta.builder().id(1L).hash(HASH).build())
                 .when(resourceMetaService)
                 .getOne(any(LambdaQueryWrapper.class));
 
@@ -101,7 +101,7 @@ class ResourceMetaServiceTest {
     @DisplayName("create 保存失败抛出异常")
     void createSaveFailed() {
         ResourceMetaCreateRequest request = new ResourceMetaCreateRequest();
-        request.setUploaderId("user-1");
+        request.setUploaderId("1");
         request.setOriginalName("test.png");
         request.setHash(HASH);
         request.setObjectKey(OBJECT_KEY);
@@ -185,7 +185,7 @@ class ResourceMetaServiceTest {
         List<ResourceMeta> list = List.of(ResourceMeta.builder().id(RESOURCE_ID).build());
         doReturn(list).when(resourceMetaService).list(any(LambdaQueryWrapper.class));
 
-        List<ResourceMeta> result = resourceMetaService.list("user-1", null, null, null, null);
+        List<ResourceMeta> result = resourceMetaService.list(1L, null, null, null, null);
 
         assertThat(result).hasSize(1);
     }
@@ -197,7 +197,7 @@ class ResourceMetaServiceTest {
     void updateSuccess() {
         ResourceMeta existing = ResourceMeta.builder()
                 .id(RESOURCE_ID)
-                .uploaderId("user-1")
+                .uploaderId(1L)
                 .hash(HASH)
                 .objectKey(OBJECT_KEY)
                 .originalName("old.png")

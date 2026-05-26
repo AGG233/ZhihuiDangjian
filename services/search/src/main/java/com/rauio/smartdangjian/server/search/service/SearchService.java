@@ -50,7 +50,7 @@ public class SearchService {
             wrapper.apply("MATCH(title, description) AGAINST({0} IN BOOLEAN MODE)", keyword);
         }
         if (StringUtils.isNotBlank(categoryId)) {
-            List<String> matchedCourseIds = categoryCourseMapper
+            List<Long> matchedCourseIds = categoryCourseMapper
                     .selectList(new LambdaQueryWrapper<CategoryCourse>().eq(CategoryCourse::getCategoryId, categoryId))
                     .stream()
                     .map(CategoryCourse::getCourseId)
@@ -86,13 +86,14 @@ public class SearchService {
 
         // 搜索结果不足时，用推荐补充
         if (records.size() < pageSize) {
-            Set<String> existingIds =
+            Set<Long> existingIds =
                     records.stream().map(CourseResponse::getId).collect(Collectors.toSet());
 
-            String userId = userService.getCurrentUserId();
-            Page<String> cfIds = recommendService.recommend(userId, 1, pageSize);
+            String userIdStr = userService.getCurrentUserId();
+            Long userId = Long.valueOf(userIdStr);
+            Page<Long> cfIds = recommendService.recommend(userId, 1, pageSize);
 
-            Set<String> idsToFetch = cfIds.getRecords().stream()
+            Set<Long> idsToFetch = cfIds.getRecords().stream()
                     .filter(id -> !existingIds.contains(id))
                     .limit(pageSize - records.size())
                     .collect(Collectors.toSet());
@@ -112,13 +113,13 @@ public class SearchService {
             return Collections.emptyList();
         }
         List<CourseResponse> courseVOList = courseConvertor.toResponseList(courses);
-        Map<String, String> categoryIdMap = getCategoryIdMap(
+        Map<Long, Long> categoryIdMap = getCategoryIdMap(
                 courses.stream().map(Course::getId).filter(Objects::nonNull).collect(Collectors.toSet()));
         courseVOList.forEach(item -> item.setCategoryId(categoryIdMap.get(item.getId())));
         return courseVOList;
     }
 
-    private Map<String, String> getCategoryIdMap(Set<String> courseIds) {
+    private Map<Long, Long> getCategoryIdMap(Set<Long> courseIds) {
         if (courseIds == null || courseIds.isEmpty()) {
             return Collections.emptyMap();
         }

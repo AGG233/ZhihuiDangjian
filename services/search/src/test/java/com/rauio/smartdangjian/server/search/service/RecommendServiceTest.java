@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -120,32 +121,32 @@ class RecommendServiceTest {
     @Test
     @DisplayName("综合推荐合并多个来源的结果并分页")
     void recommendMergesMultipleSources() {
-        Page<String> cfPage = new Page<>(1, 10);
-        cfPage.setRecords(List.of("c-1", "c-2"));
-        Page<String> graphPage = new Page<>(1, 10);
-        graphPage.setRecords(List.of("c-2", "c-3"));
-        Page<String> profilePage = new Page<>(1, 10);
-        profilePage.setRecords(List.of("c-3"));
+        Page<Long> cfPage = new Page<>(1, 10);
+        cfPage.setRecords(List.of(1L, 2L));
+        Page<Long> graphPage = new Page<>(1, 10);
+        graphPage.setRecords(List.of(2L, 3L));
+        Page<Long> profilePage = new Page<>(1, 10);
+        profilePage.setRecords(List.of(3L));
 
-        doReturn(cfPage).when(recommendService).recommendByCF("user-1", 1, 10);
-        doReturn(graphPage).when(recommendService).recommendByGraph("user-1", 1, 10);
-        doReturn(profilePage).when(recommendService).recommendByProfile("user-1", 1, 10);
+        doReturn(cfPage).when(recommendService).recommendByCF(1L, 1, 10);
+        doReturn(graphPage).when(recommendService).recommendByGraph(1L, 1, 10);
+        doReturn(profilePage).when(recommendService).recommendByProfile(1L, 1, 10);
 
-        Page<String> result = recommendService.recommend("user-1", 1, 10);
+        Page<Long> result = recommendService.recommend(1L, 1, 10);
 
         assertThat(result.getRecords()).isNotEmpty();
-        assertThat(result.getRecords().get(0)).isEqualTo("c-2");
+        assertThat(result.getRecords().get(0)).isEqualTo(2L);
     }
 
     @Test
     @DisplayName("综合推荐所有来源均为空时返回空页")
     void recommendAllEmptyReturnsEmptyPage() {
-        Page<String> emptyPage = new Page<>(1, 10);
-        doReturn(emptyPage).when(recommendService).recommendByCF("user-1", 1, 10);
-        doReturn(emptyPage).when(recommendService).recommendByGraph("user-1", 1, 10);
-        doReturn(emptyPage).when(recommendService).recommendByProfile("user-1", 1, 10);
+        Page<Long> emptyPage = new Page<>(1, 10);
+        doReturn(emptyPage).when(recommendService).recommendByCF(1L, 1, 10);
+        doReturn(emptyPage).when(recommendService).recommendByGraph(1L, 1, 10);
+        doReturn(emptyPage).when(recommendService).recommendByProfile(1L, 1, 10);
 
-        Page<String> result = recommendService.recommend("user-1", 1, 10);
+        Page<Long> result = recommendService.recommend(1L, 1, 10);
 
         assertThat(result.getRecords()).isEmpty();
     }
@@ -159,7 +160,7 @@ class RecommendServiceTest {
         similarityPage.setRecords(Collections.emptyList());
         doReturn(similarityPage).when(userSimilarityMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
 
-        Page<String> result = recommendService.recommendByCF("user-1", 1, 10);
+        Page<Long> result = recommendService.recommendByCF(1L, 1, 10);
 
         assertThat(result.getRecords()).isEmpty();
     }
@@ -167,49 +168,49 @@ class RecommendServiceTest {
     @Test
     @DisplayName("协同过滤有相似用户时按学习章节推荐课程")
     void recommendByCFWithSimilarUsersReturnsRecommendedCourses() {
-        UserSimilarity sim = UserSimilarity.builder().userId1("user-1").userId2("user-2").build();
+        UserSimilarity sim = UserSimilarity.builder().userId1(1L).userId2(2L).build();
         Page<UserSimilarity> similarityPage = new Page<>(1, 10, 1);
         similarityPage.setRecords(List.of(sim));
         doReturn(similarityPage).when(userSimilarityMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
 
-        UserLearningRecord learned = UserLearningRecord.builder().chapterId("ch-learned").userId("user-1").build();
+        UserLearningRecord learned = UserLearningRecord.builder().chapterId(1L).userId(1L).build();
         doReturn(List.of(learned)).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-        Chapter learnedChapter = Chapter.builder().id("ch-learned").courseId("c-learned").build();
+        Chapter learnedChapter = Chapter.builder().id(1L).courseId(1L).build();
         doReturn(List.of(learnedChapter)).when(chapterMapper).selectList(any(LambdaQueryWrapper.class));
 
-        UserLearningRecord similarRecord = UserLearningRecord.builder().chapterId("ch-1").userId("user-2").build();
+        UserLearningRecord similarRecord = UserLearningRecord.builder().chapterId(2L).userId(2L).build();
         doReturn(List.of(learned), List.of(similarRecord)).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
 
         doReturn(Collections.emptyList()).when(userChapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
 
-        Chapter chapter = Chapter.builder().id("ch-1").courseId("c-1").title("章节1").build();
+        Chapter chapter = Chapter.builder().id(2L).courseId(2L).title("章节2").build();
         doReturn(List.of(chapter)).when(chapterMapper).selectByIds(anyCollection());
 
-        Page<String> result = recommendService.recommendByCF("user-1", 1, 10);
+        Page<Long> result = recommendService.recommendByCF(1L, 1, 10);
 
         assertThat(result.getRecords()).hasSize(1);
-        assertThat(result.getRecords().get(0)).isEqualTo("c-1");
+        assertThat(result.getRecords().get(0)).isEqualTo(2L);
     }
 
     @Test
     @DisplayName("协同过滤用户已学完全部相似课程时返回空页")
     void recommendByCFUserAlreadyLearnedAllReturnsEmptyPage() {
-        UserSimilarity sim = UserSimilarity.builder().userId1("user-1").userId2("user-2").build();
+        UserSimilarity sim = UserSimilarity.builder().userId1(1L).userId2(2L).build();
         Page<UserSimilarity> similarityPage = new Page<>(1, 10, 1);
         similarityPage.setRecords(List.of(sim));
         doReturn(similarityPage).when(userSimilarityMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
 
-        UserLearningRecord learned = UserLearningRecord.builder().chapterId("ch-1").userId("user-1").build();
+        UserLearningRecord learned = UserLearningRecord.builder().chapterId(1L).userId(1L).build();
         doReturn(List.of(learned)).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-        Chapter learnedChapter = Chapter.builder().id("ch-1").courseId("c-1").build();
+        Chapter learnedChapter = Chapter.builder().id(1L).courseId(1L).build();
         doReturn(List.of(learnedChapter)).when(chapterMapper).selectList(any(LambdaQueryWrapper.class));
 
-        UserLearningRecord similarRecord = UserLearningRecord.builder().chapterId("ch-1").userId("user-2").build();
+        UserLearningRecord similarRecord = UserLearningRecord.builder().chapterId(1L).userId(1L).build();
         doReturn(List.of(learned), List.of(similarRecord)).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
         doReturn(Collections.emptyList()).when(userChapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
         doReturn(List.of(learnedChapter)).when(chapterMapper).selectByIds(anyCollection());
 
-        Page<String> result = recommendService.recommendByCF("user-1", 1, 10);
+        Page<Long> result = recommendService.recommendByCF(1L, 1, 10);
 
         assertThat(result.getRecords()).isEmpty();
     }
@@ -219,17 +220,17 @@ class RecommendServiceTest {
     @Test
     @DisplayName("知识图谱推荐返回课程ID列表")
     void recommendByGraphReturnsCourseIds() {
-        when(recordFetchSpec.all()).thenReturn(List.of("c-graph-1", "c-graph-2"));
+        when(recordFetchSpec.all()).thenReturn(List.of("1", "2"));
 
-        Page<String> result = recommendService.recommendByGraph("user-1", 1, 10);
+        Page<Long> result = recommendService.recommendByGraph(1L, 1, 10);
 
-        assertThat(result.getRecords()).containsExactly("c-graph-1", "c-graph-2");
+        assertThat(result.getRecords()).containsExactly(1L, 2L);
     }
 
     @Test
     @DisplayName("知识图谱无结果时返回空页")
     void recommendByGraphEmptyReturnsEmptyPage() {
-        Page<String> result = recommendService.recommendByGraph("user-1", 1, 10);
+        Page<Long> result = recommendService.recommendByGraph(1L, 1, 10);
 
         assertThat(result.getRecords()).isEmpty();
     }
@@ -239,9 +240,9 @@ class RecommendServiceTest {
     @Test
     @DisplayName("用户画像为空时返回空页")
     void recommendByProfileNullProfileReturnsEmptyPage() {
-        doReturn(null).when(userProfileService).getProfile("user-1");
+        doReturn(null).when(userProfileService).getProfile("1");
 
-        Page<String> result = recommendService.recommendByProfile("user-1", 1, 10);
+        Page<Long> result = recommendService.recommendByProfile(1L, 1, 10);
 
         assertThat(result.getRecords()).isEmpty();
     }
@@ -250,39 +251,39 @@ class RecommendServiceTest {
     @DisplayName("根据兴趣分类推荐课程")
     void recommendByProfileWithInterestsReturnsCourseIds() {
         UserProfileResponse profile = UserProfileResponse.builder()
-                .userId("user-1")
-                .interestCategoryIds(List.of("cat-1"))
+                .userId("1")
+                .interestCategoryIds(List.of(1L))
                 .build();
-        doReturn(profile).when(userProfileService).getProfile("user-1");
+        doReturn(profile).when(userProfileService).getProfile("1");
 
         doReturn(Collections.emptyList()).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
 
-        CategoryCourse cc = CategoryCourse.builder().courseId("c-1").categoryId("cat-1").build();
+        CategoryCourse cc = CategoryCourse.builder().courseId(1L).categoryId(1L).build();
         doReturn(List.of(cc)).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
 
-        Course course = Course.builder().id("c-1").title("兴趣课程").build();
+        Course course = Course.builder().id(1L).title("兴趣课程").build();
         Page<Course> coursePage = new Page<>(1, 10, 1);
         coursePage.setRecords(List.of(course));
         doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
 
-        Page<String> result = recommendService.recommendByProfile("user-1", 1, 10);
+        Page<Long> result = recommendService.recommendByProfile(1L, 1, 10);
 
         assertThat(result.getRecords()).hasSize(1);
-        assertThat(result.getRecords().get(0)).isEqualTo("c-1");
+        assertThat(result.getRecords().get(0)).isEqualTo(1L);
     }
 
     @Test
     @DisplayName("兴趣分类无匹配课程时返回空页")
     void recommendByProfileNoInterestMatchReturnsEmptyPage() {
         UserProfileResponse profile = UserProfileResponse.builder()
-                .userId("user-1")
-                .interestCategoryIds(List.of("cat-empty"))
+                .userId("1")
+                .interestCategoryIds(List.of(999L))
                 .build();
-        doReturn(profile).when(userProfileService).getProfile("user-1");
+        doReturn(profile).when(userProfileService).getProfile("1");
         doReturn(Collections.emptyList()).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
         doReturn(Collections.emptyList()).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
 
-        Page<String> result = recommendService.recommendByProfile("user-1", 1, 10);
+        Page<Long> result = recommendService.recommendByProfile(1L, 1, 10);
 
         assertThat(result.getRecords()).isEmpty();
     }
@@ -293,22 +294,22 @@ class RecommendServiceTest {
         UserProfileResponse.QuizStats quizStats = UserProfileResponse.QuizStats.builder()
                 .correctRate(0.85).build();
         UserProfileResponse profile = UserProfileResponse.builder()
-                .userId("user-1")
-                .interestCategoryIds(List.of("cat-1"))
+                .userId("1")
+                .interestCategoryIds(List.of(1L))
                 .quiz(quizStats)
                 .build();
-        doReturn(profile).when(userProfileService).getProfile("user-1");
+        doReturn(profile).when(userProfileService).getProfile("1");
         doReturn(Collections.emptyList()).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
 
-        CategoryCourse cc = CategoryCourse.builder().courseId("c-1").categoryId("cat-1").build();
+        CategoryCourse cc = CategoryCourse.builder().courseId(1L).categoryId(1L).build();
         doReturn(List.of(cc)).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
 
-        Course course = Course.builder().id("c-1").difficulty("hard").build();
+        Course course = Course.builder().id(1L).difficulty("hard").build();
         Page<Course> coursePage = new Page<>(1, 10, 1);
         coursePage.setRecords(List.of(course));
         doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
 
-        Page<String> result = recommendService.recommendByProfile("user-1", 1, 10);
+        Page<Long> result = recommendService.recommendByProfile(1L, 1, 10);
 
         assertThat(result.getRecords()).hasSize(1);
     }
@@ -319,22 +320,22 @@ class RecommendServiceTest {
         UserProfileResponse.QuizStats quizStats = UserProfileResponse.QuizStats.builder()
                 .correctRate(0.65).build();
         UserProfileResponse profile = UserProfileResponse.builder()
-                .userId("user-1")
-                .interestCategoryIds(List.of("cat-1"))
+                .userId("1")
+                .interestCategoryIds(List.of(1L))
                 .quiz(quizStats)
                 .build();
-        doReturn(profile).when(userProfileService).getProfile("user-1");
+        doReturn(profile).when(userProfileService).getProfile("1");
         doReturn(Collections.emptyList()).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
 
-        CategoryCourse cc = CategoryCourse.builder().courseId("c-1").categoryId("cat-1").build();
+        CategoryCourse cc = CategoryCourse.builder().courseId(1L).categoryId(1L).build();
         doReturn(List.of(cc)).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
 
-        Course course = Course.builder().id("c-1").difficulty("medium").build();
+        Course course = Course.builder().id(1L).difficulty("medium").build();
         Page<Course> coursePage = new Page<>(1, 10, 1);
         coursePage.setRecords(List.of(course));
         doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
 
-        Page<String> result = recommendService.recommendByProfile("user-1", 1, 10);
+        Page<Long> result = recommendService.recommendByProfile(1L, 1, 10);
 
         assertThat(result.getRecords()).hasSize(1);
     }
@@ -345,22 +346,22 @@ class RecommendServiceTest {
         UserProfileResponse.QuizStats quizStats = UserProfileResponse.QuizStats.builder()
                 .correctRate(0.35).build();
         UserProfileResponse profile = UserProfileResponse.builder()
-                .userId("user-1")
-                .interestCategoryIds(List.of("cat-1"))
+                .userId("1")
+                .interestCategoryIds(List.of(1L))
                 .quiz(quizStats)
                 .build();
-        doReturn(profile).when(userProfileService).getProfile("user-1");
+        doReturn(profile).when(userProfileService).getProfile("1");
         doReturn(Collections.emptyList()).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
 
-        CategoryCourse cc = CategoryCourse.builder().courseId("c-1").categoryId("cat-1").build();
+        CategoryCourse cc = CategoryCourse.builder().courseId(1L).categoryId(1L).build();
         doReturn(List.of(cc)).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
 
-        Course course = Course.builder().id("c-1").difficulty("easy").build();
+        Course course = Course.builder().id(1L).difficulty("easy").build();
         Page<Course> coursePage = new Page<>(1, 10, 1);
         coursePage.setRecords(List.of(course));
         doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
 
-        Page<String> result = recommendService.recommendByProfile("user-1", 1, 10);
+        Page<Long> result = recommendService.recommendByProfile(1L, 1, 10);
 
         assertThat(result.getRecords()).hasSize(1);
     }
@@ -369,17 +370,17 @@ class RecommendServiceTest {
     @DisplayName("用户画像无兴趣分类时不过滤分类")
     void recommendByProfileNoInterestsSkipsCategoryFilter() {
         UserProfileResponse profile = UserProfileResponse.builder()
-                .userId("user-1")
+                .userId("1")
                 .build();
-        doReturn(profile).when(userProfileService).getProfile("user-1");
+        doReturn(profile).when(userProfileService).getProfile("1");
         doReturn(Collections.emptyList()).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
 
-        Course course = Course.builder().id("c-1").build();
+        Course course = Course.builder().id(1L).build();
         Page<Course> coursePage = new Page<>(1, 10, 1);
         coursePage.setRecords(List.of(course));
         doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
 
-        Page<String> result = recommendService.recommendByProfile("user-1", 1, 10);
+        Page<Long> result = recommendService.recommendByProfile(1L, 1, 10);
 
         assertThat(result.getRecords()).hasSize(1);
     }
@@ -389,16 +390,16 @@ class RecommendServiceTest {
     @Test
     @DisplayName("分页超过数据范围时返回空列表")
     void paginateBeyondRangeReturnsEmpty() {
-        Page<String> cfPage = new Page<>(1, 10);
-        cfPage.setRecords(List.of("c-1"));
-        Page<String> graphPage = new Page<>(1, 10);
-        Page<String> profilePage = new Page<>(1, 10);
+        Page<Long> cfPage = new Page<>(1, 10);
+        cfPage.setRecords(List.of(1L));
+        Page<Long> graphPage = new Page<>(1, 10);
+        Page<Long> profilePage = new Page<>(1, 10);
 
-        doReturn(cfPage).when(recommendService).recommendByCF(anyString(), anyInt(), anyInt());
-        doReturn(graphPage).when(recommendService).recommendByGraph(anyString(), anyInt(), anyInt());
-        doReturn(profilePage).when(recommendService).recommendByProfile(anyString(), anyInt(), anyInt());
+        doReturn(cfPage).when(recommendService).recommendByCF(anyLong(), anyInt(), anyInt());
+        doReturn(graphPage).when(recommendService).recommendByGraph(anyLong(), anyInt(), anyInt());
+        doReturn(profilePage).when(recommendService).recommendByProfile(anyLong(), anyInt(), anyInt());
 
-        Page<String> result = recommendService.recommend("user-1", 10, 10);
+        Page<Long> result = recommendService.recommend(1L, 10, 10);
 
         assertThat(result.getRecords()).isEmpty();
     }

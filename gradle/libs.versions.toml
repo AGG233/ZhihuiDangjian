@@ -4,6 +4,7 @@ spring-dependency-management = "1.1.7"
 spring-ai = "1.1.2"
 spring-ai-ali = "1.1.2.0"
 spring-redisson = "4.3.0"
+flyway = "10.22.0"
 
 sa-token = "1.45.0"
 
@@ -83,6 +84,10 @@ xfile = { module = "org.dromara.x-file-storage:x-file-storage-spring", version.r
 
 # Documentation
 springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+
+# Flyway
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-mysql = { module = "org.flywaydb:flyway-mysql", version.ref = "flyway" }
 
 # Build and tooling
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }

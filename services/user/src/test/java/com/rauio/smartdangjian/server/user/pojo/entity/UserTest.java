@@ -18,7 +18,7 @@ class UserTest {
     void builderCreatesUserCorrectly() {
         LocalDateTime now = LocalDateTime.of(2025, 1, 1, 12, 0);
         User user = User.builder()
-                .id("1001")
+                .id(1L)
                 .universityId("univ-1")
                 .username("testuser")
                 .password("secret")
@@ -36,7 +36,7 @@ class UserTest {
                 .updatedAt(now)
                 .build();
 
-        assertThat(user.getId()).isEqualTo("1001");
+        assertThat(user.getId()).isEqualTo(1L);
         assertThat(user.getUniversityId()).isEqualTo("univ-1");
         assertThat(user.getUsername()).isEqualTo("testuser");
         assertThat(user.getPassword()).isEqualTo("secret");
@@ -58,15 +58,15 @@ class UserTest {
     @Test
     @DisplayName("CurrentUserPrincipal getId 返回 id 字段值")
     void getPrincipalIdReturnsId() {
-        User user = User.builder().id("u123").userType(UserType.STUDENT).build();
+        User user = User.builder().id(1L).userType(UserType.STUDENT).build();
 
-        assertThat(user.getId()).isEqualTo("u123");
+        assertThat(user.getId()).isEqualTo(1L);
     }
 
     @Test
     @DisplayName("CurrentUserPrincipal getUserType 返回 userType 字段值")
     void getPrincipalUserTypeReturnsUserType() {
-        User user = User.builder().id("u123").userType(UserType.MANAGER).build();
+        User user = User.builder().id(1L).userType(UserType.MANAGER).build();
 
         assertThat(user.getUserType()).isEqualTo(UserType.MANAGER);
     }
@@ -75,7 +75,7 @@ class UserTest {
     @DisplayName("CurrentUserPrincipal getUniversityId 返回 universityId 字段值")
     void getPrincipalUniversityIdReturnsUniversityId() {
         User user = User.builder()
-                .id("u123")
+                .id(1L)
                 .universityId("univ-1")
                 .userType(UserType.SCHOOL)
                 .build();
@@ -88,7 +88,7 @@ class UserTest {
     void allArgsConstructorWorks() {
         LocalDateTime now = LocalDateTime.of(2025, 6, 1, 10, 0);
         User user = new User(
-                "u1",
+                1L,
                 "univ-1",
                 "testuser",
                 "pass",
@@ -100,12 +100,13 @@ class UserTest {
                 "支部",
                 UserType.STUDENT,
                 AccountStatus.ACTIVE,
+                0,
                 "test@test.com",
                 "138",
                 now,
                 now);
 
-        assertThat(user.getId()).isEqualTo("u1");
+        assertThat(user.getId()).isEqualTo(1L);
         assertThat(user.getUsername()).isEqualTo("testuser");
         assertThat(user.getUserType()).isEqualTo(UserType.STUDENT);
         assertThat(user.getStatus()).isEqualTo(AccountStatus.ACTIVE);
@@ -115,7 +116,7 @@ class UserTest {
     @DisplayName("setter 修改 username 字段后 getter 返回新值")
     void setterAndGetterWork() {
         User user = User.builder()
-                .id("u1")
+                .id(1L)
                 .username("oldname")
                 .userType(UserType.STUDENT)
                 .build();

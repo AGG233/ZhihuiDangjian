@@ -11,37 +11,37 @@ class CategoryCourseTest {
     @DisplayName("builder 构造 CategoryCourse 字段值正确")
     void builderCreatesCategoryCourseCorrectly() {
         CategoryCourse cc = CategoryCourse.builder()
-                .categoryId("cat-001")
-                .courseId("course-001")
+                .categoryId(1L)
+                .courseId(1L)
                 .build();
 
-        assertThat(cc.getCategoryId()).isEqualTo("cat-001");
-        assertThat(cc.getCourseId()).isEqualTo("course-001");
+        assertThat(cc.getCategoryId()).isEqualTo(1L);
+        assertThat(cc.getCourseId()).isEqualTo(1L);
     }
 
     @Test
     @DisplayName("setter 修改 categoryId 后 getter 返回新值")
     void setterAndGetterWorkForCategoryId() {
         CategoryCourse cc = CategoryCourse.builder()
-                .categoryId("cat-001")
-                .courseId("course-001")
+                .categoryId(1L)
+                .courseId(1L)
                 .build();
 
-        cc.setCategoryId("cat-002");
+        cc.setCategoryId(1L);
 
-        assertThat(cc.getCategoryId()).isEqualTo("cat-002");
+        assertThat(cc.getCategoryId()).isEqualTo(1L);
     }
 
     @Test
     @DisplayName("两个相同字段的 CategoryCourse equals 和 hashCode 行为符合 @Data 预期")
     void equalsAndHashCodeBehavior() {
         CategoryCourse cc1 = CategoryCourse.builder()
-                .categoryId("cat-001")
-                .courseId("course-001")
+                .categoryId(1L)
+                .courseId(1L)
                 .build();
         CategoryCourse cc2 = CategoryCourse.builder()
-                .categoryId("cat-001")
-                .courseId("course-001")
+                .categoryId(1L)
+                .courseId(1L)
                 .build();
 
         assertThat(cc1).isEqualTo(cc2);

@@ -170,7 +170,7 @@ class PromptServiceTest {
     @DisplayName("update 更新已有提示词")
     void update() {
         AiPrompts existing = AiPrompts.builder()
-                .id("prompt-1")
+                .id(1L)
                 .agentType("CHAT")
                 .name("旧名称")
                 .content("旧内容")
@@ -182,7 +182,7 @@ class PromptServiceTest {
         doReturn(existing).when(promptService).getById("prompt-1");
         doReturn(true).when(promptService).updateById(any(AiPrompts.class));
         AiPromptResponse expectedResponse = AiPromptResponse.builder()
-                .id("prompt-1")
+                .id("1")
                 .name("新名称")
                 .content("新内容")
                 .role(PromptRoleEnum.DEVELOPER)
@@ -211,7 +211,7 @@ class PromptServiceTest {
     @DisplayName("update 只更新非 null 字段")
     void updateOnlyNonNullFields() {
         AiPrompts existing = AiPrompts.builder()
-                .id("prompt-1")
+                .id(1L)
                 .agentType("CHAT")
                 .name("名称")
                 .content("内容")
@@ -223,7 +223,7 @@ class PromptServiceTest {
         doReturn(existing).when(promptService).getById("prompt-1");
         doReturn(true).when(promptService).updateById(any(AiPrompts.class));
         AiPromptResponse expectedResponse = AiPromptResponse.builder()
-                .id("prompt-1")
+                .id("1")
                 .name("仅更新名称")
                 .content("内容")
                 .role(PromptRoleEnum.SYSTEM)

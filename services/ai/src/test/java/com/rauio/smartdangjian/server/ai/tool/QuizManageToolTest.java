@@ -41,10 +41,10 @@ class QuizManageToolTest {
     @Test
     @DisplayName("getQuiz 返回存在的测验")
     void getQuizReturnsExistingQuiz() {
-        Quiz quiz = Quiz.builder().id("quiz-1").question("What is Java?").build();
-        when(quizService.get("quiz-1")).thenReturn(quiz);
+        Quiz quiz = Quiz.builder().id(1L).question("What is Java?").build();
+        when(quizService.get(1L)).thenReturn(quiz);
 
-        Quiz result = quizManageTool.getQuiz("quiz-1");
+        Quiz result = quizManageTool.getQuiz("1");
 
         assertThat(result).isEqualTo(quiz);
     }
@@ -52,9 +52,9 @@ class QuizManageToolTest {
     @Test
     @DisplayName("getQuiz 测验不存在时抛出 BusinessException")
     void getQuizThrowsWhenNotFound() {
-        when(quizService.get("missing-id")).thenReturn(null);
+        when(quizService.get(9999L)).thenReturn(null);
 
-        assertThatThrownBy(() -> quizManageTool.getQuiz("missing-id"))
+        assertThatThrownBy(() -> quizManageTool.getQuiz("9999"))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("测验不存在");
     }
@@ -62,10 +62,10 @@ class QuizManageToolTest {
     @Test
     @DisplayName("createQuiz 成功创建测验及选项")
     void createQuizSavesQuizAndOptions() {
-        Quiz savedQuiz = Quiz.builder().id("new-quiz-id").build();
+        Quiz savedQuiz = Quiz.builder().id(1L).build();
         when(quizService.create(any(Quiz.class))).thenAnswer(inv -> {
             Quiz q = inv.getArgument(0);
-            q.setId("new-quiz-id");
+            q.setId(1L);
             return true;
         });
         when(quizOptionService.create(any(), any(QuizOption.class))).thenReturn(true);
@@ -75,11 +75,11 @@ class QuizManageToolTest {
                 Map.of("optionText", "B", "isCorrect", false, "orderIndex", "B"));
 
         Boolean result =
-                quizManageTool.createQuiz("chapter-1", "Q1", "single_choice", 5, "easy", "explanation", options);
+                quizManageTool.createQuiz("1", "Q1", "single_choice", 5, "easy", "explanation", options);
 
         assertThat(result).isTrue();
         verify(quizService, times(1))
-                .create(argThat(q -> q.getChapterId().equals("chapter-1")
+                .create(argThat(q -> q.getChapterId().equals(1L)
                         && q.getQuestion().equals("Q1")
                         && q.getQuestionType().equals("single_choice")
                         && q.getScore().equals(5)
@@ -94,11 +94,11 @@ class QuizManageToolTest {
     void createQuizWithNullOptionsSkipsOptions() {
         when(quizService.create(any(Quiz.class))).thenAnswer(inv -> {
             Quiz q = inv.getArgument(0);
-            q.setId("quiz-id");
+            q.setId(1L);
             return true;
         });
 
-        Boolean result = quizManageTool.createQuiz("chapter-1", "Q2", "true_false", 2, "easy", null, null);
+        Boolean result = quizManageTool.createQuiz("1", "Q2", "true_false", 2, "easy", null, null);
 
         assertThat(result).isTrue();
         verify(quizOptionService, never()).create(any(), any(QuizOption.class));
@@ -110,7 +110,7 @@ class QuizManageToolTest {
         when(quizService.create(any(Quiz.class))).thenReturn(false);
 
         assertThatThrownBy(() -> quizManageTool.createQuiz(
-                        "chapter-1", "Q3", "single_choice", 5, "easy", null, Collections.emptyList()))
+                        "1", "Q3", "single_choice", 5, "easy", null, Collections.emptyList()))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("测验创建失败");
     }
@@ -120,7 +120,7 @@ class QuizManageToolTest {
     void createQuizThrowsWhenOptionSaveFails() {
         when(quizService.create(any(Quiz.class))).thenAnswer(inv -> {
             Quiz q = inv.getArgument(0);
-            q.setId("quiz-id");
+            q.setId(1L);
             return true;
         });
         when(quizOptionService.create(any(), any(QuizOption.class))).thenReturn(false);
@@ -128,7 +128,7 @@ class QuizManageToolTest {
         List<Map<String, Object>> options = List.of(Map.of("optionText", "A", "isCorrect", true, "orderIndex", "A"));
 
         assertThatThrownBy(
-                        () -> quizManageTool.createQuiz("chapter-1", "Q4", "single_choice", 5, "easy", null, options))
+                        () -> quizManageTool.createQuiz("1", "Q4", "single_choice", 5, "easy", null, options))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("选项创建失败");
     }
@@ -136,43 +136,43 @@ class QuizManageToolTest {
     @Test
     @DisplayName("deleteQuiz 级联删除测验及其选项")
     void deleteQuizRemovesQuizAndOptions() {
-        Quiz quiz = Quiz.builder().id("quiz-1").build();
-        QuizOption opt1 = QuizOption.builder().id("opt-1").quizId("quiz-1").build();
-        QuizOption opt2 = QuizOption.builder().id("opt-2").quizId("quiz-1").build();
+        Quiz quiz = Quiz.builder().id(1L).build();
+        QuizOption opt1 = QuizOption.builder().id(1L).quizId(1L).build();
+        QuizOption opt2 = QuizOption.builder().id(2L).quizId(1L).build();
 
-        when(quizService.get("quiz-1")).thenReturn(quiz);
-        when(quizOptionService.getByQuizId("quiz-1")).thenReturn(List.of(opt1, opt2));
-        when(quizService.delete("quiz-1")).thenReturn(true);
+        when(quizService.get(1L)).thenReturn(quiz);
+        when(quizOptionService.getByQuizId(1L)).thenReturn(List.of(opt1, opt2));
+        when(quizService.delete(1L)).thenReturn(true);
 
-        Boolean result = quizManageTool.deleteQuiz("quiz-1");
+        Boolean result = quizManageTool.deleteQuiz("1");
 
         assertThat(result).isTrue();
-        verify(quizOptionService, times(1)).delete("opt-1");
-        verify(quizOptionService, times(1)).delete("opt-2");
-        verify(quizService, times(1)).delete("quiz-1");
+        verify(quizOptionService, times(1)).delete(1L);
+        verify(quizOptionService, times(1)).delete(2L);
+        verify(quizService, times(1)).delete(1L);
     }
 
     @Test
     @DisplayName("deleteQuiz 无选项时直接删除测验")
     void deleteQuizWithNoOptionsDeletesQuizOnly() {
-        Quiz quiz = Quiz.builder().id("quiz-1").build();
-        when(quizService.get("quiz-1")).thenReturn(quiz);
-        when(quizOptionService.getByQuizId("quiz-1")).thenReturn(null);
-        when(quizService.delete("quiz-1")).thenReturn(true);
+        Quiz quiz = Quiz.builder().id(1L).build();
+        when(quizService.get(1L)).thenReturn(quiz);
+        when(quizOptionService.getByQuizId(1L)).thenReturn(null);
+        when(quizService.delete(1L)).thenReturn(true);
 
-        Boolean result = quizManageTool.deleteQuiz("quiz-1");
+        Boolean result = quizManageTool.deleteQuiz("1");
 
         assertThat(result).isTrue();
         verify(quizOptionService, never()).delete(any());
-        verify(quizService, times(1)).delete("quiz-1");
+        verify(quizService, times(1)).delete(1L);
     }
 
     @Test
     @DisplayName("deleteQuiz 测验不存在时抛出 BusinessException")
     void deleteQuizThrowsWhenNotFound() {
-        when(quizService.get("missing-id")).thenReturn(null);
+        when(quizService.get(9999L)).thenReturn(null);
 
-        assertThatThrownBy(() -> quizManageTool.deleteQuiz("missing-id"))
+        assertThatThrownBy(() -> quizManageTool.deleteQuiz("9999"))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("测验不存在");
     }

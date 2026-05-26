@@ -50,7 +50,7 @@ public class ResourceMetaAccessAspect implements DataScopeResolver {
             case CREATE -> {
                 ResourceMetaCreateRequest request =
                         context.require(context.getAccess().body(), ResourceMetaCreateRequest.class, "资源信息不能为空");
-                request.setUploaderId(currentUser.getId());
+                request.setUploaderId(String.valueOf(currentUser.getId()));
             }
             case READ, UPDATE -> assertMetaInSameUniversity(currentUser, resolveMeta(context));
             case DELETE -> assertDeleteAllowed(currentUser, context);
@@ -78,8 +78,8 @@ public class ResourceMetaAccessAspect implements DataScopeResolver {
 
     private ResourceMeta resolveMeta(DataScopeContext context) {
         if (StringUtils.isNotBlank(context.getAccess().id())) {
-            String id = context.require(context.getAccess().id(), String.class, "资源ID不能为空");
-            return resourceMetaService.get(id);
+            String idStr = context.require(context.getAccess().id(), String.class, "资源ID不能为空");
+            return resourceMetaService.get(Long.valueOf(idStr));
         }
         String hash = context.require(context.getAccess().query(), String.class, "资源hash不能为空");
         return resourceMetaService.getByHash(hash);
@@ -111,7 +111,7 @@ public class ResourceMetaAccessAspect implements DataScopeResolver {
     }
 
     private boolean belongsToCurrentSchool(CurrentUserPrincipal currentUser, ResourceMeta meta) {
-        if (meta == null || StringUtils.isBlank(meta.getUploaderId())) {
+        if (meta == null || meta.getUploaderId() == null) {
             return false;
         }
         User uploader = userMapper.selectById(meta.getUploaderId());

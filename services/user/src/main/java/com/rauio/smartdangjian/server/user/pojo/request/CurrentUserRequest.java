@@ -1,5 +1,7 @@
 package com.rauio.smartdangjian.server.user.pojo.request;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,11 +14,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CurrentUserRequest {
     @Schema(description = "当前用户ID")
-    private String id;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long id;
 
     @Schema(description = "当前用户类型")
     private UserType userType;
 
     @Schema(description = "当前用户所属学校ID")
-    private String universityId;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long universityId;
 }

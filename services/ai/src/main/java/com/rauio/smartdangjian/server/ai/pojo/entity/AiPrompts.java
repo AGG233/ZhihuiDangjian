@@ -24,7 +24,7 @@ public class AiPrompts {
 
     @TableId
     @Schema(description = "提示词ID", example = "1")
-    private String id;
+    private Long id;
 
     private String agentType;
 

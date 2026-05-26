@@ -30,7 +30,7 @@ class DatabaseSkillRegistryTest {
     @BeforeEach
     void setUp() {
         AiSkill skill = AiSkill.builder()
-                .id("skill-1")
+                .id("1")
                 .name("test-skill")
                 .description("测试技能描述")
                 .content("这是技能内容")
@@ -126,7 +126,7 @@ class DatabaseSkillRegistryTest {
     @DisplayName("reload 方法重新加载技能并更新缓存")
     void reloadUpdatesCache() {
         AiSkill newSkill = AiSkill.builder()
-                .id("skill-2")
+                .id("1")
                 .name("new-skill")
                 .description("新技能描述")
                 .content("新技能内容")

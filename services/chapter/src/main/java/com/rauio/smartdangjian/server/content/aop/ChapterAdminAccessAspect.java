@@ -51,21 +51,21 @@ public class ChapterAdminAccessAspect implements DataScopeResolver {
 
         if (context.getAccess().action() == DataScopeAction.CREATE) {
             ChapterRequest chapter = context.require(context.getAccess().body(), ChapterRequest.class, "章节信息不能为空");
-            assertCourseInSameUniversity(currentUser, chapter.getCourseId());
+            assertCourseInSameUniversity(currentUser, Long.parseLong(chapter.getCourseId()));
             return;
         }
 
         if (context.getAccess().action() == DataScopeAction.UPDATE) {
             ChapterRequest chapter = context.require(context.getAccess().body(), ChapterRequest.class, "章节信息不能为空");
-            assertCourseInSameUniversity(currentUser, chapter.getCourseId());
+            assertCourseInSameUniversity(currentUser, Long.parseLong(chapter.getCourseId()));
             return;
         }
 
-        String chapterId = context.require(context.getAccess().id(), String.class, "章节ID不能为空");
+        Long chapterId = context.require(context.getAccess().id(), Long.class, "章节ID不能为空");
         assertChapterInSameUniversity(currentUser, chapterId);
     }
 
-    private void assertChapterInSameUniversity(CurrentUserPrincipal currentUser, String chapterId) {
+    private void assertChapterInSameUniversity(CurrentUserPrincipal currentUser, Long chapterId) {
         Chapter chapter = chapterMapper.selectById(chapterId);
         if (chapter == null) {
             throw new BusinessException(ChapterErrorConstants.CHAPTER_NOT_FOUND, "章节不存在");
@@ -73,7 +73,7 @@ public class ChapterAdminAccessAspect implements DataScopeResolver {
         assertCourseInSameUniversity(currentUser, chapter.getCourseId());
     }
 
-    private void assertCourseInSameUniversity(CurrentUserPrincipal currentUser, String courseId) {
+    private void assertCourseInSameUniversity(CurrentUserPrincipal currentUser, Long courseId) {
         Course course = courseMapper.selectById(courseId);
         if (course == null) {
             throw new BusinessException(CourseErrorConstants.COURSE_NOT_FOUND, "课程不存在");

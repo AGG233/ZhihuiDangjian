@@ -34,15 +34,15 @@ public class UserQuizController {
 
     @Operation(summary = "获取试题详情", description = "根据试题ID获取试题详情")
     @GetMapping("/{id}")
-    public Result<QuizResponse> getQuiz(@Parameter(name = "id", description = "试题ID") @PathVariable String id) {
-        return Result.ok(toQuizResponse(quizService.get(id)));
+    public Result<QuizResponse> getQuiz(@Parameter(name = "id", description = "试题ID") @PathVariable Long id) {
+        return Result.ok(toQuizResponse(quizService.get(Long.valueOf(id))));
     }
 
     @Operation(summary = "获取章节下所有试题", description = "根据章节ID获取该章节下的所有试题列表")
     @GetMapping("/by-chapter/{chapterId}")
     public Result<List<QuizResponse>> getQuizOfChapter(
-            @Parameter(name = "chapterId", description = "章节ID") @PathVariable String chapterId) {
-        List<QuizResponse> responses = quizService.getByChapterId(chapterId).stream()
+            @Parameter(name = "chapterId", description = "章节ID") @PathVariable Long chapterId) {
+        List<QuizResponse> responses = quizService.getByChapterId(Long.valueOf(chapterId)).stream()
                 .map(this::toQuizResponse)
                 .toList();
         return Result.ok(responses);
@@ -51,8 +51,8 @@ public class UserQuizController {
     @Operation(summary = "获取试题选项列表", description = "根据试题ID获取该试题的所有选项")
     @GetMapping("/{id}/options")
     public Result<List<QuizOptionResponse>> getQuizOption(
-            @Parameter(name = "id", description = "试题ID") @PathVariable String id) {
-        List<QuizOptionResponse> responses = quizOptionService.getByQuizId(id).stream()
+            @Parameter(name = "id", description = "试题ID") @PathVariable Long id) {
+        List<QuizOptionResponse> responses = quizOptionService.getByQuizId(Long.valueOf(id)).stream()
                 .map(this::toQuizOptionResponse)
                 .toList();
         return Result.ok(responses);
@@ -61,8 +61,8 @@ public class UserQuizController {
     @Operation(summary = "获取单个选项详情", description = "根据选项ID获取选项详情，学生未答题时隐藏正确答案")
     @GetMapping("/{id}/options/{optionId}")
     public Result<QuizOptionResponse> getByOptionId(
-            @Parameter(name = "optionId", description = "选项ID") @PathVariable String optionId) {
-        return Result.ok(toQuizOptionResponse(quizOptionService.get(optionId)));
+            @Parameter(name = "optionId", description = "选项ID") @PathVariable Long optionId) {
+        return Result.ok(toQuizOptionResponse(quizOptionService.get(Long.valueOf(optionId))));
     }
 
     private QuizResponse toQuizResponse(Quiz quiz) {

@@ -31,7 +31,7 @@ public class UserController {
     @Operation(summary = "获取用户信息", description = "通过ID获取用户信息，返回含脱敏联系方式的用户详情")
     @GetMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.USER_MANAGEMENT, action = DataScopeAction.READ, id = "#id")
-    public Result<UserResponse> get(@Parameter(name = "id", description = "用户ID") @PathVariable String id) {
+    public Result<UserResponse> get(@Parameter(name = "id", description = "用户ID") @PathVariable Long id) {
         return Result.ok(userService.get(id));
     }
 
@@ -52,14 +52,14 @@ public class UserController {
             action = DataScopeAction.UPDATE,
             id = "#id",
             body = "#user")
-    public Result<Void> update(@PathVariable String id, @RequestBody User user) {
+    public Result<Void> update(@PathVariable Long id, @RequestBody User user) {
         userService.update(id, user);
         return Result.ok(null);
     }
 
     @Operation(summary = "删除用户（已经弃用）", description = "通过ID删除用户")
     @DeleteMapping("/{id}")
-    public Result<Object> delete(@Parameter(name = "id", description = "用户ID") @PathVariable String id) {
+    public Result<Object> delete(@Parameter(name = "id", description = "用户ID") @PathVariable Long id) {
         return Result.ok("404", "接口已经弃用", null);
     }
 }

@@ -21,7 +21,7 @@ public class QuizService extends ServiceImpl<QuizMapper, Quiz> {
      * @param quizId 测验 ID
      * @return 测验实体
      */
-    public Quiz get(String quizId) {
+    public Quiz get(Long quizId) {
         return this.getById(quizId);
     }
 
@@ -31,7 +31,7 @@ public class QuizService extends ServiceImpl<QuizMapper, Quiz> {
      * @param chapterId 章节 ID
      * @return 测验列表
      */
-    public List<Quiz> getByChapterId(String chapterId) {
+    public List<Quiz> getByChapterId(Long chapterId) {
         LambdaQueryWrapper<Quiz> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Quiz::getChapterId, chapterId);
         return this.list(wrapper);
@@ -63,7 +63,7 @@ public class QuizService extends ServiceImpl<QuizMapper, Quiz> {
      * @param quizId 测验 ID
      * @return 是否删除成功
      */
-    public Boolean delete(String quizId) {
+    public Boolean delete(Long quizId) {
         return this.removeById(quizId);
     }
 }

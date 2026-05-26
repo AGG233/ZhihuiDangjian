@@ -34,16 +34,16 @@ class UserControllerTest {
     @DisplayName("get 根据用户ID返回用户视图")
     void get() {
         UserResponse response = new UserResponse();
-        response.setId("user-1");
+        response.setId(1L);
         response.setUsername("testuser");
-        when(userService.get("user-1")).thenReturn(response);
+        when(userService.get(1L)).thenReturn(response);
 
-        var result = controller.get("user-1");
+        var result = controller.get(1L);
 
         assertThat(result).isNotNull();
         assertThat(result.getCode()).isEqualTo("200");
         assertThat(result.getData()).isEqualTo(response);
-        verify(userService).get("user-1");
+        verify(userService).get(1L);
     }
 
     @Test
@@ -78,19 +78,19 @@ class UserControllerTest {
     @DisplayName("update 委托 service 更新用户信息")
     void update() {
         User user = User.builder().realName("新名字").build();
-        doNothing().when(userService).update("user-1", user);
+        doNothing().when(userService).update(1L, user);
 
-        var result = controller.update("user-1", user);
+        var result = controller.update(1L, user);
 
         assertThat(result).isNotNull();
         assertThat(result.getCode()).isEqualTo("200");
-        verify(userService).update("user-1", user);
+        verify(userService).update(1L, user);
     }
 
     @Test
     @DisplayName("delete 返回固定错误响应")
     void delete() {
-        var result = controller.delete("user-1");
+        var result = controller.delete(1L);
 
         assertThat(result).isNotNull();
         assertThat(result.getCode()).isEqualTo("404");

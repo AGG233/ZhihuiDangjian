@@ -4,7 +4,7 @@ import com.rauio.smartdangjian.utils.spec.UserType;
 
 public interface CurrentUserPrincipal {
 
-    String getId();
+    Long getId();
 
     UserType getUserType();
 

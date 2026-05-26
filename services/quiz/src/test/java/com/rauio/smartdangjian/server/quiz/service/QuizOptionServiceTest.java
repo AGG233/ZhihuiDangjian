@@ -51,10 +51,10 @@ class QuizOptionServiceTest {
                 QuizOption.builder().optionText("选项A").isCorrect(true).build();
         doReturn(true).when(quizOptionService).updateById(option);
 
-        Boolean result = quizOptionService.update("opt-1", option);
+        Boolean result = quizOptionService.update(1L, option);
 
         assertThat(result).isTrue();
-        assertThat(option.getId()).isEqualTo("opt-1");
+        assertThat(option.getId()).isEqualTo(1L);
     }
 
     @Test
@@ -63,7 +63,7 @@ class QuizOptionServiceTest {
         QuizOption option = QuizOption.builder().optionText("选项A").build();
         doReturn(false).when(quizOptionService).updateById(option);
 
-        Boolean result = quizOptionService.update("opt-1", option);
+        Boolean result = quizOptionService.update(1L, option);
 
         assertThat(result).isFalse();
     }
@@ -77,10 +77,10 @@ class QuizOptionServiceTest {
                 QuizOption.builder().optionText("新选项").isCorrect(false).build();
         doReturn(true).when(quizOptionService).save(option);
 
-        Boolean result = quizOptionService.create("quiz-1", option);
+        Boolean result = quizOptionService.create(1L, option);
 
         assertThat(result).isTrue();
-        assertThat(option.getQuizId()).isEqualTo("quiz-1");
+        assertThat(option.getQuizId()).isEqualTo(1L);
     }
 
     @Test
@@ -89,7 +89,7 @@ class QuizOptionServiceTest {
         QuizOption option = QuizOption.builder().optionText("新选项").build();
         doReturn(false).when(quizOptionService).save(option);
 
-        Boolean result = quizOptionService.create("quiz-1", option);
+        Boolean result = quizOptionService.create(1L, option);
 
         assertThat(result).isFalse();
     }
@@ -100,21 +100,21 @@ class QuizOptionServiceTest {
     @DisplayName("getByQuizId 根据测验 ID 返回选项列表")
     void getByQuizIdReturnsOptionList() {
         QuizOption opt1 = QuizOption.builder()
-                .id("opt-1")
-                .quizId("quiz-1")
+                .id(1L)
+                .quizId(1L)
                 .optionText("A")
                 .build();
         QuizOption opt2 = QuizOption.builder()
-                .id("opt-2")
-                .quizId("quiz-1")
+                .id(1L)
+                .quizId(1L)
                 .optionText("B")
                 .build();
         doReturn(List.of(opt1, opt2)).when(quizOptionService).list(any(Wrapper.class));
 
-        List<QuizOption> result = quizOptionService.getByQuizId("quiz-1");
+        List<QuizOption> result = quizOptionService.getByQuizId(1L);
 
         assertThat(result).hasSize(2);
-        assertThat(result).extracting(QuizOption::getQuizId).containsOnly("quiz-1");
+        assertThat(result).extracting(QuizOption::getQuizId).containsOnly(1L);
     }
 
     @Test
@@ -122,7 +122,7 @@ class QuizOptionServiceTest {
     void getByQuizIdReturnsEmptyListWhenNoOptions() {
         doReturn(Collections.emptyList()).when(quizOptionService).list(any(Wrapper.class));
 
-        List<QuizOption> result = quizOptionService.getByQuizId("empty-quiz");
+        List<QuizOption> result = quizOptionService.getByQuizId(1L);
 
         assertThat(result).isEmpty();
     }
@@ -133,21 +133,21 @@ class QuizOptionServiceTest {
     @DisplayName("get 非学生用户直接返回选项（不隐藏正确答案）")
     void getReturnsOptionWithIsCorrectForNonStudent() {
         User schoolUser = User.builder()
-                .id("user-1")
+                .id(1L)
                 .username("admin")
                 .userType(UserType.SCHOOL)
                 .build();
         QuizOption option = QuizOption.builder()
-                .id("opt-1")
-                .quizId("quiz-1")
+                .id(1L)
+                .quizId(1L)
                 .optionText("正确答案")
                 .isCorrect(true)
                 .build();
 
         when(userService.getCurrentUser()).thenReturn(schoolUser);
-        doReturn(option).when(quizOptionService).getById("opt-1");
+        doReturn(option).when(quizOptionService).getById(1L);
 
-        QuizOption result = quizOptionService.get("opt-1");
+        QuizOption result = quizOptionService.get(1L);
 
         assertThat(result).isNotNull();
         assertThat(result.getIsCorrect()).isTrue();
@@ -158,21 +158,21 @@ class QuizOptionServiceTest {
     @DisplayName("get 管理员用户直接返回选项（不隐藏正确答案）")
     void getReturnsOptionWithIsCorrectForManager() {
         User managerUser = User.builder()
-                .id("user-2")
+                .id(1L)
                 .username("manager")
                 .userType(UserType.MANAGER)
                 .build();
         QuizOption option = QuizOption.builder()
-                .id("opt-1")
-                .quizId("quiz-1")
+                .id(1L)
+                .quizId(1L)
                 .optionText("正确答案")
                 .isCorrect(true)
                 .build();
 
         when(userService.getCurrentUser()).thenReturn(managerUser);
-        doReturn(option).when(quizOptionService).getById("opt-1");
+        doReturn(option).when(quizOptionService).getById(1L);
 
-        QuizOption result = quizOptionService.get("opt-1");
+        QuizOption result = quizOptionService.get(1L);
 
         assertThat(result).isNotNull();
         assertThat(result.getIsCorrect()).isTrue();
@@ -183,22 +183,22 @@ class QuizOptionServiceTest {
     @DisplayName("get 学生用户未答题时隐藏正确答案（isCorrect 设为 null）")
     void getHidesIsCorrectForStudentWhoHasNotAnswered() {
         User studentUser = User.builder()
-                .id("student-1")
+                .id(1L)
                 .username("student")
                 .userType(UserType.STUDENT)
                 .build();
         QuizOption option = QuizOption.builder()
-                .id("opt-1")
-                .quizId("quiz-1")
+                .id(1L)
+                .quizId(1L)
                 .optionText("正确答案")
                 .isCorrect(true)
                 .build();
 
         when(userService.getCurrentUser()).thenReturn(studentUser);
-        doReturn(option).when(quizOptionService).getById("opt-1");
-        when(userQuizAnswerService.getByUserIdAndQuizId("student-1", "quiz-1")).thenReturn(Collections.emptyList());
+        doReturn(option).when(quizOptionService).getById(1L);
+        when(userQuizAnswerService.getByUserIdAndQuizId(1L, 1L)).thenReturn(Collections.emptyList());
 
-        QuizOption result = quizOptionService.get("opt-1");
+        QuizOption result = quizOptionService.get(1L);
 
         assertThat(result).isNotNull();
         assertThat(result.getIsCorrect()).isNull();
@@ -208,27 +208,27 @@ class QuizOptionServiceTest {
     @DisplayName("get 学生用户已答题时保留正确答案")
     void getPreservesIsCorrectForStudentWhoHasAnswered() {
         User studentUser = User.builder()
-                .id("student-1")
+                .id(1L)
                 .username("student")
                 .userType(UserType.STUDENT)
                 .build();
         QuizOption option = QuizOption.builder()
-                .id("opt-1")
-                .quizId("quiz-1")
+                .id(1L)
+                .quizId(1L)
                 .optionText("正确答案")
                 .isCorrect(true)
                 .build();
         UserQuizAnswer answer = UserQuizAnswer.builder()
-                .id("answer-1")
-                .userId("student-1")
-                .quizId("quiz-1")
+                .id(1L)
+                .userId(1L)
+                .quizId(1L)
                 .build();
 
         when(userService.getCurrentUser()).thenReturn(studentUser);
-        doReturn(option).when(quizOptionService).getById("opt-1");
-        when(userQuizAnswerService.getByUserIdAndQuizId("student-1", "quiz-1")).thenReturn(List.of(answer));
+        doReturn(option).when(quizOptionService).getById(1L);
+        when(userQuizAnswerService.getByUserIdAndQuizId(1L, 1L)).thenReturn(List.of(answer));
 
-        QuizOption result = quizOptionService.get("opt-1");
+        QuizOption result = quizOptionService.get(1L);
 
         assertThat(result).isNotNull();
         assertThat(result.getIsCorrect()).isTrue();
@@ -239,9 +239,9 @@ class QuizOptionServiceTest {
     @Test
     @DisplayName("delete 删除选项成功返回 true")
     void deleteReturnsTrueOnSuccess() {
-        doReturn(true).when(quizOptionService).removeById("opt-1");
+        doReturn(true).when(quizOptionService).removeById(1L);
 
-        Boolean result = quizOptionService.delete("opt-1");
+        Boolean result = quizOptionService.delete(1L);
 
         assertThat(result).isTrue();
     }
@@ -249,9 +249,9 @@ class QuizOptionServiceTest {
     @Test
     @DisplayName("delete 删除失败时返回 false")
     void deleteReturnsFalseOnFailure() {
-        doReturn(false).when(quizOptionService).removeById("opt-1");
+        doReturn(false).when(quizOptionService).removeById(1L);
 
-        Boolean result = quizOptionService.delete("opt-1");
+        Boolean result = quizOptionService.delete(1L);
 
         assertThat(result).isFalse();
     }

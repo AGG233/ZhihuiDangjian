@@ -27,7 +27,7 @@ public class QuizManageTool {
 
     @Tool(name = "getQuiz", description = "根据测验ID获取测验详情及其选项")
     public Quiz getQuiz(@ToolParam(description = "测验ID") String quizId) {
-        Quiz quiz = quizService.get(quizId);
+        Quiz quiz = quizService.get(Long.valueOf(quizId));
         if (quiz == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "测验不存在");
         }
@@ -45,7 +45,7 @@ public class QuizManageTool {
             @ToolParam(description = "选项列表，每个选项包含 optionText / isCorrect / orderIndex")
                     List<Map<String, Object>> options) {
         Quiz quiz = Quiz.builder()
-                .chapterId(chapterId)
+                .chapterId(Long.valueOf(chapterId))
                 .question(question)
                 .questionType(questionType)
                 .score(score)
@@ -89,7 +89,7 @@ public class QuizManageTool {
             @ToolParam(description = "难度，可为空") String difficulty,
             @ToolParam(description = "解析，可为空") String explanation,
             @ToolParam(description = "是否启用，可为空") Boolean isActive) {
-        Quiz existing = quizService.get(quizId);
+        Quiz existing = quizService.get(Long.valueOf(quizId));
         if (existing == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "测验不存在");
         }
@@ -114,21 +114,21 @@ public class QuizManageTool {
 
     @Tool(name = "deleteQuiz", description = "删除指定测验及其选项")
     public Boolean deleteQuiz(@ToolParam(description = "测验ID") String quizId) {
-        Quiz existing = quizService.get(quizId);
+        Quiz existing = quizService.get(Long.valueOf(quizId));
         if (existing == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "测验不存在");
         }
-        List<QuizOption> options = quizOptionService.getByQuizId(quizId);
+        List<QuizOption> options = quizOptionService.getByQuizId(Long.valueOf(quizId));
         if (options != null) {
             for (QuizOption option : options) {
                 quizOptionService.delete(option.getId());
             }
         }
-        return Boolean.TRUE.equals(quizService.delete(quizId));
+        return Boolean.TRUE.equals(quizService.delete(Long.valueOf(quizId)));
     }
 
     @Tool(name = "searchQuizzesByChapter", description = "根据章节ID搜索该章节下的所有测验")
     public List<Quiz> searchQuizzesByChapter(@ToolParam(description = "章节ID") String chapterId) {
-        return quizService.getByChapterId(chapterId);
+        return quizService.getByChapterId(Long.valueOf(chapterId));
     }
 }

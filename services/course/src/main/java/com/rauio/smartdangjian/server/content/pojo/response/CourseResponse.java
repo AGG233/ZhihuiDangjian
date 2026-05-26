@@ -13,7 +13,7 @@ import lombok.Data;
 public class CourseResponse {
 
     @Schema(description = "课程ID")
-    private String id;
+    private Long id;
 
     @Schema(description = "课程标题")
     private String title;
@@ -22,13 +22,13 @@ public class CourseResponse {
     private String description;
 
     @Schema(description = "课程分类ID，当前业务通过分类关联表维护")
-    private String categoryId;
+    private Long categoryId;
 
     @Schema(description = "课程难度")
     private String difficulty;
 
     @Schema(description = "课程封面资源ID")
-    private String coverImageId;
+    private Long coverImageId;
 
     @Schema(description = "预计学习时长（分钟）")
     private Integer estimatedDuration;
@@ -43,5 +43,5 @@ public class CourseResponse {
     private LocalDateTime publishedAt;
 
     @Schema(description = "创建者ID")
-    private String creatorId;
+    private Long creatorId;
 }

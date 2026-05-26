@@ -46,7 +46,7 @@ public class AdminCategoryController {
             id = "#id",
             query = "#children")
     public Result<Boolean> createByParentId(
-            @Valid @RequestBody List<@Valid CategoryRequest> children, @PathVariable String id) {
+            @Valid @RequestBody List<@Valid CategoryRequest> children, @PathVariable Long id) {
         Boolean result = categoryService.createByParentId(children, id);
         return Result.ok(result);
     }
@@ -54,7 +54,7 @@ public class AdminCategoryController {
     @Operation(summary = "修改目录", description = "仅允许修改名称、描述和排序。分类归属不会从请求体读取，而是保留原有归属；公共分类仅系统管理员可维护，高校管理员仅可修改本校分类。")
     @PutMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.CATEGORY, action = DataScopeAction.UPDATE, id = "#id", body = "#dto")
-    public Result<Boolean> update(@Valid @RequestBody CategoryRequest dto, @PathVariable String id) {
+    public Result<Boolean> update(@Valid @RequestBody CategoryRequest dto, @PathVariable Long id) {
         Boolean result = categoryService.update(dto, id);
         return Result.ok(result);
     }
@@ -62,7 +62,7 @@ public class AdminCategoryController {
     @Operation(summary = "删除目录", description = "仅允许删除当前角色可维护范围内且没有子目录的分类。公共分类仅系统管理员可删除，高校管理员仅可删除本校分类。")
     @DeleteMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.CATEGORY, action = DataScopeAction.DELETE, id = "#id")
-    public Result<Boolean> delete(@PathVariable String id) {
+    public Result<Boolean> delete(@PathVariable Long id) {
         Boolean result = categoryService.delete(id);
         return Result.ok(result);
     }
@@ -70,7 +70,7 @@ public class AdminCategoryController {
     @Operation(summary = "删除目录和它的子目录", description = "递归删除当前角色可维护范围内的分类及全部子分类。公共分类仅系统管理员可删除，高校管理员仅可删除本校分类。")
     @DeleteMapping("/{id}/all")
     @DataScopeAccess(resource = DataScopeResources.CATEGORY, action = DataScopeAction.DELETE, id = "#id")
-    public Result<Boolean> deleteByIdWithChildren(@PathVariable String id) {
+    public Result<Boolean> deleteByIdWithChildren(@PathVariable Long id) {
         Boolean result = categoryService.deleteByIdWithChildren(id);
         return Result.ok(result);
     }

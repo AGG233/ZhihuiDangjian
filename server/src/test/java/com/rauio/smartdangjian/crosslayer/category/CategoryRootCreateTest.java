@@ -124,7 +124,7 @@ class CategoryRootCreateTest extends CrossLayerTestBase {
         @DisplayName("MANAGER + universityId=null 可成功创建公共根分类")
         void managerCanCreatePublicRootCategory() throws Exception {
             // given - setup security context as MANAGER with null universityId
-            setManagerContext("manager-001", null);
+            setManagerContext(1L, null);
 
             // given - setup mock Category returned by convertor
             Category category = new Category();
@@ -155,7 +155,7 @@ class CategoryRootCreateTest extends CrossLayerTestBase {
         @DisplayName("SCHOOL + universityId=null 应被拒绝并返回 3002 错误")
         void schoolCannotCreateRootCategoryWithoutUniversityId() throws Exception {
             // given - setup security context as SCHOOL with null universityId
-            setSecurityContext(UserType.SCHOOL, "school-001", null);
+            setSecurityContext(UserType.SCHOOL, 1L, null);
 
             // given - setup mock Category returned by convertor
             Category category = new Category();

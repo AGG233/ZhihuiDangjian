@@ -16,10 +16,10 @@ import lombok.NoArgsConstructor;
 public class QuizResponse {
 
     @Schema(description = "题目ID")
-    private String id;
+    private Long id;
 
     @Schema(description = "章节ID")
-    private String chapterId;
+    private Long chapterId;
 
     @Schema(description = "题目内容")
     private String question;

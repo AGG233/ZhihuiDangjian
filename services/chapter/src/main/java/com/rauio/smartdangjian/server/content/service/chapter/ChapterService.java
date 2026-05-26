@@ -11,13 +11,12 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.constants.ChapterErrorConstants;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterConvertor;
-import com.rauio.smartdangjian.server.content.pojo.convertor.ContentBlockConvertor;
+import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterContentBlockConvertor;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
-import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
+import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
 import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
 import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
-import com.rauio.smartdangjian.server.content.service.ContentBlockService;
-import com.rauio.smartdangjian.server.content.spec.ParentType;
+import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,9 +25,9 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
 
-    private final ContentBlockService contentService;
+    private final ChapterContentBlockService chapterContentService;
     private final ChapterConvertor chapterConvertor;
-    private final ContentBlockConvertor contentBlockConvertor;
+    private final ChapterContentBlockConvertor chapterContentBlockConvertor;
 
     /**
      * 根据章节 ID 获取章节详情。
@@ -36,7 +35,7 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
      * @param chapterId 章节ID
      * @return 章节
      */
-    public ChapterResponse get(String chapterId) {
+    public ChapterResponse get(Long chapterId) {
         Chapter chapter = this.getById(chapterId);
         if (chapter == null) {
             throw new BusinessException(ChapterErrorConstants.CHAPTER_NOT_FOUND, "章节不存在");
@@ -67,10 +66,9 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
 
         if (dto.getContent() != null && !dto.getContent().isEmpty()) {
             dto.getContent().forEach(blockDto -> {
-                ContentBlock block = contentBlockConvertor.toEntity(blockDto);
-                block.setParentId(chapter.getId());
-                block.setParentType(ParentType.chapter);
-                contentService.save(block);
+                ChapterContentBlock block = chapterContentBlockConvertor.toEntity(blockDto);
+                block.setChapterId(chapter.getId());
+                chapterContentService.create(block);
             });
         } else {
             throw new BusinessException(ChapterErrorConstants.CHAPTER_MIN_REQUIRED, "课程至少需要一个章节");
@@ -94,7 +92,7 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
      * @param courseId 课程 ID
      * @return 课程所有章节
      */
-    public List<ChapterResponse> getByCourseId(String courseId) {
+    public List<ChapterResponse> getByCourseId(Long courseId) {
         List<Chapter> chapters = this.list(new LambdaQueryWrapper<Chapter>().eq(Chapter::getCourseId, courseId));
         return chapterConvertor.toResponseList(chapters);
     }
@@ -105,7 +103,7 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
      * @param chapterId 章节ID
      * @return 删除结果
      */
-    public Boolean delete(String chapterId) {
+    public Boolean delete(Long chapterId) {
         return this.removeById(chapterId);
     }
 }

@@ -87,7 +87,7 @@ public final class AiTestDataFactory {
 
     // ── AiPrompts entity ────────────────────────────────────────────
 
-    public static AiPrompts createAiPrompts(String id) {
+    public static AiPrompts createAiPrompts(Long id) {
         return AiPrompts.builder()
                 .id(id)
                 .agentType("CHAT")

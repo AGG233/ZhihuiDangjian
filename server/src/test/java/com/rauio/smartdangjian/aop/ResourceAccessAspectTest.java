@@ -48,8 +48,8 @@ class ResourceAccessAspectTest {
     @Test
     @DisplayName("当前用户访问自己的资源时放行")
     void allowsOwnerAccess() throws Throwable {
-        setSecurityContext("user-001", UserType.STUDENT);
-        ProceedingJoinPoint joinPoint = joinPoint("byUserId", new Object[] {"user-001"});
+        setSecurityContext(1L, UserType.STUDENT);
+        ProceedingJoinPoint joinPoint = joinPoint("byUserId", new Object[] {"1"});
         when(joinPoint.proceed()).thenReturn("ok");
 
         assertThatCode(() -> aspect.checkResourceAccess(joinPoint)).doesNotThrowAnyException();
@@ -58,8 +58,8 @@ class ResourceAccessAspectTest {
     @Test
     @DisplayName("当前用户访问他人资源时拒绝")
     void rejectsOtherUserAccess() {
-        setSecurityContext("user-001", UserType.STUDENT);
-        ProceedingJoinPoint joinPoint = joinPoint("byUserId", new Object[] {"user-002"});
+        setSecurityContext(1L, UserType.STUDENT);
+        ProceedingJoinPoint joinPoint = joinPoint("byUserId", new Object[] {"2"});
 
         assertThatThrownBy(() -> aspect.checkResourceAccess(joinPoint))
                 .isInstanceOf(BusinessException.class)
@@ -69,7 +69,7 @@ class ResourceAccessAspectTest {
     @Test
     @DisplayName("资源表达式解析为空时返回业务错误而不是 NPE")
     void missingTargetIdThrowsBusinessException() {
-        setSecurityContext("user-001", UserType.STUDENT);
+        setSecurityContext(1L, UserType.STUDENT);
         ProceedingJoinPoint joinPoint = joinPoint("byDto", new Object[] {new TestDto(null)});
 
         assertThatThrownBy(() -> aspect.checkResourceAccess(joinPoint))
@@ -80,8 +80,8 @@ class ResourceAccessAspectTest {
     @Test
     @DisplayName("非用户资源通过 resolver 解析到当前用户时放行")
     void allowsResolvedResourceOwnerAccess() throws Throwable {
-        setSecurityContext("user-001", UserType.STUDENT);
-        ResourceOwnerResolver resolver = resourceOwnerResolver("RESOURCE_META", "user-001");
+        setSecurityContext(1L, UserType.STUDENT);
+        ResourceOwnerResolver resolver = resourceOwnerResolver("RESOURCE_META", "1");
         ResourceAccessAspect resourceAspect = new ResourceAccessAspect(List.of(resolver));
         ProceedingJoinPoint joinPoint = joinPoint("byResourceMeta", new Object[] {"resource-001"});
         when(joinPoint.proceed()).thenReturn("ok");
@@ -95,8 +95,8 @@ class ResourceAccessAspectTest {
     @Test
     @DisplayName("非用户资源解析到其他用户时拒绝访问")
     void rejectsResolvedResourceOwnedByOtherUser() {
-        setSecurityContext("user-001", UserType.STUDENT);
-        ResourceOwnerResolver resolver = resourceOwnerResolver("RESOURCE_META", "user-002");
+        setSecurityContext(1L, UserType.STUDENT);
+        ResourceOwnerResolver resolver = resourceOwnerResolver("RESOURCE_META", "2");
         ResourceAccessAspect resourceAspect = new ResourceAccessAspect(List.of(resolver));
         ProceedingJoinPoint joinPoint = joinPoint("byResourceMeta", new Object[] {"resource-001"});
 
@@ -109,7 +109,7 @@ class ResourceAccessAspectTest {
     @Test
     @DisplayName("非用户资源无法解析归属时拒绝访问")
     void rejectsResourceWhenOwnerCannotBeResolved() {
-        setSecurityContext("user-001", UserType.STUDENT);
+        setSecurityContext(1L, UserType.STUDENT);
         ProceedingJoinPoint joinPoint = joinPoint("byResourceMeta", new Object[] {"resource-001"});
 
         assertThatThrownBy(() -> aspect.checkResourceAccess(joinPoint))
@@ -146,10 +146,10 @@ class ResourceAccessAspectTest {
         throw new AssertionError("Method not found: " + methodName);
     }
 
-    private void setSecurityContext(String userId, UserType userType) {
+    private void setSecurityContext(Long userId, UserType userType) {
         CurrentUserPrincipal principal = new CurrentUserPrincipal() {
             @Override
-            public String getId() {
+            public Long getId() {
                 return userId;
             }
 
@@ -164,7 +164,8 @@ class ResourceAccessAspectTest {
             }
         };
         stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
-        stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn(userId);
+        String loginId = String.valueOf(userId);
+        stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn(loginId);
     }
 
     private ResourceOwnerResolver resourceOwnerResolver(String resourceType, String ownerId) {

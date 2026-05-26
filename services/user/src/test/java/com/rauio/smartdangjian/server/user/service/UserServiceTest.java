@@ -49,7 +49,7 @@ class UserServiceTest {
 
     // ---------- helpers ----------
 
-    private User createUser(String id, String username, String email, String phone) {
+    private User createUser(Long id, String username, String email, String phone) {
         return User.builder()
                 .id(id)
                 .username(username)
@@ -86,7 +86,7 @@ class UserServiceTest {
     @Test
     @DisplayName("getByPassport passport包含@时调用getByEmail并返回结果")
     void getByPassportWithAtDelegatesToEmail() {
-        User expectedUser = createUser("u1", "testuser", "test@example.com", "13800138000");
+        User expectedUser = createUser(1L, "testuser", "test@example.com", "13800138000");
         doReturn(expectedUser).when(userService).getByEmail("test@example.com");
 
         User result = userService.getByPassport("test@example.com");
@@ -97,7 +97,7 @@ class UserServiceTest {
     @Test
     @DisplayName("getByPassport passport包含+时调用getByPhone并返回结果")
     void getByPassportWithPlusDelegatesToPhone() {
-        User expectedUser = createUser("u1", "testuser", "test@example.com", "+8613800138000");
+        User expectedUser = createUser(1L, "testuser", "test@example.com", "+8613800138000");
         doReturn(expectedUser).when(userService).getByPhone("+8613800138000");
 
         User result = userService.getByPassport("+8613800138000");
@@ -108,7 +108,7 @@ class UserServiceTest {
     @Test
     @DisplayName("getByPassport passport为普通字符串时调用getByUsername并返回结果")
     void getByPassportPlainDelegatesToUsername() {
-        User expectedUser = createUser("u1", "testuser", "test@example.com", "13800138000");
+        User expectedUser = createUser(1L, "testuser", "test@example.com", "13800138000");
         doReturn(expectedUser).when(userService).getByUsername("testuser");
 
         User result = userService.getByPassport("testuser");
@@ -123,15 +123,15 @@ class UserServiceTest {
     @Test
     @DisplayName("get 根据ID调用getById并转换为UserResponse返回")
     void getByIdConvertsToVO() {
-        User user = createUser("u1", "testuser", "test@example.com", "13800138000");
+        User user = createUser(1L, "testuser", "test@example.com", "13800138000");
         UserResponse expectedVO = new UserResponse();
-        expectedVO.setId("u1");
+        expectedVO.setId(1L);
         expectedVO.setUsername("testuser");
 
-        doReturn(user).when(userService).getById("u1");
+        doReturn(user).when(userService).getById(1L);
         when(convertor.toResponse(user)).thenReturn(expectedVO);
 
-        UserResponse result = userService.get("u1");
+        UserResponse result = userService.get(1L);
 
         assertThat(result).isEqualTo(expectedVO);
         verify(convertor).toResponse(user);
@@ -144,7 +144,7 @@ class UserServiceTest {
     @Test
     @DisplayName("getCurrentUser 已登录且session中有User时返回该User")
     void getCurrentUserAuthenticatedReturnsUser() {
-        User user = createUser("u1", "testuser", "test@example.com", "13800138000");
+        User user = createUser(1L, "testuser", "test@example.com", "13800138000");
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
             SaSession session = mock(SaSession.class);
@@ -221,7 +221,7 @@ class UserServiceTest {
     @Test
     @DisplayName("getByUsername 调用getOne查询并返回用户")
     void getByUsernameReturnsUser() {
-        User expectedUser = createUser("u1", "testuser", "test@example.com", "13800138000");
+        User expectedUser = createUser(1L, "testuser", "test@example.com", "13800138000");
         doReturn(expectedUser).when(userService).getOne(any(LambdaQueryWrapper.class));
 
         User result = userService.getByUsername("testuser");
@@ -236,7 +236,7 @@ class UserServiceTest {
     @Test
     @DisplayName("getByEmail 调用getOne查询并返回用户")
     void getByEmailReturnsUser() {
-        User expectedUser = createUser("u1", "testuser", "test@example.com", "13800138000");
+        User expectedUser = createUser(1L, "testuser", "test@example.com", "13800138000");
         doReturn(expectedUser).when(userService).getOne(any(LambdaQueryWrapper.class));
 
         User result = userService.getByEmail("test@example.com");
@@ -251,7 +251,7 @@ class UserServiceTest {
     @Test
     @DisplayName("getByPhone 调用getOne查询并返回用户")
     void getByPhoneReturnsUser() {
-        User expectedUser = createUser("u1", "testuser", "test@example.com", "13800138000");
+        User expectedUser = createUser(1L, "testuser", "test@example.com", "13800138000");
         doReturn(expectedUser).when(userService).getOne(any(LambdaQueryWrapper.class));
 
         User result = userService.getByPhone("13800138000");
@@ -266,7 +266,7 @@ class UserServiceTest {
     @Test
     @DisplayName("getByPartyMemberId 调用getOne查询并返回用户")
     void getByPartyMemberIdReturnsUser() {
-        User expectedUser = createUser("u1", "testuser", "test@example.com", "13800138000");
+        User expectedUser = createUser(1L, "testuser", "test@example.com", "13800138000");
         doReturn(expectedUser).when(userService).getOne(any(LambdaQueryWrapper.class));
 
         User result = userService.getByPartyMemberId("pm-1");
@@ -286,9 +286,9 @@ class UserServiceTest {
 
         doReturn(true).when(userService).updateById(any(User.class));
 
-        userService.update("u1", user);
+        userService.update(1L, user);
 
-        assertThat(user.getId()).isEqualTo("u1");
+        assertThat(user.getId()).isEqualTo(1L);
         verify(userService).updateById(user);
     }
 
@@ -302,9 +302,9 @@ class UserServiceTest {
             bcryptMock.when(() -> BCrypt.hashpw("plainPassword")).thenReturn("encodedNewPassword");
             doReturn(true).when(userService).updateById(any(User.class));
 
-            userService.update("u1", user);
+            userService.update(1L, user);
 
-            assertThat(user.getId()).isEqualTo("u1");
+            assertThat(user.getId()).isEqualTo(1L);
             assertThat(user.getPassword()).isEqualTo("encodedNewPassword");
             bcryptMock.verify(() -> BCrypt.hashpw("plainPassword"));
         }
@@ -320,7 +320,7 @@ class UserServiceTest {
         doReturn(true).when(userService).updateById(any(User.class));
 
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
-            userService.update("u1", user);
+            userService.update(1L, user);
 
             bcryptMock.verify(() -> BCrypt.hashpw(anyString()), never());
         }
@@ -333,19 +333,19 @@ class UserServiceTest {
     @Test
     @DisplayName("delete 调用removeById删除")
     void deleteCallsRemoveById() {
-        doReturn(true).when(userService).removeById("u1");
+        doReturn(true).when(userService).removeById(1L);
 
-        userService.delete("u1");
+        userService.delete(1L);
 
-        verify(userService).removeById("u1");
+        verify(userService).removeById(1L);
     }
 
     @Test
     @DisplayName("delete 删除不存在的用户时抛出 BusinessException")
     void deleteNonExistentThrows() {
-        doReturn(false).when(userService).removeById("nonexistent");
+        doReturn(false).when(userService).removeById(9999L);
 
-        assertThatThrownBy(() -> userService.delete("nonexistent"))
+        assertThatThrownBy(() -> userService.delete(9999L))
                 .isInstanceOf(BusinessException.class)
                 .extracting("code")
                 .isEqualTo(UserErrorConstants.USER_NOT_EXISTS);
@@ -457,7 +457,7 @@ class UserServiceTest {
     @Test
     @DisplayName("changePassword 密码匹配成功时加密新密码并更新")
     void changePasswordSuccessWhenMatch() {
-        User user = createUser("u1", "testuser", "test@example.com", "13800138000");
+        User user = createUser(1L, "testuser", "test@example.com", "13800138000");
         user.setPassword("encodedOldPassword");
 
         doReturn(user).when(userService).getCurrentUser();
@@ -479,7 +479,7 @@ class UserServiceTest {
     @Test
     @DisplayName("changePassword 密码不匹配时抛出BusinessException(PASSWORD_CHANGE_ERROR)")
     void changePasswordThrowsWhenMismatch() {
-        User user = createUser("u1", "testuser", "test@example.com", "13800138000");
+        User user = createUser(1L, "testuser", "test@example.com", "13800138000");
         user.setPassword("encodedOldPassword");
 
         doReturn(user).when(userService).getCurrentUser();
@@ -504,7 +504,7 @@ class UserServiceTest {
     @Test
     @DisplayName("isUserBelongsSchool schoolId为null时抛出BusinessException(EMPTY_ARGS)")
     void isUserBelongsSchoolNullSchoolIdThrows() {
-        assertThatThrownBy(() -> userService.isUserBelongsSchool("u1", null))
+        assertThatThrownBy(() -> userService.isUserBelongsSchool(1L, null))
                 .isInstanceOf(BusinessException.class)
                 .extracting("code")
                 .isEqualTo(UserErrorConstants.EMPTY_ARGS);
@@ -513,12 +513,12 @@ class UserServiceTest {
     @Test
     @DisplayName("isUserBelongsSchool 用户存在且universityId匹配时返回true")
     void isUserBelongsSchoolReturnsTrueWhenMatch() {
-        User user = createUser("u1", "testuser", "test@example.com", "13800138000");
-        user.setUniversityId("school-1");
+        User user = createUser(1L, "testuser", "test@example.com", "13800138000");
+        user.setUniversityId("1");
 
-        doReturn(user).when(userService).getById("u1");
+        doReturn(user).when(userService).getById(1L);
 
-        Boolean result = userService.isUserBelongsSchool("u1", "school-1");
+        Boolean result = userService.isUserBelongsSchool(1L, "1");
 
         assertThat(result).isTrue();
     }
@@ -526,9 +526,9 @@ class UserServiceTest {
     @Test
     @DisplayName("isUserBelongsSchool 用户不存在时返回false")
     void isUserBelongsSchoolReturnsFalseWhenUserNotFound() {
-        doReturn(null).when(userService).getById("nonexistent");
+        doReturn(null).when(userService).getById(9999L);
 
-        Boolean result = userService.isUserBelongsSchool("nonexistent", "school-1");
+        Boolean result = userService.isUserBelongsSchool(9999L, "1");
 
         assertThat(result).isFalse();
     }
@@ -536,12 +536,12 @@ class UserServiceTest {
     @Test
     @DisplayName("isUserBelongsSchool 用户存在但universityId为null时返回false")
     void isUserBelongsSchoolReturnsFalseWhenUniversityIdNull() {
-        User user = createUser("u1", "testuser", "test@example.com", "13800138000");
+        User user = createUser(1L, "testuser", "test@example.com", "13800138000");
         user.setUniversityId(null);
 
-        doReturn(user).when(userService).getById("u1");
+        doReturn(user).when(userService).getById(1L);
 
-        Boolean result = userService.isUserBelongsSchool("u1", "school-1");
+        Boolean result = userService.isUserBelongsSchool(1L, "1");
 
         assertThat(result).isFalse();
     }
@@ -549,12 +549,12 @@ class UserServiceTest {
     @Test
     @DisplayName("isUserBelongsSchool 用户存在但universityId不匹配时返回false")
     void isUserBelongsSchoolReturnsFalseWhenUniversityIdMismatch() {
-        User user = createUser("u1", "testuser", "test@example.com", "13800138000");
+        User user = createUser(1L, "testuser", "test@example.com", "13800138000");
         user.setUniversityId("other-school");
 
-        doReturn(user).when(userService).getById("u1");
+        doReturn(user).when(userService).getById(1L);
 
-        Boolean result = userService.isUserBelongsSchool("u1", "school-1");
+        Boolean result = userService.isUserBelongsSchool(1L, "1");
 
         assertThat(result).isFalse();
     }
@@ -569,7 +569,7 @@ class UserServiceTest {
         UserRequest request = new UserRequest();
         request.setUsername("test");
 
-        List<User> userList = List.of(createUser("u1", "testuser", "test@example.com", "13800138000"));
+        List<User> userList = List.of(createUser(1L, "testuser", "test@example.com", "13800138000"));
         Page<User> userPage = new Page<>(1, 10, 1);
         userPage.setRecords(userList);
 
@@ -609,7 +609,7 @@ class UserServiceTest {
         UserRequest request = new UserRequest();
         request.setRealName("张三");
 
-        List<User> userList = List.of(createUser("u1", "testuser", "test@example.com", "13800138000"));
+        List<User> userList = List.of(createUser(1L, "testuser", "test@example.com", "13800138000"));
         Page<User> userPage = new Page<>(1, 10, 1);
         userPage.setRecords(userList);
         doReturn(userPage).when(userService).page(any(Page.class), any(LambdaQueryWrapper.class));

@@ -73,7 +73,7 @@ class AuthServiceTest {
     void loginReturnsTokenWhenSuccessful() {
         LoginRequest request = createLoginRequest();
         String rawPassword = request.getPassword();
-        User user = createUser("u1", "testuser");
+        User user = createUser(1L, "testuser");
         user.setPassword(newEncodedPassword());
         when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
         when(userService.getByPassport("admin")).thenReturn(user);
@@ -96,7 +96,7 @@ class AuthServiceTest {
     void loginThrowsWhenPasswordMismatch() {
         LoginRequest request = createLoginRequest();
         String rawPassword = request.getPassword();
-        User user = createUser("u1", "testuser");
+        User user = createUser(1L, "testuser");
         user.setPassword(newEncodedPassword());
         when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
         when(userService.getByPassport("admin")).thenReturn(user);
@@ -271,7 +271,7 @@ class AuthServiceTest {
     @DisplayName("changePassword 旧密码不匹配时抛出 BusinessException(OLD_PASSWORD_ERROR)")
     void changePasswordThrowsWhenOldPasswordMismatch() {
         ChangePasswordRequest request = createChangePasswordRequest();
-        User user = createUser("u1", "testuser");
+        User user = createUser(1L, "testuser");
         user.setPassword(newEncodedPassword());
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
@@ -293,7 +293,7 @@ class AuthServiceTest {
         ChangePasswordRequest request = createChangePasswordRequest();
         String newRawPassword = request.getNewPassword();
         String encodedNewPassword = newEncodedPassword();
-        User user = createUser("u1", "testuser");
+        User user = createUser(1L, "testuser");
         user.setPassword(newEncodedPassword());
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
@@ -319,7 +319,7 @@ class AuthServiceTest {
     void changePasswordThrowsWhenUpdateFails() {
         ChangePasswordRequest request = createChangePasswordRequest();
         String newRawPassword = request.getNewPassword();
-        User user = createUser("u1", "testuser");
+        User user = createUser(1L, "testuser");
         user.setPassword(newEncodedPassword());
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
@@ -380,7 +380,7 @@ class AuthServiceTest {
         return request;
     }
 
-    private User createUser(String id, String username) {
+    private User createUser(Long id, String username) {
         return User.builder()
                 .id(id)
                 .username(username)

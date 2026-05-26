@@ -15,27 +15,27 @@ class UserQuizAnswerTest {
         LocalDateTime answerTime = LocalDateTime.now();
 
         UserQuizAnswer answer = UserQuizAnswer.builder()
-                .id("ans-001")
-                .userId("user-123")
-                .optionId("opt-456")
-                .quizId("quiz-789")
+                .id(1L)
+                .userId(1L)
+                .optionId(1L)
+                .quizId(1L)
                 .userAnswer("A")
                 .isCorrect(1)
                 .scoreObtained(5)
                 .timeSpent(30)
-                .sessionId("session-001")
+                .sessionId("session-1")
                 .answerTime(answerTime)
                 .build();
 
-        assertThat(answer.getId()).isEqualTo("ans-001");
-        assertThat(answer.getUserId()).isEqualTo("user-123");
-        assertThat(answer.getOptionId()).isEqualTo("opt-456");
-        assertThat(answer.getQuizId()).isEqualTo("quiz-789");
+        assertThat(answer.getId()).isEqualTo(1L);
+        assertThat(answer.getUserId()).isEqualTo(1L);
+        assertThat(answer.getOptionId()).isEqualTo(1L);
+        assertThat(answer.getQuizId()).isEqualTo(1L);
         assertThat(answer.getUserAnswer()).isEqualTo("A");
         assertThat(answer.getIsCorrect()).isEqualTo(1);
         assertThat(answer.getScoreObtained()).isEqualTo(5);
         assertThat(answer.getTimeSpent()).isEqualTo(30);
-        assertThat(answer.getSessionId()).isEqualTo("session-001");
+        assertThat(answer.getSessionId()).isEqualTo("session-1");
         assertThat(answer.getAnswerTime()).isEqualTo(answerTime);
     }
 
@@ -43,9 +43,9 @@ class UserQuizAnswerTest {
     @DisplayName("isCorrect 为 0 表示回答错误")
     void isCorrectZeroMeansWrongAnswer() {
         UserQuizAnswer answer = UserQuizAnswer.builder()
-                .id("ans-002")
-                .userId("user-123")
-                .quizId("quiz-789")
+                .id(1L)
+                .userId(1L)
+                .quizId(1L)
                 .isCorrect(0)
                 .build();
 
@@ -56,9 +56,9 @@ class UserQuizAnswerTest {
     @DisplayName("isCorrect 为 2 表示部分正确")
     void isCorrectTwoMeansPartiallyCorrect() {
         UserQuizAnswer answer = UserQuizAnswer.builder()
-                .id("ans-003")
-                .userId("user-123")
-                .quizId("quiz-789")
+                .id(1L)
+                .userId(1L)
+                .quizId(1L)
                 .isCorrect(2)
                 .build();
 
@@ -71,26 +71,26 @@ class UserQuizAnswerTest {
         LocalDateTime newTime = LocalDateTime.now();
         UserQuizAnswer answer = UserQuizAnswer.builder().build();
 
-        answer.setId("new-ans-id");
-        answer.setUserId("new-user-id");
-        answer.setOptionId("new-opt-id");
-        answer.setQuizId("new-quiz-id");
+        answer.setId(1L);
+        answer.setUserId(1L);
+        answer.setOptionId(1L);
+        answer.setQuizId(1L);
         answer.setUserAnswer("B");
         answer.setIsCorrect(0);
         answer.setScoreObtained(0);
         answer.setTimeSpent(60);
-        answer.setSessionId("new-session");
+        answer.setSessionId("session-1");
         answer.setAnswerTime(newTime);
 
-        assertThat(answer.getId()).isEqualTo("new-ans-id");
-        assertThat(answer.getUserId()).isEqualTo("new-user-id");
-        assertThat(answer.getOptionId()).isEqualTo("new-opt-id");
-        assertThat(answer.getQuizId()).isEqualTo("new-quiz-id");
+        assertThat(answer.getId()).isEqualTo(1L);
+        assertThat(answer.getUserId()).isEqualTo(1L);
+        assertThat(answer.getOptionId()).isEqualTo(1L);
+        assertThat(answer.getQuizId()).isEqualTo(1L);
         assertThat(answer.getUserAnswer()).isEqualTo("B");
         assertThat(answer.getIsCorrect()).isZero();
         assertThat(answer.getScoreObtained()).isZero();
         assertThat(answer.getTimeSpent()).isEqualTo(60);
-        assertThat(answer.getSessionId()).isEqualTo("new-session");
+        assertThat(answer.getSessionId()).isEqualTo("session-1");
         assertThat(answer.getAnswerTime()).isEqualTo(newTime);
     }
 
@@ -98,43 +98,43 @@ class UserQuizAnswerTest {
     @DisplayName("toString 包含所有字段值")
     void toStringContainsAllFieldValues() {
         UserQuizAnswer answer = UserQuizAnswer.builder()
-                .id("a-1")
-                .userId("u-1")
-                .quizId("q-1")
+                .id(1L)
+                .userId(1L)
+                .quizId(1L)
                 .isCorrect(1)
                 .build();
 
         String str = answer.toString();
 
-        assertThat(str).contains("a-1", "u-1", "q-1");
+        assertThat(str).contains("id=1", "userId=1", "quizId=1");
     }
 
     @Test
     @DisplayName("equals 比较所有字段相同的 UserQuizAnswer 视为相等")
     void equalsComparesAllFields() {
         UserQuizAnswer a1 = UserQuizAnswer.builder()
-                .id("ans-1")
-                .quizId("q-1")
-                .userId("u-1")
+                .id(1L)
+                .quizId(1L)
+                .userId(1L)
                 .isCorrect(1)
                 .build();
         UserQuizAnswer a2 = UserQuizAnswer.builder()
-                .id("ans-1")
-                .quizId("q-1")
-                .userId("u-1")
+                .id(1L)
+                .quizId(1L)
+                .userId(1L)
                 .isCorrect(1)
                 .build();
         UserQuizAnswer a3 = UserQuizAnswer.builder()
-                .id("ans-2")
-                .quizId("q-1")
-                .userId("u-1")
+                .id(2L)
+                .quizId(1L)
+                .userId(1L)
                 .isCorrect(1)
                 .build();
         UserQuizAnswer a4 = UserQuizAnswer.builder()
-                .id("ans-1")
-                .quizId("q-2")
-                .userId("u-1")
-                .isCorrect(1)
+                .id(1L)
+                .quizId(1L)
+                .userId(1L)
+                .isCorrect(0)
                 .build();
 
         assertThat(a1).isEqualTo(a2);

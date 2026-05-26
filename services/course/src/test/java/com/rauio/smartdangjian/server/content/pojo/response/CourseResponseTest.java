@@ -15,37 +15,37 @@ class CourseResponseTest {
     void builderCreatesCourseResponseCorrectly() {
         LocalDateTime publishedAt = LocalDateTime.of(2025, 6, 1, 12, 0);
         CourseResponse vo = CourseResponse.builder()
-                .id("course-001")
+                .id(1L)
                 .title("课程标题")
                 .description("课程描述")
-                .categoryId("cat-001")
+                .categoryId(1L)
                 .difficulty("beginner")
-                .coverImageId("img-001")
+                .coverImageId(1L)
                 .estimatedDuration(60)
                 .enrollmentCount(100)
                 .averageRating(new BigDecimal("4.5"))
                 .publishedAt(publishedAt)
-                .creatorId("user-001")
+                .creatorId(1L)
                 .build();
 
-        assertThat(vo.getId()).isEqualTo("course-001");
+        assertThat(vo.getId()).isEqualTo(1L);
         assertThat(vo.getTitle()).isEqualTo("课程标题");
         assertThat(vo.getDescription()).isEqualTo("课程描述");
-        assertThat(vo.getCategoryId()).isEqualTo("cat-001");
+        assertThat(vo.getCategoryId()).isEqualTo(1L);
         assertThat(vo.getDifficulty()).isEqualTo("beginner");
-        assertThat(vo.getCoverImageId()).isEqualTo("img-001");
+        assertThat(vo.getCoverImageId()).isEqualTo(1L);
         assertThat(vo.getEstimatedDuration()).isEqualTo(60);
         assertThat(vo.getEnrollmentCount()).isEqualTo(100);
         assertThat(vo.getAverageRating()).isEqualTo(new BigDecimal("4.5"));
         assertThat(vo.getPublishedAt()).isEqualTo(publishedAt);
-        assertThat(vo.getCreatorId()).isEqualTo("user-001");
+        assertThat(vo.getCreatorId()).isEqualTo(1L);
     }
 
     @Test
     @DisplayName("categoryId 为 null 时 builder 正常工作")
     void builderWithNullCategoryId() {
         CourseResponse vo = CourseResponse.builder()
-                .id("course-001")
+                .id(1L)
                 .title("无分类课程")
                 .categoryId(null)
                 .build();
@@ -57,7 +57,7 @@ class CourseResponseTest {
     @DisplayName("setter 修改 title 后 getter 返回新值")
     void setterAndGetterWorkForTitle() {
         CourseResponse vo =
-                CourseResponse.builder().id("course-001").title("旧标题").build();
+                CourseResponse.builder().id(1L).title("旧标题").build();
 
         vo.setTitle("新标题");
 

@@ -67,7 +67,7 @@ public class FileService {
                     .setMethod(Constant.GeneratePresignedUrl.Method.PUT)
                     .setExpiration(DateUtil.offsetMinute(new Date(), 10))
                     .putHeaders(Constant.Metadata.CONTENT_TYPE, request.getMimeType())
-                    .putUserMetadata("resourceId", meta.getId())
+                    .putUserMetadata("resourceId", String.valueOf(meta.getId()))
                     .generatePresignedUrl();
             uploadUrl = urlResult.getUrl();
             expiration = System.currentTimeMillis() + ResourceConstant.COS_KEY_EXPIRATION;
@@ -78,14 +78,14 @@ public class FileService {
         }
 
         return FileUploadResponse.builder()
-                .resourceId(meta.getId())
+                .resourceId(String.valueOf(meta.getId()))
                 .uploadUrl(uploadUrl)
                 .objectKey(objectKey)
                 .expiration(expiration)
                 .build();
     }
 
-    public ResourceMeta confirmUpload(String resourceId) {
+    public ResourceMeta confirmUpload(Long resourceId) {
         ResourceMeta meta = resourceMetaService.get(resourceId);
         if (meta.getStatus() != null && meta.getStatus() == ResourceStatusConstants.PUBLIC) {
             return meta;
@@ -107,7 +107,7 @@ public class FileService {
         return meta;
     }
 
-    public void handleUploadCallback(String resourceId, InputStream inputStream) {
+    public void handleUploadCallback(Long resourceId, InputStream inputStream) {
         ResourceMeta meta = resourceMetaService.get(resourceId);
         try {
             Path filePath = Path.of("./uploads", meta.getObjectKey());
@@ -119,7 +119,7 @@ public class FileService {
         }
     }
 
-    public FileInfoResponse getFileInfo(String resourceId) {
+    public FileInfoResponse getFileInfo(Long resourceId) {
         ResourceMeta meta = resourceMetaService.get(resourceId);
         return buildFileInfoResponse(meta);
     }
@@ -132,7 +132,7 @@ public class FileService {
     private FileInfoResponse buildFileInfoResponse(ResourceMeta meta) {
         String downloadUrl = generateDownloadUrl(meta.getObjectKey());
         return FileInfoResponse.builder()
-                .resourceId(meta.getId())
+                .resourceId(String.valueOf(meta.getId()))
                 .originalName(meta.getOriginalName())
                 .hash(meta.getHash())
                 .objectKey(meta.getObjectKey())
@@ -142,12 +142,12 @@ public class FileService {
                 .build();
     }
 
-    public String getDownloadUrl(String resourceId) {
+    public String getDownloadUrl(Long resourceId) {
         ResourceMeta meta = resourceMetaService.get(resourceId);
         return generateDownloadUrl(meta.getObjectKey());
     }
 
-    public void delete(String resourceId) {
+    public void delete(Long resourceId) {
         ResourceMeta meta = resourceMetaService.get(resourceId);
         try {
             FileInfo fileInfo = buildFileInfo(meta.getObjectKey());
@@ -158,7 +158,7 @@ public class FileService {
         resourceMetaService.delete(resourceId);
     }
 
-    public List<String> getBatchByIds(List<String> ids) {
+    public List<String> getBatchByIds(List<Long> ids) {
         return ids.stream().map(this::getDownloadUrl).collect(Collectors.toList());
     }
 

@@ -2,7 +2,9 @@ package com.rauio.smartdangjian.server.content.pojo.response;
 
 import java.util.List;
 
-import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -14,10 +16,12 @@ import lombok.Data;
 public class ChapterResponse {
 
     @Schema(description = "章节ID")
-    private String id;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long id;
 
     @Schema(description = "所属课程ID")
-    private String courseId;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long courseId;
 
     @Schema(description = "章节标题")
     private String title;
@@ -38,5 +42,5 @@ public class ChapterResponse {
     private String chapterStatus;
 
     @Schema(description = "章节内容块列表")
-    private List<ContentBlock> content;
+    private List<ChapterContentBlock> content;
 }

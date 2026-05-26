@@ -53,7 +53,7 @@ class UserManagementAspectTest {
         when(currentUser.getUniversityId()).thenReturn(universityId);
     }
 
-    private void stubStudentUser(String userId) {
+    private void stubStudentUser(Long userId) {
         when(currentUser.getUserType()).thenReturn(UserType.STUDENT);
         when(currentUser.getId()).thenReturn(userId);
     }
@@ -123,7 +123,7 @@ class UserManagementAspectTest {
     @DisplayName("SEARCH STUDENT 自动设置 userId 和 universityId")
     void searchStudentSetsIds() {
         stubAction(DataScopeAction.SEARCH);
-        stubStudentUser("student-1");
+        stubStudentUser(1L);
         when(currentUser.getUniversityId()).thenReturn("univ-1");
         UserRequest query = new UserRequest();
         when(access.query()).thenReturn("#query");
@@ -131,7 +131,7 @@ class UserManagementAspectTest {
 
         aspect.before(context);
 
-        assertThat(query.getUserId()).isEqualTo("student-1");
+        assertThat(query.getUserId()).isEqualTo("1");
         assertThat(query.getUniversityId()).isEqualTo("univ-1");
     }
 
@@ -144,7 +144,7 @@ class UserManagementAspectTest {
     void readManagerPasses() {
         stubAction(DataScopeAction.READ);
         when(currentUser.getUserType()).thenReturn(UserType.MANAGER);
-        User target = User.builder().id("target-id").build();
+        User target = User.builder().id(1L).build();
         when(access.id()).thenReturn("#id");
         when(context.require("#id", String.class, "用户ID不能为空")).thenReturn("target-id");
         when(userMapper.selectById("target-id")).thenReturn(target);
@@ -158,7 +158,7 @@ class UserManagementAspectTest {
         stubAction(DataScopeAction.READ);
         stubSchoolUser("univ-1");
         User target = User.builder()
-                .id("target-id")
+                .id(1L)
                 .userType(UserType.STUDENT)
                 .universityId("univ-1")
                 .build();
@@ -175,7 +175,7 @@ class UserManagementAspectTest {
         stubAction(DataScopeAction.READ);
         stubSchoolUser("univ-1");
         User target = User.builder()
-                .id("target-id")
+                .id(1L)
                 .userType(UserType.STUDENT)
                 .universityId("univ-2")
                 .build();
@@ -315,7 +315,7 @@ class UserManagementAspectTest {
     void updateManagerPasses() {
         stubAction(DataScopeAction.UPDATE);
         when(currentUser.getUserType()).thenReturn(UserType.MANAGER);
-        User target = User.builder().id("target-id").build();
+        User target = User.builder().id(1L).build();
         User payload = User.builder().build();
         when(access.id()).thenReturn("#id");
         when(access.body()).thenReturn("#user");
@@ -330,8 +330,8 @@ class UserManagementAspectTest {
     @DisplayName("UPDATE STUDENT 更新自己成功")
     void updateStudentSelfPasses() {
         stubAction(DataScopeAction.UPDATE);
-        stubStudentUser("student-1");
-        User target = User.builder().id("student-1").build();
+        stubStudentUser(1L);
+        User target = User.builder().id(1L).build();
         User payload = User.builder().build();
         when(access.id()).thenReturn("#id");
         when(access.body()).thenReturn("#user");
@@ -346,8 +346,8 @@ class UserManagementAspectTest {
     @DisplayName("UPDATE STUDENT 更新他人信息抛出异常")
     void updateStudentOtherThrows() {
         stubAction(DataScopeAction.UPDATE);
-        stubStudentUser("student-1");
-        User target = User.builder().id("other-user").build();
+        stubStudentUser(1L);
+        User target = User.builder().id(2L).build();
         User payload = User.builder().build();
         when(access.id()).thenReturn("#id");
         when(access.body()).thenReturn("#user");
@@ -365,8 +365,8 @@ class UserManagementAspectTest {
     @DisplayName("UPDATE STUDENT 试图修改角色时抛出异常")
     void updateStudentChangeRoleThrows() {
         stubAction(DataScopeAction.UPDATE);
-        stubStudentUser("student-1");
-        User target = User.builder().id("student-1").build();
+        stubStudentUser(1L);
+        User target = User.builder().id(1L).build();
         User payload = User.builder().userType(UserType.SCHOOL).build();
         when(access.id()).thenReturn("#id");
         when(access.body()).thenReturn("#user");
@@ -389,7 +389,7 @@ class UserManagementAspectTest {
     void deleteManagerPasses() {
         stubAction(DataScopeAction.DELETE);
         when(currentUser.getUserType()).thenReturn(UserType.MANAGER);
-        User target = User.builder().id("target-id").build();
+        User target = User.builder().id(1L).build();
         when(access.id()).thenReturn("#id");
         when(context.require("#id", String.class, "用户ID不能为空")).thenReturn("target-id");
         when(userMapper.selectById("target-id")).thenReturn(target);
@@ -402,7 +402,7 @@ class UserManagementAspectTest {
     void deleteStudentThrows() {
         stubAction(DataScopeAction.DELETE);
         when(currentUser.getUserType()).thenReturn(UserType.STUDENT);
-        User target = User.builder().id("target-id").build();
+        User target = User.builder().id(1L).build();
         when(access.id()).thenReturn("#id");
         when(context.require("#id", String.class, "用户ID不能为空")).thenReturn("target-id");
         when(userMapper.selectById("target-id")).thenReturn(target);
@@ -419,7 +419,7 @@ class UserManagementAspectTest {
         stubAction(DataScopeAction.DELETE);
         stubSchoolUser("univ-1");
         User target = User.builder()
-                .id("target-id")
+                .id(1L)
                 .userType(UserType.STUDENT)
                 .universityId("univ-1")
                 .build();
@@ -436,7 +436,7 @@ class UserManagementAspectTest {
         stubAction(DataScopeAction.DELETE);
         stubSchoolUser("univ-1");
         User target = User.builder()
-                .id("target-id")
+                .id(1L)
                 .userType(UserType.STUDENT)
                 .universityId("univ-2")
                 .build();

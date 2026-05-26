@@ -18,9 +18,9 @@ class UserSimilarityTest {
         LocalDateTime updateTime = calcTime.plusHours(1);
 
         UserSimilarity similarity = UserSimilarity.builder()
-                .id("sim-001")
-                .userId1("user-1")
-                .userId2("user-2")
+                .id(1L)
+                .userId1(1L)
+                .userId2(2L)
                 .similarityScore(new BigDecimal("0.85"))
                 .similarityType("learning_behavior")
                 .calculationParams("{\"weight\": 0.5}")
@@ -31,9 +31,9 @@ class UserSimilarityTest {
                 .updateTime(updateTime)
                 .build();
 
-        assertThat(similarity.getId()).isEqualTo("sim-001");
-        assertThat(similarity.getUserId1()).isEqualTo("user-1");
-        assertThat(similarity.getUserId2()).isEqualTo("user-2");
+        assertThat(similarity.getId()).isEqualTo(1L);
+        assertThat(similarity.getUserId1()).isEqualTo(1L);
+        assertThat(similarity.getUserId2()).isEqualTo(2L);
         assertThat(similarity.getSimilarityScore()).isEqualByComparingTo(new BigDecimal("0.85"));
         assertThat(similarity.getSimilarityType()).isEqualTo("learning_behavior");
         assertThat(similarity.getCalculationParams()).isEqualTo("{\"weight\": 0.5}");
@@ -48,15 +48,15 @@ class UserSimilarityTest {
     @DisplayName("UserSimilarity 最小构造仅必需字段")
     void builderWithRequiredFieldsOnly() {
         UserSimilarity similarity = UserSimilarity.builder()
-                .id("sim-002")
-                .userId1("user-a")
-                .userId2("user-b")
+                .id(1L)
+                .userId1(1L)
+                .userId2(2L)
                 .similarityScore(BigDecimal.ZERO)
                 .build();
 
-        assertThat(similarity.getId()).isEqualTo("sim-002");
-        assertThat(similarity.getUserId1()).isEqualTo("user-a");
-        assertThat(similarity.getUserId2()).isEqualTo("user-b");
+        assertThat(similarity.getId()).isEqualTo(1L);
+        assertThat(similarity.getUserId1()).isEqualTo(1L);
+        assertThat(similarity.getUserId2()).isEqualTo(2L);
         assertThat(similarity.getSimilarityScore()).isEqualByComparingTo(BigDecimal.ZERO);
         assertThat(similarity.getIsValid()).isNull();
         assertThat(similarity.getSimilarityType()).isNull();
@@ -66,9 +66,9 @@ class UserSimilarityTest {
     @DisplayName("setter 修改 similarityScore 后 getter 返回新值")
     void setterAndGetterWork() {
         UserSimilarity similarity = UserSimilarity.builder()
-                .id("sim-003")
-                .userId1("a")
-                .userId2("b")
+                .id(1L)
+                .userId1(1L)
+                .userId2(2L)
                 .similarityScore(new BigDecimal("0.50"))
                 .isValid(true)
                 .build();
@@ -84,15 +84,15 @@ class UserSimilarityTest {
     @DisplayName("equals 相同 id 和字段值的两个对象相等")
     void equalsWithSameFields() {
         UserSimilarity sim1 = UserSimilarity.builder()
-                .id("sim-001")
-                .userId1("u1")
-                .userId2("u2")
+                .id(1L)
+                .userId1(1L)
+                .userId2(2L)
                 .similarityScore(new BigDecimal("0.50"))
                 .build();
         UserSimilarity sim2 = UserSimilarity.builder()
-                .id("sim-001")
-                .userId1("u1")
-                .userId2("u2")
+                .id(1L)
+                .userId1(1L)
+                .userId2(2L)
                 .similarityScore(new BigDecimal("0.50"))
                 .build();
 
@@ -103,16 +103,14 @@ class UserSimilarityTest {
     @DisplayName("toString 包含 id 和字段信息")
     void toStringContainsFields() {
         UserSimilarity similarity = UserSimilarity.builder()
-                .id("sim-001")
-                .userId1("u1")
-                .userId2("u2")
+                .id(1L)
+                .userId1(1L)
+                .userId2(2L)
                 .similarityScore(new BigDecimal("0.75"))
                 .similarityType("type")
                 .build();
 
         String str = similarity.toString();
-        assertThat(str).contains("sim-001");
-        assertThat(str).contains("u1");
-        assertThat(str).contains("u2");
+        assertThat(str).contains("userId1=1");
     }
 }

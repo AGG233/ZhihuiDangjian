@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.*;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
-import com.rauio.smartdangjian.server.content.service.ContentBlockService;
+import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
+import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,28 +22,28 @@ import lombok.RequiredArgsConstructor;
 @SaCheckRole("MANAGER")
 public class AdminContentController {
 
-    private static final String CAROUSEL_PARENT_ID = "1145141919810";
+    private static final Long CAROUSEL_PARENT_ID = 1145141919810L;
 
-    private final ContentBlockService contentBlockService;
+    private final ChapterContentBlockService chapterContentBlockService;
 
     @Operation(summary = "更新轮播图")
     @PutMapping("/carousel")
-    public Result<Boolean> updateCarousel(@RequestBody @Valid ContentBlock contentBlock) {
-        return Result.ok(contentBlockService.update(contentBlock));
+    public Result<Boolean> updateCarousel(@RequestBody @Valid ChapterContentBlock chapterContentBlock) {
+        return Result.ok(chapterContentBlockService.update(chapterContentBlock));
     }
 
     @Operation(summary = "添加轮播图")
     @PostMapping("/carousel")
-    public Result<Boolean> addCarousel(@RequestBody @Valid List<ContentBlock> contentBlocks) {
-        for (ContentBlock contentBlock : contentBlocks) {
-            contentBlock.setParentId(CAROUSEL_PARENT_ID);
+    public Result<Boolean> addCarousel(@RequestBody @Valid List<ChapterContentBlock> chapterContentBlocks) {
+        for (ChapterContentBlock block : chapterContentBlocks) {
+            block.setChapterId(CAROUSEL_PARENT_ID);
         }
-        return Result.ok(contentBlockService.saveBatch(contentBlocks));
+        return Result.ok(chapterContentBlockService.saveBatch(chapterContentBlocks));
     }
 
     @Operation(summary = "删除轮播图")
     @DeleteMapping("/carousel/{id}")
-    public Result<Boolean> deleteCarousel(@PathVariable String id) {
-        return Result.ok(contentBlockService.delete(id));
+    public Result<Boolean> deleteCarousel(@PathVariable Long id) {
+        return Result.ok(chapterContentBlockService.delete(id));
     }
 }

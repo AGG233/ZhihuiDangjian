@@ -25,15 +25,15 @@ public final class LearningTestDataFactory {
 
     public static UserChapterProgressRequest createChapterProgressDto() {
         return UserChapterProgressRequest.builder()
-                .userId("user-001")
-                .chapterId("ch-001")
+                .userId(1L)
+                .chapterId(1L)
                 .progress(50)
                 .status("in_progress")
                 .firstViewedAt(LocalDateTime.now())
                 .build();
     }
 
-    public static UserChapterProgressRequest createChapterProgressDto(String userId, String chapterId) {
+    public static UserChapterProgressRequest createChapterProgressDto(Long userId, Long chapterId) {
         return UserChapterProgressRequest.builder()
                 .userId(userId)
                 .chapterId(chapterId)
@@ -43,7 +43,7 @@ public final class LearningTestDataFactory {
                 .build();
     }
 
-    public static UserChapterProgressRequest createChapterProgressUpdateDto(String id) {
+    public static UserChapterProgressRequest createChapterProgressUpdateDto(Long id) {
         return UserChapterProgressRequest.builder()
                 .id(id)
                 .progress(100)
@@ -53,18 +53,18 @@ public final class LearningTestDataFactory {
 
     // ── UserChapterProgressResponse ──────────────────────────────────────
 
-    public static UserChapterProgressResponse createChapterProgressVO(String id) {
+    public static UserChapterProgressResponse createChapterProgressVO(Long id) {
         return UserChapterProgressResponse.builder()
                 .id(id)
-                .userId("user-001")
-                .chapterId("ch-001")
+                .userId(1L)
+                .chapterId(1L)
                 .progress(50)
                 .status("in_progress")
                 .firstViewedAt(new Date())
                 .build();
     }
 
-    public static UserChapterProgressResponse createChapterProgressVO(String id, String userId, String chapterId) {
+    public static UserChapterProgressResponse createChapterProgressVO(Long id, Long userId, Long chapterId) {
         return UserChapterProgressResponse.builder()
                 .id(id)
                 .userId(userId)
@@ -79,8 +79,8 @@ public final class LearningTestDataFactory {
 
     public static UserLearningRecordRequest createLearningRecordDto() {
         return UserLearningRecordRequest.builder()
-                .userId("user-001")
-                .chapterId("ch-001")
+                .userId(1L)
+                .chapterId(1L)
                 .startTime(LocalDateTime.now().minusHours(1))
                 .endTime(LocalDateTime.now())
                 .duration(3600)
@@ -88,7 +88,7 @@ public final class LearningTestDataFactory {
                 .build();
     }
 
-    public static UserLearningRecordRequest createLearningRecordDto(String userId, String chapterId) {
+    public static UserLearningRecordRequest createLearningRecordDto(Long userId, Long chapterId) {
         return UserLearningRecordRequest.builder()
                 .userId(userId)
                 .chapterId(chapterId)
@@ -99,7 +99,7 @@ public final class LearningTestDataFactory {
                 .build();
     }
 
-    public static UserLearningRecordRequest createLearningRecordUpdateDto(String id) {
+    public static UserLearningRecordRequest createLearningRecordUpdateDto(Long id) {
         return UserLearningRecordRequest.builder()
                 .id(id)
                 .duration(7200)
@@ -109,11 +109,11 @@ public final class LearningTestDataFactory {
 
     // ── UserLearningRecordResponse ───────────────────────────────────────
 
-    public static UserLearningRecordResponse createLearningRecordVO(String id) {
+    public static UserLearningRecordResponse createLearningRecordVO(Long id) {
         return UserLearningRecordResponse.builder()
                 .id(id)
-                .userId("user-001")
-                .chapterId("ch-001")
+                .userId(1L)
+                .chapterId(1L)
                 .startTime(new Date())
                 .endTime(new Date())
                 .duration(3600)
@@ -122,7 +122,7 @@ public final class LearningTestDataFactory {
                 .build();
     }
 
-    public static UserLearningRecordResponse createLearningRecordVO(String id, String userId, String chapterId) {
+    public static UserLearningRecordResponse createLearningRecordVO(Long id, Long userId, Long chapterId) {
         return UserLearningRecordResponse.builder()
                 .id(id)
                 .userId(userId)

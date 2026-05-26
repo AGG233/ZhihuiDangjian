@@ -29,7 +29,7 @@ public class AdminUserController {
     @Operation(summary = "获取用户详情", description = "根据用户ID获取用户详情，返回完整用户信息")
     @GetMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.USER_MANAGEMENT, action = DataScopeAction.READ, id = "#id")
-    public Result<User> get(@Parameter(name = "id", description = "用户ID") @PathVariable String id) {
+    public Result<User> get(@Parameter(name = "id", description = "用户ID") @PathVariable Long id) {
         return Result.ok(userService.getById(id));
     }
 
@@ -58,7 +58,7 @@ public class AdminUserController {
             action = DataScopeAction.UPDATE,
             id = "#id",
             body = "#user")
-    public Result<Void> update(@PathVariable String id, @RequestBody User user) {
+    public Result<Void> update(@PathVariable Long id, @RequestBody User user) {
         userService.update(id, user);
         return Result.ok(null);
     }

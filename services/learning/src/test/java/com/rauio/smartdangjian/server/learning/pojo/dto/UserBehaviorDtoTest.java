@@ -12,10 +12,10 @@ class UserBehaviorDtoTest {
     @DisplayName("构造 UserBehaviorDto")
     void buildDto() {
         UserBehaviorDto dto = new UserBehaviorDto();
-        dto.setUserId("user-1");
-        dto.setChapterId("ch-1");
+        dto.setUserId(1L);
+        dto.setChapterId(1L);
 
-        assertThat(dto.getUserId()).isEqualTo("user-1");
-        assertThat(dto.getChapterId()).isEqualTo("ch-1");
+        assertThat(dto.getUserId()).isEqualTo(1L);
+        assertThat(dto.getChapterId()).isEqualTo(1L);
     }
 }

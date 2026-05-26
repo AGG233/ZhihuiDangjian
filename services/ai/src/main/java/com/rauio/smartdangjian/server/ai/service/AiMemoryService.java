@@ -86,7 +86,7 @@ public class AiMemoryService {
             String content,
             Map<String, Object> metadata) {
         return AiChatMessage.builder()
-                .userId(userId)
+                .userId(Long.valueOf(userId))
                 .sessionId(sessionId)
                 .agentType(agentType)
                 .senderType(senderType)

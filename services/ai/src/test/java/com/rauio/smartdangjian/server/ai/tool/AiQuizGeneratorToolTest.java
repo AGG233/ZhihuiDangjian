@@ -3,7 +3,7 @@ package com.rauio.smartdangjian.server.ai.tool;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -32,7 +32,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
-import com.rauio.smartdangjian.server.content.service.ContentBlockService;
+import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
 import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
@@ -51,7 +51,7 @@ class AiQuizGeneratorToolTest {
     private ChapterService chapterService;
 
     @Mock
-    private ContentBlockService contentBlockService;
+    private ChapterContentBlockService contentBlockService;
 
     @Mock
     private QuizService quizService;
@@ -94,10 +94,10 @@ class AiQuizGeneratorToolTest {
         doReturn(assistantMessage).when(generation).getOutput();
         when(quizService.create(any(Quiz.class))).thenAnswer(inv -> {
             Quiz q = inv.getArgument(0);
-            q.setId("quiz-new-id");
+            q.setId(1L);
             return true;
         });
-        when(quizOptionService.create(anyString(), any(QuizOption.class))).thenReturn(true);
+        when(quizOptionService.create(anyLong(), any(QuizOption.class))).thenReturn(true);
 
         Map<String, Object> result = aiQuizGeneratorTool.generateMiniQuiz(null, "共产党的初心使命", "single_choice", "easy");
 
@@ -127,7 +127,7 @@ class AiQuizGeneratorToolTest {
     @DisplayName("generateMiniQuiz 基于章节内容生成题目")
     void generateMiniQuizWithChapter() throws Exception {
         ChapterResponse chapter =
-                ChapterResponse.builder().id("ch-1").title("第一章").description("章节描述").build();
+                ChapterResponse.builder().id(1L).title("第一章").description("章节描述").build();
 
         ContentBlockResponse block = new ContentBlockResponse();
         Field textField = ContentBlockResponse.class.getDeclaredField("textContent");
@@ -142,19 +142,19 @@ class AiQuizGeneratorToolTest {
                 {"question": "测试题", "explanation": "解析", "options": []}
                 """);
 
-        when(chapterService.get("ch-1")).thenReturn(chapter);
-        when(contentBlockService.getByParentId("ch-1")).thenReturn(List.of(block));
+        when(chapterService.get(1L)).thenReturn(chapter);
+        when(contentBlockService.getByChapterId(1L)).thenReturn(List.of(block));
         when(chatModelProvider.getObject()).thenReturn(chatModel);
         when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
         doReturn(generation).when(chatResponse).getResult();
         doReturn(assistantMessage).when(generation).getOutput();
         when(quizService.create(any(Quiz.class))).thenAnswer(inv -> {
             Quiz q = inv.getArgument(0);
-            q.setId("quiz-ch-1");
+            q.setId(1L);
             return true;
         });
 
-        Map<String, Object> result = aiQuizGeneratorTool.generateMiniQuiz("ch-1", null, "multiple_choice", "medium");
+        Map<String, Object> result = aiQuizGeneratorTool.generateMiniQuiz("1", null, "multiple_choice", "medium");
 
         assertThat(result).containsEntry("question", "测试题");
         assertThat(result).containsEntry("questionType", "multiple_choice");
@@ -164,9 +164,9 @@ class AiQuizGeneratorToolTest {
     @Test
     @DisplayName("generateMiniQuiz 章节不存在时抛出 BusinessException")
     void generateMiniQuizChapterNotFound() {
-        when(chapterService.get("ch-1")).thenReturn(null);
+        when(chapterService.get(1L)).thenReturn(null);
 
-        assertThatThrownBy(() -> aiQuizGeneratorTool.generateMiniQuiz("ch-1", null, "single_choice", "easy"))
+        assertThatThrownBy(() -> aiQuizGeneratorTool.generateMiniQuiz("1", null, "single_choice", "easy"))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("章节不存在");
     }
@@ -209,7 +209,7 @@ class AiQuizGeneratorToolTest {
         doReturn(assistantMessage).when(generation).getOutput();
         when(quizService.create(any(Quiz.class))).thenAnswer(inv -> {
             Quiz q = inv.getArgument(0);
-            q.setId("quiz-id");
+            q.setId(1L);
             return true;
         });
 

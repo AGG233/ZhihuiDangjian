@@ -15,9 +15,9 @@ class UserChapterProgressTest {
     void buildEntity() {
         LocalDateTime now = LocalDateTime.now();
         UserChapterProgress entity = UserChapterProgress.builder()
-                .id("p-1")
-                .userId("user-1")
-                .chapterId("ch-1")
+                .id(1L)
+                .userId(1L)
+                .chapterId(1L)
                 .progress(75)
                 .status("in_progress")
                 .firstViewedAt(now)
@@ -25,9 +25,9 @@ class UserChapterProgressTest {
                 .updatedAt(now)
                 .build();
 
-        assertThat(entity.getId()).isEqualTo("p-1");
-        assertThat(entity.getUserId()).isEqualTo("user-1");
-        assertThat(entity.getChapterId()).isEqualTo("ch-1");
+        assertThat(entity.getId()).isEqualTo(1L);
+        assertThat(entity.getUserId()).isEqualTo(1L);
+        assertThat(entity.getChapterId()).isEqualTo(1L);
         assertThat(entity.getProgress()).isEqualTo(75);
         assertThat(entity.getStatus()).isEqualTo("in_progress");
         assertThat(entity.getFirstViewedAt()).isEqualTo(now);

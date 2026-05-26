@@ -36,7 +36,7 @@ class UserQuizAnswerToolTest {
     @DisplayName("getRecentQuizAnswers 返回最近答题记录（按时间倒序）")
     void getRecentQuizAnswers() {
         ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-1");
+        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
 
         UserQuizAnswer answer1 = mock(UserQuizAnswer.class);
         when(answer1.getAnswerTime()).thenReturn(LocalDateTime.now().minusDays(2));
@@ -44,7 +44,7 @@ class UserQuizAnswerToolTest {
         UserQuizAnswer answer2 = mock(UserQuizAnswer.class);
         when(answer2.getAnswerTime()).thenReturn(LocalDateTime.now());
 
-        when(userQuizAnswerService.getByUserId("user-1")).thenReturn(List.of(answer1, answer2));
+        when(userQuizAnswerService.getByUserId(1L)).thenReturn(List.of(answer1, answer2));
 
         List<UserQuizAnswer> result = userQuizAnswerTool.getRecentQuizAnswers(10, toolContext);
 
@@ -57,9 +57,9 @@ class UserQuizAnswerToolTest {
     @DisplayName("getRecentQuizAnswers limit 为 null 时默认返回 10 条")
     void getRecentQuizAnswersDefaultLimit() {
         ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-1");
+        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
 
-        when(userQuizAnswerService.getByUserId("user-1")).thenReturn(List.of());
+        when(userQuizAnswerService.getByUserId(1L)).thenReturn(List.of());
 
         List<UserQuizAnswer> result = userQuizAnswerTool.getRecentQuizAnswers(null, toolContext);
 
@@ -70,12 +70,12 @@ class UserQuizAnswerToolTest {
     @DisplayName("getQuizAnswersByQuizId 返回指定测验的答题记录")
     void getQuizAnswersByQuizId() {
         ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-1");
+        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
 
         UserQuizAnswer answer = mock(UserQuizAnswer.class);
-        when(userQuizAnswerService.getByUserIdAndQuizId("user-1", "quiz-1")).thenReturn(List.of(answer));
+        when(userQuizAnswerService.getByUserIdAndQuizId(1L, 1L)).thenReturn(List.of(answer));
 
-        List<UserQuizAnswer> result = userQuizAnswerTool.getQuizAnswersByQuizId("quiz-1", toolContext);
+        List<UserQuizAnswer> result = userQuizAnswerTool.getQuizAnswersByQuizId("1", toolContext);
 
         assertThat(result).hasSize(1);
     }

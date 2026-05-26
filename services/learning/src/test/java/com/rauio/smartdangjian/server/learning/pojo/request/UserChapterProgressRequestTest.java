@@ -15,17 +15,17 @@ class UserChapterProgressRequestTest {
     void buildRequest() {
         LocalDateTime now = LocalDateTime.now();
         UserChapterProgressRequest request = UserChapterProgressRequest.builder()
-                .id("p-1")
-                .userId("user-1")
-                .chapterId("ch-1")
+                .id(1L)
+                .userId(1L)
+                .chapterId(1L)
                 .progress(50)
                 .status("in_progress")
                 .firstViewedAt(now)
                 .build();
 
-        assertThat(request.getId()).isEqualTo("p-1");
-        assertThat(request.getUserId()).isEqualTo("user-1");
-        assertThat(request.getChapterId()).isEqualTo("ch-1");
+        assertThat(request.getId()).isEqualTo(1L);
+        assertThat(request.getUserId()).isEqualTo(1L);
+        assertThat(request.getChapterId()).isEqualTo(1L);
         assertThat(request.getProgress()).isEqualTo(50);
         assertThat(request.getStatus()).isEqualTo("in_progress");
     }

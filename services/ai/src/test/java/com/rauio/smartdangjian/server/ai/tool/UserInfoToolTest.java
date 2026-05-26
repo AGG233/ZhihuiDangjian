@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -34,23 +35,23 @@ class UserInfoToolTest {
     @DisplayName("getUserInfo 返回用户基本信息")
     void getUserInfo() {
         ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-1");
+        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
 
         User user = new User();
-        user.setId("user-1");
+        user.setId(1L);
         user.setUsername("testuser");
 
         UserResponse userVO = new UserResponse();
-        userVO.setId("user-1");
+        userVO.setId(1L);
         userVO.setUsername("testuser");
 
-        when(userService.getById("user-1")).thenReturn(user);
+        when(userService.getById(any())).thenReturn(user);
         when(userConvertor.toResponse(user)).thenReturn(userVO);
 
         UserResponse result = userInfoTool.getUserInfo(toolContext);
 
         assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo("user-1");
+        assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getUsername()).isEqualTo("testuser");
     }
 }

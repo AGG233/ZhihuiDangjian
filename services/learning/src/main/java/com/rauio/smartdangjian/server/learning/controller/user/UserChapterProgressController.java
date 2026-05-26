@@ -35,7 +35,7 @@ public class UserChapterProgressController {
     @SaCheckRole("STUDENT")
     @DataScopeAccess(resource = DataScopeResources.CHAPTER_PROGRESS, action = DataScopeAction.READ, id = "#id")
     public Result<UserChapterProgressResponse> get(
-            @Parameter(name = "id", description = "进度ID") @PathVariable String id) {
+            @Parameter(name = "id", description = "进度ID") @PathVariable Long id) {
         UserChapterProgressResponse result = progressService.get(id);
         return Result.ok(result);
     }
@@ -45,7 +45,7 @@ public class UserChapterProgressController {
     @SaCheckRole("STUDENT")
     @ResourceAccess(id = "#userId")
     public Result<List<UserChapterProgressResponse>> getByUserId(
-            @Parameter(name = "userId", description = "用户ID") @PathVariable String userId) {
+            @Parameter(name = "userId", description = "用户ID") @PathVariable Long userId) {
         List<UserChapterProgressResponse> result = progressService.getByUserId(userId);
         return Result.ok(result);
     }
@@ -55,8 +55,8 @@ public class UserChapterProgressController {
     @SaCheckRole("STUDENT")
     @ResourceAccess(id = "#userId")
     public Result<UserChapterProgressResponse> getByUserIdAndChapterId(
-            @Parameter(name = "userId", description = "用户ID") @PathVariable String userId,
-            @Parameter(name = "chapterId", description = "章节ID") @PathVariable String chapterId) {
+            @Parameter(name = "userId", description = "用户ID") @PathVariable Long userId,
+            @Parameter(name = "chapterId", description = "章节ID") @PathVariable Long chapterId) {
         UserChapterProgressResponse result = progressService.getByUserIdAndChapterId(userId, chapterId);
         return Result.ok(result);
     }

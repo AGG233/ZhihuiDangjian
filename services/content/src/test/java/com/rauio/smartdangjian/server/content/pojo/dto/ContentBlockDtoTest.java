@@ -29,12 +29,12 @@ class ContentBlockDtoTest {
     void builderCreatesFileContentBlockDto() {
         ContentBlockDto dto = ContentBlockDto.builder()
                 .blockType(BlockType.Image)
-                .resourceId("res-img-001")
+                .resourceId("res-001")
                 .caption("图片说明")
                 .build();
 
         assertThat(dto.getBlockType()).isEqualTo(BlockType.Image);
-        assertThat(dto.getResourceId()).isEqualTo("res-img-001");
+        assertThat(dto.getResourceId()).isEqualTo("res-001");
         assertThat(dto.getCaption()).isEqualTo("图片说明");
     }
 

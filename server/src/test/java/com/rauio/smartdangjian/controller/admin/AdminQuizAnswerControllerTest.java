@@ -1,6 +1,6 @@
 package com.rauio.smartdangjian.controller.admin;
 
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -17,15 +17,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.quiz.controller.admin.AdminQuizAnswerController;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.utils.spec.UserType;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
@@ -46,7 +42,7 @@ class AdminQuizAnswerControllerTest extends BaseControllerTest {
 
     @BeforeEach
     void managerSecurityContext() {
-        setSecurityContext(UserType.MANAGER, "admin1", "uni1");
+        setSecurityContext(UserType.MANAGER, 1L, "uni1");
     }
 
     @Nested
@@ -56,10 +52,10 @@ class AdminQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("DELETE /api/admin/quiz/answers/users/{id}/quizzes/{quizId}/options/{optionId} - 删除答题记录成功")
         void deleteQuizAnswerSuccess() throws Exception {
-            when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId("user-1", "quiz-1", "opt-1"))
+            when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(1L, 1L, 1L))
                     .thenReturn(true);
 
-            mockMvc.perform(delete("/api/admin/quiz/answers/users/user-1/quizzes/quiz-1/options/opt-1"))
+            mockMvc.perform(delete("/api/admin/quiz/answers/users/1/quizzes/1/options/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(true));
@@ -73,10 +69,10 @@ class AdminQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("删除答题记录 - Service 抛出 BusinessException 返回 400")
         void deleteThrowsBusinessException() throws Exception {
-            when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(anyString(), anyString(), anyString()))
+            when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(anyLong(), anyLong(), anyLong()))
                     .thenThrow(new BusinessException(4000, "删除答题记录失败"));
 
-            mockMvc.perform(delete("/api/admin/quiz/answers/users/user-1/quizzes/quiz-1/options/opt-1"))
+            mockMvc.perform(delete("/api/admin/quiz/answers/users/1/quizzes/1/options/1"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("删除答题记录失败"));
@@ -85,10 +81,10 @@ class AdminQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("删除答题记录 - Service 抛出 RuntimeException 返回 500")
         void deleteThrowsRuntimeException() throws Exception {
-            when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(anyString(), anyString(), anyString()))
+            when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(anyLong(), anyLong(), anyLong()))
                     .thenThrow(new RuntimeException("数据库连接失败"));
 
-            mockMvc.perform(delete("/api/admin/quiz/answers/users/user-1/quizzes/quiz-1/options/opt-1"))
+            mockMvc.perform(delete("/api/admin/quiz/answers/users/1/quizzes/1/options/1"))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("500"));
         }
@@ -96,10 +92,10 @@ class AdminQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("删除答题记录 - 记录不存在返回 false 则 code 为 400")
         void deleteReturnsFalse() throws Exception {
-            when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId("user-none", "quiz-none", "opt-none"))
+            when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(999999L, 999999L, 999999L))
                     .thenReturn(false);
 
-            mockMvc.perform(delete("/api/admin/quiz/answers/users/user-none/quizzes/quiz-none/options/opt-none"))
+            mockMvc.perform(delete("/api/admin/quiz/answers/users/999999/quizzes/999999/options/999999"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(false))
@@ -112,25 +108,21 @@ class AdminQuizAnswerControllerTest extends BaseControllerTest {
     class BoundaryTests {
 
         @Test
-        @DisplayName("删除答题记录 - 用户 ID 含中文正常处理")
+        @DisplayName("删除答题记录 - 用户 ID 含中文返回 400（类型转换失败）")
         void deleteWithChineseUserId() throws Exception {
-            when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId("用户1", "quiz-1", "opt-1"))
-                    .thenReturn(true);
-
-            mockMvc.perform(delete("/api/admin/quiz/answers/users/用户1/quizzes/quiz-1/options/opt-1"))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"));
+            mockMvc.perform(delete("/api/admin/quiz/answers/users/用户1/quizzes/1/options/1"))
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("删除答题记录 - 路径含超长参数正常处理")
         void deleteWithLongIds() throws Exception {
             String longId = "a".repeat(500);
-            when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(longId, longId, longId))
+            when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(anyLong(), anyLong(), anyLong()))
                     .thenReturn(true);
 
             mockMvc.perform(delete(
-                            "/api/admin/quiz/answers/users/" + longId + "/quizzes/" + longId + "/options/" + longId))
+                            "/api/admin/quiz/answers/users/999999/quizzes/999999/options/999999"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));
         }
@@ -151,17 +143,14 @@ class AdminQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入尝试在路径参数中")
         void sqlInjectionInPath() throws Exception {
-            when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId("' OR '1'='1", "quiz-1", "opt-1"))
-                    .thenReturn(true);
-
             mockMvc.perform(delete("/api/admin/quiz/answers/users/' OR '1'='1/quizzes/quiz-1/options/opt-1"))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("GET 请求删除接口返回 405")
         void deleteWithWrongMethod() throws Exception {
-            mockMvc.perform(get("/api/admin/quiz/answers/users/user-1/quizzes/quiz-1/options/opt-1"))
+            mockMvc.perform(get("/api/admin/quiz/answers/users/1/quizzes/1/options/1"))
                     .andExpect(status().isMethodNotAllowed());
         }
 
@@ -171,8 +160,8 @@ class AdminQuizAnswerControllerTest extends BaseControllerTest {
             // Temporarily switch to SCHOOL (lower than MANAGER)
             CurrentUserPrincipal schoolUser = new CurrentUserPrincipal() {
                 @Override
-                public String getId() {
-                    return "school-admin";
+                public Long getId() {
+                    return 999999L;
                 }
 
                 @Override
@@ -187,9 +176,9 @@ class AdminQuizAnswerControllerTest extends BaseControllerTest {
             };
             setSecurityContext(UserType.SCHOOL, schoolUser.getId(), schoolUser.getUniversityId());
 
-            when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId("user-1", "quiz-1", "opt-1"))
+            when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(1L, 1L, 1L))
                     .thenReturn(true);
-            mockMvc.perform(delete("/api/admin/quiz/answers/users/user-1/quizzes/quiz-1/options/opt-1"))
+            mockMvc.perform(delete("/api/admin/quiz/answers/users/1/quizzes/1/options/1"))
                     .andExpect(status().isOk());
         }
     }

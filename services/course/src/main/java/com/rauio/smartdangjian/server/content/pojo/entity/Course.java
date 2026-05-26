@@ -22,7 +22,7 @@ public class Course {
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
     @Schema(description = "课程ID")
-    private String id;
+    private Long id;
 
     @Schema(description = "课程标题")
     private String title;
@@ -30,9 +30,9 @@ public class Course {
     @Schema(description = "课程描述")
     private String description;
 
-    @TableField("cover_image_hash")
+    @TableField("cover_image_id")
     @Schema(description = "课程封面资源ID")
-    private String coverImageId;
+    private Long coverImageId;
 
     @Schema(description = "课程难度")
     private String difficulty;
@@ -41,7 +41,7 @@ public class Course {
     private Integer estimatedDuration;
 
     @Schema(description = "创建者ID")
-    private String creatorId;
+    private Long creatorId;
 
     @Schema(description = "报名人数")
     private Integer enrollmentCount;

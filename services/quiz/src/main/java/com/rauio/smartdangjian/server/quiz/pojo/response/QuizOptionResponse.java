@@ -14,10 +14,10 @@ import lombok.NoArgsConstructor;
 public class QuizOptionResponse {
 
     @Schema(description = "选项ID")
-    private String id;
+    private Long id;
 
     @Schema(description = "题目ID")
-    private String quizId;
+    private Long quizId;
 
     @Schema(description = "选项内容")
     private String optionText;

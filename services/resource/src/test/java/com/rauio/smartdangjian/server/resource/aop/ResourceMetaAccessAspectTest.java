@@ -76,7 +76,7 @@ class ResourceMetaAccessAspectTest {
     @Test
     @DisplayName("before CREATE 学校管理员未绑定学校抛出异常")
     void beforeCreateNoUniversityId() {
-        DataScopeContext context = mockContext(UserType.SCHOOL, "school-1", null, DataScopeAction.CREATE, "", "");
+        DataScopeContext context = mockContext(UserType.SCHOOL, 1L, null, DataScopeAction.CREATE, "", "");
         assertThatThrownBy(() -> aspect.before(context))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("未绑定学校");
@@ -85,11 +85,11 @@ class ResourceMetaAccessAspectTest {
     // ==================== helpers ====================
 
     private DataScopeContext mockContext(UserType userType, DataScopeAction action, String id, String query) {
-        return mockContext(userType, "test-user", "uni-1", action, id, query);
+        return mockContext(userType, 1L, "uni-1", action, id, query);
     }
 
     private DataScopeContext mockContext(
-            UserType userType, String userId, String universityId, DataScopeAction action, String id, String query) {
+            UserType userType, Long userId, String universityId, DataScopeAction action, String id, String query) {
         User user = User.builder()
                 .id(userId)
                 .userType(userType)

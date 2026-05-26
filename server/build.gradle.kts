@@ -17,6 +17,8 @@ dependencies {
     implementation(project(":services:resource"))
     implementation(project(":services:search"))
     implementation(project(":services:user"))
+    implementation(libs.flyway.core)
+    runtimeOnly(libs.flyway.mysql)
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
 

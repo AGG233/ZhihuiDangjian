@@ -72,17 +72,17 @@ public final class FileTestDataFactory {
     // ── ResourceMeta builders ──────────────────────────────────────
 
     public static ResourceMeta createUploadingResourceMeta() {
-        return createResourceMeta("file-res-001", 0); // UPLOADING
+        return createResourceMeta(1L, 0); // UPLOADING
     }
 
     public static ResourceMeta createPublicResourceMeta() {
-        return createResourceMeta("file-res-001", 1); // PUBLIC
+        return createResourceMeta(1L, 1); // PUBLIC
     }
 
-    public static ResourceMeta createResourceMeta(String id, Integer status) {
+    public static ResourceMeta createResourceMeta(Long id, Integer status) {
         return ResourceMeta.builder()
                 .id(id)
-                .uploaderId("user-001")
+                .uploaderId(1L)
                 .originalName("test.png")
                 .hash("abc123def456")
                 .objectKey("image/uuid-test.png")

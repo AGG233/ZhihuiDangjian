@@ -57,16 +57,16 @@ class UserControllerTest extends BaseControllerTest {
         @DisplayName("GET /{id} - 获取用户信息成功")
         void getSuccess() throws Exception {
             UserResponse vo = new UserResponse();
-            vo.setId("user-001");
+            vo.setId(1L);
             vo.setUsername("zhangsan");
             vo.setRealName("张三");
             vo.setUserType(com.rauio.smartdangjian.utils.spec.UserType.STUDENT);
-            when(userService.get("user-001")).thenReturn(vo);
+            when(userService.get(1L)).thenReturn(vo);
 
-            mockMvc.perform(get("/api/user/users/user-001"))
+            mockMvc.perform(get("/api/user/users/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data.id").value("user-001"))
+                    .andExpect(jsonPath("$.data.id").value("1"))
                     .andExpect(jsonPath("$.data.username").value("zhangsan"))
                     .andExpect(jsonPath("$.data.realName").value("张三"));
         }
@@ -75,7 +75,7 @@ class UserControllerTest extends BaseControllerTest {
         @DisplayName("POST /search - 用户分页搜索成功")
         void searchSuccess() throws Exception {
             UserPublicResponse publicVO = new UserPublicResponse();
-            publicVO.setId("user-001");
+            publicVO.setId(1L);
             publicVO.setUsername("zhangsan");
             publicVO.setRealName("张三");
             publicVO.setPartyStatus(PartyStatus.FORMAL_MEMBER);
@@ -100,10 +100,10 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - 更新用户成功")
         void updateSuccess() throws Exception {
-            doNothing().when(userService).update(eq("user-001"), any());
+            doNothing().when(userService).update(eq(1L), any());
 
             String json = "{\"realName\":\"张三丰\"}";
-            mockMvc.perform(put("/api/user/users/user-001")
+            mockMvc.perform(put("/api/user/users/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(json))
                     .andExpect(status().isOk())
@@ -113,7 +113,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("DELETE /{id} - 接口已弃用返回 404")
         void deleteReturnsDeprecated() throws Exception {
-            mockMvc.perform(delete("/api/user/users/user-001"))
+            mockMvc.perform(delete("/api/user/users/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("404"))
                     .andExpect(jsonPath("$.message").value("接口已经弃用"));
@@ -131,9 +131,9 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 BusinessException 返回 400")
         void getThrowsBusinessException() throws Exception {
-            when(userService.get("user-001")).thenThrow(new BusinessException(4000, "用户不存在"));
+            when(userService.get(1L)).thenThrow(new BusinessException(4000, "用户不存在"));
 
-            mockMvc.perform(get("/api/user/users/user-001"))
+            mockMvc.perform(get("/api/user/users/1"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4000"))
                     .andExpect(jsonPath("$.message").value("用户不存在"));
@@ -142,9 +142,9 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 RuntimeException 返回 500")
         void getThrowsRuntimeException() throws Exception {
-            when(userService.get("user-001")).thenThrow(new RuntimeException("数据库异常"));
+            when(userService.get(1L)).thenThrow(new RuntimeException("数据库异常"));
 
-            mockMvc.perform(get("/api/user/users/user-001"))
+            mockMvc.perform(get("/api/user/users/1"))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("500"));
         }
@@ -179,9 +179,9 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - Service 抛出 BusinessException 返回 400")
         void updateThrowsBusinessException() throws Exception {
-            doThrow(new BusinessException(4000, "更新用户失败")).when(userService).update(eq("user-001"), any());
+            doThrow(new BusinessException(4000, "更新用户失败")).when(userService).update(eq(1L), any());
 
-            mockMvc.perform(put("/api/user/users/user-001")
+            mockMvc.perform(put("/api/user/users/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"realName\":\"新名称\"}"))
                     .andExpect(status().isBadRequest())
@@ -192,9 +192,9 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - Service 抛出 RuntimeException 返回 500")
         void updateThrowsRuntimeException() throws Exception {
-            doThrow(new RuntimeException("数据库异常")).when(userService).update(eq("user-001"), any());
+            doThrow(new RuntimeException("数据库异常")).when(userService).update(eq(1L), any());
 
-            mockMvc.perform(put("/api/user/users/user-001")
+            mockMvc.perform(put("/api/user/users/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"realName\":\"新名称\"}"))
                     .andExpect(status().isInternalServerError())
@@ -204,9 +204,9 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - Service 正常返回 200 OK")
         void updateNormalSuccess() throws Exception {
-            doNothing().when(userService).update(eq("user-001"), any());
+            doNothing().when(userService).update(eq(1L), any());
 
-            mockMvc.perform(put("/api/user/users/user-001")
+            mockMvc.perform(put("/api/user/users/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"realName\":\"新名称\"}"))
                     .andExpect(status().isOk())
@@ -235,9 +235,9 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 服务返回 null 时 code 为 400")
         void getReturnsNull() throws Exception {
-            when(userService.get("nonexistent")).thenReturn(null);
+            when(userService.get(999L)).thenReturn(null);
 
-            mockMvc.perform(get("/api/user/users/nonexistent"))
+            mockMvc.perform(get("/api/user/users/999"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.message").value("OK"));
@@ -328,7 +328,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - 空请求体正常处理")
         void updateWithEmptyBody() throws Exception {
-            mockMvc.perform(put("/api/user/users/user-001")
+            mockMvc.perform(put("/api/user/users/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
                     .andExpect(status().isOk());
@@ -378,19 +378,19 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST 请求获取接口返回 405")
         void getWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/user/users/user-001")).andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/user/users/1")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("GET 请求搜索接口路径匹配 GET /{id} 返回 200")
         void searchWithWrongMethod() throws Exception {
-            mockMvc.perform(get("/api/user/users/search")).andExpect(status().isOk());
+            mockMvc.perform(get("/api/user/users/search")).andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("DELETE 请求搜索接口路径匹配 DELETE /{id} 返回 200")
         void searchWithDeleteMethod() throws Exception {
-            mockMvc.perform(delete("/api/user/users/search")).andExpect(status().isOk());
+            mockMvc.perform(delete("/api/user/users/search")).andExpect(status().isBadRequest());
         }
     }
 }

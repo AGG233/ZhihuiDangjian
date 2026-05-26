@@ -1,6 +1,6 @@
 package com.rauio.smartdangjian.controller.user;
 
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -51,13 +51,13 @@ class UserQuizControllerTest extends BaseControllerTest {
         @DisplayName("GET /api/quiz/quizzes/{id} - 获取试题详情成功")
         void getQuizSuccess() throws Exception {
             Quiz quiz = QuizTestDataFactory.createQuiz();
-            when(quizService.get("quiz-1")).thenReturn(quiz);
+            when(quizService.get(1L)).thenReturn(quiz);
 
-            mockMvc.perform(get("/api/quiz/quizzes/quiz-1"))
+            mockMvc.perform(get("/api/quiz/quizzes/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data.id").value("quiz-1"))
-                    .andExpect(jsonPath("$.data.chapterId").value("chapter-1"))
+                    .andExpect(jsonPath("$.data.id").value("1"))
+                    .andExpect(jsonPath("$.data.chapterId").value("1"))
                     .andExpect(jsonPath("$.data.questionType").value("single_choice"))
                     .andExpect(jsonPath("$.data.difficulty").value("medium"))
                     .andExpect(jsonPath("$.data.isActive").value(true));
@@ -66,44 +66,44 @@ class UserQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /api/quiz/quizzes/by-chapter/{chapterId} - 获取章节下所有试题成功")
         void getQuizOfChapterSuccess() throws Exception {
-            Quiz quiz1 = QuizTestDataFactory.createQuiz("quiz-1");
-            Quiz quiz2 = QuizTestDataFactory.createQuiz("quiz-2");
-            when(quizService.getByChapterId("chapter-1")).thenReturn(List.of(quiz1, quiz2));
+            Quiz quiz1 = QuizTestDataFactory.createQuiz(1L);
+            Quiz quiz2 = QuizTestDataFactory.createQuiz(2L);
+            when(quizService.getByChapterId(1L)).thenReturn(List.of(quiz1, quiz2));
 
-            mockMvc.perform(get("/api/quiz/quizzes/by-chapter/chapter-1"))
+            mockMvc.perform(get("/api/quiz/quizzes/by-chapter/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.length()").value(2))
-                    .andExpect(jsonPath("$.data[0].id").value("quiz-1"))
-                    .andExpect(jsonPath("$.data[1].id").value("quiz-2"));
+                    .andExpect(jsonPath("$.data[0].id").value("1"))
+                    .andExpect(jsonPath("$.data[1].id").value("2"));
         }
 
         @Test
         @DisplayName("GET /api/quiz/quizzes/{id}/options - 获取试题选项列表成功")
         void getQuizOptionsSuccess() throws Exception {
-            QuizOption opt1 = QuizTestDataFactory.createQuizOption("opt-1", "quiz-1", "选项A", true, "A");
-            QuizOption opt2 = QuizTestDataFactory.createQuizOption("opt-2", "quiz-1", "选项B", false, "B");
-            when(quizOptionService.getByQuizId("quiz-1")).thenReturn(List.of(opt1, opt2));
+            QuizOption opt1 = QuizTestDataFactory.createQuizOption(1L, 1L, "选项A", true, "A");
+            QuizOption opt2 = QuizTestDataFactory.createQuizOption(2L, 1L, "选项B", false, "B");
+            when(quizOptionService.getByQuizId(1L)).thenReturn(List.of(opt1, opt2));
 
-            mockMvc.perform(get("/api/quiz/quizzes/quiz-1/options"))
+            mockMvc.perform(get("/api/quiz/quizzes/1/options"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.length()").value(2))
-                    .andExpect(jsonPath("$.data[0].id").value("opt-1"))
-                    .andExpect(jsonPath("$.data[1].id").value("opt-2"));
+                    .andExpect(jsonPath("$.data[0].id").value("1"))
+                    .andExpect(jsonPath("$.data[1].id").value("2"));
         }
 
         @Test
         @DisplayName("GET /api/quiz/quizzes/{id}/options/{optionId} - 获取单个选项详情成功")
         void getByOptionIdSuccess() throws Exception {
             QuizOption option = QuizTestDataFactory.createQuizOption();
-            when(quizOptionService.get("opt-1")).thenReturn(option);
+            when(quizOptionService.get(1L)).thenReturn(option);
 
-            mockMvc.perform(get("/api/quiz/quizzes/quiz-1/options/opt-1"))
+            mockMvc.perform(get("/api/quiz/quizzes/1/options/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data.id").value("opt-1"))
-                    .andExpect(jsonPath("$.data.quizId").value("quiz-1"))
+                    .andExpect(jsonPath("$.data.id").value("1"))
+                    .andExpect(jsonPath("$.data.quizId").value("1"))
                     .andExpect(jsonPath("$.data.optionText").value("实现共产主义"))
                     .andExpect(jsonPath("$.data.orderIndex").value("A"));
         }
@@ -116,9 +116,9 @@ class UserQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 试题不存在返回 null 时 code 为 400")
         void getQuizReturnsNull() throws Exception {
-            when(quizService.get("nonexistent")).thenReturn(null);
+            when(quizService.get(999L)).thenReturn(null);
 
-            mockMvc.perform(get("/api/quiz/quizzes/nonexistent"))
+            mockMvc.perform(get("/api/quiz/quizzes/999"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.message").value("OK"));
@@ -127,9 +127,9 @@ class UserQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 BusinessException 返回 400")
         void getQuizThrowsBusinessException() throws Exception {
-            when(quizService.get("quiz-1")).thenThrow(new BusinessException(4001, "试题不存在"));
+            when(quizService.get(1L)).thenThrow(new BusinessException(4001, "试题不存在"));
 
-            mockMvc.perform(get("/api/quiz/quizzes/quiz-1"))
+            mockMvc.perform(get("/api/quiz/quizzes/1"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4001"))
                     .andExpect(jsonPath("$.message").value("试题不存在"));
@@ -138,9 +138,9 @@ class UserQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /by-chapter/{chapterId} - Service 抛出 RuntimeException 返回 500")
         void getQuizOfChapterThrowsRuntimeException() throws Exception {
-            when(quizService.getByChapterId(anyString())).thenThrow(new RuntimeException("数据库连接失败"));
+            when(quizService.getByChapterId(anyLong())).thenThrow(new RuntimeException("数据库连接失败"));
 
-            mockMvc.perform(get("/api/quiz/quizzes/by-chapter/chapter-1"))
+            mockMvc.perform(get("/api/quiz/quizzes/by-chapter/1"))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("500"));
         }
@@ -148,9 +148,9 @@ class UserQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id}/options - 选项列表为空返回空数组")
         void getQuizOptionsReturnsEmpty() throws Exception {
-            when(quizOptionService.getByQuizId("quiz-1")).thenReturn(List.of());
+            when(quizOptionService.getByQuizId(1L)).thenReturn(List.of());
 
-            mockMvc.perform(get("/api/quiz/quizzes/quiz-1/options"))
+            mockMvc.perform(get("/api/quiz/quizzes/1/options"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").isArray())
@@ -160,9 +160,9 @@ class UserQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id}/options/{optionId} - 选项不存在返回 null")
         void getByOptionIdReturnsNull() throws Exception {
-            when(quizOptionService.get("nonexistent")).thenReturn(null);
+            when(quizOptionService.get(999L)).thenReturn(null);
 
-            mockMvc.perform(get("/api/quiz/quizzes/quiz-1/options/nonexistent"))
+            mockMvc.perform(get("/api/quiz/quizzes/1/options/999"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.message").value("OK"));
@@ -171,9 +171,9 @@ class UserQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id}/options/{optionId} - Service 抛出 BusinessException 返回 400")
         void getByOptionIdThrowsBusinessException() throws Exception {
-            when(quizOptionService.get("opt-1")).thenThrow(new BusinessException(4001, "选项不存在"));
+            when(quizOptionService.get(1L)).thenThrow(new BusinessException(4001, "选项不存在"));
 
-            mockMvc.perform(get("/api/quiz/quizzes/quiz-1/options/opt-1"))
+            mockMvc.perform(get("/api/quiz/quizzes/1/options/1"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4001"))
                     .andExpect(jsonPath("$.message").value("选项不存在"));
@@ -187,9 +187,9 @@ class UserQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /by-chapter/{chapterId} - 章节下无试题返回空列表")
         void getQuizOfChapterEmpty() throws Exception {
-            when(quizService.getByChapterId("chapter-empty")).thenReturn(List.of());
+            when(quizService.getByChapterId(1L)).thenReturn(List.of());
 
-            mockMvc.perform(get("/api/quiz/quizzes/by-chapter/chapter-empty"))
+            mockMvc.perform(get("/api/quiz/quizzes/by-chapter/999"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").isArray())
@@ -197,37 +197,24 @@ class UserQuizControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("GET /{id} - 路径含中文正常处理")
-        void getWithChineseId() throws Exception {
-            Quiz quiz = QuizTestDataFactory.createQuiz("q-1");
-            when(quizService.get("试题")).thenReturn(quiz);
-
+        @DisplayName("GET /{id} - 非数字 ID 返回 400（Spring 类型转换失败）")
+        void getWithNonNumericId() throws Exception {
             mockMvc.perform(get("/api/quiz/quizzes/试题"))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"));
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
-        @DisplayName("GET /{id} - 路径含特殊字符正常处理")
+        @DisplayName("GET /{id} - 路径含特殊字符返回 400（Spring 类型转换失败）")
         void getWithSpecialCharsInPath() throws Exception {
-            Quiz quiz = QuizTestDataFactory.createQuiz("q-1");
-            when(quizService.get("test@#$%")).thenReturn(quiz);
-
             mockMvc.perform(get("/api/quiz/quizzes/{id}", "test@#$%"))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"));
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
-        @DisplayName("GET /by-chapter/{chapterId} - 超长 chapterId 正常处理")
-        void getByChapterWithLongId() throws Exception {
-            String longId = "a".repeat(500);
-            when(quizService.getByChapterId(longId)).thenReturn(List.of());
-
-            mockMvc.perform(get("/api/quiz/quizzes/by-chapter/" + longId))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").isArray());
+        @DisplayName("GET /by-chapter/{chapterId} - Float ID 路径返回 400（Spring 类型转换失败）")
+        void getByChapterWithInvalidId() throws Exception {
+            mockMvc.perform(get("/api/quiz/quizzes/by-chapter/3.14"))
+                    .andExpect(status().isBadRequest());
         }
     }
 
@@ -236,38 +223,34 @@ class UserQuizControllerTest extends BaseControllerTest {
     class SecurityTests {
 
         @Test
-        @DisplayName("XSS 尝试在路径参数中")
+        @DisplayName("XSS 尝试在路径参数中返回 400（类型转换失败）")
         void xssInPath() throws Exception {
-            when(quizService.get("<script>alert('xss')</script>")).thenReturn(null);
-
-            mockMvc.perform(get("/api/quiz/quizzes/%3Cscript%3Ealert('xss')%3C%2Fscript%3E"))
-                    .andExpect(status().isOk());
+            mockMvc.perform(get("/api/quiz/quizzes/%3Cscript%3Ealert('xss')%3E"))
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
-        @DisplayName("SQL 注入尝试在路径参数中")
+        @DisplayName("SQL 注入尝试在路径参数中返回 400（类型转换失败）")
         void sqlInjectionInPath() throws Exception {
-            when(quizService.get("' OR '1'='1")).thenReturn(null);
-
-            mockMvc.perform(get("/api/quiz/quizzes/{id}", "' OR '1'='1")).andExpect(status().isOk());
+            mockMvc.perform(get("/api/quiz/quizzes/{id}", "' OR '1'='1")).andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("POST 请求获取试题详情接口返回 405")
         void getWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/quiz/quizzes/quiz-1")).andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/quiz/quizzes/1")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("DELETE 请求获取章节试题接口返回 405")
         void getByChapterWithWrongMethod() throws Exception {
-            mockMvc.perform(delete("/api/quiz/quizzes/by-chapter/chapter-1")).andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(delete("/api/quiz/quizzes/by-chapter/1")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("PUT 请求获取选项列表接口返回 405")
         void getOptionsWithWrongMethod() throws Exception {
-            mockMvc.perform(put("/api/quiz/quizzes/quiz-1/options")).andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(put("/api/quiz/quizzes/1/options")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

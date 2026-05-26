@@ -42,7 +42,7 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
     private final CategoryCourseMapper categoryCourseMapper;
 
     private void normalizeCourseFields(Course course) {
-        if (course.getCoverImageId() != null && course.getCoverImageId().isBlank()) {
+        if (course.getCoverImageId() != null && course.getCoverImageId() <= 0) {
             course.setCoverImageId(null);
         }
         if (course.getDifficulty() != null && DIFFICULTY_MAP.containsKey(course.getDifficulty())) {
@@ -50,7 +50,7 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         }
     }
 
-    public CourseResponse get(String courseId) {
+    public CourseResponse get(Long courseId) {
         Course entity = this.getById(courseId);
         if (entity == null) {
             throw new BusinessException(CourseErrorConstants.COURSE_NOT_FOUND, "课程不存在");
@@ -77,7 +77,7 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         }
     }
 
-    public void update(CourseRequest courseRequest, String id) {
+    public void update(CourseRequest courseRequest, Long id) {
         if (id == null) {
             throw new BusinessException(CourseErrorConstants.COURSE_NOT_FOUND, "课程ID不能为空");
         }
@@ -103,7 +103,7 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         }
     }
 
-    public void delete(String courseId) {
+    public void delete(Long courseId) {
         categoryCourseMapper.delete(new LambdaQueryWrapper<CategoryCourse>().eq(CategoryCourse::getCourseId, courseId));
         if (!this.removeById(courseId)) {
             throw new BusinessException(CourseErrorConstants.COURSE_DELETE_FAILED, "课程删除失败");
@@ -114,12 +114,12 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         return this.list();
     }
 
-    public List<CategoryCourse> getByCategoryId(String categoryId) {
+    public List<CategoryCourse> getByCategoryId(Long categoryId) {
         return categoryCourseMapper.selectList(
                 new LambdaQueryWrapper<CategoryCourse>().eq(CategoryCourse::getCategoryId, categoryId));
     }
 
-    public List<Course> getByUserId(String userId) {
+    public List<Course> getByUserId(Long userId) {
         return this.baseMapper.selectLearnedCoursesByUserId(userId);
     }
 
@@ -139,28 +139,31 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
             return Collections.emptyList();
         }
         List<CourseResponse> courseVOList = new ArrayList<>(courseConvertor.toResponseList(courses));
-        Map<String, String> categoryIdMap = getCategoryIdMapByCourseIds(
+        Map<Long, Long> categoryIdMap = getCategoryIdMapByCourseIds(
                 courses.stream().map(Course::getId).filter(Objects::nonNull).toList());
         for (CourseResponse courseVO : courseVOList) {
-            courseVO.setCategoryId(categoryIdMap.get(courseVO.getId()));
+            Long catId = categoryIdMap.get(courseVO.getId());
+            if (catId != null) {
+                courseVO.setCategoryId(catId);
+            }
         }
         return courseVOList;
     }
 
-    public Map<String, String> getCategoryIdMapByCourseIds(List<String> courseIds) {
+    public Map<Long, Long> getCategoryIdMapByCourseIds(List<Long> courseIds) {
         if (courseIds == null || courseIds.isEmpty()) {
             return Collections.emptyMap();
         }
         List<CategoryCourse> relations = categoryCourseMapper.selectList(
                 new LambdaQueryWrapper<CategoryCourse>().in(CategoryCourse::getCourseId, courseIds));
-        Map<String, String> categoryIdMap = new HashMap<>();
+        Map<Long, Long> categoryIdMap = new HashMap<>();
         for (CategoryCourse relation : relations) {
             categoryIdMap.putIfAbsent(relation.getCourseId(), relation.getCategoryId());
         }
         return categoryIdMap;
     }
 
-    public String getCategoryIdByCourseId(String courseId) {
+    public Long getCategoryIdByCourseId(Long courseId) {
         if (courseId == null) {
             return null;
         }
@@ -170,7 +173,7 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         return relation == null ? null : relation.getCategoryId();
     }
 
-    public List<String> getCourseIdsByCategoryIds(List<String> categoryIds) {
+    public List<Long> getCourseIdsByCategoryIds(List<Long> categoryIds) {
         if (categoryIds == null || categoryIds.isEmpty()) {
             return Collections.emptyList();
         }

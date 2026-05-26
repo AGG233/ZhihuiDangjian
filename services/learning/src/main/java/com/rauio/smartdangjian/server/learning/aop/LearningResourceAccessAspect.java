@@ -67,7 +67,7 @@ public class LearningResourceAccessAspect implements DataScopeResolver {
     }
 
     private void assertReadById(String resource, String id, CurrentUserPrincipal currentUser) {
-        String ownerId = getOwnerUserId(resource, id);
+        Long ownerId = getOwnerUserId(resource, id);
         if (currentUser.getUserType() == UserType.MANAGER) {
             return;
         }
@@ -80,7 +80,7 @@ public class LearningResourceAccessAspect implements DataScopeResolver {
     }
 
     private void assertDeleteById(String resource, String id, CurrentUserPrincipal currentUser) {
-        String ownerId = getOwnerUserId(resource, id);
+        Long ownerId = getOwnerUserId(resource, id);
         if (currentUser.getUserType() == UserType.MANAGER) {
             return;
         }
@@ -118,7 +118,7 @@ public class LearningResourceAccessAspect implements DataScopeResolver {
         return wrapped;
     }
 
-    private String getOwnerUserId(String resource, String id) {
+    private Long getOwnerUserId(String resource, String id) {
         if (StringUtils.isBlank(id)) {
             throw new BusinessException(ErrorConstants.ARGS_ERROR, "资源ID不能为空");
         }
@@ -141,12 +141,12 @@ public class LearningResourceAccessAspect implements DataScopeResolver {
         };
     }
 
-    private boolean belongsToCurrentSchool(CurrentUserPrincipal currentUser, String targetUserId) {
+    private boolean belongsToCurrentSchool(CurrentUserPrincipal currentUser, Long targetUserId) {
         User targetUser = userMapper.selectById(targetUserId);
         return targetUser != null && Objects.equals(currentUser.getUniversityId(), targetUser.getUniversityId());
     }
 
-    private void assertSameUniversity(CurrentUserPrincipal currentUser, String targetUserId) {
+    private void assertSameUniversity(CurrentUserPrincipal currentUser, Long targetUserId) {
         requireUniversityId(currentUser);
         User targetUser = userMapper.selectById(targetUserId);
         if (targetUser == null || !Objects.equals(currentUser.getUniversityId(), targetUser.getUniversityId())) {

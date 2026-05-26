@@ -37,31 +37,31 @@ class AdminResourceMetaControllerTest {
         request.setResourceType(0);
 
         when(resourceMetaService.create(request))
-                .thenReturn(ResourceMeta.builder().id("r-1").build());
+                .thenReturn(ResourceMeta.builder().id(1L).build());
 
         var result = controller.create(request);
 
-        assertThat(result.getData().getId()).isEqualTo("r-1");
+        assertThat(result.getData().getId()).isEqualTo(1L);
     }
 
     @Test
     @DisplayName("get 委托 service 获取资源元数据")
     void get() {
-        when(resourceMetaService.get("r-1"))
-                .thenReturn(ResourceMeta.builder().id("r-1").build());
+        when(resourceMetaService.get(1L))
+                .thenReturn(ResourceMeta.builder().id(1L).build());
 
-        var result = controller.get("r-1");
+        var result = controller.get(1L);
 
-        assertThat(result.getData().getId()).isEqualTo("r-1");
+        assertThat(result.getData().getId()).isEqualTo(1L);
     }
 
     @Test
     @DisplayName("list 委托 service 查询资源列表")
     void list() {
-        when(resourceMetaService.list("user-1", null, null, null, null))
-                .thenReturn(List.of(ResourceMeta.builder().id("r-1").build()));
+        when(resourceMetaService.list(1L, null, null, null, null))
+                .thenReturn(List.of(ResourceMeta.builder().id(1L).build()));
 
-        var result = controller.list("user-1", null, null, null, null);
+        var result = controller.list(1L, null, null, null, null);
 
         assertThat(result.getData()).hasSize(1);
     }
@@ -70,9 +70,9 @@ class AdminResourceMetaControllerTest {
     @DisplayName("update 委托 service 更新资源")
     void update() {
         ResourceMetaUpdateRequest request = new ResourceMetaUpdateRequest();
-        when(resourceMetaService.update("r-1", request)).thenReturn(true);
+        when(resourceMetaService.update(1L, request)).thenReturn(true);
 
-        var result = controller.update("r-1", request);
+        var result = controller.update(1L, request);
 
         assertThat(result.getData()).isTrue();
     }
@@ -80,9 +80,9 @@ class AdminResourceMetaControllerTest {
     @Test
     @DisplayName("deleteById 委托 service 删除资源")
     void deleteById() {
-        when(resourceMetaService.delete("r-1")).thenReturn(true);
+        when(resourceMetaService.delete(1L)).thenReturn(true);
 
-        var result = controller.deleteById("r-1");
+        var result = controller.deleteById(1L);
 
         assertThat(result.getData()).isTrue();
     }

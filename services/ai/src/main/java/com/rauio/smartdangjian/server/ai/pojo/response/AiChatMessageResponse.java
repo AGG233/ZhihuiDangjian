@@ -19,13 +19,13 @@ import lombok.NoArgsConstructor;
 public class AiChatMessageResponse {
 
     @Schema(description = "消息ID")
-    private String id;
+    private Long id;
 
     @Schema(description = "会话ID")
     private String sessionId;
 
     @Schema(description = "用户ID")
-    private String userId;
+    private Long userId;
 
     @Schema(description = "Agent类型", example = "CHAT")
     private String agentType;

@@ -73,7 +73,7 @@ jobs:
         run: ./gradlew --no-daemon compileJava
 
       - name: Run tests with coverage
-        run: ./gradlew --no-daemon test integrationTest jacocoRootReport jacocoRootCoverageVerification
+        run: ./gradlew --no-daemon test integrationTest jacocoRootReport jacocoRootCoverageVerification --continue
 
       - name: Upload coverage to Codacy
         if: always()
@@ -81,16 +81,11 @@ jobs:
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml
+          language: java
+          force-coverage-parser: jacoco
 
       - name: Build server bootJar
         run: ./gradlew --no-daemon :server:bootJar -x test
-
-      - name: Seed smoke database
-        env:
-          MYSQL_PWD: root
-        run: |
-          mysql -h127.0.0.1 -P3306 -uroot zhdj < ddl.sql
-          mysql -h127.0.0.1 -P3306 -uroot zhdj < .github/sql/ci-seed.sql
 
       - name: Start server for API smoke
         env:
@@ -124,6 +119,12 @@ jobs:
       - name: Check wait result
         if: steps.wait-for-app.outcome != 'success'
         run: exit 1
+
+      - name: Seed smoke database
+        if: steps.wait-for-app.outcome == 'success'
+        env:
+          MYSQL_PWD: root
+        run: mysql -h127.0.0.1 -P3306 -uroot zhdj < .github/sql/ci-seed.sql
 
       - name: Run OpenAPI smoke
         env:

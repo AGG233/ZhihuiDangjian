@@ -13,15 +13,15 @@ class ArticleRequestTest {
     @DisplayName("builder 构造 ArticleRequest 所有字段值正确")
     void builderCreatesArticleRequestCorrectly() {
         ArticleRequest request = ArticleRequest.builder()
-                .id("art-001")
-                .authorId("user-001")
+                .id(1L)
+                .authorId(1L)
                 .title("测试文章")
                 .summary("测试摘要")
                 .status(ArticleStatus.Published)
                 .build();
 
-        assertThat(request.getId()).isEqualTo("art-001");
-        assertThat(request.getAuthorId()).isEqualTo("user-001");
+        assertThat(request.getId()).isEqualTo(1L);
+        assertThat(request.getAuthorId()).isEqualTo(1L);
         assertThat(request.getTitle()).isEqualTo("测试文章");
         assertThat(request.getSummary()).isEqualTo("测试摘要");
         assertThat(request.getStatus()).isEqualTo(ArticleStatus.Published);
@@ -40,7 +40,7 @@ class ArticleRequestTest {
     @DisplayName("builder 构造 ArticleRequest id 可为 null（新增场景）")
     void builderCreatesArticleRequestWithNullId() {
         ArticleRequest request = ArticleRequest.builder()
-                .authorId("user-001")
+                .authorId(1L)
                 .title("新增文章")
                 .summary("新增摘要")
                 .status(ArticleStatus.Draft)

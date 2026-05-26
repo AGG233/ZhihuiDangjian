@@ -36,7 +36,7 @@ class LearningPathToolTest {
     @DisplayName("getLearningProfile 返回用户学习画像数据")
     void getLearningProfile() {
         ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-1");
+        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
 
         UserProfileResponse.LearningStats learning = UserProfileResponse.LearningStats.builder()
                 .totalDuration(3600)
@@ -56,14 +56,14 @@ class LearningPathToolTest {
                 .build();
 
         UserProfileResponse profile = UserProfileResponse.builder()
-                .userId("user-1")
+                .userId("1")
                 .learning(learning)
                 .knowledge(knowledge)
-                .interestCategoryIds(List.of("cat-1", "cat-2"))
+                .interestCategoryIds(List.of(1L, 2L))
                 .quiz(quiz)
                 .build();
 
-        when(userProfileService.getProfile("user-1")).thenReturn(profile);
+        when(userProfileService.getProfile("1")).thenReturn(profile);
 
         Map<String, Object> result = learningPathTool.getLearningProfile(toolContext);
 
@@ -77,8 +77,8 @@ class LearningPathToolTest {
     @DisplayName("getLearningProfile profile 为 null 时返回空 Map")
     void getLearningProfileNull() {
         ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-1");
-        when(userProfileService.getProfile("user-1")).thenReturn(null);
+        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
+        when(userProfileService.getProfile("1")).thenReturn(null);
 
         Map<String, Object> result = learningPathTool.getLearningProfile(toolContext);
 

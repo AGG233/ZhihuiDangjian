@@ -11,15 +11,15 @@ class QuizOptionTest {
     @DisplayName("builder 创建完整 QuizOption 实体并验证所有字段")
     void builderCreatesQuizOptionWithAllFields() {
         QuizOption option = QuizOption.builder()
-                .id("opt-001")
-                .quizId("quiz-123")
+                .id(1L)
+                .quizId(1L)
                 .optionText("全心全意为人民服务")
                 .isCorrect(true)
                 .orderIndex("A")
                 .build();
 
-        assertThat(option.getId()).isEqualTo("opt-001");
-        assertThat(option.getQuizId()).isEqualTo("quiz-123");
+        assertThat(option.getId()).isEqualTo(1L);
+        assertThat(option.getQuizId()).isEqualTo(1L);
         assertThat(option.getOptionText()).isEqualTo("全心全意为人民服务");
         assertThat(option.getIsCorrect()).isTrue();
         assertThat(option.getOrderIndex()).isEqualTo("A");
@@ -29,8 +29,8 @@ class QuizOptionTest {
     @DisplayName("isCorrect 为 false 表示错误选项")
     void isCorrectFalseRepresentsWrongOption() {
         QuizOption option = QuizOption.builder()
-                .id("opt-002")
-                .quizId("quiz-123")
+                .id(1L)
+                .quizId(1L)
                 .optionText("以经济建设为中心")
                 .isCorrect(false)
                 .orderIndex("B")
@@ -45,14 +45,14 @@ class QuizOptionTest {
     void settersAndGettersWorkCorrectly() {
         QuizOption option = QuizOption.builder().build();
 
-        option.setId("new-opt-id");
-        option.setQuizId("new-quiz-id");
+        option.setId(1L);
+        option.setQuizId(1L);
         option.setOptionText("新选项内容");
         option.setIsCorrect(false);
         option.setOrderIndex("D");
 
-        assertThat(option.getId()).isEqualTo("new-opt-id");
-        assertThat(option.getQuizId()).isEqualTo("new-quiz-id");
+        assertThat(option.getId()).isEqualTo(1L);
+        assertThat(option.getQuizId()).isEqualTo(1L);
         assertThat(option.getOptionText()).isEqualTo("新选项内容");
         assertThat(option.getIsCorrect()).isFalse();
         assertThat(option.getOrderIndex()).isEqualTo("D");
@@ -62,8 +62,8 @@ class QuizOptionTest {
     @DisplayName("toString 包含所有字段值")
     void toStringContainsAllFieldValues() {
         QuizOption option = QuizOption.builder()
-                .id("opt-1")
-                .quizId("qz-1")
+                .id(1L)
+                .quizId(1L)
                 .optionText("选项A")
                 .isCorrect(true)
                 .orderIndex("A")
@@ -71,37 +71,37 @@ class QuizOptionTest {
 
         String str = option.toString();
 
-        assertThat(str).contains("opt-1", "qz-1", "选项A");
+        assertThat(str).contains("id=1", "quizId=1", "选项A");
     }
 
     @Test
     @DisplayName("equals 比较所有字段相同的 QuizOption 视为相等")
     void equalsComparesAllFields() {
         QuizOption opt1 = QuizOption.builder()
-                .id("opt-1")
-                .quizId("qz-1")
+                .id(1L)
+                .quizId(1L)
                 .optionText("选项A")
                 .isCorrect(true)
                 .orderIndex("A")
                 .build();
         QuizOption opt2 = QuizOption.builder()
-                .id("opt-1")
-                .quizId("qz-1")
+                .id(1L)
+                .quizId(1L)
                 .optionText("选项A")
                 .isCorrect(true)
                 .orderIndex("A")
                 .build();
         QuizOption opt3 = QuizOption.builder()
-                .id("opt-2")
-                .quizId("qz-1")
+                .id(2L)
+                .quizId(1L)
                 .optionText("选项A")
                 .isCorrect(true)
                 .orderIndex("A")
                 .build();
         QuizOption opt4 = QuizOption.builder()
-                .id("opt-1")
-                .quizId("qz-2")
-                .optionText("选项A")
+                .id(1L)
+                .quizId(1L)
+                .optionText("选项B")
                 .isCorrect(true)
                 .orderIndex("A")
                 .build();

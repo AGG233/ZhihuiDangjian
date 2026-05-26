@@ -21,15 +21,15 @@ public class UserLearningRecord {
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
     @Schema(description = "记录ID")
-    private String id;
+    private Long id;
 
     @Schema(description = "用户ID")
     @TableField("user_id")
-    private String userId;
+    private Long userId;
 
     @Schema(description = "章节ID")
     @TableField("chapter_id")
-    private String chapterId;
+    private Long chapterId;
 
     @Schema(description = "开始学习时间")
     @TableField("start_time")

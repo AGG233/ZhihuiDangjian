@@ -25,7 +25,7 @@ class UserProfileResponseTest {
         UserProfileResponse.KnowledgeStats knowledge = UserProfileResponse.KnowledgeStats.builder()
                 .avgProgress(75.0)
                 .completionRate(0.66)
-                .weakChapterIds(List.of("ch-weak"))
+                .weakChapterIds(List.of(1L))
                 .build();
 
         UserProfileResponse.QuizStats quiz = UserProfileResponse.QuizStats.builder()
@@ -37,18 +37,18 @@ class UserProfileResponseTest {
                 .build();
 
         UserProfileResponse profile = UserProfileResponse.builder()
-                .userId("user-1")
+                .userId("1")
                 .learning(learning)
                 .knowledge(knowledge)
-                .interestCategoryIds(List.of("cat-1", "cat-2"))
+                .interestCategoryIds(List.of(1L, 2L))
                 .quiz(quiz)
                 .build();
 
-        assertThat(profile.getUserId()).isEqualTo("user-1");
+        assertThat(profile.getUserId()).isEqualTo("1");
         assertThat(profile.getLearning().getTotalDuration()).isEqualTo(3600);
         assertThat(profile.getLearning().getPreferredDevice()).isEqualTo("web");
         assertThat(profile.getKnowledge().getAvgProgress()).isEqualTo(75.0);
-        assertThat(profile.getKnowledge().getWeakChapterIds()).containsExactly("ch-weak");
+        assertThat(profile.getKnowledge().getWeakChapterIds()).containsExactly(1L);
         assertThat(profile.getInterestCategoryIds()).hasSize(2);
         assertThat(profile.getQuiz().getCorrectRate()).isEqualTo(0.84);
         assertThat(profile.getQuiz().getByDifficulty()).containsKey("easy");

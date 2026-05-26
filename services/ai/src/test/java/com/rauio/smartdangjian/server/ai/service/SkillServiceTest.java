@@ -83,7 +83,7 @@ class SkillServiceTest {
     @DisplayName("update 更新已有技能的所有字段")
     void update() {
         AiSkill existing = AiSkill.builder()
-                .id("skill-1")
+                .id("1")
                 .agentType("CHAT")
                 .name("old-name")
                 .description("old-desc")
@@ -132,7 +132,7 @@ class SkillServiceTest {
     @DisplayName("update 只更新非 null 字段")
     void updateOnlyNonNullFields() {
         AiSkill existing = AiSkill.builder()
-                .id("skill-1")
+                .id("1")
                 .agentType("CHAT")
                 .name("name")
                 .description("desc")
@@ -160,7 +160,7 @@ class SkillServiceTest {
     @DisplayName("listEnabledSkills 返回启用的技能列表")
     void listEnabledSkills() {
         AiSkill skill1 = AiSkill.builder().id("1").name("s1").enabled(true).build();
-        AiSkill skill2 = AiSkill.builder().id("2").name("s2").enabled(true).build();
+        AiSkill skill2 = AiSkill.builder().id("1").name("s2").enabled(true).build();
         doReturn(List.of(skill1, skill2)).when(skillService).list(any(LambdaQueryWrapper.class));
 
         List<AiSkill> result = skillService.listEnabledSkills();

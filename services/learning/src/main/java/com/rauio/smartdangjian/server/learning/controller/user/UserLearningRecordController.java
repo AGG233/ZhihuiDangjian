@@ -35,7 +35,7 @@ public class UserLearningRecordController {
     @SaCheckRole("STUDENT")
     @DataScopeAccess(resource = DataScopeResources.LEARNING_RECORD, action = DataScopeAction.READ, id = "#id")
     public Result<UserLearningRecordResponse> get(
-            @Parameter(name = "id", description = "记录ID") @PathVariable String id) {
+            @Parameter(name = "id", description = "记录ID") @PathVariable Long id) {
         UserLearningRecordResponse result = recordService.get(id);
         return Result.ok(result);
     }
@@ -45,7 +45,7 @@ public class UserLearningRecordController {
     @SaCheckRole("STUDENT")
     @ResourceAccess(id = "#userId")
     public Result<List<UserLearningRecordResponse>> getByUserId(
-            @Parameter(name = "userId", description = "用户ID") @PathVariable String userId) {
+            @Parameter(name = "userId", description = "用户ID") @PathVariable Long userId) {
         List<UserLearningRecordResponse> result = recordService.getByUserId(userId);
         return Result.ok(result);
     }
@@ -55,8 +55,8 @@ public class UserLearningRecordController {
     @SaCheckRole("STUDENT")
     @ResourceAccess(id = "#userId")
     public Result<List<UserLearningRecordResponse>> getByUserIdAndChapterId(
-            @Parameter(name = "userId", description = "用户ID") @PathVariable String userId,
-            @Parameter(name = "chapterId", description = "章节ID") @PathVariable String chapterId) {
+            @Parameter(name = "userId", description = "用户ID") @PathVariable Long userId,
+            @Parameter(name = "chapterId", description = "章节ID") @PathVariable Long chapterId) {
         List<UserLearningRecordResponse> result = recordService.getByUserIdAndChapterId(userId, chapterId);
         return Result.ok(result);
     }

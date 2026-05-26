@@ -14,14 +14,14 @@ class UserPublicResponseTest {
     void settersAndGetters() {
         UserPublicResponse response = new UserPublicResponse();
 
-        response.setId("user-1");
+        response.setId(1L);
         response.setUsername("testuser");
         response.setRealName("张三");
         response.setPartyMemberId("pm-001");
         response.setPartyStatus(PartyStatus.FORMAL_MEMBER);
         response.setBranchName("党支部A");
 
-        assertThat(response.getId()).isEqualTo("user-1");
+        assertThat(response.getId()).isEqualTo(1L);
         assertThat(response.getUsername()).isEqualTo("testuser");
         assertThat(response.getRealName()).isEqualTo("张三");
         assertThat(response.getPartyMemberId()).isEqualTo("pm-001");

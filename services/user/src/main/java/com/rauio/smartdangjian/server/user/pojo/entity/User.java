@@ -31,7 +31,7 @@ public class User implements CurrentUserPrincipal {
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
     @Schema(description = "用户ID")
-    private String id;
+    private Long id;
 
     @Schema(description = "学校ID")
     private String universityId;
@@ -67,6 +67,9 @@ public class User implements CurrentUserPrincipal {
 
     @Schema(description = "账号状态：active表示正常，inactive表示未激活，banned表示封禁")
     private AccountStatus status;
+
+    @Schema(description = "权限等级：0为最高，9为最低")
+    private Integer permissionLevel;
 
     @Schema(description = "邮箱")
     private String email;

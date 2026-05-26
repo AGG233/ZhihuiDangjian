@@ -33,7 +33,7 @@ public final class CourseTestDataFactory {
         return CourseRequest.builder()
                 .title("test-course")
                 .description("test-description")
-                .categoryId("cat-1")
+                .categoryId(1L)
                 .difficulty("easy")
                 .estimatedDuration(60)
                 .isPublished(true)
@@ -42,18 +42,18 @@ public final class CourseTestDataFactory {
 
     // ── CourseResponse ───────────────────────────────────────────────────
 
-    public static CourseResponse createCourseResponse(String id) {
+    public static CourseResponse createCourseResponse(Long id) {
         return CourseResponse.builder()
                 .id(id)
                 .title("test-course")
                 .description("test-description")
-                .categoryId("cat-1")
+                .categoryId(1L)
                 .difficulty("easy")
                 .estimatedDuration(60)
                 .enrollmentCount(0)
                 .averageRating(BigDecimal.valueOf(5.0))
                 .publishedAt(LocalDateTime.now())
-                .creatorId("admin1")
+                .creatorId(1L)
                 .build();
     }
 
@@ -61,7 +61,7 @@ public final class CourseTestDataFactory {
 
     public static ChapterRequest createChapterRequest() {
         return ChapterRequest.builder()
-                .courseId("course-1")
+                .courseId("1")
                 .title("test-chapter")
                 .description("test-chapter-description")
                 .duration(1800)
@@ -74,10 +74,10 @@ public final class CourseTestDataFactory {
 
     // ── ChapterResponse ──────────────────────────────────────────────────
 
-    public static ChapterResponse createChapterResponse(String id) {
+    public static ChapterResponse createChapterResponse(Long id) {
         return ChapterResponse.builder()
                 .id(id)
-                .courseId("course-1")
+                .courseId(1L)
                 .title("test-chapter")
                 .description("test-chapter-description")
                 .duration(1800)
@@ -90,7 +90,7 @@ public final class CourseTestDataFactory {
 
     // ── Course entity ──────────────────────────────────────────────
 
-    public static Course createCourse(String id) {
+    public static Course createCourse(Long id) {
         return Course.builder()
                 .id(id)
                 .title("test-course")
@@ -98,7 +98,7 @@ public final class CourseTestDataFactory {
                 .difficulty("easy")
                 .estimatedDuration(60)
                 .isPublished(true)
-                .creatorId("admin1")
+                .creatorId(1L)
                 .enrollmentCount(0)
                 .averageRating(BigDecimal.ZERO)
                 .build();

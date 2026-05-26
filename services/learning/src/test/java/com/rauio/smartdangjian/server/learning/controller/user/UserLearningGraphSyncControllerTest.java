@@ -24,9 +24,9 @@ class UserLearningGraphSyncControllerTest {
     @Test
     @DisplayName("syncUserGraph 委托 service 同步学习图谱")
     void syncUserGraph() {
-        when(userLearningRecordService.syncUserLearningGraph("user-1")).thenReturn(5);
+        when(userLearningRecordService.syncUserLearningGraph(1L)).thenReturn(5);
 
-        var result = controller.syncUserGraph("user-1");
+        var result = controller.syncUserGraph(1L);
 
         assertThat(result.getData()).isEqualTo(5);
     }

@@ -27,11 +27,11 @@ class AdminLearningRecordControllerTest {
     @Test
     @DisplayName("getByChapterId 委托 service 获取章节学习记录")
     void getByChapterId() {
-        when(recordService.getByChapterId("ch-1"))
+        when(recordService.getByChapterId(1L))
                 .thenReturn(
-                        List.of(UserLearningRecordResponse.builder().id("r-1").build()));
+                        List.of(UserLearningRecordResponse.builder().id(1L).build()));
 
-        var result = controller.getByChapterId("ch-1");
+        var result = controller.getByChapterId(1L);
 
         assertThat(result.getData()).hasSize(1);
     }
@@ -39,9 +39,9 @@ class AdminLearningRecordControllerTest {
     @Test
     @DisplayName("delete 委托 service 删除学习记录")
     void delete() {
-        when(recordService.delete("r-1")).thenReturn(true);
+        when(recordService.delete(1L)).thenReturn(true);
 
-        var result = controller.delete("r-1");
+        var result = controller.delete(1L);
 
         assertThat(result.getData()).isTrue();
     }

@@ -7,20 +7,20 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
+import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
 
 class ChapterResponseTest {
 
     @Test
     @DisplayName("builder 构造 ChapterResponse 所有字段值正确")
     void builderCreatesChapterResponseCorrectly() {
-        List<ContentBlock> content = List.of(
-                ContentBlock.builder().id("cb-001").textContent("内容1").build(),
-                ContentBlock.builder().id("cb-002").textContent("内容2").build());
+        List<ChapterContentBlock> content = List.of(
+                ChapterContentBlock.builder().id(1L).textContent("内容1").build(),
+                ChapterContentBlock.builder().id(1L).textContent("内容2").build());
 
         ChapterResponse vo = ChapterResponse.builder()
-                .id("ch-001")
-                .courseId("course-001")
+                .id(1L)
+                .courseId(1L)
                 .title("第一章")
                 .description("章节描述")
                 .duration(1800)
@@ -30,8 +30,8 @@ class ChapterResponseTest {
                 .content(content)
                 .build();
 
-        assertThat(vo.getId()).isEqualTo("ch-001");
-        assertThat(vo.getCourseId()).isEqualTo("course-001");
+        assertThat(vo.getId()).isEqualTo(1L);
+        assertThat(vo.getCourseId()).isEqualTo(1L);
         assertThat(vo.getTitle()).isEqualTo("第一章");
         assertThat(vo.getDescription()).isEqualTo("章节描述");
         assertThat(vo.getDuration()).isEqualTo(1800);
@@ -46,7 +46,7 @@ class ChapterResponseTest {
     @DisplayName("builder content 为 null 时正常工作")
     void builderWithNullContent() {
         ChapterResponse vo = ChapterResponse.builder()
-                .id("ch-001")
+                .id(1L)
                 .title("无内容章节")
                 .content(null)
                 .build();
@@ -58,7 +58,7 @@ class ChapterResponseTest {
     @DisplayName("isOptional 为 true 时正确返回")
     void isOptionalTrue() {
         ChapterResponse vo =
-                ChapterResponse.builder().id("ch-001").isOptional(true).build();
+                ChapterResponse.builder().id(1L).isOptional(true).build();
 
         assertThat(vo.getIsOptional()).isTrue();
     }

@@ -7,13 +7,12 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.rauio.smartdangjian.server.content.pojo.entity.ContentBlock;
+import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
 import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
 import com.rauio.smartdangjian.server.content.spec.BlockType;
-import com.rauio.smartdangjian.server.content.spec.ParentType;
 
 /**
- * Static factory for content test data — produces ContentBlock and ContentBlockResponse
+ * Static factory for content test data — produces ChapterContentBlock and ContentBlockResponse
  * instances, lists, and JSON helpers.
  */
 public final class ContentTestDataFactory {
@@ -22,52 +21,49 @@ public final class ContentTestDataFactory {
 
     private ContentTestDataFactory() {}
 
-    // ── ContentBlock builders ──────────────────────────────────────
+    // ── ChapterContentBlock builders ──────────────────────────────────────
 
-    public static ContentBlock createContentBlock(String id, String parentId, BlockType blockType) {
-        return ContentBlock.builder()
+    public static ChapterContentBlock createContentBlock(Long id, Long chapterId, BlockType blockType) {
+        return ChapterContentBlock.builder()
                 .id(id)
-                .parentId(parentId)
+                .chapterId(chapterId)
                 .orderIndex(0)
-                .parentType(ParentType.chapter)
                 .blockType(blockType)
                 .textContent("测试内容")
-                .resourceId("res-" + id)
+                .resourceId(id)
                 .caption("说明-" + id)
                 .build();
     }
 
-    public static ContentBlock createContentBlock(String id, String parentId, BlockType blockType, int orderIndex) {
-        return ContentBlock.builder()
+    public static ChapterContentBlock createContentBlock(Long id, Long chapterId, BlockType blockType, int orderIndex) {
+        return ChapterContentBlock.builder()
                 .id(id)
-                .parentId(parentId)
+                .chapterId(chapterId)
                 .orderIndex(orderIndex)
-                .parentType(ParentType.chapter)
                 .blockType(blockType)
                 .textContent("测试内容-" + orderIndex)
-                .resourceId("res-" + id)
+                .resourceId(id)
                 .caption("说明-" + id)
                 .build();
     }
 
-    public static ContentBlock createCarouselBlock(String id, BlockType blockType) {
-        return ContentBlock.builder()
+    public static ChapterContentBlock createCarouselBlock(Long id, BlockType blockType) {
+        return ChapterContentBlock.builder()
                 .id(id)
-                .parentId("1145141919810")
+                .chapterId(1145141919810L)
                 .orderIndex(0)
-                .parentType(ParentType.chapter)
                 .blockType(blockType)
                 .textContent("轮播图内容")
-                .resourceId("res-" + id)
+                .resourceId(id)
                 .caption("轮播图" + id)
                 .build();
     }
 
-    public static List<ContentBlock> createContentBlockList(int count, String parentId) {
-        List<ContentBlock> list = new ArrayList<>();
+    public static List<ChapterContentBlock> createContentBlockList(int count, Long chapterId) {
+        List<ChapterContentBlock> list = new ArrayList<>();
         BlockType[] types = BlockType.values();
         for (int i = 1; i <= count; i++) {
-            list.add(createCarouselBlock("cb-" + String.format("%03d", i), types[i % types.length]));
+            list.add(createCarouselBlock((long) i, types[i % types.length]));
         }
         return list;
     }
@@ -75,26 +71,25 @@ public final class ContentTestDataFactory {
     // ── ContentBlockResponse builders (uses ReflectionTestUtils for field access) ──
 
     public static ContentBlockResponse createContentBlockResponse(
-            String parentId, ParentType parentType, BlockType blockType, String textContent) {
+            Long parentId, BlockType blockType, String textContent) {
         ContentBlockResponse vo = new ContentBlockResponse();
         ReflectionTestUtils.setField(vo, "parentId", parentId);
-        ReflectionTestUtils.setField(vo, "parentType", parentType);
         ReflectionTestUtils.setField(vo, "blockType", blockType);
         ReflectionTestUtils.setField(vo, "textContent", textContent);
-        ReflectionTestUtils.setField(vo, "resourceId", "res-" + parentId);
+        ReflectionTestUtils.setField(vo, "resourceId", parentId);
         ReflectionTestUtils.setField(vo, "caption", "说明");
         return vo;
     }
 
-    public static ContentBlockResponse createCarouselResponse(String parentId, BlockType blockType) {
-        return createContentBlockResponse(parentId, ParentType.chapter, blockType, "轮播图内容");
+    public static ContentBlockResponse createCarouselResponse(Long parentId, BlockType blockType) {
+        return createContentBlockResponse(parentId, blockType, "轮播图内容");
     }
 
     public static List<ContentBlockResponse> createContentBlockResponseList(int count) {
         List<ContentBlockResponse> list = new ArrayList<>();
         BlockType[] types = BlockType.values();
         for (int i = 1; i <= count; i++) {
-            list.add(createCarouselResponse("1145141919810", types[i % types.length]));
+            list.add(createCarouselResponse(1145141919810L, types[i % types.length]));
         }
         return list;
     }
