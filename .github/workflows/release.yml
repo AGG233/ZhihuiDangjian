@@ -110,17 +110,7 @@ jobs:
             docker run -d --name zhihuidangjian \
               --restart unless-stopped \
               -p 9000:9000 \
-              -e SPRING_PROFILES_ACTIVE=prod \
-              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-              -e DATABASE_USERNAME="${{ secrets.DATABASE_USERNAME }}" \
-              -e DATABASE_PASSWORD="${{ secrets.DATABASE_PASSWORD }}" \
-              -e REDIS_HOST="${{ secrets.REDIS_HOST }}" \
-              -e REDIS_PORT="${{ secrets.REDIS_PORT }}" \
-              -e REDIS_DATABASE="${{ secrets.REDIS_DATABASE }}" \
-              -e NEO4J_URI="${{ secrets.NEO4J_URI }}" \
-              -e NEO4J_USERNAME="${{ secrets.NEO4J_USERNAME }}" \
-              -e NEO4J_PASSWORD="${{ secrets.NEO4J_PASSWORD }}" \
-              -e AI_KEY="${{ secrets.AI_KEY }}" \
+              --env-file /www/zhihuidangjian/.env \
               ghcr.io/${{ github.repository_owner }}/zhihuidangjian:${{ needs.release.outputs.version }}
             docker image prune -f
 
