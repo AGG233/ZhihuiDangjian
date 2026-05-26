@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - product
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 concurrency:
