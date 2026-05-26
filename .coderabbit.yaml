@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "zh-CN"
+early_access: false
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "dev"
+      - "product"
+  path_filters:
+    - "!server/src/main/resources/db/migration/**"
+    - "!.github/sql/**"
+    - "!**/src/main/resources/sql/**"
+    - "!**/pojo/entity/**"
+    - "!**/pojo/response/**"
+    - "!**/pojo/request/**"
+    - "!**/pojo/dto/**"
+    - "!**/mapper/**"
+    - "!**/convertor/**"
+    - "!**/*.sql"
+    - "!**/src/test/**"
+  path_instructions:
+    - path: "**/*.java"
+      instructions: |
+        - Code style 遵循项目现有约定，不要建议不必要的重构
+        - 异常处理使用 BusinessException(code, message) 模式
+        - MyBatis-Plus 实体使用 @TableName, @Data, @Builder
+        - Mapper 接口继承 BaseMapper<T>
+        - API 响应使用 Result<T> (Result.ok(data), Result.error(code, msg))
+        - 新增测试使用 @ExtendWith(MockitoExtension.class) + AssertJ + @DisplayName
+chat:
+  auto_reply: true
