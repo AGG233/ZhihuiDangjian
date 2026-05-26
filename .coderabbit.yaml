@@ -18,12 +18,6 @@ reviews:
     - "!server/src/main/resources/db/migration/**"
     - "!.github/sql/**"
     - "!**/src/main/resources/sql/**"
-    - "!**/pojo/entity/**"
-    - "!**/pojo/response/**"
-    - "!**/pojo/request/**"
-    - "!**/pojo/dto/**"
-    - "!**/mapper/**"
-    - "!**/convertor/**"
     - "!**/*.sql"
     - "!**/src/test/**"
   path_instructions:
