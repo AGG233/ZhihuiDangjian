@@ -2,6 +2,8 @@ package com.rauio.smartdangjian.server.quiz.constants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Constructor;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -29,5 +31,13 @@ class QuizErrorConstantsTest {
     @DisplayName("COURSE_NOT_FOUND 值为 6004")
     void courseNotFoundIs6004() {
         assertThat(QuizErrorConstants.COURSE_NOT_FOUND).isEqualTo(6004);
+    }
+
+    @Test
+    @DisplayName("private 构造器覆盖")
+    void privateConstructor() throws Exception {
+        Constructor<QuizErrorConstants> constructor = QuizErrorConstants.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        constructor.newInstance();
     }
 }

@@ -5,7 +5,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
+
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,6 +29,9 @@ class FileControllerTest {
 
     @Mock
     private FileService fileService;
+
+    @Mock
+    private HttpServletRequest httpServletRequest;
 
     @InjectMocks
     private FileController controller;
@@ -121,5 +128,17 @@ class FileControllerTest {
         var result = controller.delete(1L);
 
         assertThat(result.getData()).isTrue();
+    }
+
+    @Test
+    @DisplayName("uploadCallback 委托 service 处理上传回调")
+    void uploadCallback() throws Exception {
+        ServletInputStream servletInputStream = mock(ServletInputStream.class);
+        when(httpServletRequest.getInputStream()).thenReturn(servletInputStream);
+        doNothing().when(fileService).handleUploadCallback(any(), any());
+
+        var result = controller.uploadCallback(1L, httpServletRequest);
+
+        assertThat(result.getCode()).isEqualTo("200");
     }
 }

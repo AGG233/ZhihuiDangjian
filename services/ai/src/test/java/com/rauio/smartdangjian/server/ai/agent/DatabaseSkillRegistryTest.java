@@ -139,4 +139,14 @@ class DatabaseSkillRegistryTest {
         assertThat(registry.contains("new-skill")).isTrue();
         assertThat(registry.size()).isEqualTo(1);
     }
+
+    @Test
+    @DisplayName("reload 方法内部异常时抛出 IllegalStateException")
+    void reloadThrowsOnException() {
+        when(skillService.listEnabledSkills()).thenThrow(new RuntimeException("DB error"));
+
+        assertThatThrownBy(() -> registry.reload())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("重新加载技能缓存失败");
+    }
 }

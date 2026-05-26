@@ -19,10 +19,12 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.rauio.smartdangjian.pojo.response.Result;
 
 import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.exception.NotRoleException;
 
 class GlobalExceptionHandlerTest {
@@ -109,6 +111,17 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    @DisplayName("handleNotPermissionException 返回 403 和无权限操作信息")
+    void handleNotPermissionException() {
+        NotPermissionException ex = new NotPermissionException("admin:delete");
+
+        Result<?> result = handler.handleNotPermissionException(ex);
+
+        assertThat(result.getCode()).isEqualTo("403");
+        assertThat(result.getMessage()).isEqualTo("无权限执行该操作");
+    }
+
+    @Test
     @DisplayName("handleDuplicateKeyException 返回 409 和数据已存在信息")
     void handleDuplicateKeyException() {
         DuplicateKeyException ex = new DuplicateKeyException("duplicate key");
@@ -150,5 +163,31 @@ class GlobalExceptionHandlerTest {
 
         assertThat(result.getCode()).isEqualTo("500");
         assertThat(result.getMessage()).isEqualTo("服务器内部错误，请稍后重试");
+    }
+
+    @Test
+    @DisplayName("handleMethodArgumentTypeMismatchException requiredType null 返回 fallback 消息")
+    void handleMethodArgumentTypeMismatchNullRequiredType() {
+        MethodArgumentTypeMismatchException ex = mock(MethodArgumentTypeMismatchException.class);
+        when(ex.getName()).thenReturn("userId");
+        when(ex.getRequiredType()).thenReturn(null);
+
+        Result<?> result = handler.handleMethodArgumentTypeMismatchException(ex);
+
+        assertThat(result.getCode()).isEqualTo("400");
+        assertThat(result.getMessage()).isEqualTo("请求参数类型错误: userId 应为 合法值");
+    }
+
+    @Test
+    @DisplayName("handleMethodArgumentTypeMismatchException requiredType 非空返回类型名")
+    void handleMethodArgumentTypeMismatchWithRequiredType() {
+        MethodArgumentTypeMismatchException ex = mock(MethodArgumentTypeMismatchException.class);
+        when(ex.getName()).thenReturn("sort");
+        when(ex.getRequiredType()).thenReturn((Class) Integer.class);
+
+        Result<?> result = handler.handleMethodArgumentTypeMismatchException(ex);
+
+        assertThat(result.getCode()).isEqualTo("400");
+        assertThat(result.getMessage()).isEqualTo("请求参数类型错误: sort 应为 Integer");
     }
 }

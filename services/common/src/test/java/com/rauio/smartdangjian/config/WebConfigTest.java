@@ -1,11 +1,18 @@
 package com.rauio.smartdangjian.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+
+import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import com.rauio.smartdangjian.aop.resolver.ResourceOwnerResolver;
 import com.rauio.smartdangjian.exception.GlobalExceptionHandler;
+
+import jakarta.servlet.ServletContext;
 
 class WebConfigTest {
 
@@ -28,5 +35,26 @@ class WebConfigTest {
 
         var mappedRegistry = registry;
         assertThat(mappedRegistry).isNotNull();
+    }
+
+    @Test
+    @DisplayName("addResourceHandlers 可安全调用")
+    void addResourceHandlers() {
+        var appContext = mock(org.springframework.context.ApplicationContext.class);
+        var servletContext = mock(ServletContext.class);
+        var registry = new org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry(appContext, servletContext);
+
+        config.addResourceHandlers(registry);
+
+        assertThat(config).isInstanceOf(WebMvcConfigurer.class);
+    }
+
+    @Test
+    @DisplayName("resourceAccessAspect 创建 ResourceAccessAspect 实例")
+    void resourceAccessAspect() {
+        var resolvers = List.<ResourceOwnerResolver>of();
+        var aspect = config.resourceAccessAspect(resolvers);
+
+        assertThat(aspect).isNotNull();
     }
 }

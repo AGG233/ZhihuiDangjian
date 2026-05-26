@@ -1,6 +1,8 @@
 package com.rauio.smartdangjian.server.resource.controller.admin;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -16,6 +18,8 @@ import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.BannerCreateRequest;
 import com.rauio.smartdangjian.server.resource.pojo.request.BannerUpdateRequest;
 import com.rauio.smartdangjian.server.resource.service.BannerService;
+
+import com.rauio.smartdangjian.exception.BusinessException;
 
 @ExtendWith(MockitoExtension.class)
 class AdminBannerControllerTest {
@@ -91,5 +95,27 @@ class AdminBannerControllerTest {
         var result = controller.delete(1);
 
         assertThat(result.getData()).isTrue();
+    }
+
+    @Test
+    @DisplayName("create 两者都为空时抛出 BusinessException")
+    void createBothNullThrowsBusinessException() {
+        BannerCreateRequest request = new BannerCreateRequest(null, null);
+
+        assertThatThrownBy(() -> controller.create(request))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("resourceId和hash不能同时为空");
+    }
+
+    @Test
+    @DisplayName("update 使用 hash 更新轮播图")
+    void updateByHash() {
+        BannerUpdateRequest request = new BannerUpdateRequest(null, "hash123");
+        when(bannerService.updateByHash(1, "hash123"))
+                .thenReturn(ResourceMeta.builder().id(1L).build());
+
+        var result = controller.update(1, request);
+
+        assertThat(result.getData().getId()).isEqualTo(1L);
     }
 }
