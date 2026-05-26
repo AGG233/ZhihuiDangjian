@@ -129,6 +129,17 @@ class CaptchaServiceTest {
     }
 
     @Test
+    @DisplayName("validate testCode is blank non-null falls through to Redis")
+    void validateBlankTestCodeFallsThroughToRedis() {
+        ReflectionTestUtils.setField(captchaService, "testCode", "");
+        when(valueOps.get(eq("captcha:uuid-1"))).thenReturn("1234");
+
+        Boolean result = captchaService.validate("uuid-1", "1234");
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
     @DisplayName("validate code 为 null 时返回 false")
     void validateReturnsFalseWhenCodeIsNull() {
         when(valueOps.get(eq("captcha:my-uuid"))).thenReturn("ABCD");

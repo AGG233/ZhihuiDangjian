@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
@@ -203,6 +204,33 @@ class UserChapterProgressServiceTest {
     }
 
     @Test
+    @DisplayName("create firstViewedAt 已存在时不再覆盖")
+    void createWithExistingFirstViewedAt() {
+        LocalDateTime firstViewed = LocalDateTime.of(2025, 6, 1, 10, 0);
+        UserChapterProgressRequest dto = UserChapterProgressRequest.builder()
+                .userId(USER_ID)
+                .chapterId(CHAPTER_ID)
+                .progress(30)
+                .firstViewedAt(firstViewed)
+                .build();
+        doReturn(null).when(progressService).getOne(any(QueryWrapper.class));
+
+        UserChapterProgress entity = UserChapterProgress.builder()
+                .userId(USER_ID)
+                .chapterId(CHAPTER_ID)
+                .progress(30)
+                .firstViewedAt(firstViewed)
+                .build();
+        when(convertor.toEntity(dto)).thenReturn(entity);
+        doReturn(true).when(progressService).save(any(UserChapterProgress.class));
+
+        Boolean result = progressService.create(dto);
+
+        assertThat(result).isTrue();
+        assertThat(entity.getFirstViewedAt()).isEqualTo(firstViewed);
+    }
+
+    @Test
     @DisplayName("create 保存失败抛出异常")
     void createSaveFailed() {
         UserChapterProgressRequest dto = UserChapterProgressRequest.builder()
@@ -338,5 +366,90 @@ class UserChapterProgressServiceTest {
         assertThatThrownBy(() -> progressService.delete(PROGRESS_ID))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("删除进度记录失败");
+    }
+
+    @Test
+    @DisplayName("update 进度不足100时不自动完成")
+    void updateNotAutoComplete() {
+        UserChapterProgressRequest dto = UserChapterProgressRequest.builder()
+                .id(PROGRESS_ID)
+                .progress(50)
+                .build();
+        UserChapterProgress existing = UserChapterProgress.builder()
+                .id(PROGRESS_ID).progress(30).status("in_progress").build();
+        doReturn(existing).when(progressService).getById(PROGRESS_ID);
+
+        UserChapterProgress converted = UserChapterProgress.builder()
+                .id(PROGRESS_ID).progress(50).build();
+        when(convertor.toEntity(dto)).thenReturn(converted);
+        doReturn(true).when(progressService).updateById(any(UserChapterProgress.class));
+
+        Boolean result = progressService.update(dto);
+
+        assertThat(result).isTrue();
+        verify(progressService).updateById(argThat(entity ->
+                entity.getStatus() == null));
+    }
+
+    @Test
+    @DisplayName("update progress null skips completion check")
+    void updateNullProgressSkipsCompletion() {
+        UserChapterProgressRequest dto = UserChapterProgressRequest.builder()
+                .id(PROGRESS_ID)
+                .build();
+        UserChapterProgress existing = UserChapterProgress.builder()
+                .id(PROGRESS_ID).progress(50).status("in_progress").build();
+        doReturn(existing).when(progressService).getById(PROGRESS_ID);
+
+        UserChapterProgress converted = UserChapterProgress.builder()
+                .id(PROGRESS_ID).build();
+        when(convertor.toEntity(dto)).thenReturn(converted);
+        doReturn(true).when(progressService).updateById(any(UserChapterProgress.class));
+
+        Boolean result = progressService.update(dto);
+
+        assertThat(result).isTrue();
+        verify(progressService).updateById(argThat(entity ->
+                entity.getStatus() == null));
+    }
+
+    @Test
+    @DisplayName("update progress 100 but already completed does not re-set")
+    void updateAlreadyCompletedDoesNotReSet() {
+        UserChapterProgressRequest dto = UserChapterProgressRequest.builder()
+                .id(PROGRESS_ID)
+                .progress(100)
+                .build();
+        UserChapterProgress existing = UserChapterProgress.builder()
+                .id(PROGRESS_ID).progress(100).completedAt(LocalDateTime.now()).build();
+        doReturn(existing).when(progressService).getById(PROGRESS_ID);
+
+        UserChapterProgress converted = UserChapterProgress.builder()
+                .id(PROGRESS_ID).progress(100).build();
+        when(convertor.toEntity(dto)).thenReturn(converted);
+        doReturn(true).when(progressService).updateById(any(UserChapterProgress.class));
+
+        Boolean result = progressService.update(dto);
+
+        assertThat(result).isTrue();
+        // Should NOT set status to "completed" because existing.completedAt is not null
+        verify(progressService).updateById(argThat(entity ->
+                entity.getStatus() == null));
+    }
+
+    @Test
+    @DisplayName("update 更新失败抛出异常")
+    void updateFailed() {
+        UserChapterProgressRequest dto = UserChapterProgressRequest.builder()
+                .id(PROGRESS_ID).progress(80).build();
+        doReturn(UserChapterProgress.builder().id(PROGRESS_ID).build())
+                .when(progressService).getById(PROGRESS_ID);
+        when(convertor.toEntity(dto))
+                .thenReturn(UserChapterProgress.builder().id(PROGRESS_ID).progress(80).build());
+        doReturn(false).when(progressService).updateById(any(UserChapterProgress.class));
+
+        assertThatThrownBy(() -> progressService.update(dto))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("更新进度记录失败");
     }
 }

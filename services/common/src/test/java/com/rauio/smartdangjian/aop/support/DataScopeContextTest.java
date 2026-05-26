@@ -104,6 +104,23 @@ class DataScopeContextTest {
         assertThat(context.getCurrentUser()).isEqualTo(currentUser);
     }
 
+    @Test
+    @DisplayName("resolve 表达式有效但解析失败时抛出 BusinessException")
+    void resolveEvaluationFailureThrows() throws Exception {
+        Method method = TestTarget.class.getMethod("method", String.class);
+        MethodSignature signature = mock(MethodSignature.class);
+        when(signature.getMethod()).thenReturn(method);
+        when(joinPoint.getSignature()).thenReturn(signature);
+
+        DataScopeContext context = new DataScopeContext(joinPoint, access, currentUser);
+
+        // #id 参数存在但 .nonexistent 属性不存在 → 解析异常
+        assertThatThrownBy(() -> context.resolve("#id.nonexistent", String.class))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(ErrorConstants.ARGS_ERROR);
+    }
+
     static class TestTarget {
         public void method(String id) {}
     }

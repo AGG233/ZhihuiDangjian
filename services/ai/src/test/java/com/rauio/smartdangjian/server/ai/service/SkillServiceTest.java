@@ -157,7 +157,37 @@ class SkillServiceTest {
     }
 
     @Test
-    @DisplayName("listEnabledSkills 返回启用的技能列表")
+    @DisplayName("update only updates non-null fields without name")
+    void updateOnlyNonNullFieldsWithoutName() {
+        AiSkill existing = AiSkill.builder()
+                .id("1")
+                .agentType("CHAT")
+                .name("保留名称")
+                .description("保留描述")
+                .content("保留内容")
+                .enabled(false)
+                .sort(0)
+                .build();
+
+        doReturn(existing).when(skillService).getById("skill-1");
+        doReturn(true).when(skillService).updateById(any(AiSkill.class));
+
+        AiSkillUpdateRequest request = new AiSkillUpdateRequest();
+        request.setContent("仅更新内容");
+        request.setEnabled(true);
+
+        AiSkill result = skillService.update("skill-1", request);
+
+        assertThat(result.getName()).isEqualTo("保留名称");
+        assertThat(result.getDescription()).isEqualTo("保留描述");
+        assertThat(result.getContent()).isEqualTo("仅更新内容");
+        assertThat(result.getEnabled()).isTrue();
+        assertThat(result.getSort()).isZero();
+        verify(skillService).updateById(any(AiSkill.class));
+    }
+
+    @Test
+    @DisplayName("listEnabledSkills returns enabled skills list")
     void listEnabledSkills() {
         AiSkill skill1 = AiSkill.builder().id("1").name("s1").enabled(true).build();
         AiSkill skill2 = AiSkill.builder().id("1").name("s2").enabled(true).build();

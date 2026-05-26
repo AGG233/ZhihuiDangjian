@@ -117,6 +117,62 @@ class ResourceAccessAspectTest {
                 .hasMessageContaining("无法解析资源归属");
     }
 
+    @Test
+    @DisplayName("管理员访问任何资源直接放行")
+    void managerAccessBypassesPermissionCheck() throws Throwable {
+        var session = mock(cn.dev33.satoken.session.SaSession.class);
+        CurrentUserPrincipal principal = new CurrentUserPrincipal() {
+            @Override
+            public Long getId() {
+                return 1L;
+            }
+
+            @Override
+            public UserType getUserType() {
+                return UserType.MANAGER;
+            }
+
+            @Override
+            public String getUniversityId() {
+                return "uni-001";
+            }
+        };
+        when(session.get("user")).thenReturn(principal);
+        stpUtilMock.when(StpUtil::getSession).thenReturn(session);
+        stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
+        stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("1");
+
+        ProceedingJoinPoint joinPoint = joinPoint("byUserId", new Object[] {"999"});
+        when(joinPoint.proceed()).thenReturn("manager-access");
+
+        Object result = aspect.checkResourceAccess(joinPoint);
+
+        assertThat(result).isEqualTo("manager-access");
+        verify(joinPoint).proceed();
+    }
+
+    @Test
+    @DisplayName("SpEL 解析结果为数值时转换为字符串")
+    void numericSpelResultReturnsString() throws Throwable {
+        setSecurityContext(1L, UserType.STUDENT);
+        ProceedingJoinPoint joinPoint = joinPoint("byNumericId", new Object[] {1L});
+        when(joinPoint.proceed()).thenReturn("ok");
+
+        assertThatCode(() -> aspect.checkResourceAccess(joinPoint)).doesNotThrowAnyException();
+        verify(joinPoint).proceed();
+    }
+
+    @Test
+    @DisplayName("SpEL 属性访问失败时返回业务错误")
+    void spelEvaluationExceptionReturnsNullTargetId() {
+        setSecurityContext(1L, UserType.STUDENT);
+        ProceedingJoinPoint joinPoint = joinPoint("byNonExistentField", new Object[] {new TestDto("1")});
+
+        assertThatThrownBy(() -> aspect.checkResourceAccess(joinPoint))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("资源ID不能为空");
+    }
+
     @ResourceAccess(id = "#userId")
     void byUserId(String userId) {}
 
@@ -125,6 +181,12 @@ class ResourceAccessAspectTest {
 
     @ResourceAccess(id = "#resourceId", type = "RESOURCE_META")
     void byResourceMeta(String resourceId) {}
+
+    @ResourceAccess(id = "#id")
+    void byNumericId(Long id) {}
+
+    @ResourceAccess(id = "#dto.nonExistentField")
+    void byNonExistentField(TestDto dto) {}
 
     private ProceedingJoinPoint joinPoint(String methodName, Object[] args) {
         Method method = findMethod(methodName);
@@ -176,4 +238,29 @@ class ResourceAccessAspectTest {
     }
 
     private record TestDto(String userId) {}
+
+    @ResourceAccess(id = "#id")
+    void byLongId(Long id) {}
+
+    @Test
+    @DisplayName("SpEL 表达式解析为 Number 类型时转换为字符串")
+    void spelResultIsNumber() throws Throwable {
+        setSecurityContext(1L, UserType.STUDENT);
+        ProceedingJoinPoint joinPoint = joinPoint("byLongId", new Object[] {1L});
+        when(joinPoint.proceed()).thenReturn("ok");
+
+        assertThatCode(() -> aspect.checkResourceAccess(joinPoint)).doesNotThrowAnyException();
+        verify(joinPoint).proceed();
+    }
+
+    @Test
+    @DisplayName("SpEL 解析异常时在 catch 块中返回 null 并抛出业务异常")
+    void spelCatchBlockReturnsNull() {
+        setSecurityContext(1L, UserType.STUDENT);
+        ProceedingJoinPoint joinPoint = joinPoint("byNonExistentField", new Object[] {"arg"});
+
+        assertThatThrownBy(() -> aspect.checkResourceAccess(joinPoint))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("资源ID不能为空");
+    }
 }

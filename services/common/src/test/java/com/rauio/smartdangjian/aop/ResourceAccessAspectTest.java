@@ -134,7 +134,45 @@ class ResourceAccessAspectTest {
     }
 
     @Test
-    @DisplayName("自定义资源类型通过 resolver 解析归属并放行")
+    @DisplayName("resource type USER matches -> proceeds")
+    void userResourceTypeMatchProceeds() throws Throwable {
+        Method method = TestTarget.class.getMethod("methodWithUserResourceType", String.class);
+        when(signature.getMethod()).thenReturn(method);
+        when(signature.getParameterNames()).thenReturn(new String[] {"userId"});
+        when(joinPoint.getSignature()).thenReturn(signature);
+        when(joinPoint.getArgs()).thenReturn(new Object[] {"current-user"});
+        when(joinPoint.proceed()).thenReturn("proceed-result");
+
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("current-user");
+        securityUtilsMock.when(SecurityUtils::getCurrentUserType).thenReturn(UserType.STUDENT);
+
+        ResourceAccessAspect aspect = new ResourceAccessAspect(List.of());
+        Object result = aspect.checkResourceAccess(joinPoint);
+
+        assertThat(result).isEqualTo("proceed-result");
+    }
+
+    @Test
+    @DisplayName("resource type USER mismatch -> throws")
+    void userResourceTypeMismatchThrows() throws Throwable {
+        Method method = TestTarget.class.getMethod("methodWithUserResourceType", String.class);
+        when(signature.getMethod()).thenReturn(method);
+        when(signature.getParameterNames()).thenReturn(new String[] {"userId"});
+        when(joinPoint.getSignature()).thenReturn(signature);
+        when(joinPoint.getArgs()).thenReturn(new Object[] {"other-user"});
+
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("current-user");
+        securityUtilsMock.when(SecurityUtils::getCurrentUserType).thenReturn(UserType.STUDENT);
+
+        ResourceAccessAspect aspect = new ResourceAccessAspect(List.of());
+        assertThatThrownBy(() -> aspect.checkResourceAccess(joinPoint))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(ErrorConstants.RESOURCE_NOT_AUTHORIZED);
+    }
+
+    @Test
+    @DisplayName("custom resource type match proceeds")
     void customResourceTypeMatchProceeds() throws Throwable {
         Method method = TestTarget.class.getMethod("methodWithCourseParam", String.class);
         when(signature.getMethod()).thenReturn(method);
@@ -174,6 +212,95 @@ class ResourceAccessAspectTest {
                 .isEqualTo(ErrorConstants.RESOURCE_NOT_AUTHORIZED);
     }
 
+    @Test
+    @DisplayName("自定义资源类型 resolver 返回空归属时抛出 BusinessException(RESOURCE_NOT_AUTHORIZED)")
+    void customResourceTypeEmptyOwnerThrows() throws Throwable {
+        Method method = TestTarget.class.getMethod("methodWithCourseParam", String.class);
+        when(signature.getMethod()).thenReturn(method);
+        when(signature.getParameterNames()).thenReturn(new String[] {"courseId"});
+        when(joinPoint.getSignature()).thenReturn(signature);
+        when(joinPoint.getArgs()).thenReturn(new Object[] {"course-1"});
+
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("current-user");
+        securityUtilsMock.when(SecurityUtils::getCurrentUserType).thenReturn(UserType.STUDENT);
+        when(resolver.supports("COURSE")).thenReturn(true);
+        when(resolver.findResourceOwner("course-1")).thenReturn(null);
+
+        ResourceAccessAspect aspect = new ResourceAccessAspect(List.of(resolver));
+        assertThatThrownBy(() -> aspect.checkResourceAccess(joinPoint))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(ErrorConstants.RESOURCE_NOT_AUTHORIZED);
+    }
+
+    @Test
+    @DisplayName("构造参数为 null 时使用空列表")
+    void constructorWithNullResolversUsesEmptyList() throws Throwable {
+        ResourceAccessAspect aspect = new ResourceAccessAspect(null);
+
+        assertThat(aspect).isNotNull();
+    }
+
+    @Test
+    @DisplayName("自定义资源类型 resolver 返回空白归属时抛出 BusinessException(RESOURCE_NOT_AUTHORIZED)")
+    void customResourceTypeBlankOwnerThrows() throws Throwable {
+        Method method = TestTarget.class.getMethod("methodWithCourseParam", String.class);
+        when(signature.getMethod()).thenReturn(method);
+        when(signature.getParameterNames()).thenReturn(new String[] {"courseId"});
+        when(joinPoint.getSignature()).thenReturn(signature);
+        when(joinPoint.getArgs()).thenReturn(new Object[] {"course-1"});
+
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("current-user");
+        securityUtilsMock.when(SecurityUtils::getCurrentUserType).thenReturn(UserType.STUDENT);
+        when(resolver.supports("COURSE")).thenReturn(true);
+        when(resolver.findResourceOwner("course-1")).thenReturn("");
+
+        ResourceAccessAspect aspect = new ResourceAccessAspect(List.of(resolver));
+        assertThatThrownBy(() -> aspect.checkResourceAccess(joinPoint))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(ErrorConstants.RESOURCE_NOT_AUTHORIZED);
+    }
+
+    @Test
+    @DisplayName("资源ID为数字类型时转换为字符串并比较")
+    void numericResourceIdConvertsToString() throws Throwable {
+        Method method = TestTarget.class.getMethod("methodWithLongId", Long.class);
+        when(signature.getMethod()).thenReturn(method);
+        when(signature.getParameterNames()).thenReturn(new String[] {"id"});
+        when(joinPoint.getSignature()).thenReturn(signature);
+        when(joinPoint.getArgs()).thenReturn(new Object[] {123L});
+
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("current-user");
+        securityUtilsMock.when(SecurityUtils::getCurrentUserType).thenReturn(UserType.STUDENT);
+
+        ResourceAccessAspect aspect = new ResourceAccessAspect(List.of());
+        assertThatThrownBy(() -> aspect.checkResourceAccess(joinPoint))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(ErrorConstants.RESOURCE_NOT_AUTHORIZED);
+    }
+
+    @Test
+    @DisplayName("SpEL 表达式引用不存在的参数时进入 catch 分支返回 null")
+    void spelEvaluationFailureReturnsNull() throws Throwable {
+        Method method = TestTarget.class.getMethod("methodWithNonExistentVar", String.class);
+        when(signature.getMethod()).thenReturn(method);
+        when(signature.getParameterNames()).thenReturn(new String[] {"userId"});
+        when(joinPoint.getSignature()).thenReturn(signature);
+        when(joinPoint.getArgs()).thenReturn(new Object[] {"user-1"});
+
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("current-user");
+        securityUtilsMock.when(SecurityUtils::getCurrentUserType).thenReturn(UserType.STUDENT);
+
+        ResourceAccessAspect aspect = new ResourceAccessAspect(List.of());
+        // expression #nonExistentVar has no matching parameter → evaluation fails → returns null → ARGS_ERROR
+        assertThatThrownBy(() -> aspect.checkResourceAccess(joinPoint))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(ErrorConstants.ARGS_ERROR);
+    }
+
     static class TestTarget {
         @ResourceAccess(id = "")
         public void methodWithId() {}
@@ -186,5 +313,14 @@ class ResourceAccessAspectTest {
 
         @ResourceAccess(id = "#courseId", type = "COURSE")
         public void methodWithCourseParam(String courseId) {}
+
+        @ResourceAccess(id = "#userId", type = "USER")
+        public void methodWithUserResourceType(String userId) {}
+
+        @ResourceAccess(id = "#id")
+        public void methodWithLongId(Long id) {}
+
+        @ResourceAccess(id = "#nonExistentVar")
+        public void methodWithNonExistentVar(String userId) {}
     }
 }

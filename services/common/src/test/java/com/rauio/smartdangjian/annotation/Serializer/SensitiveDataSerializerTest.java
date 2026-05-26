@@ -31,6 +31,40 @@ class SensitiveDataSerializerTest {
     private final SensitiveDataSerializer serializer = new SensitiveDataSerializer();
 
     @Test
+    @DisplayName("no-arg constructor creates valid instance")
+    void noArgConstructorCreatesInstance() {
+        SensitiveDataSerializer s = new SensitiveDataSerializer();
+        assertThat(s).isNotNull();
+    }
+
+    @Test
+    @DisplayName("desensitizePhone with null returns null via reflection")
+    void desensitizePhoneNullReturnsNull() throws Exception {
+        var method = SensitiveDataSerializer.class.getDeclaredMethod("desensitizePhone", String.class);
+        method.setAccessible(true);
+        String result = (String) method.invoke(serializer, new Object[] {null});
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("desensitizeIdCard with null returns null via reflection")
+    void desensitizeIdCardNullReturnsNull() throws Exception {
+        var method = SensitiveDataSerializer.class.getDeclaredMethod("desensitizeIdCard", String.class);
+        method.setAccessible(true);
+        String result = (String) method.invoke(serializer, new Object[] {null});
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("desensitizeBankCard with null returns null via reflection")
+    void desensitizeBankCardNullReturnsNull() throws Exception {
+        var method = SensitiveDataSerializer.class.getDeclaredMethod("desensitizeBankCard", String.class);
+        method.setAccessible(true);
+        String result = (String) method.invoke(serializer, new Object[] {null});
+        assertThat(result).isNull();
+    }
+
+    @Test
     @DisplayName("value 为 null 时写入 null")
     void serializeNullWritesNull() throws IOException {
         SensitiveDataSerializer phoneSerializer = new SensitiveDataSerializer(Sensitive.SensitiveType.PHONE);
@@ -161,5 +195,104 @@ class SensitiveDataSerializerTest {
         serializer.createContextual(provider, property);
 
         verify(provider).findValueSerializer(property.getType(), property);
+    }
+
+    @Test
+    @DisplayName("PHONE 类型脱敏：长度为 null 时不脱敏")
+    void serializeNullPhone() throws IOException {
+        SensitiveDataSerializer serializer = new SensitiveDataSerializer(Sensitive.SensitiveType.PHONE);
+        serializer.serialize(null, gen, provider);
+
+        verify(gen).writeNull();
+    }
+
+    @Test
+    @DisplayName("ID_CARD 长度为 null 时不脱敏")
+    void serializeNullIdCard() throws IOException {
+        SensitiveDataSerializer idCardSerializer = new SensitiveDataSerializer(Sensitive.SensitiveType.ID_CARD);
+        idCardSerializer.serialize(null, gen, provider);
+
+        verify(gen).writeNull();
+    }
+
+    @Test
+    @DisplayName("BANK_CARD 脱敏：正确的 card number")
+    void serializeBankCardCorrect() throws IOException {
+        SensitiveDataSerializer serializer = new SensitiveDataSerializer(Sensitive.SensitiveType.BANK_CARD);
+        serializer.serialize("6222021234567890", gen, provider);
+
+        verify(gen).writeString("622202******7890");
+    }
+
+    @Test
+    @DisplayName("BANK_CARD 长度为 null 时不脱敏")
+    void serializeNullBankCard() throws IOException {
+        SensitiveDataSerializer bankCardSerializer = new SensitiveDataSerializer(Sensitive.SensitiveType.BANK_CARD);
+        bankCardSerializer.serialize(null, gen, provider);
+
+        verify(gen).writeNull();
+    }
+
+    @Test
+    @DisplayName("EMAIL 长度为 null 时不脱敏")
+    void serializeNullEmail() throws IOException {
+        SensitiveDataSerializer emailSerializer = new SensitiveDataSerializer(Sensitive.SensitiveType.EMAIL);
+        emailSerializer.serialize(null, gen, provider);
+
+        verify(gen).writeNull();
+    }
+
+    @Test
+    @DisplayName("PHONE 类型脱敏：电话号码为 null 时不脱敏")
+    void serializePhoneNullValue() throws IOException {
+        SensitiveDataSerializer phoneSerializer = new SensitiveDataSerializer(Sensitive.SensitiveType.PHONE);
+        phoneSerializer.serialize(null, gen, provider);
+
+        verify(gen).writeNull();
+    }
+
+    @Test
+    @DisplayName("PHONE 长度大于 11 位时不脱敏")
+    void serializeLongPhone() throws IOException {
+        SensitiveDataSerializer phoneSerializer = new SensitiveDataSerializer(Sensitive.SensitiveType.PHONE);
+        phoneSerializer.serialize("123456789012", gen, provider);
+
+        verify(gen).writeString("123456789012");
+    }
+
+    @Test
+    @DisplayName("EMAIL 类型脱敏：用户名为单字符时保留该字符")
+    void serializeEmailOneCharUsername() throws IOException {
+        SensitiveDataSerializer emailSerializer = new SensitiveDataSerializer(Sensitive.SensitiveType.EMAIL);
+        emailSerializer.serialize("a@example.com", gen, provider);
+
+        verify(gen).writeString("a*@example.com");
+    }
+
+    @Test
+    @DisplayName("PHONE 长度不等于11位时原样返回")
+    void serializePhoneLengthNotEqual11() throws IOException {
+        SensitiveDataSerializer phoneSerializer = new SensitiveDataSerializer(Sensitive.SensitiveType.PHONE);
+        phoneSerializer.serialize("1234", gen, provider);
+
+        verify(gen).writeString("1234");
+    }
+
+    @Test
+    @DisplayName("EMAIL 用户名长度为2时脱敏")
+    void serializeEmailUsernameLength2() throws IOException {
+        SensitiveDataSerializer emailSerializer = new SensitiveDataSerializer(Sensitive.SensitiveType.EMAIL);
+        emailSerializer.serialize("xy@test.com", gen, provider);
+
+        verify(gen).writeString("x*@test.com");
+    }
+
+    @Test
+    @DisplayName("EMAIL 用户名长度为3时脱敏")
+    void serializeEmailUsernameLength3() throws IOException {
+        SensitiveDataSerializer emailSerializer = new SensitiveDataSerializer(Sensitive.SensitiveType.EMAIL);
+        emailSerializer.serialize("abc@test.com", gen, provider);
+
+        verify(gen).writeString("ab*@test.com");
     }
 }

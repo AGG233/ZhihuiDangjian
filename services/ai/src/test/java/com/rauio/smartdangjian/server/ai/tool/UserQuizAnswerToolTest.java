@@ -67,7 +67,33 @@ class UserQuizAnswerToolTest {
     }
 
     @Test
-    @DisplayName("getQuizAnswersByQuizId 返回指定测验的答题记录")
+    @DisplayName("getRecentQuizAnswers with limit=0 defaults to 10")
+    void getRecentQuizAnswersZeroLimit() {
+        ToolContext toolContext = mock(ToolContext.class);
+        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
+
+        when(userQuizAnswerService.getByUserId(1L)).thenReturn(List.of());
+
+        List<UserQuizAnswer> result = userQuizAnswerTool.getRecentQuizAnswers(0, toolContext);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getRecentQuizAnswers with negative limit defaults to 10")
+    void getRecentQuizAnswersNegativeLimit() {
+        ToolContext toolContext = mock(ToolContext.class);
+        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
+
+        when(userQuizAnswerService.getByUserId(1L)).thenReturn(List.of());
+
+        List<UserQuizAnswer> result = userQuizAnswerTool.getRecentQuizAnswers(-5, toolContext);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getQuizAnswersByQuizId returns answers for quiz")
     void getQuizAnswersByQuizId() {
         ToolContext toolContext = mock(ToolContext.class);
         when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");

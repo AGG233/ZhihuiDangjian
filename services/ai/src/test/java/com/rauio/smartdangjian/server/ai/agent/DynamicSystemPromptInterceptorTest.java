@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.server.ai.agent;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -115,17 +116,41 @@ class DynamicSystemPromptInterceptorTest {
     }
 
     @Test
-    @DisplayName("interceptModel context 中无 userId 和 sessionId 时安全处理")
-    void interceptModelWithNullContextValues() {
-        when(request.getContext()).thenReturn(Map.of());
-        when(request.getSystemMessage()).thenReturn(null);
-        when(promptService.buildSystemPrompt("STUDY_ASSISTANT")).thenReturn("你是AI助手");
-        when(aiMemoryService.buildLongTermMemory(null, null, 12)).thenReturn("");
+    @DisplayName("interceptModel existing system message with null text falls back to promptBuilder")
+    void interceptModelWithNullExistingSystemText() {
+        SystemMessage existingMsg = mock(SystemMessage.class);
+        when(existingMsg.getText()).thenReturn(null);
+        Map<String, Object> context = Map.of("userId", "user-1", "sessionId", "session-1");
+        when(request.getContext()).thenReturn(context);
+        when(request.getSystemMessage()).thenReturn(existingMsg);
+        when(promptService.buildSystemPrompt("STUDY_ASSISTANT")).thenReturn("动态提示词");
+        when(aiMemoryService.buildLongTermMemory("user-1", "session-1", 12)).thenReturn("记忆内容");
         when(handler.call(any())).thenReturn(response);
 
         interceptor.interceptModel(request, handler);
 
         verify(handler).call(requestCaptor.capture());
-        assertThat(requestCaptor.getValue().getSystemMessage().getText()).isEqualTo("你是AI助手");
+        String text = requestCaptor.getValue().getSystemMessage().getText();
+        assertThat(text).contains("动态提示词");
+        assertThat(text).contains("记忆内容");
+    }
+
+    @Test
+    @DisplayName("interceptModel existing system message with blank text falls back to promptBuilder")
+    void interceptModelWithBlankExistingSystemText() {
+        SystemMessage existingMsg = mock(SystemMessage.class);
+        when(existingMsg.getText()).thenReturn("  ");
+        Map<String, Object> context = Map.of("userId", "user-1", "sessionId", "session-1");
+        when(request.getContext()).thenReturn(context);
+        when(request.getSystemMessage()).thenReturn(existingMsg);
+        when(promptService.buildSystemPrompt("STUDY_ASSISTANT")).thenReturn("动态提示词");
+        when(aiMemoryService.buildLongTermMemory("user-1", "session-1", 12)).thenReturn("");
+        when(handler.call(any())).thenReturn(response);
+
+        interceptor.interceptModel(request, handler);
+
+        verify(handler).call(requestCaptor.capture());
+        String text = requestCaptor.getValue().getSystemMessage().getText();
+        assertThat(text).isEqualTo("动态提示词");
     }
 }

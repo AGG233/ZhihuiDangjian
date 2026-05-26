@@ -19,6 +19,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.rauio.smartdangjian.pojo.response.Result;
 
@@ -142,7 +143,33 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    @DisplayName("handleRuntimeExceptions 返回 500 和服务器错误信息")
+    @DisplayName("handleMethodArgumentTypeMismatchException requiredType null returns 400 and fallback message")
+    void handleMethodArgumentTypeMismatchExceptionNullRequiredType() {
+        MethodArgumentTypeMismatchException ex = mock(MethodArgumentTypeMismatchException.class);
+        when(ex.getName()).thenReturn("userId");
+        when(ex.getRequiredType()).thenReturn(null);
+
+        Result<?> result = handler.handleMethodArgumentTypeMismatchException(ex);
+
+        assertThat(result.getCode()).isEqualTo("400");
+        assertThat(result.getMessage()).isEqualTo("请求参数类型错误: userId 应为 合法值");
+    }
+
+    @Test
+    @DisplayName("handleMethodArgumentTypeMismatchException with requiredType returns type name")
+    void handleMethodArgumentTypeMismatchExceptionWithRequiredType() {
+        MethodArgumentTypeMismatchException ex = mock(MethodArgumentTypeMismatchException.class);
+        when(ex.getName()).thenReturn("sort");
+        when(ex.getRequiredType()).thenReturn((Class) Integer.class);
+
+        Result<?> result = handler.handleMethodArgumentTypeMismatchException(ex);
+
+        assertThat(result.getCode()).isEqualTo("400");
+        assertThat(result.getMessage()).isEqualTo("请求参数类型错误: sort 应为 Integer");
+    }
+
+    @Test
+    @DisplayName("handleRuntimeExceptions returns 500 and server error message")
     void handleRuntimeException() {
         RuntimeException ex = new RuntimeException("internal error");
 

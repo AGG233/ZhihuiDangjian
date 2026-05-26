@@ -29,6 +29,7 @@ import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
+import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
@@ -92,6 +93,54 @@ class AuthServiceTest {
     }
 
     @Test
+    @DisplayName("login app 平台使用较长超时时间")
+    void loginAppPlatformUsesLongTimeout() {
+        LoginRequest request = createLoginRequest();
+        request.setPlatform("app");
+        String rawPassword = request.getPassword();
+        User user = createUser(1L, "testuser");
+        user.setPassword(newEncodedPassword());
+        when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
+        when(userService.getByPassport("admin")).thenReturn(user);
+
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
+             MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.checkpw(rawPassword, user.getPassword())).thenReturn(true);
+            SaSession session = mock(SaSession.class);
+            stpUtilMock.when(StpUtil::getSession).thenReturn(session);
+            stpUtilMock.when(StpUtil::getTokenValue).thenReturn("sa-token-app");
+
+            LoginResponse result = authService.login(request);
+
+            assertThat(result.getAccessToken()).isEqualTo("sa-token-app");
+        }
+    }
+
+    @Test
+    @DisplayName("login null platform defaults to web")
+    void loginNullPlatformDefaultsToWeb() {
+        LoginRequest request = createLoginRequest();
+        request.setPlatform(null);
+        String rawPassword = request.getPassword();
+        User user = createUser(1L, "testuser");
+        user.setPassword(newEncodedPassword());
+        when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
+        when(userService.getByPassport("admin")).thenReturn(user);
+
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
+             MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.checkpw(rawPassword, user.getPassword())).thenReturn(true);
+            SaSession session = mock(SaSession.class);
+            stpUtilMock.when(StpUtil::getSession).thenReturn(session);
+            stpUtilMock.when(StpUtil::getTokenValue).thenReturn("sa-token-null-plat");
+
+            LoginResponse result = authService.login(request);
+
+            assertThat(result.getAccessToken()).isEqualTo("sa-token-null-plat");
+        }
+    }
+
+    @Test
     @DisplayName("login 密码错误时抛出 BusinessException(PASSWORD_ERROR)")
     void loginThrowsWhenPasswordMismatch() {
         LoginRequest request = createLoginRequest();
@@ -109,6 +158,49 @@ class AuthServiceTest {
                     .extracting("code")
                     .isEqualTo(AuthErrorConstants.PASSWORD_ERROR);
         }
+    }
+
+    @Test
+    @DisplayName("login 用户不存在时抛出 BusinessException(USER_NOT_FOUND)")
+    void loginThrowsWhenUserNotFound() {
+        LoginRequest request = createLoginRequest();
+        when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
+        when(userService.getByPassport("admin")).thenReturn(null);
+
+        assertThatThrownBy(() -> authService.login(request))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(AuthErrorConstants.USER_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("login 账号被封禁时抛出 BusinessException(UNAUTHORIZED)")
+    void loginThrowsWhenBanned() {
+        LoginRequest request = createLoginRequest();
+        User user = createUser(1L, "testuser");
+        user.setStatus(AccountStatus.BANNED);
+        when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
+        when(userService.getByPassport("admin")).thenReturn(user);
+
+        assertThatThrownBy(() -> authService.login(request))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(AuthErrorConstants.UNAUTHORIZED);
+    }
+
+    @Test
+    @DisplayName("login 账号未激活时抛出 BusinessException(UNAUTHORIZED)")
+    void loginThrowsWhenInactive() {
+        LoginRequest request = createLoginRequest();
+        User user = createUser(1L, "testuser");
+        user.setStatus(AccountStatus.INACTIVE);
+        when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
+        when(userService.getByPassport("admin")).thenReturn(user);
+
+        assertThatThrownBy(() -> authService.login(request))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(AuthErrorConstants.UNAUTHORIZED);
     }
 
     // ================================================================
@@ -388,5 +480,62 @@ class AuthServiceTest {
                 .phone("13800138000")
                 .userType(UserType.STUDENT)
                 .build();
+    }
+
+    @Test
+    @DisplayName("register email 为空字符串时跳过邮箱校验")
+    void registerSkipsEmailCheckWhenEmailIsBlank() {
+        RegisterRequest request = createRegisterRequest();
+        request.setEmail("");
+        when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
+        when(userMapper.exists(any())).thenReturn(false, false, false);
+        when(userMapper.insert(any(User.class))).thenReturn(1);
+
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.hashpw(anyString())).thenReturn(newEncodedPassword());
+
+            var result = authService.register(request);
+
+            assertThat(result).isNotNull();
+            assertThat(result.getCode()).isEqualTo("200");
+        }
+    }
+
+    @Test
+    @DisplayName("register partyMemberId is null skips party member id check")
+    void registerSkipsPartyMemberIdCheckWhenNull() {
+        RegisterRequest request = createRegisterRequest();
+        request.setPartyMemberId(null);
+        when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
+        when(userMapper.exists(any())).thenReturn(false, false, false);
+        when(userMapper.insert(any(User.class))).thenReturn(1);
+
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.hashpw(anyString())).thenReturn(newEncodedPassword());
+
+            var result = authService.register(request);
+
+            assertThat(result).isNotNull();
+            assertThat(result.getCode()).isEqualTo("200");
+        }
+    }
+
+    @Test
+    @DisplayName("register partyMemberId 为空字符串时跳过党员编号校验")
+    void registerSkipsPartyMemberIdCheckWhenBlank() {
+        RegisterRequest request = createRegisterRequest();
+        request.setPartyMemberId("");
+        when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
+        when(userMapper.exists(any())).thenReturn(false, false, false);
+        when(userMapper.insert(any(User.class))).thenReturn(1);
+
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.hashpw(anyString())).thenReturn(newEncodedPassword());
+
+            var result = authService.register(request);
+
+            assertThat(result).isNotNull();
+            assertThat(result.getCode()).isEqualTo("200");
+        }
     }
 }

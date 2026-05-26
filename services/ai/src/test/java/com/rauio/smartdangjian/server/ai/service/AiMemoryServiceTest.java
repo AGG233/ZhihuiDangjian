@@ -58,7 +58,7 @@ class AiMemoryServiceTest {
     }
 
     @Test
-    @DisplayName("saveConversation 用户 ID 为空时直接返回")
+    @DisplayName("saveConversation userId blank when sessionId non-null")
     void saveConversationBlankUserId() {
         aiMemoryService.saveConversation(null, "session-1", "CHAT", "你好", "回复");
 
@@ -66,15 +66,35 @@ class AiMemoryServiceTest {
     }
 
     @Test
-    @DisplayName("saveConversation 会话 ID 为空时直接返回")
-    void saveConversationBlankSessionId() {
-        aiMemoryService.saveConversation("1", "", "CHAT", "你好", "回复");
+    @DisplayName("saveConversation userId is blank string returns early")
+    void saveConversationEmptyUserIdString() {
+        aiMemoryService.saveConversation("", "session-1", "CHAT", "input", "output");
 
         verify(aiChatMessageService, never()).save(any());
     }
 
     @Test
-    @DisplayName("saveConversation AI 输出为空或空白时使用默认文本")
+    @DisplayName("saveConversation sessionId is null returns early")
+    void saveConversationNullSessionId() {
+        aiMemoryService.saveConversation("1", null, "CHAT", "input", "output");
+
+        verify(aiChatMessageService, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("buildLongTermMemory sessionId non-null but blank excludes nothing")
+    void buildLongTermMemoryBlankSessionId() {
+        AiChatMessage msg = AiChatMessage.builder()
+                .agentType("CHAT").senderType("user").content("content").build();
+        doReturn(List.of(msg)).when(aiChatMessageService).list(any(LambdaQueryWrapper.class));
+
+        String memory = aiMemoryService.buildLongTermMemory("user-1", "  ", 10);
+
+        assertThat(memory).isNotBlank();
+    }
+
+    @Test
+    @DisplayName("saveConversation AI output is blank string uses default text")
     void saveConversationBlankOutput() {
         doReturn(true).when(aiChatMessageService).save(any(AiChatMessage.class));
 
@@ -85,7 +105,38 @@ class AiMemoryServiceTest {
     }
 
     @Test
-    @DisplayName("buildLongTermMemory 构建长期记忆字符串")
+    @DisplayName("saveConversation AI output is null uses default text")
+    void saveConversationNullOutput() {
+        doReturn(true).when(aiChatMessageService).save(any(AiChatMessage.class));
+
+        aiMemoryService.saveConversation("1", "session-1", "CHAT", "你好", null);
+
+        verify(aiChatMessageService, times(2)).save(messageCaptor.capture());
+        assertThat(messageCaptor.getValue().getContent()).isEqualTo("[AI 未返回文本内容]");
+    }
+
+    @Test
+    @DisplayName("buildLongTermMemory sessionId is null does not exclude current session")
+    void buildLongTermMemoryNullSessionId() {
+        AiChatMessage msg = AiChatMessage.builder()
+                .agentType("CHAT").senderType("user").content("content").build();
+        doReturn(List.of(msg)).when(aiChatMessageService).list(any(LambdaQueryWrapper.class));
+
+        String memory = aiMemoryService.buildLongTermMemory("user-1", null, 10);
+
+        assertThat(memory).isNotBlank();
+    }
+
+    @Test
+    @DisplayName("saveConversation sessionId blank string returns early")
+    void saveConversationBlankSessionId() {
+        aiMemoryService.saveConversation("1", "", "CHAT", "你好", "回复");
+
+        verify(aiChatMessageService, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("buildLongTermMemory builds memory string with agent/sender info")
     void buildLongTermMemory() {
         AiChatMessage msg1 = AiChatMessage.builder()
                 .agentType("CHAT")
@@ -107,7 +158,7 @@ class AiMemoryServiceTest {
     }
 
     @Test
-    @DisplayName("buildLongTermMemory userId 为 null 时返回空字符串")
+    @DisplayName("buildLongTermMemory null userId returns empty")
     void buildLongTermMemoryNullUserId() {
         String memory = aiMemoryService.buildLongTermMemory(null, "session-1", 10);
 
@@ -116,7 +167,7 @@ class AiMemoryServiceTest {
     }
 
     @Test
-    @DisplayName("buildLongTermMemory userId 为空白时返回空字符串")
+    @DisplayName("buildLongTermMemory blank userId returns empty")
     void buildLongTermMemoryBlankUserId() {
         String memory = aiMemoryService.buildLongTermMemory("", "session-1", 10);
 
@@ -124,7 +175,7 @@ class AiMemoryServiceTest {
     }
 
     @Test
-    @DisplayName("buildLongTermMemory 无历史消息时返回空字符串")
+    @DisplayName("buildLongTermMemory no history returns empty")
     void buildLongTermMemoryNoHistory() {
         doReturn(List.of()).when(aiChatMessageService).list(any(LambdaQueryWrapper.class));
 
@@ -134,7 +185,7 @@ class AiMemoryServiceTest {
     }
 
     @Test
-    @DisplayName("listSessionMessages 按创建时间升序返回会话消息")
+    @DisplayName("listSessionMessages sorts by createdAt ascending")
     void listSessionMessages() {
         AiChatMessage msg1 = AiChatMessage.builder().content("msg1").build();
         AiChatMessage msg2 = AiChatMessage.builder().content("msg2").build();
