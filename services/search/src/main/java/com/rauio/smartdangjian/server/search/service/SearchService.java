@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.CourseConvertor;
@@ -90,7 +91,7 @@ public class SearchService {
                     records.stream().map(CourseResponse::getId).collect(Collectors.toSet());
 
             String userIdStr = userService.getCurrentUserId();
-            Long userId = Long.valueOf(userIdStr);
+            Long userId = IdUtil.parse(userIdStr);
             Page<Long> cfIds = recommendService.recommend(userId, 1, pageSize);
 
             Set<Long> idsToFetch = cfIds.getRecords().stream()

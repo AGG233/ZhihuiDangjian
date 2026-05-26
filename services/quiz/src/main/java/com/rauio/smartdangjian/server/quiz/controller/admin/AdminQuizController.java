@@ -8,6 +8,7 @@ import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
+import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
@@ -44,8 +45,8 @@ public class AdminQuizController {
             id = "#id",
             query = "'QUIZ'")
     public Result<Boolean> updateQuiz(
-            @Parameter(name = "id", description = "试题ID") @PathVariable Long id, @RequestBody @Valid Quiz quiz) {
-        quiz.setId(Long.valueOf(id));
+            @Parameter(name = "id", description = "试题ID") @PathVariable String id, @RequestBody @Valid Quiz quiz) {
+        quiz.setId(IdUtil.parse(id));
         return Result.ok(quizService.update(quiz));
     }
 
@@ -56,16 +57,16 @@ public class AdminQuizController {
             action = DataScopeAction.DELETE,
             id = "#id",
             query = "'QUIZ'")
-    public Result<Boolean> deleteQuiz(@Parameter(name = "id", description = "试题ID") @PathVariable Long id) {
-        return Result.ok(quizService.delete(Long.valueOf(id)));
+    public Result<Boolean> deleteQuiz(@Parameter(name = "id", description = "试题ID") @PathVariable String id) {
+        return Result.ok(quizService.delete(IdUtil.parse(id)));
     }
 
     @Operation(summary = "创建选项", description = "为指定试题创建一个选项")
     @PostMapping("/{id}/options")
     public Result<Boolean> createQuizOption(
-            @Parameter(name = "id", description = "试题ID") @PathVariable Long id,
+            @Parameter(name = "id", description = "试题ID") @PathVariable String id,
             @RequestBody @Valid QuizOption quizOption) {
-        return Result.ok(quizOptionService.create(Long.valueOf(id), quizOption));
+        return Result.ok(quizOptionService.create(IdUtil.parse(id), quizOption));
     }
 
     @Operation(summary = "更新选项", description = "根据选项ID更新选项信息")
@@ -76,9 +77,9 @@ public class AdminQuizController {
             id = "#optionId",
             query = "'OPTION'")
     public Result<Boolean> updateQuizOption(
-            @Parameter(name = "optionId", description = "选项ID") @PathVariable Long optionId,
+            @Parameter(name = "optionId", description = "选项ID") @PathVariable String optionId,
             @RequestBody @Valid QuizOption quizOption) {
-        return Result.ok(quizOptionService.update(Long.valueOf(optionId), quizOption));
+        return Result.ok(quizOptionService.update(IdUtil.parse(optionId), quizOption));
     }
 
     @Operation(summary = "删除选项", description = "根据选项ID删除选项")
@@ -89,7 +90,7 @@ public class AdminQuizController {
             id = "#optionId",
             query = "'OPTION'")
     public Result<Boolean> deleteQuizOption(
-            @Parameter(name = "optionId", description = "选项ID") @PathVariable Long optionId) {
-        return Result.ok(quizOptionService.delete(Long.valueOf(optionId)));
+            @Parameter(name = "optionId", description = "选项ID") @PathVariable String optionId) {
+        return Result.ok(quizOptionService.delete(IdUtil.parse(optionId)));
     }
 }

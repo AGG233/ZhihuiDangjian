@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
 import com.rauio.smartdangjian.server.ai.pojo.response.AiChatMessageResponse;
 
@@ -86,7 +87,7 @@ public class AiMemoryService {
             String content,
             Map<String, Object> metadata) {
         return AiChatMessage.builder()
-                .userId(Long.valueOf(userId))
+                .userId(IdUtil.parse(userId))
                 .sessionId(sessionId)
                 .agentType(agentType)
                 .senderType(senderType)

@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import cn.dev33.satoken.annotation.SaCheckRole;
+import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
@@ -56,7 +57,7 @@ public class SearchController {
             @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
             @Parameter(name = "pageSize", description = "每页条数") @RequestParam(defaultValue = "10") int pageSize) {
         String userIdStr = userProfileService.getCurrentUserProfile().getUserId();
-        Long userId = Long.valueOf(userIdStr);
+        Long userId = IdUtil.parse(userIdStr);
         return Result.ok(recommendService.recommend(userId, pageNum, pageSize));
     }
 

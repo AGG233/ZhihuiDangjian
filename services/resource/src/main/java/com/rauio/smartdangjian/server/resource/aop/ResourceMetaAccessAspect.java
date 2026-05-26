@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
+import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.aop.support.DataScopeContext;
 import com.rauio.smartdangjian.aop.support.DataScopeResolver;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
@@ -79,7 +80,7 @@ public class ResourceMetaAccessAspect implements DataScopeResolver {
     private ResourceMeta resolveMeta(DataScopeContext context) {
         if (StringUtils.isNotBlank(context.getAccess().id())) {
             String idStr = context.require(context.getAccess().id(), String.class, "资源ID不能为空");
-            return resourceMetaService.get(Long.valueOf(idStr));
+            return resourceMetaService.get(IdUtil.parse(idStr));
         }
         String hash = context.require(context.getAccess().query(), String.class, "资源hash不能为空");
         return resourceMetaService.getByHash(hash);

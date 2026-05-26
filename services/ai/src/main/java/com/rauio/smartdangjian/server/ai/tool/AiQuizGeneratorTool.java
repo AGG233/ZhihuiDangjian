@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
@@ -57,11 +58,11 @@ public class AiQuizGeneratorTool {
         String effectiveChapterId = chapterId;
 
         if (chapterId != null && !chapterId.isBlank()) {
-            ChapterResponse chapter = chapterService.get(Long.valueOf(chapterId));
+            ChapterResponse chapter = chapterService.get(IdUtil.parse(chapterId));
             if (chapter == null) {
                 throw new BusinessException(RESOURCE_NOT_EXISTS, "章节不存在");
             }
-            List<ContentBlockResponse> blocks = chapterContentBlockService.getByChapterId(Long.valueOf(chapterId));
+            List<ContentBlockResponse> blocks = chapterContentBlockService.getByChapterId(IdUtil.parse(chapterId));
             StringBuilder sb = new StringBuilder();
             sb.append("章节标题：").append(chapter.getTitle()).append("\n");
             if (chapter.getDescription() != null) {
@@ -116,7 +117,7 @@ public class AiQuizGeneratorTool {
         }
 
         Quiz quiz = Quiz.builder()
-                .chapterId(effectiveChapterId != null && !effectiveChapterId.isBlank() ? Long.valueOf(effectiveChapterId) : null)
+                .chapterId(effectiveChapterId != null && !effectiveChapterId.isBlank() ? IdUtil.parseNullable(effectiveChapterId) : null)
                 .question(question)
                 .questionType(effectiveQuestionType)
                 .score(5)

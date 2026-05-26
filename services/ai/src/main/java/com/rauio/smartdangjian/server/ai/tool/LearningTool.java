@@ -7,6 +7,7 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
 
+import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
@@ -32,7 +33,7 @@ public class LearningTool {
     public List<UserLearningRecord> getLearningRecordOfCourse(
             @ToolParam(description = "课程 ID") String courseId, ToolContext toolContext) {
         return userLearningRecordService.getByUserIdAndCourseId(
-                Long.valueOf(ToolContextUtil.getUserId(toolContext, userService)), Long.valueOf(courseId));
+                IdUtil.parseNullable(ToolContextUtil.getUserId(toolContext, userService)), IdUtil.parse(courseId));
     }
 
     @Tool(description = "获取用户某一课程的章节学习情况")
@@ -41,6 +42,6 @@ public class LearningTool {
             @ToolParam(description = "章节 ID") String chapterId,
             ToolContext toolContext) {
         return userLearningRecordService.getByUserIdAndCourseIdAndChapterId(
-                Long.valueOf(ToolContextUtil.getUserId(toolContext, userService)), Long.valueOf(courseId), Long.valueOf(chapterId));
+                IdUtil.parseNullable(ToolContextUtil.getUserId(toolContext, userService)), IdUtil.parse(courseId), IdUtil.parse(chapterId));
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
 
+import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
@@ -41,7 +42,7 @@ public class ContentReviewTool {
         if (course == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "课程不存在");
         }
-        List<ChapterResponse> chapters = chapterService.getByCourseId(Long.valueOf(courseId));
+        List<ChapterResponse> chapters = chapterService.getByCourseId(IdUtil.parse(courseId));
         List<Map<String, Object>> chapterData = chapters.stream()
                 .map(ch -> {
                     Map<String, Object> chMap = new HashMap<>();
@@ -49,7 +50,7 @@ public class ContentReviewTool {
                     chMap.put("title", ch.getTitle());
                     chMap.put("description", ch.getDescription());
                     chMap.put("orderIndex", ch.getOrderIndex());
-                    List<ContentBlockResponse> blocks = chapterContentBlockService.getByChapterId(Long.valueOf(ch.getId()));
+                    List<ContentBlockResponse> blocks = chapterContentBlockService.getByChapterId(ch.getId());
                     chMap.put("contentBlocks", blocks);
                     return chMap;
                 })
@@ -70,7 +71,7 @@ public class ContentReviewTool {
         if (quiz == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "题目不存在");
         }
-        List<QuizOption> options = quizOptionService.getByQuizId(Long.valueOf(quizId));
+        List<QuizOption> options = quizOptionService.getByQuizId(IdUtil.parse(quizId));
 
         Map<String, Object> result = new HashMap<>();
         result.put("id", quiz.getId());

@@ -177,9 +177,11 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
         List<Category> children = this.list(new LambdaQueryWrapper<Category>().eq(Category::getParentId, categoryId));
         if (children == null || children.isEmpty()) {
             return this.removeById(categoryId);
-        } else {
-            return deleteByIdWithChildren(categoryId);
         }
+        for (Category child : children) {
+            deleteByIdWithChildren(child.getId());
+        }
+        return this.removeById(categoryId);
     }
 
     /**
