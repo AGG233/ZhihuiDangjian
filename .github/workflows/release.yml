@@ -90,11 +90,45 @@ jobs:
           labels: ${{ steps.docker-meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
 
+  # ── Stage 2: Deploy to Server ────────────────────────────────────────
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+    needs: [ release ]
+    if: github.ref_type == 'tag'
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            docker pull ghcr.io/${{ github.repository_owner }}/zhihuidangjian:${{ needs.release.outputs.version }}
+            docker stop zhihuidangjian 2>/dev/null || true
+            docker rm zhihuidangjian 2>/dev/null || true
+            docker run -d --name zhihuidangjian \
+              --restart unless-stopped \
+              -p 9000:9000 \
+              -e SPRING_PROFILES_ACTIVE=prod \
+              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              -e DATABASE_USERNAME="${{ secrets.DATABASE_USERNAME }}" \
+              -e DATABASE_PASSWORD="${{ secrets.DATABASE_PASSWORD }}" \
+              -e REDIS_HOST="${{ secrets.REDIS_HOST }}" \
+              -e REDIS_PORT="${{ secrets.REDIS_PORT }}" \
+              -e REDIS_DATABASE="${{ secrets.REDIS_DATABASE }}" \
+              -e NEO4J_URI="${{ secrets.NEO4J_URI }}" \
+              -e NEO4J_USERNAME="${{ secrets.NEO4J_USERNAME }}" \
+              -e NEO4J_PASSWORD="${{ secrets.NEO4J_PASSWORD }}" \
+              -e AI_KEY="${{ secrets.AI_KEY }}" \
+              ghcr.io/${{ github.repository_owner }}/zhihuidangjian:${{ needs.release.outputs.version }}
+            docker image prune -f
+
   # ── Summary ──────────────────────────────────────────────────────────
   summary:
     name: Release Summary
     runs-on: ubuntu-latest
-    needs: [ release ]
+    needs: [ release, deploy ]
     if: always()
     steps:
       - name: Print release info
@@ -106,4 +140,5 @@ jobs:
           echo "| Version | \`${{ needs.release.outputs.version }}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Trigger | \`${{ github.event_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Commit | \`${{ github.sha }}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Pipeline | build → release |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Deploy | \`${{ needs.deploy.result }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Pipeline | build → release → deploy |" >> "$GITHUB_STEP_SUMMARY"
