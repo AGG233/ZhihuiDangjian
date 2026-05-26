@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -23,6 +24,9 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
+import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaCreateRequest;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
 @ExtendWith(MockitoExtension.class)
@@ -82,6 +86,264 @@ class ResourceMetaAccessAspectTest {
                 .hasMessageContaining("未绑定学校");
     }
 
+    // ==================== before - CREATE with body ====================
+
+    /** Inner class to support SpEL resolution in DataScopeContext.require() calls. */
+    static class TestHandler {
+        @SuppressWarnings("unused")
+        public void createWithBody(ResourceMetaCreateRequest body) {}
+
+        @SuppressWarnings("unused")
+        public void operateWithId(Long id) {}
+
+        @SuppressWarnings("unused")
+        public void operateWithHash(String hash) {}
+
+        @SuppressWarnings("unused")
+        public void deleteWithHashes(String[] hashes) {}
+    }
+
+    @Test
+    @DisplayName("before CREATE 学校管理员设置上传人ID")
+    void beforeCreateSchoolSetsUploaderId() throws Exception {
+        Method method = TestHandler.class.getMethod("createWithBody", ResourceMetaCreateRequest.class);
+        MethodSignature sig = mock(MethodSignature.class);
+        when(sig.getMethod()).thenReturn(method);
+        ProceedingJoinPoint jp = mock(ProceedingJoinPoint.class);
+        when(jp.getSignature()).thenReturn(sig);
+
+        ResourceMetaCreateRequest request = new ResourceMetaCreateRequest();
+        when(jp.getArgs()).thenReturn(new Object[] {request});
+
+        DataScopeAccess access = createAccess(DataScopeAction.CREATE, "", "#body", "");
+        User user = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        DataScopeContext ctx = new DataScopeContext(jp, access, user);
+
+        aspect.before(ctx);
+
+        assertThat(request.getUploaderId()).isEqualTo("1");
+    }
+
+    // ==================== before - READ ====================
+
+    @Test
+    @DisplayName("before READ 学校管理员通过 ID 访问不同校资源抛出异常")
+    void beforeSchoolReadWithIdNotAuthorized() throws Exception {
+        Method method = TestHandler.class.getMethod("operateWithId", Long.class);
+        MethodSignature sig = mock(MethodSignature.class);
+        when(sig.getMethod()).thenReturn(method);
+        ProceedingJoinPoint jp = mock(ProceedingJoinPoint.class);
+        when(jp.getSignature()).thenReturn(sig);
+        when(jp.getArgs()).thenReturn(new Object[] {1L});
+
+        DataScopeAccess access = createAccess(DataScopeAction.READ, "#id", "", "");
+        User user = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        DataScopeContext ctx = new DataScopeContext(jp, access, user);
+
+        ResourceMeta meta = ResourceMeta.builder().id(1L).uploaderId(2L).build();
+        when(resourceMetaService.get(1L)).thenReturn(meta);
+        // userMapper returns null for uploader -> belongsToCurrentSchool returns false
+
+        assertThatThrownBy(() -> aspect.before(ctx))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("无权管理本校外资源");
+    }
+
+    @Test
+    @DisplayName("before READ 学校管理员通过 hash 访问不同校资源抛出异常")
+    void beforeSchoolReadWithHashNotAuthorized() throws Exception {
+        Method method = TestHandler.class.getMethod("operateWithHash", String.class);
+        MethodSignature sig = mock(MethodSignature.class);
+        when(sig.getMethod()).thenReturn(method);
+        ProceedingJoinPoint jp = mock(ProceedingJoinPoint.class);
+        when(jp.getSignature()).thenReturn(sig);
+        when(jp.getArgs()).thenReturn(new Object[] {"some-hash"});
+
+        DataScopeAccess access = createAccess(DataScopeAction.READ, "", "", "#hash");
+        User user = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        DataScopeContext ctx = new DataScopeContext(jp, access, user);
+
+        when(resourceMetaService.getByHash("some-hash"))
+                .thenReturn(ResourceMeta.builder().id(1L).uploaderId(2L).build());
+
+        assertThatThrownBy(() -> aspect.before(ctx))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("无权管理本校外资源");
+    }
+
+    // ==================== before - UPDATE ====================
+
+    @Test
+    @DisplayName("before UPDATE 学校管理员更新不同校资源抛出异常")
+    void beforeSchoolUpdateNotAuthorized() throws Exception {
+        Method method = TestHandler.class.getMethod("operateWithId", Long.class);
+        MethodSignature sig = mock(MethodSignature.class);
+        when(sig.getMethod()).thenReturn(method);
+        ProceedingJoinPoint jp = mock(ProceedingJoinPoint.class);
+        when(jp.getSignature()).thenReturn(sig);
+        when(jp.getArgs()).thenReturn(new Object[] {1L});
+
+        DataScopeAccess access = createAccess(DataScopeAction.UPDATE, "#id", "", "");
+        User user = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        DataScopeContext ctx = new DataScopeContext(jp, access, user);
+
+        when(resourceMetaService.get(1L))
+                .thenReturn(ResourceMeta.builder().id(1L).uploaderId(2L).build());
+
+        assertThatThrownBy(() -> aspect.before(ctx))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("无权管理本校外资源");
+    }
+
+    // ==================== before - DELETE ====================
+
+    @Test
+    @DisplayName("before DELETE 学校管理员通过 ID 删除不同校资源抛出异常")
+    void beforeSchoolDeleteWithIdNotAuthorized() throws Exception {
+        Method method = TestHandler.class.getMethod("operateWithId", Long.class);
+        MethodSignature sig = mock(MethodSignature.class);
+        when(sig.getMethod()).thenReturn(method);
+        ProceedingJoinPoint jp = mock(ProceedingJoinPoint.class);
+        when(jp.getSignature()).thenReturn(sig);
+        when(jp.getArgs()).thenReturn(new Object[] {1L});
+
+        DataScopeAccess access = createAccess(DataScopeAction.DELETE, "#id", "", "");
+        User user = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        DataScopeContext ctx = new DataScopeContext(jp, access, user);
+
+        when(resourceMetaService.get(1L))
+                .thenReturn(ResourceMeta.builder().id(1L).uploaderId(2L).build());
+
+        assertThatThrownBy(() -> aspect.before(ctx))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("无权管理本校外资源");
+    }
+
+    @Test
+    @DisplayName("before DELETE 学校管理员通过 hash 字符串删除不同校资源抛出异常")
+    void beforeSchoolDeleteWithHashStringNotAuthorized() throws Exception {
+        Method method = TestHandler.class.getMethod("operateWithHash", String.class);
+        MethodSignature sig = mock(MethodSignature.class);
+        when(sig.getMethod()).thenReturn(method);
+        ProceedingJoinPoint jp = mock(ProceedingJoinPoint.class);
+        when(jp.getSignature()).thenReturn(sig);
+        when(jp.getArgs()).thenReturn(new Object[] {"some-hash"});
+
+        DataScopeAccess access = createAccess(DataScopeAction.DELETE, "", "", "#hash");
+        User user = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        DataScopeContext ctx = new DataScopeContext(jp, access, user);
+
+        when(resourceMetaService.getByHash("some-hash"))
+                .thenReturn(ResourceMeta.builder().id(1L).uploaderId(2L).build());
+
+        assertThatThrownBy(() -> aspect.before(ctx))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("无权管理本校外资源");
+    }
+
+    @Test
+    @DisplayName("before DELETE 学校管理员通过 hash 数组删除不同校资源抛出异常")
+    void beforeSchoolDeleteWithHashArrayNotAuthorized() throws Exception {
+        Method method = TestHandler.class.getMethod("deleteWithHashes", String[].class);
+        MethodSignature sig = mock(MethodSignature.class);
+        when(sig.getMethod()).thenReturn(method);
+        ProceedingJoinPoint jp = mock(ProceedingJoinPoint.class);
+        when(jp.getSignature()).thenReturn(sig);
+        when(jp.getArgs()).thenReturn(new Object[] {new String[] {"hash1", "hash2"}});
+
+        DataScopeAccess access = createAccess(DataScopeAction.DELETE, "", "", "#hashes");
+        User user = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        DataScopeContext ctx = new DataScopeContext(jp, access, user);
+
+        when(resourceMetaService.getByHash("hash1"))
+                .thenReturn(ResourceMeta.builder().id(1L).uploaderId(2L).build());
+
+        assertThatThrownBy(() -> aspect.before(ctx))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("无权管理本校外资源");
+    }
+
+    @Test
+    @DisplayName("before DELETE 缺少参数时抛出异常")
+    void beforeSchoolDeleteNoValidQueryThrows() throws Exception {
+        // No need to resolve SpEL since both id and query are blank
+        DataScopeAccess access = createAccess(DataScopeAction.DELETE, "", "", "");
+        User user = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        DataScopeContext ctx = new DataScopeContext(mock(ProceedingJoinPoint.class), access, user);
+
+        assertThatThrownBy(() -> aspect.before(ctx))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("资源删除参数不能为空");
+    }
+
+    // ==================== after ====================
+
+    @Test
+    @DisplayName("after SCHOOL SEARCH 过滤非本校资源")
+    void afterSchoolSearchFiltersBySchool() {
+        DataScopeContext context = mockContext(UserType.SCHOOL, 1L, "uni-1", DataScopeAction.SEARCH, "", "");
+        when(userMapper.selectById(1L)).thenReturn(User.builder().universityId("uni-1").build());
+        when(userMapper.selectById(2L)).thenReturn(User.builder().universityId("uni-2").build());
+
+        ResourceMeta own = ResourceMeta.builder().id(1L).uploaderId(1L).build();
+        ResourceMeta other = ResourceMeta.builder().id(2L).uploaderId(2L).build();
+
+        Result<List<ResourceMeta>> result = Result.ok(List.of(own, other));
+        @SuppressWarnings("unchecked")
+        Result<List<ResourceMeta>> output = (Result<List<ResourceMeta>>) aspect.after(context, result);
+
+        assertThat(output.getData()).hasSize(1);
+        assertThat(output.getData().get(0).getId()).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("after SCHOOL SEARCH 所有资源非本校时返回空列表")
+    void afterSchoolSearchAllFilteredOut() {
+        DataScopeContext context = mockContext(UserType.SCHOOL, 1L, "uni-1", DataScopeAction.SEARCH, "", "");
+        when(userMapper.selectById(1L)).thenReturn(User.builder().universityId("uni-2").build());
+
+        ResourceMeta other = ResourceMeta.builder().id(1L).uploaderId(1L).build();
+        Result<List<ResourceMeta>> result = Result.ok(List.of(other));
+
+        @SuppressWarnings("unchecked")
+        Result<List<ResourceMeta>> output = (Result<List<ResourceMeta>>) aspect.after(context, result);
+
+        assertThat(output.getData()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("after 非 SCHOOL 用户直接返回 result")
+    void afterNonSchoolReturnsResultUnchanged() {
+        DataScopeContext context = mockContext(UserType.MANAGER, DataScopeAction.SEARCH, "", "");
+        Object result = new Object();
+        assertThat(aspect.after(context, result)).isSameAs(result);
+    }
+
+    @Test
+    @DisplayName("after SCHOOL 非 SEARCH 操作直接返回 result")
+    void afterSchoolNonSearchReturnsResultUnchanged() {
+        DataScopeContext context = mockContext(UserType.SCHOOL, 1L, "uni-1", DataScopeAction.CREATE, "", "");
+        Object result = new Object();
+        assertThat(aspect.after(context, result)).isSameAs(result);
+    }
+
+    @Test
+    @DisplayName("after SCHOOL SEARCH 非 Result 包装直接返回")
+    void afterSchoolSearchNonResultReturnsUnchanged() {
+        DataScopeContext context = mockContext(UserType.SCHOOL, 1L, "uni-1", DataScopeAction.SEARCH, "", "");
+        Object result = new Object();
+        assertThat(aspect.after(context, result)).isSameAs(result);
+    }
+
+    @Test
+    @DisplayName("after SCHOOL SEARCH Result 数据非 List 直接返回")
+    void afterSchoolSearchNonListDataReturnsUnchanged() {
+        DataScopeContext context = mockContext(UserType.SCHOOL, 1L, "uni-1", DataScopeAction.SEARCH, "", "");
+        Result<String> result = Result.ok("singleValue");
+        Object output = aspect.after(context, result);
+        assertThat(output).isSameAs(result);
+    }
+
     // ==================== helpers ====================
 
     private DataScopeContext mockContext(UserType userType, DataScopeAction action, String id, String query) {
@@ -108,6 +370,10 @@ class ResourceMetaAccessAspectTest {
     }
 
     private DataScopeAccess createAccess(DataScopeAction action, String id, String query) {
+        return createAccess(action, id, "", query);
+    }
+
+    private DataScopeAccess createAccess(DataScopeAction action, String id, String body, String query) {
         return new DataScopeAccess() {
             @Override
             public String resource() {
@@ -126,7 +392,7 @@ class ResourceMetaAccessAspectTest {
 
             @Override
             public String body() {
-                return "";
+                return body;
             }
 
             @Override
