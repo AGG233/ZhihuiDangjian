@@ -8,6 +8,7 @@ import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
 import com.rauio.smartdangjian.server.search.service.RecommendService;
 import com.rauio.smartdangjian.server.user.service.UserService;
@@ -24,7 +25,7 @@ public class RecommendTool {
     @Tool(description = "为当前用户获取个性化推荐课程ID列表，基于协同过滤、知识图谱和用户画像综合推荐")
     public String getRecommendedCourses(
             @ToolParam(description = "返回推荐数量，默认10") Integer limit, ToolContext toolContext) {
-        Long userId = Long.valueOf(ToolContextUtil.getUserId(toolContext, userService));
+        Long userId = IdUtil.parseNullable(ToolContextUtil.getUserId(toolContext, userService));
         int size = limit != null && limit > 0 ? limit : 10;
         Page<Long> result = recommendService.recommend(userId, 1, size);
         if (result.getRecords().isEmpty()) {

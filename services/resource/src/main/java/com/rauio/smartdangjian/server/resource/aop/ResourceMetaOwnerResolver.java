@@ -3,6 +3,7 @@ package com.rauio.smartdangjian.server.resource.aop;
 import org.springframework.stereotype.Component;
 
 import com.rauio.smartdangjian.aop.resolver.ResourceOwnerResolver;
+import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
 
@@ -23,7 +24,7 @@ public class ResourceMetaOwnerResolver implements ResourceOwnerResolver {
 
     @Override
     public String findResourceOwner(Object resourceId) {
-        Long id = resourceId instanceof Long ? (Long) resourceId : Long.valueOf(String.valueOf(resourceId));
+        Long id = resourceId instanceof Long ? (Long) resourceId : IdUtil.parse(String.valueOf(resourceId));
         ResourceMeta meta = resourceMetaService.get(id);
         return String.valueOf(meta.getUploaderId());
     }

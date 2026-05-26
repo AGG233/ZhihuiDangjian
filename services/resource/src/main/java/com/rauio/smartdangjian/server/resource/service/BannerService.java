@@ -11,6 +11,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
@@ -86,7 +87,7 @@ public class BannerService {
     }
 
     public ResourceMeta create(String resourceId) {
-        ResourceMeta meta = resourceMetaService.get(Long.valueOf(resourceId));
+        ResourceMeta meta = resourceMetaService.get(IdUtil.parse(resourceId));
         appendBanner(meta.getHash());
         return meta;
     }
@@ -99,7 +100,7 @@ public class BannerService {
 
     public ResourceMeta update(int order, String resourceId) {
         validateOrder(order);
-        ResourceMeta meta = resourceMetaService.get(Long.valueOf(resourceId));
+        ResourceMeta meta = resourceMetaService.get(IdUtil.parse(resourceId));
         replaceBanner(order, meta.getHash());
         return meta;
     }

@@ -10,6 +10,7 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
 
+import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
@@ -27,7 +28,7 @@ public class QuizManageTool {
 
     @Tool(name = "getQuiz", description = "根据测验ID获取测验详情及其选项")
     public Quiz getQuiz(@ToolParam(description = "测验ID") String quizId) {
-        Quiz quiz = quizService.get(Long.valueOf(quizId));
+        Quiz quiz = quizService.get(IdUtil.parse(quizId));
         if (quiz == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "测验不存在");
         }
@@ -45,7 +46,7 @@ public class QuizManageTool {
             @ToolParam(description = "选项列表，每个选项包含 optionText / isCorrect / orderIndex")
                     List<Map<String, Object>> options) {
         Quiz quiz = Quiz.builder()
-                .chapterId(Long.valueOf(chapterId))
+                .chapterId(IdUtil.parse(chapterId))
                 .question(question)
                 .questionType(questionType)
                 .score(score)
@@ -89,7 +90,7 @@ public class QuizManageTool {
             @ToolParam(description = "难度，可为空") String difficulty,
             @ToolParam(description = "解析，可为空") String explanation,
             @ToolParam(description = "是否启用，可为空") Boolean isActive) {
-        Quiz existing = quizService.get(Long.valueOf(quizId));
+        Quiz existing = quizService.get(IdUtil.parse(quizId));
         if (existing == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "测验不存在");
         }
@@ -114,21 +115,21 @@ public class QuizManageTool {
 
     @Tool(name = "deleteQuiz", description = "删除指定测验及其选项")
     public Boolean deleteQuiz(@ToolParam(description = "测验ID") String quizId) {
-        Quiz existing = quizService.get(Long.valueOf(quizId));
+        Quiz existing = quizService.get(IdUtil.parse(quizId));
         if (existing == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "测验不存在");
         }
-        List<QuizOption> options = quizOptionService.getByQuizId(Long.valueOf(quizId));
+        List<QuizOption> options = quizOptionService.getByQuizId(IdUtil.parse(quizId));
         if (options != null) {
             for (QuizOption option : options) {
                 quizOptionService.delete(option.getId());
             }
         }
-        return Boolean.TRUE.equals(quizService.delete(Long.valueOf(quizId)));
+        return Boolean.TRUE.equals(quizService.delete(IdUtil.parse(quizId)));
     }
 
     @Tool(name = "searchQuizzesByChapter", description = "根据章节ID搜索该章节下的所有测验")
     public List<Quiz> searchQuizzesByChapter(@ToolParam(description = "章节ID") String chapterId) {
-        return quizService.getByChapterId(Long.valueOf(chapterId));
+        return quizService.getByChapterId(IdUtil.parse(chapterId));
     }
 }
