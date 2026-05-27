@@ -301,6 +301,55 @@ class ResourceAccessAspectTest {
                 .isEqualTo(ErrorConstants.ARGS_ERROR);
     }
 
+    @Test
+    @DisplayName("资源类型为空字符串时走 USER 路径直接返回 resourceId")
+    void blankResourceTypeReturnsResourceId() throws Throwable {
+        Method method = TestTarget.class.getMethod("methodWithBlankType", String.class);
+        when(signature.getMethod()).thenReturn(method);
+        when(signature.getParameterNames()).thenReturn(new String[] {"userId"});
+        when(joinPoint.getSignature()).thenReturn(signature);
+        when(joinPoint.getArgs()).thenReturn(new Object[] {"current-user"});
+        when(joinPoint.proceed()).thenReturn("proceed-result");
+
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("current-user");
+        securityUtilsMock.when(SecurityUtils::getCurrentUserType).thenReturn(UserType.STUDENT);
+
+        ResourceAccessAspect aspect = new ResourceAccessAspect(List.of());
+        Object result = aspect.checkResourceAccess(joinPoint);
+
+        assertThat(result).isEqualTo("proceed-result");
+    }
+
+    @Test
+    @DisplayName("资源类型为空字符串时 ID 不匹配则抛出 RESOURCE_NOT_AUTHORIZED")
+    void blankResourceTypeMismatchThrows() throws Throwable {
+        Method method = TestTarget.class.getMethod("methodWithBlankType", String.class);
+        when(signature.getMethod()).thenReturn(method);
+        when(signature.getParameterNames()).thenReturn(new String[] {"userId"});
+        when(joinPoint.getSignature()).thenReturn(signature);
+        when(joinPoint.getArgs()).thenReturn(new Object[] {"other-user"});
+
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("current-user");
+        securityUtilsMock.when(SecurityUtils::getCurrentUserType).thenReturn(UserType.STUDENT);
+
+        ResourceAccessAspect aspect = new ResourceAccessAspect(List.of());
+        assertThatThrownBy(() -> aspect.checkResourceAccess(joinPoint))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(ErrorConstants.RESOURCE_NOT_AUTHORIZED);
+    }
+
+    @Test
+    @DisplayName("resolveOwner resourceType为null时直接返回resourceId")
+    void resolveOwnerWithNullResourceType() throws Throwable {
+        ResourceAccessAspect aspect = new ResourceAccessAspect(List.of());
+        java.lang.reflect.Method resolveOwner =
+                ResourceAccessAspect.class.getDeclaredMethod("resolveOwner", String.class, String.class);
+        resolveOwner.setAccessible(true);
+        Object result = resolveOwner.invoke(aspect, (String) null, "owner-id");
+        assertThat(result).isEqualTo("owner-id");
+    }
+
     static class TestTarget {
         @ResourceAccess(id = "")
         public void methodWithId() {}
@@ -322,5 +371,8 @@ class ResourceAccessAspectTest {
 
         @ResourceAccess(id = "#nonExistentVar")
         public void methodWithNonExistentVar(String userId) {}
+
+        @ResourceAccess(id = "#userId", type = "")
+        public void methodWithBlankType(String userId) {}
     }
 }

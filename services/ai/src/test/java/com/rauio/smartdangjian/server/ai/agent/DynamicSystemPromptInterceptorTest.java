@@ -153,4 +153,36 @@ class DynamicSystemPromptInterceptorTest {
         String text = requestCaptor.getValue().getSystemMessage().getText();
         assertThat(text).isEqualTo("动态提示词");
     }
+
+    @Test
+    @DisplayName("interceptModel 上下文中无 userId 时会话ID为空时能正常处理")
+    void interceptModelWithoutUserIdInContext() {
+        Map<String, Object> context = Map.of("sessionId", "session-1");
+        when(request.getContext()).thenReturn(context);
+        when(request.getSystemMessage()).thenReturn(null);
+        when(promptService.buildSystemPrompt("STUDY_ASSISTANT")).thenReturn("你是AI助手");
+        when(aiMemoryService.buildLongTermMemory(null, "session-1", 12)).thenReturn("");
+        when(handler.call(any())).thenReturn(response);
+
+        interceptor.interceptModel(request, handler);
+
+        verify(handler).call(requestCaptor.capture());
+        assertThat(requestCaptor.getValue().getSystemMessage().getText()).isEqualTo("你是AI助手");
+    }
+
+    @Test
+    @DisplayName("interceptModel 上下文中无 sessionId 时 userId 为空时能正常处理")
+    void interceptModelWithoutSessionIdInContext() {
+        Map<String, Object> context = Map.of("userId", "user-1");
+        when(request.getContext()).thenReturn(context);
+        when(request.getSystemMessage()).thenReturn(null);
+        when(promptService.buildSystemPrompt("STUDY_ASSISTANT")).thenReturn("你是AI助手");
+        when(aiMemoryService.buildLongTermMemory("user-1", null, 12)).thenReturn("");
+        when(handler.call(any())).thenReturn(response);
+
+        interceptor.interceptModel(request, handler);
+
+        verify(handler).call(requestCaptor.capture());
+        assertThat(requestCaptor.getValue().getSystemMessage().getText()).isEqualTo("你是AI助手");
+    }
 }

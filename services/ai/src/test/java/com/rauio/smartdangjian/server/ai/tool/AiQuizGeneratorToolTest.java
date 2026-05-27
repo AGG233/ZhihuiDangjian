@@ -926,6 +926,77 @@ class AiQuizGeneratorToolTest {
     }
 
     @Test
+    @DisplayName("generateMiniQuiz 空白 chapterId 和有效 topic 时走 topic 路径")
+    void generateMiniQuizWithBlankChapterIdAndValidTopic() {
+        ChatModel chatModel = mock(ChatModel.class);
+        ChatResponse chatResponse = mock(ChatResponse.class);
+        Generation generation = mock(Generation.class);
+        AssistantMessage assistantMessage = new AssistantMessage(
+                """
+                {"question": "空白章节题", "explanation": "解析", "options": []}
+                """);
+
+        when(chatModelProvider.getObject()).thenReturn(chatModel);
+        when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
+        doReturn(generation).when(chatResponse).getResult();
+        doReturn(assistantMessage).when(generation).getOutput();
+        when(quizService.create(any(Quiz.class))).thenAnswer(inv -> {
+            Quiz q = inv.getArgument(0);
+            q.setId(1L);
+            return true;
+        });
+
+        Map<String, Object> result = aiQuizGeneratorTool.generateMiniQuiz("", "有效主题", "single_choice", "easy");
+
+        assertThat(result).containsEntry("question", "空白章节题");
+    }
+
+    @Test
+    @DisplayName("generateMiniQuiz 空白 topic 且无 chapterId 时抛出 BusinessException")
+    void generateMiniQuizWithBlankTopic() {
+        assertThatThrownBy(() -> aiQuizGeneratorTool.generateMiniQuiz(null, "", "single_choice", "easy"))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("必须提供章节ID或主题");
+    }
+
+    @Test
+    @DisplayName("generateMiniQuiz 含 null optionText 的选项被跳过")
+    void generateMiniQuizSkipsNullOptionText() {
+        ChatModel chatModel = mock(ChatModel.class);
+        ChatResponse chatResponse = mock(ChatResponse.class);
+        Generation generation = mock(Generation.class);
+        AssistantMessage assistantMessage = new AssistantMessage(
+                """
+                {
+                  "question": "跳过错题",
+                  "explanation": "解析",
+                  "options": [
+                    {"optionText": null, "isCorrect": true, "orderIndex": "A"},
+                    {"optionText": "有效选项", "isCorrect": false, "orderIndex": "B"}
+                  ]
+                }
+                """);
+
+        when(chatModelProvider.getObject()).thenReturn(chatModel);
+        when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse);
+        doReturn(generation).when(chatResponse).getResult();
+        doReturn(assistantMessage).when(generation).getOutput();
+        when(quizService.create(any(Quiz.class))).thenAnswer(inv -> {
+            Quiz q = inv.getArgument(0);
+            q.setId(1L);
+            return true;
+        });
+        when(quizOptionService.create(anyLong(), any(QuizOption.class))).thenReturn(true);
+
+        Map<String, Object> result = aiQuizGeneratorTool.generateMiniQuiz(null, "主题", "single_choice", "easy");
+
+        assertThat(result).containsEntry("question", "跳过错题");
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> options = (List<Map<String, Object>>) result.get("options");
+        assertThat(options).hasSize(1);
+    }
+
+    @Test
     @DisplayName("generateMiniQuiz options isCorrect true passed correctly")
     void generateMiniQuizOptionIsCorrectTrue() {
         ChatModel chatModel = mock(ChatModel.class);

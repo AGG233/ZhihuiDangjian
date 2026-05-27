@@ -242,4 +242,34 @@ class SearchServiceTest {
 
         assertThat(result.getRecords()).hasSize(1);
     }
+
+    @Test
+    @DisplayName("课程 ID 全为 null 时 getCategoryIdMap 处理空集合")
+    void searchCoursesWithNullCourseIdsHandlesEmptySet() {
+        Course course = Course.builder().id(null).title("无ID课程").build();
+        Page<Course> coursePage = new Page<>(1, 10, 1);
+        coursePage.setRecords(List.of(course));
+        doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+
+        CourseResponse response = CourseResponse.builder().title("无ID课程").build();
+        doReturn(List.of(response)).when(courseConvertor).toResponseList(any());
+
+
+        Page<CourseResponse> result = searchService.searchCourses("测试", null, null, 1, 10);
+
+        assertThat(result.getRecords()).hasSize(1);
+        assertThat(result.getRecords().get(0).getCategoryId()).isNull();
+    }
+
+    @Test
+    @DisplayName("返回null记录时toCourseResponseList处理为空列表")
+    void searchCoursesWithNullRecordsReturnsEmpty() {
+        Page<Course> coursePage = new Page<>(1, 10, 0);
+        coursePage.setRecords(null);
+        doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+
+        Page<CourseResponse> result = searchService.searchCourses("测试", null, null, 1, 10);
+
+        assertThat(result.getRecords()).isEmpty();
+    }
 }

@@ -236,6 +236,136 @@ class UserProfileServiceTest {
         verify(categoryCourseMapper, never()).selectList(any(LambdaQueryWrapper.class));
     }
 
+    @Test
+    @DisplayName("学习记录有null deviceType时被preferredDevice过滤掉")
+    void getProfileHandlesNullDeviceType() {
+        String userId = "user-1";
+
+        UserLearningRecord r1 = UserLearningRecord.builder()
+                .userId(1L).chapterId(1L).duration(100).deviceType("mobile").build();
+        UserLearningRecord r2 = UserLearningRecord.builder()
+                .userId(1L).chapterId(1L).duration(200).deviceType(null).build();
+        doReturn(List.of(r1, r2)).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+
+        UserProfileResponse profile = userProfileService.getProfile(userId);
+
+        assertThat(profile.getLearning().getPreferredDevice()).isEqualTo("mobile");
+        assertThat(profile.getLearning().getTotalDuration()).isEqualTo(300);
+    }
+
+    @Test
+    @DisplayName("进度<50的章节计入薄弱章节列表")
+    void getProfileWithWeakChapters() {
+        String userId = "user-1";
+
+        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+
+        UserChapterProgress weak = UserChapterProgress.builder()
+                .userId(1L).chapterId(10L).progress(30).status("in_progress").build();
+        UserChapterProgress strong = UserChapterProgress.builder()
+                .userId(1L).chapterId(20L).progress(80).status("in_progress").build();
+        doReturn(List.of(weak, strong)).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
+
+        UserProfileResponse profile = userProfileService.getProfile(userId);
+
+        assertThat(profile.getKnowledge().getWeakChapterIds()).containsExactly(10L);
+    }
+
+    @Test
+    @DisplayName("学习记录chapterId全为null时interestCategoryIds返回空")
+    void getProfileWithNullChapterIdsInRecords() {
+        String userId = "user-1";
+
+        UserLearningRecord record = UserLearningRecord.builder()
+                .userId(1L).chapterId(null).duration(100).build();
+        doReturn(List.of(record)).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+
+        UserProfileResponse profile = userProfileService.getProfile(userId);
+
+        assertThat(profile.getInterestCategoryIds()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("答题有时间为null的记录时跳过并计算平均值")
+    void getProfileWithNullTimeSpent() {
+        String userId = "user-1";
+
+        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
+
+        UserQuizAnswer a1 = UserQuizAnswer.builder()
+                .userId(1L).quizId(1L).isCorrect(1).timeSpent(30).build();
+        UserQuizAnswer a2 = UserQuizAnswer.builder()
+                .userId(1L).quizId(1L).isCorrect(1).timeSpent(null).build();
+        doReturn(List.of(a1, a2)).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+
+        Quiz q1 = Quiz.builder().id(1L).difficulty("easy").build();
+        doReturn(List.of(q1)).when(quizMapper).selectList(any(LambdaQueryWrapper.class));
+
+        UserProfileResponse profile = userProfileService.getProfile(userId);
+
+        assertThat(profile.getQuiz().getTotalAnswers()).isEqualTo(2);
+        assertThat(profile.getQuiz().getAvgTimeSpent()).isEqualTo(30.0);
+    }
+
+    @Test
+    @DisplayName("答题记录quizId全为null时跳过难度分组")
+    void getProfileWithNullQuizIds() {
+        String userId = "user-1";
+
+        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
+
+        UserQuizAnswer a1 = UserQuizAnswer.builder()
+                .userId(1L).quizId(null).isCorrect(1).timeSpent(30).build();
+        UserQuizAnswer a2 = UserQuizAnswer.builder()
+                .userId(1L).quizId(null).isCorrect(0).timeSpent(60).build();
+        doReturn(List.of(a1, a2)).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+
+        // quizMapper should NOT be called because quizIds set is empty
+        UserProfileResponse profile = userProfileService.getProfile(userId);
+
+        assertThat(profile.getQuiz().getTotalAnswers()).isEqualTo(2);
+        assertThat(profile.getQuiz().getByDifficulty()).isEmpty();
+        verify(quizMapper, never()).selectList(any(LambdaQueryWrapper.class));
+    }
+
+    @Test
+    @DisplayName("测验有null难度时过滤掉后不影响分组统计")
+    void getProfileWithNullDifficultyQuiz() {
+        String userId = "user-1";
+
+        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
+
+        UserQuizAnswer a1 = UserQuizAnswer.builder()
+                .userId(1L).quizId(1L).isCorrect(1).timeSpent(30).build();
+        UserQuizAnswer a2 = UserQuizAnswer.builder()
+                .userId(1L).quizId(2L).isCorrect(0).timeSpent(60).build();
+        doReturn(List.of(a1, a2)).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+
+        Quiz q1 = Quiz.builder().id(1L).difficulty("easy").build();
+        Quiz q2 = Quiz.builder().id(2L).difficulty(null).build();
+        doReturn(List.of(q1, q2)).when(quizMapper).selectList(any(LambdaQueryWrapper.class));
+
+        UserProfileResponse profile = userProfileService.getProfile(userId);
+
+        assertThat(profile.getQuiz().getTotalAnswers()).isEqualTo(2);
+        // q2 should be filtered out from difficulty map, so only q1's answer contributes
+        assertThat(profile.getQuiz().getByDifficulty()).containsOnlyKeys("easy");
+    }
+
     // ==================== getCurrentUserProfile ====================
 
     @Test
