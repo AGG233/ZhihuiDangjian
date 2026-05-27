@@ -7,7 +7,6 @@ import java.lang.reflect.Constructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("java:S3011")
 class QuizErrorConstantsTest {
 
     @Test
@@ -38,7 +37,7 @@ class QuizErrorConstantsTest {
     @DisplayName("private 构造器覆盖")
     void privateConstructor() throws Exception {
         Constructor<QuizErrorConstants> constructor = QuizErrorConstants.class.getDeclaredConstructor();
-        constructor.setAccessible(true);
+        constructor.setAccessible(true); // NOSONAR
         constructor.newInstance();
     }
 }

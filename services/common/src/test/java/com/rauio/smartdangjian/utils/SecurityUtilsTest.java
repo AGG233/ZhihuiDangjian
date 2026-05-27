@@ -20,7 +20,6 @@ import cn.dev33.satoken.exception.SaTokenContextException;
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 
-@SuppressWarnings("java:S3011")
 class SecurityUtilsTest {
 
     private MockedStatic<StpUtil> stpUtilMock;
@@ -154,7 +153,7 @@ class SecurityUtilsTest {
     @DisplayName("private 构造器覆盖")
     void privateConstructor() throws Exception {
         Constructor<SecurityUtils> constructor = SecurityUtils.class.getDeclaredConstructor();
-        constructor.setAccessible(true);
+        constructor.setAccessible(true); // NOSONAR
         constructor.newInstance();
     }
 }

@@ -8,14 +8,13 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Constructor;
 
 @DisplayName("LearningErrorConstants 学习模块错误码常量")
-@SuppressWarnings("java:S3011")
 class LearningErrorConstantsTest {
 
     @Test
     @DisplayName("工具类不应被实例化")
     void shouldNotBeInstantiated() throws Exception {
         Constructor<LearningErrorConstants> constructor = LearningErrorConstants.class.getDeclaredConstructor();
-        constructor.setAccessible(true);
+        constructor.setAccessible(true); // NOSONAR
         assertThat(constructor.newInstance()).isNotNull();
     }
 

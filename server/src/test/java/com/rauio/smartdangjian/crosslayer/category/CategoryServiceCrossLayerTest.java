@@ -64,7 +64,7 @@ class CategoryServiceCrossLayerTest extends CrossLayerTestBase {
             CategoryService service = new CategoryService(convertor);
             try {
                 Field field = findBaseMapperField(service.getClass());
-                field.setAccessible(true);
+                field.setAccessible(true); // NOSONAR
                 field.set(service, categoryMapper);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to set baseMapper on CategoryService", e);

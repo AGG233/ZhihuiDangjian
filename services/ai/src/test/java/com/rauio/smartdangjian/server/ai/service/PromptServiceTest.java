@@ -102,7 +102,7 @@ class PromptServiceTest {
     void invalidRoleThrowsException() {
         assertThatThrownBy(() -> {
                     var method = PromptService.class.getDeclaredMethod("parsePromptRole", String.class);
-                    method.setAccessible(true);
+                    method.setAccessible(true); // NOSONAR
                     method.invoke(promptService, "INVALID_ROLE");
                 })
                 .hasCauseInstanceOf(IllegalArgumentException.class)

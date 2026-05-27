@@ -30,7 +30,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings("java:S3011")
 class RateLimitConfigTest {
 
     @Captor
@@ -138,7 +137,7 @@ class RateLimitConfigTest {
 
         // Access private userCounters field to inject a stale entry
         Field countersField = interceptor.getClass().getDeclaredField("userCounters");
-        countersField.setAccessible(true);
+        countersField.setAccessible(true); // NOSONAR
         @SuppressWarnings("unchecked")
         Map<String, ConcurrentHashMap<Long, AtomicInteger>> userCounters =
                 (Map<String, ConcurrentHashMap<Long, AtomicInteger>>) countersField.get(interceptor);

@@ -24,7 +24,6 @@ import com.rauio.smartdangjian.common.pojo.Universities;
 import com.rauio.smartdangjian.common.pojo.response.SchoolResponse;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings("java:S3011")
 class UniversitiesServiceTest {
 
     @BeforeAll
@@ -46,7 +45,7 @@ class UniversitiesServiceTest {
         universitiesService = spy(new UniversitiesService());
         var field = com.baomidou.mybatisplus.extension.repository.CrudRepository.class
                 .getDeclaredField("baseMapper");
-        field.setAccessible(true);
+        field.setAccessible(true); // NOSONAR
         field.set(universitiesService, universitiesMapper);
     }
 

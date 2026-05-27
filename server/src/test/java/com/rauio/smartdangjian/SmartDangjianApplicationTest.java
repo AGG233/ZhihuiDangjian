@@ -8,7 +8,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SuppressWarnings("java:S3011")
 class SmartDangjianApplicationTest {
 
     @Test
@@ -49,7 +48,7 @@ class SmartDangjianApplicationTest {
     @DisplayName("private 构造器覆盖")
     void privateConstructor() throws Exception {
         Constructor<SmartDangjianApplication> constructor = SmartDangjianApplication.class.getDeclaredConstructor();
-        constructor.setAccessible(true);
+        constructor.setAccessible(true); // NOSONAR
         constructor.newInstance();
     }
 }

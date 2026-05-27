@@ -8,7 +8,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("ResourceConstant 资源常量")
-@SuppressWarnings("java:S3011")
 class ResourceConstantTest {
 
     @Test
@@ -24,7 +23,7 @@ class ResourceConstantTest {
     @DisplayName("private 构造器覆盖")
     void privateConstructor() throws Exception {
         Constructor<ResourceConstant> constructor = ResourceConstant.class.getDeclaredConstructor();
-        constructor.setAccessible(true);
+        constructor.setAccessible(true); // NOSONAR
         constructor.newInstance();
     }
 }

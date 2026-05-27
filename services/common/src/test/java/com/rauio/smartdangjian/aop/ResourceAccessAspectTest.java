@@ -24,7 +24,6 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.utils.SecurityUtils;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
-@SuppressWarnings("java:S3011")
 class ResourceAccessAspectTest {
 
     private MockedStatic<SecurityUtils> securityUtilsMock;
@@ -346,7 +345,7 @@ class ResourceAccessAspectTest {
         ResourceAccessAspect aspect = new ResourceAccessAspect(List.of());
         java.lang.reflect.Method resolveOwner =
                 ResourceAccessAspect.class.getDeclaredMethod("resolveOwner", String.class, String.class);
-        resolveOwner.setAccessible(true);
+        resolveOwner.setAccessible(true); // NOSONAR
         Object result = resolveOwner.invoke(aspect, (String) null, "owner-id");
         assertThat(result).isEqualTo("owner-id");
     }

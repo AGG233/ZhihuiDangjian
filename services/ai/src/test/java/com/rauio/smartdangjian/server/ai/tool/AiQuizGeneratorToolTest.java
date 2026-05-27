@@ -40,7 +40,6 @@ import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
 import com.rauio.smartdangjian.server.quiz.service.QuizService;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings("java:S3011")
 class AiQuizGeneratorToolTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -135,7 +134,7 @@ class AiQuizGeneratorToolTest {
 
         ContentBlockResponse block = new ContentBlockResponse();
         Field textField = ContentBlockResponse.class.getDeclaredField("textContent");
-        textField.setAccessible(true);
+        textField.setAccessible(true); // NOSONAR
         textField.set(block, "章节内容文本");
 
         ChatModel chatModel = mock(ChatModel.class);
@@ -921,7 +920,7 @@ class AiQuizGeneratorToolTest {
         ContentBlockResponse block = new ContentBlockResponse();
         java.lang.reflect.Method method = AiQuizGeneratorTool.class.getDeclaredMethod(
                 "getFieldValue", ContentBlockResponse.class, String.class);
-        method.setAccessible(true);
+        method.setAccessible(true); // NOSONAR
         Object result = method.invoke(aiQuizGeneratorTool, block, "nonExistentField");
         assertThat(result).isNull();
     }

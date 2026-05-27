@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.rauio.smartdangjian.annotation.validation.Sensitive;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings("java:S3011")
 class SensitiveDataSerializerTest {
 
     @Mock
@@ -42,7 +41,7 @@ class SensitiveDataSerializerTest {
     @DisplayName("desensitizePhone with null returns null via reflection")
     void desensitizePhoneNullReturnsNull() throws Exception {
         var method = SensitiveDataSerializer.class.getDeclaredMethod("desensitizePhone", String.class);
-        method.setAccessible(true);
+        method.setAccessible(true); // NOSONAR
         String result = (String) method.invoke(serializer, new Object[] {null});
         assertThat(result).isNull();
     }
@@ -51,7 +50,7 @@ class SensitiveDataSerializerTest {
     @DisplayName("desensitizeIdCard with null returns null via reflection")
     void desensitizeIdCardNullReturnsNull() throws Exception {
         var method = SensitiveDataSerializer.class.getDeclaredMethod("desensitizeIdCard", String.class);
-        method.setAccessible(true);
+        method.setAccessible(true); // NOSONAR
         String result = (String) method.invoke(serializer, new Object[] {null});
         assertThat(result).isNull();
     }
@@ -60,7 +59,7 @@ class SensitiveDataSerializerTest {
     @DisplayName("desensitizeBankCard with null returns null via reflection")
     void desensitizeBankCardNullReturnsNull() throws Exception {
         var method = SensitiveDataSerializer.class.getDeclaredMethod("desensitizeBankCard", String.class);
-        method.setAccessible(true);
+        method.setAccessible(true); // NOSONAR
         String result = (String) method.invoke(serializer, new Object[] {null});
         assertThat(result).isNull();
     }

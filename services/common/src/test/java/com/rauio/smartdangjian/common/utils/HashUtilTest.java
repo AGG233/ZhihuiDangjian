@@ -11,7 +11,6 @@ import java.security.NoSuchAlgorithmException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("java:S3011")
 class HashUtilTest {
 
     @Test
@@ -72,7 +71,7 @@ class HashUtilTest {
     @DisplayName("private 构造器覆盖")
     void privateConstructor() throws Exception {
         Constructor<HashUtil> constructor = HashUtil.class.getDeclaredConstructor();
-        constructor.setAccessible(true);
+        constructor.setAccessible(true); // NOSONAR
         constructor.newInstance();
     }
 }
