@@ -132,10 +132,10 @@ AsyncConfig（4 个线程池）、BeanConfig（Tika）、MybatisConfig（分页 
 
 双分支模式，无 feature 分支：
 
-```
+```bash
 dev（日常开发，随时推送）
   └── 创建 PR → CI(SonarQube) → 合并
-product（发布基线，推送后自动构建部署）
+product（发布基线，通过打标签触发发布流水线）
 ```
 
 ### 日常流程
