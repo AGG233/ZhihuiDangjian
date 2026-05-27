@@ -3,6 +3,7 @@ package com.rauio.smartdangjian.server.content.service.category;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -556,6 +557,42 @@ class CategoryServiceTest {
         Boolean result = categoryService.deleteByIdWithChildren(10L);
 
         assertThat(result).isTrue();
+        verify(categoryService).removeById(10L);
+    }
+
+    @Test
+    @DisplayName("deleteByIdWithChildren list 返回 null 时直接删除")
+    void deleteByIdWithChildrenNullListRemovesDirectly() {
+        Category category = createCategory(10L, "目录", 0, null);
+        doReturn(category).when(categoryService).getById(10L);
+        doReturn(null).when(categoryService).list(any(LambdaQueryWrapper.class));
+        doReturn(true).when(categoryService).removeById(10L);
+
+        Boolean result = categoryService.deleteByIdWithChildren(10L);
+
+        assertThat(result).isTrue();
+        verify(categoryService).removeById(10L);
+    }
+
+    @Test
+    @DisplayName("deleteByIdWithChildren recursive delete processes children")
+    void deleteByIdWithChildrenRecursivelyDeletesChildren() {
+        Category category = createCategory(10L, "父目录", 0, null);
+        Category child1 = createCategory(11L, "子目录1", 1, 10L);
+        Category child2 = createCategory(12L, "子目录2", 1, 10L);
+        doReturn(category).when(categoryService).getById(10L);
+        doReturn(child1).when(categoryService).getById(11L);
+        doReturn(child2).when(categoryService).getById(12L);
+        // Sequential stubs: parent list returns children, each child list returns empty
+        doReturn(List.of(child1, child2), Collections.emptyList(), Collections.emptyList())
+                .when(categoryService).list(any(LambdaQueryWrapper.class));
+        doReturn(true).when(categoryService).removeById(anyLong());
+
+        Boolean result = categoryService.deleteByIdWithChildren(10L);
+
+        assertThat(result).isTrue();
+        verify(categoryService).removeById(11L);
+        verify(categoryService).removeById(12L);
         verify(categoryService).removeById(10L);
     }
 

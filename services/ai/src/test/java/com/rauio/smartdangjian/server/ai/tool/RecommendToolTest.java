@@ -62,7 +62,22 @@ class RecommendToolTest {
     }
 
     @Test
-    @DisplayName("getRecommendedCourses 无推荐时返回提示消息")
+    @DisplayName("getRecommendedCourses with limit=0 falls back to default 10")
+    void getRecommendedCoursesZeroLimit() {
+        ToolContext toolContext = mock(ToolContext.class);
+        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
+
+        Page<Long> page = new Page<>();
+        page.setRecords(List.of(1L));
+        when(recommendService.recommend(1L, 1, 10)).thenReturn(page);
+
+        String result = recommendTool.getRecommendedCourses(0, toolContext);
+
+        assertThat(result).contains("1");
+    }
+
+    @Test
+    @DisplayName("getRecommendedCourses no recommendation returns hint message")
     void getRecommendedCoursesEmpty() {
         ToolContext toolContext = mock(ToolContext.class);
         when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");

@@ -2,6 +2,8 @@ package com.rauio.smartdangjian.constants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Constructor;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -67,4 +69,5 @@ class ErrorConstantsTest {
         assertThat(ErrorConstants.RESOURCE_NOT_AVAILABLE).isBetween(1, 99);
         assertThat(ErrorConstants.USER_NOT_EXISTS).isBetween(1, 99);
     }
+
 }

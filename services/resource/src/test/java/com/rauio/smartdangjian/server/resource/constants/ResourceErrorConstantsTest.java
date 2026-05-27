@@ -2,6 +2,8 @@ package com.rauio.smartdangjian.server.resource.constants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Constructor;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -31,4 +33,5 @@ class ResourceErrorConstantsTest {
         assertThat(ResourceErrorConstants.BANNER_CREATE_FAILED).isEqualTo(5015);
         assertThat(ResourceErrorConstants.BANNER_ID_AND_HASH_EMPTY).isEqualTo(5016);
     }
+
 }

@@ -281,4 +281,112 @@ class ResourceMetaServiceTest {
 
         assertThat(result).isTrue();
     }
+
+    // ==================== create - objectKey duplicate ====================
+
+    @Test
+    @DisplayName("create 对象存储键重复时抛出异常")
+    void createDuplicateObjectKey() {
+        ResourceMetaCreateRequest request = new ResourceMetaCreateRequest();
+        request.setUploaderId("1");
+        request.setOriginalName("test.png");
+        request.setHash("unique-hash");
+        request.setObjectKey(OBJECT_KEY);
+        request.setResourceType(0);
+
+        doReturn(null, ResourceMeta.builder().id(99L).objectKey(OBJECT_KEY).build())
+                .when(resourceMetaService)
+                .getOne(any(LambdaQueryWrapper.class));
+
+        assertThatThrownBy(() -> resourceMetaService.create(request))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("对象存储键已存在");
+    }
+
+    // ==================== update - all fields ====================
+
+    @Test
+    @DisplayName("update 更新所有字段成功")
+    void updateWithAllFields() {
+        ResourceMeta existing = ResourceMeta.builder()
+                .id(RESOURCE_ID)
+                .uploaderId(1L)
+                .hash(HASH)
+                .objectKey("old/key.png")
+                .originalName("old.png")
+                .resourceType(0)
+                .status(1)
+                .build();
+        doReturn(existing).when(resourceMetaService).getById(RESOURCE_ID);
+        doReturn(existing).when(resourceMetaService).getOne(any(LambdaQueryWrapper.class));
+
+        ResourceMetaUpdateRequest request = new ResourceMetaUpdateRequest();
+        request.setObjectKey("new/key.png");
+        request.setOriginalName("new.png");
+        request.setResourceType(1);
+        request.setStatus(2);
+
+        doReturn(true).when(resourceMetaService).updateById(any(ResourceMeta.class));
+
+        Boolean result = resourceMetaService.update(RESOURCE_ID, request);
+
+        assertThat(result).isTrue();
+    }
+
+    // ==================== update - failed ====================
+
+    @Test
+    @DisplayName("update 更新数据库失败时抛出异常")
+    void updateFailed() {
+        ResourceMeta existing = ResourceMeta.builder()
+                .id(RESOURCE_ID)
+                .uploaderId(1L)
+                .hash(HASH)
+                .objectKey(OBJECT_KEY)
+                .originalName("old.png")
+                .resourceType(0)
+                .status(1)
+                .build();
+        doReturn(existing).when(resourceMetaService).getById(RESOURCE_ID);
+        doReturn(null).when(resourceMetaService).getOne(any(LambdaQueryWrapper.class));
+
+        ResourceMetaUpdateRequest request = new ResourceMetaUpdateRequest();
+        request.setOriginalName("new.png");
+
+        doReturn(false).when(resourceMetaService).updateById(any(ResourceMeta.class));
+
+        assertThatThrownBy(() -> resourceMetaService.update(RESOURCE_ID, request))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("更新资源失败");
+    }
+
+    // ==================== deleteByHash - not found ====================
+
+    @Test
+    @DisplayName("deleteByHash 资源不存在抛出异常")
+    void deleteByHashNotFound() {
+        doReturn(null).when(resourceMetaService).getOne(any(LambdaQueryWrapper.class));
+
+        assertThatThrownBy(() -> resourceMetaService.deleteByHash(HASH))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("资源不存在");
+    }
+
+    // ==================== deleteByHash - failed ====================
+
+    @Test
+    @DisplayName("deleteByHash 删除数据库失败时抛出异常")
+    void deleteByHashFailed() {
+        doReturn(ResourceMeta.builder().id(RESOURCE_ID).hash(HASH).build())
+                .when(resourceMetaService)
+                .getOne(any(LambdaQueryWrapper.class));
+        doReturn(ResourceMeta.builder().id(RESOURCE_ID).build())
+                .when(resourceMetaService)
+                .getById(RESOURCE_ID);
+        doReturn(false).when(resourceMetaService).removeById(RESOURCE_ID);
+
+        assertThatThrownBy(() -> resourceMetaService.deleteByHash(HASH))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("删除资源失败");
+    }
 }

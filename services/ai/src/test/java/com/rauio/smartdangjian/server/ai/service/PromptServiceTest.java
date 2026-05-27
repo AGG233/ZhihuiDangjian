@@ -192,6 +192,7 @@ class PromptServiceTest {
         doReturn(expectedResponse).when(convertor).toResponse(any(AiPrompts.class));
 
         AiPromptUpdateRequest request = new AiPromptUpdateRequest();
+        request.setAgentType("CHAT");
         request.setName("新名称");
         request.setContent("新内容");
         request.setRole("DEVELOPER");
@@ -252,5 +253,129 @@ class PromptServiceTest {
         assertThatThrownBy(() -> promptService.update("nonexistent", request))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("提示词不存在");
+    }
+
+    @Test
+    @DisplayName("getByIdResponse 返回转换后的提示词")
+    void getByIdResponse() {
+        AiPrompts mockPrompt = AiPrompts.builder().id(1L).name("test").content("content").build();
+        doReturn(mockPrompt).when(promptService).getById("test-id");
+        AiPromptResponse expected = AiPromptResponse.builder().name("test").build();
+        doReturn(expected).when(convertor).toResponse(mockPrompt);
+
+        AiPromptResponse result = promptService.getByIdResponse("test-id");
+
+        assertThat(result.getName()).isEqualTo("test");
+        verify(convertor).toResponse(mockPrompt);
+    }
+
+    @Test
+    @DisplayName("listResponses 返回转换后的提示词列表")
+    void listResponses() {
+        AiPrompts p1 = AiPrompts.builder().id(1L).name("p1").content("内容1").build();
+        doReturn(List.of(p1)).when(promptService).list();
+        AiPromptResponse r1 = AiPromptResponse.builder().name("p1").build();
+        doReturn(List.of(r1)).when(convertor).toResponseList(List.of(p1));
+
+        List<AiPromptResponse> result = promptService.listResponses();
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getName()).isEqualTo("p1");
+    }
+
+    @Test
+    @DisplayName("create 接受小写角色名并正确转换为大写枚举")
+    void createWithLowercaseRole() {
+        AiPromptCreateRequest request = new AiPromptCreateRequest();
+        request.setAgentType("CHAT");
+        request.setName("test");
+        request.setContent("content");
+        request.setRole("system");
+
+        doReturn(true).when(promptService).save(any(AiPrompts.class));
+        AiPromptResponse expectedResponse = AiPromptResponse.builder()
+                .role(PromptRoleEnum.SYSTEM)
+                .build();
+        doReturn(expectedResponse).when(convertor).toResponse(any(AiPrompts.class));
+
+        AiPromptResponse result = promptService.create(request);
+
+        assertThat(result.getRole()).isEqualTo(PromptRoleEnum.SYSTEM);
+    }
+
+    @Test
+    @DisplayName("buildSystemPrompt 正确处理包含特殊字符的内容")
+    void buildSystemPromptWithSpecialCharacters() {
+        AiPrompts p1 = AiPrompts.builder()
+                .content("含双引号\"和换行符的内容\n新行")
+                .build();
+        AiPrompts p2 = AiPrompts.builder()
+                .content("模板块 ${variable} 和 {placeholder}")
+                .build();
+        doReturn(List.of(p1, p2)).when(promptService).listEnabledSystemPrompts("CHAT");
+
+        String prompt = promptService.buildSystemPrompt("CHAT");
+
+        assertThat(prompt).contains("双引号\"");
+        assertThat(prompt).contains("新行");
+        assertThat(prompt).contains("${variable}");
+        assertThat(prompt).contains("{placeholder}");
+        assertThat(prompt).contains("\n\n");
+    }
+
+    @Test
+    @DisplayName("buildSystemPrompt 支持 null agentType 不抛异常")
+    void buildSystemPromptWithNullAgentType() {
+        AiPrompts prompt = AiPrompts.builder().content("通用提示词").build();
+        doReturn(List.of(prompt)).when(promptService).listEnabledSystemPrompts(null);
+
+        String result = promptService.buildSystemPrompt(null);
+
+        assertThat(result).isEqualTo("通用提示词");
+    }
+
+    @Test
+    @DisplayName("update with name not set does not modify name")
+    void updateWithoutNameField() {
+        AiPrompts existing = AiPrompts.builder()
+                .id(1L)
+                .agentType("CHAT")
+                .name("保留名称")
+                .content("保留内容")
+                .role(PromptRoleEnum.SYSTEM)
+                .enabled(false)
+                .sort(0)
+                .build();
+
+        doReturn(existing).when(promptService).getById("prompt-1");
+        doReturn(true).when(promptService).updateById(any(AiPrompts.class));
+        AiPromptResponse expectedResponse = AiPromptResponse.builder()
+                .id("1")
+                .name("保留名称")
+                .content("保留内容")
+                .role(PromptRoleEnum.SYSTEM)
+                .enabled(false)
+                .sort(0)
+                .build();
+        doReturn(expectedResponse).when(convertor).toResponse(any(AiPrompts.class));
+
+        AiPromptUpdateRequest request = new AiPromptUpdateRequest();
+        request.setContent("仅更新内容");
+
+        AiPromptResponse result = promptService.update("prompt-1", request);
+
+        assertThat(result.getName()).isEqualTo("保留名称");
+        assertThat(result.getContent()).isEqualTo("保留内容");
+    }
+
+    @Test
+    @DisplayName("getByIdResponse returns null when not found")
+    void getByIdResponseReturnsNullWhenNotFound() {
+        doReturn(null).when(promptService).getById("nonexistent");
+        doReturn(null).when(convertor).toResponse(null);
+
+        AiPromptResponse result = promptService.getByIdResponse("nonexistent");
+
+        assertThat(result).isNull();
     }
 }

@@ -36,6 +36,8 @@ import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
+import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -312,6 +314,20 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("update updateById 返回 false 时抛出 BusinessException")
+    void updateFailsWhenUpdateByIdReturnsFalse() {
+        User user = createUser(null, "testuser", "test@example.com", "13800138000");
+        user.setPassword(null);
+
+        doReturn(false).when(userService).updateById(any(User.class));
+
+        assertThatThrownBy(() -> userService.update(1L, user))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(UserErrorConstants.USER_NOT_EXISTS);
+    }
+
+    @Test
     @DisplayName("update 密码为空字符串时不加密")
     void updateWithEmptyPasswordDoesNotEncode() {
         User user = createUser(null, "testuser", "test@example.com", "13800138000");
@@ -432,6 +448,25 @@ class UserServiceTest {
                 .isEqualTo(UserErrorConstants.PARTY_MEMBER_ID_EXISTS);
     }
 
+    @Test
+    @DisplayName("register save 返回 false 时抛出 BusinessException")
+    void registerFailsWhenSaveReturnsFalse() {
+        User user = createUser(null, "newuser", "new@example.com", "13900139000");
+        user.setPassword("plainPassword");
+
+        doReturn(false).when(userService).exists(any(LambdaQueryWrapper.class));
+        doReturn(false).when(userService).save(any(User.class));
+
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.hashpw("plainPassword")).thenReturn("encodedPassword");
+
+            assertThatThrownBy(() -> userService.register(user))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("code")
+                    .isEqualTo(UserErrorConstants.USER_NOT_EXISTS);
+        }
+    }
+
     // ================================================================
     // changePassword
     // ================================================================
@@ -495,6 +530,26 @@ class UserServiceTest {
             bcryptMock.verify(() -> BCrypt.hashpw(anyString()), never());
         }
         verify(userService, never()).updateById(any(User.class));
+    }
+
+    @Test
+    @DisplayName("changePassword 密码匹配但 updateById 返回 false 时抛出 BusinessException")
+    void changePasswordFailsWhenUpdateByIdReturnsFalse() {
+        User user = createUser(1L, "testuser", "test@example.com", "13800138000");
+        user.setPassword("encodedOldPassword");
+
+        doReturn(user).when(userService).getCurrentUser();
+        doReturn(false).when(userService).updateById(any(User.class));
+
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.checkpw("oldPassword", "encodedOldPassword")).thenReturn(true);
+            bcryptMock.when(() -> BCrypt.hashpw("newPassword")).thenReturn("encodedNewPassword");
+
+            assertThatThrownBy(() -> userService.changePassword("oldPassword", "newPassword"))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("code")
+                    .isEqualTo(UserErrorConstants.PASSWORD_CHANGE_ERROR);
+        }
     }
 
     // ================================================================
@@ -631,5 +686,26 @@ class UserServiceTest {
         Page<User> result = userService.getAdminPage(request, 1, 10);
 
         assertThat(result).isNotNull();
+    }
+
+    @Test
+    @DisplayName("getPage 条件中包含 userType 和 partyStatus 时正常查询")
+    void getPageWithUserTypeAndPartyStatus() {
+        UserRequest request = new UserRequest();
+        request.setUserType(UserType.STUDENT);
+        request.setPartyStatus(PartyStatus.FORMAL_MEMBER);
+
+        List<User> userList = List.of(createUser(1L, "testuser", "test@example.com", "13800138000"));
+        Page<User> userPage = new Page<>(1, 10, 1);
+        userPage.setRecords(userList);
+
+        List<UserPublicResponse> responseList = List.of(new UserPublicResponse());
+        doReturn(userPage).when(userService).page(any(Page.class), any(LambdaQueryWrapper.class));
+        when(convertor.toPublicResponse(userList)).thenReturn(responseList);
+
+        Page<UserPublicResponse> result = userService.getPage(request, 1, 10);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getRecords()).isEqualTo(responseList);
     }
 }

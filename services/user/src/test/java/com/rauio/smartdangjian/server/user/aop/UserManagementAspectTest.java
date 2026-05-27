@@ -460,4 +460,203 @@ class UserManagementAspectTest {
         Object result = new Object();
         assertThat(aspect.after(context, result)).isSameAs(result);
     }
+
+    // ================================================================
+    // READ - SCHOOL with MANAGER target
+    // ================================================================
+
+    @Test
+    @DisplayName("READ SCHOOL 目标用户是系统管理员时抛出异常")
+    void readSchoolManagerTargetThrows() {
+        stubAction(DataScopeAction.READ);
+        stubSchoolUser("univ-1");
+        User target = User.builder()
+                .id(1L)
+                .userType(UserType.MANAGER)
+                .universityId("univ-1")
+                .build();
+        when(access.id()).thenReturn("#id");
+        when(context.require("#id", String.class, "用户ID不能为空")).thenReturn("target-id");
+        when(userMapper.selectById("target-id")).thenReturn(target);
+
+        assertThatThrownBy(() -> aspect.before(context))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(ErrorConstants.RESOURCE_NOT_AUTHORIZED);
+    }
+
+    // ================================================================
+    // SEARCH - SCHOOL query with MANAGER type
+    // ================================================================
+
+    @Test
+    @DisplayName("SEARCH SCHOOL 查询系统管理员时抛出异常")
+    void searchSchoolManagerQueryThrows() {
+        stubAction(DataScopeAction.SEARCH);
+        stubSchoolUser("univ-1");
+        UserRequest query = new UserRequest();
+        query.setUserType(UserType.MANAGER);
+        when(access.query()).thenReturn("#query");
+        when(context.require("#query", UserRequest.class, "查询参数不能为空")).thenReturn(query);
+
+        assertThatThrownBy(() -> aspect.before(context))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(ErrorConstants.RESOURCE_NOT_AUTHORIZED);
+    }
+
+    // ================================================================
+    // UPDATE - SCHOOL
+    // ================================================================
+
+    @Test
+    @DisplayName("UPDATE SCHOOL 修改本校学生成功")
+    void updateSchoolOwnStudentPasses() {
+        stubAction(DataScopeAction.UPDATE);
+        stubSchoolUser("univ-1");
+        User target = User.builder()
+                .id(1L)
+                .userType(UserType.STUDENT)
+                .universityId("univ-1")
+                .build();
+        User payload = User.builder().build();
+        when(access.id()).thenReturn("#id");
+        when(access.body()).thenReturn("#user");
+        when(context.require("#id", String.class, "用户ID不能为空")).thenReturn("target-id");
+        when(context.require("#user", User.class, "用户信息不能为空")).thenReturn(payload);
+        when(userMapper.selectById("target-id")).thenReturn(target);
+
+        assertThatCode(() -> aspect.before(context)).doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("UPDATE SCHOOL 修改其他学校用户抛出异常")
+    void updateSchoolDifferentUniversityThrows() {
+        stubAction(DataScopeAction.UPDATE);
+        stubSchoolUser("univ-1");
+        User target = User.builder()
+                .id(1L)
+                .userType(UserType.STUDENT)
+                .universityId("univ-2")
+                .build();
+        User payload = User.builder().build();
+        when(access.id()).thenReturn("#id");
+        when(access.body()).thenReturn("#user");
+        when(context.require("#id", String.class, "用户ID不能为空")).thenReturn("target-id");
+        when(context.require("#user", User.class, "用户信息不能为空")).thenReturn(payload);
+        when(userMapper.selectById("target-id")).thenReturn(target);
+
+        assertThatThrownBy(() -> aspect.before(context))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("高校管理员只能修改本校普通用户");
+    }
+
+    @Test
+    @DisplayName("UPDATE SCHOOL 修改用户角色时抛出异常")
+    void updateSchoolChangeUserTypeThrows() {
+        stubAction(DataScopeAction.UPDATE);
+        stubSchoolUser("univ-1");
+        User target = User.builder()
+                .id(1L)
+                .userType(UserType.STUDENT)
+                .universityId("univ-1")
+                .build();
+        User payload = User.builder().userType(UserType.SCHOOL).build();
+        when(access.id()).thenReturn("#id");
+        when(access.body()).thenReturn("#user");
+        when(context.require("#id", String.class, "用户ID不能为空")).thenReturn("target-id");
+        when(context.require("#user", User.class, "用户信息不能为空")).thenReturn(payload);
+        when(userMapper.selectById("target-id")).thenReturn(target);
+
+        assertThatThrownBy(() -> aspect.before(context))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("高校管理员不能修改用户角色");
+    }
+
+    @Test
+    @DisplayName("UPDATE SCHOOL 转移用户学校时抛出异常")
+    void updateSchoolChangeUniversityIdThrows() {
+        stubAction(DataScopeAction.UPDATE);
+        stubSchoolUser("univ-1");
+        User target = User.builder()
+                .id(1L)
+                .userType(UserType.STUDENT)
+                .universityId("univ-1")
+                .build();
+        User payload = User.builder().universityId("univ-2").build();
+        when(access.id()).thenReturn("#id");
+        when(access.body()).thenReturn("#user");
+        when(context.require("#id", String.class, "用户ID不能为空")).thenReturn("target-id");
+        when(context.require("#user", User.class, "用户信息不能为空")).thenReturn(payload);
+        when(userMapper.selectById("target-id")).thenReturn(target);
+
+        assertThatThrownBy(() -> aspect.before(context))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("高校管理员不能转移用户学校");
+    }
+
+    // ================================================================
+    // UPDATE - STUDENT edge cases
+    // ================================================================
+
+    @Test
+    @DisplayName("UPDATE STUDENT 修改 universityId 时抛出异常")
+    void updateStudentChangeUniversityIdThrows() {
+        stubAction(DataScopeAction.UPDATE);
+        stubStudentUser(1L);
+        User target = User.builder().id(1L).build();
+        User payload = User.builder().universityId("other-uni").build();
+        when(access.id()).thenReturn("#id");
+        when(access.body()).thenReturn("#user");
+        when(context.require("#id", String.class, "用户ID不能为空")).thenReturn("student-1");
+        when(context.require("#user", User.class, "用户信息不能为空")).thenReturn(payload);
+        when(userMapper.selectById("student-1")).thenReturn(target);
+
+        assertThatThrownBy(() -> aspect.before(context))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(ErrorConstants.RESOURCE_NOT_AUTHORIZED);
+    }
+
+    @Test
+    @DisplayName("UPDATE STUDENT 修改密码时抛出异常")
+    void updateStudentChangePasswordThrows() {
+        stubAction(DataScopeAction.UPDATE);
+        stubStudentUser(1L);
+        User target = User.builder().id(1L).build();
+        User payload = User.builder().password("new-password").build();
+        when(access.id()).thenReturn("#id");
+        when(access.body()).thenReturn("#user");
+        when(context.require("#id", String.class, "用户ID不能为空")).thenReturn("student-1");
+        when(context.require("#user", User.class, "用户信息不能为空")).thenReturn(payload);
+        when(userMapper.selectById("student-1")).thenReturn(target);
+
+        assertThatThrownBy(() -> aspect.before(context))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(ErrorConstants.RESOURCE_NOT_AUTHORIZED);
+    }
+
+    // ================================================================
+    // DELETE - SCHOOL non-STUDENT target
+    // ================================================================
+
+    @Test
+    @DisplayName("DELETE SCHOOL 删除非普通用户时抛出异常")
+    void deleteSchoolNonStudentTargetThrows() {
+        stubAction(DataScopeAction.DELETE);
+        stubSchoolUser("univ-1");
+        User target = User.builder()
+                .id(1L)
+                .userType(UserType.SCHOOL)
+                .universityId("univ-1")
+                .build();
+        when(access.id()).thenReturn("#id");
+        when(context.require("#id", String.class, "用户ID不能为空")).thenReturn("target-id");
+        when(userMapper.selectById("target-id")).thenReturn(target);
+
+        assertThatThrownBy(() -> aspect.before(context))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("高校管理员只能删除本校普通用户");
+    }
 }

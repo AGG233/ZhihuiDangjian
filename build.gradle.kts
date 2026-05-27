@@ -32,14 +32,14 @@ tasks.register<JacocoCoverageVerification>("jacocoRootCoverageVerification") {
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
-                minimum = "0.55".toBigDecimal()
+                minimum = "0.94".toBigDecimal()
             }
         }
         rule {
             limit {
                 counter = "BRANCH"
                 value = "COVEREDRATIO"
-                minimum = "0.45".toBigDecimal()
+                minimum = "0.94".toBigDecimal()
             }
         }
     }
@@ -67,6 +67,12 @@ gradle.projectsEvaluated {
     val coverageClassDirs = coverageProjects.map {
         it.layout.buildDirectory.dir("classes/java/main")
     }
+    val filteredClassDirs = coverageClassDirs.map { dir ->
+        fileTree(dir) {
+            exclude("**/*ConvertorImpl.class")
+            exclude("**/*MapperImpl.class")
+        }
+    }
     val coverageSourceDirs = coverageProjects.map {
         it.layout.projectDirectory.dir("src/main/java")
     }
@@ -76,14 +82,14 @@ gradle.projectsEvaluated {
         dependsOn(itProjects.map { it.tasks.named("integrationTest") })
         executionData.from(coverageExecutionData)
         executionData.from(itExecutionData)
-        classDirectories.from(coverageClassDirs)
+        classDirectories.from(filteredClassDirs)
         sourceDirectories.from(coverageSourceDirs)
     }
 
     tasks.named<JacocoCoverageVerification>("jacocoRootCoverageVerification") {
         executionData.from(coverageExecutionData)
         executionData.from(itExecutionData)
-        classDirectories.from(coverageClassDirs)
+        classDirectories.from(filteredClassDirs)
         sourceDirectories.from(coverageSourceDirs)
     }
 }

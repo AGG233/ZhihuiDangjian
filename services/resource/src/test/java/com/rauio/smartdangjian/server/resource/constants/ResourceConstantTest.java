@@ -2,6 +2,8 @@ package com.rauio.smartdangjian.server.resource.constants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Constructor;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -16,4 +18,5 @@ class ResourceConstantTest {
         assertThat(ResourceConstant.COS_PLATFORM).isEqualTo("tencent-cos");
         assertThat(ResourceConstant.COS_KEY_EXPIRATION).isEqualTo(10 * 60 * 1000);
     }
+
 }

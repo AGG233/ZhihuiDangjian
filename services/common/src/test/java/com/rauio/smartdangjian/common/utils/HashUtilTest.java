@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.security.NoSuchAlgorithmException;
 
 import org.junit.jupiter.api.DisplayName;
@@ -65,4 +66,5 @@ class HashUtilTest {
 
         assertThat(hash).matches("^[0-9a-f]{64}$");
     }
+
 }

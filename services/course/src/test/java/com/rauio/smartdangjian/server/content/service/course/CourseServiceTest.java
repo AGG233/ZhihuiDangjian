@@ -566,4 +566,142 @@ class CourseServiceTest {
 
         assertThat(result).isEmpty();
     }
+
+    // ================================================================
+    // 缺失分支补充
+    // ================================================================
+
+    @Test
+    @DisplayName("create normalize 中级难度转换为 intermediate")
+    void createNormalizesIntermediateDifficulty() {
+        User user = User.builder().id(1L).userType(UserType.SCHOOL).build();
+        CourseRequest dto = CourseRequest.builder()
+                .title("中级课程")
+                .categoryId(1L)
+                .difficulty("中级")
+                .build();
+        Course course = Course.builder().title("中级课程").difficulty("中级").build();
+        course.setId(1L);
+        course.setCreatorId(1L);
+
+        when(userService.getCurrentUser()).thenReturn(user);
+        when(courseConvertor.toCourse(dto)).thenReturn(course);
+        doReturn(true).when(courseService).save(course);
+        when(categoryCourseMapper.insert(any(CategoryCourse.class))).thenReturn(1);
+
+        courseService.create(dto);
+
+        assertThat(course.getDifficulty()).isEqualTo("intermediate");
+    }
+
+    @Test
+    @DisplayName("create coverImageId 为 null 时不做处理")
+    void createNullCoverImageIdNoOp() {
+        User user = User.builder().id(1L).userType(UserType.SCHOOL).build();
+        CourseRequest dto = CourseRequest.builder()
+                .title("课程")
+                .categoryId(1L)
+                .build();
+        Course course = Course.builder().title("课程").build();
+        course.setId(1L);
+        course.setCreatorId(1L);
+
+        when(userService.getCurrentUser()).thenReturn(user);
+        when(courseConvertor.toCourse(dto)).thenReturn(course);
+        doReturn(true).when(courseService).save(course);
+        when(categoryCourseMapper.insert(any(CategoryCourse.class))).thenReturn(1);
+
+        courseService.create(dto);
+
+        assertThat(course.getDifficulty()).isNull();
+    }
+
+    @Test
+    @DisplayName("update 分类关联保存失败时抛出异常")
+    void updateCategoryRelationSaveFails() {
+        CourseRequest dto = CourseRequest.builder()
+                .title("更新课程")
+                .categoryId(1L)
+                .build();
+        Course course = Course.builder().title("更新课程").build();
+        Course target = Course.builder().id(1L).title("旧课程").build();
+
+        when(courseConvertor.toCourse(dto)).thenReturn(course);
+        doReturn(target).when(courseService).getById(1L);
+        doReturn(true).when(courseService).updateById(any(Course.class));
+        when(categoryCourseMapper.delete(any(LambdaQueryWrapper.class))).thenReturn(1);
+        when(categoryCourseMapper.insert(any(CategoryCourse.class))).thenReturn(0);
+
+        assertThatThrownBy(() -> courseService.update(dto, 1L))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", CourseErrorConstants.COURSE_UPDATE_FAILED);
+    }
+
+    @Test
+    @DisplayName("create normalize coverImageId 为正数时不置空")
+    void createWithPositiveCoverImageId() {
+        User user = User.builder().id(1L).userType(UserType.SCHOOL).build();
+        CourseRequest dto = CourseRequest.builder()
+                .title("课程")
+                .categoryId(1L)
+                .coverImageId(5L)
+                .build();
+        Course course = Course.builder().title("课程").coverImageId(5L).build();
+        course.setId(1L);
+        course.setCreatorId(1L);
+
+        when(userService.getCurrentUser()).thenReturn(user);
+        when(courseConvertor.toCourse(dto)).thenReturn(course);
+        doReturn(true).when(courseService).save(course);
+        when(categoryCourseMapper.insert(any(CategoryCourse.class))).thenReturn(1);
+
+        courseService.create(dto);
+
+        assertThat(course.getCoverImageId()).isEqualTo(5L);
+    }
+
+    @Test
+    @DisplayName("create difficulty 不在地图映射中时不转换")
+    void createWithUnknownDifficulty() {
+        User user = User.builder().id(1L).userType(UserType.SCHOOL).build();
+        CourseRequest dto = CourseRequest.builder()
+                .title("课程")
+                .categoryId(1L)
+                .difficulty("unknown")
+                .build();
+        Course course = Course.builder().title("课程").difficulty("unknown").build();
+        course.setId(1L);
+        course.setCreatorId(1L);
+
+        when(userService.getCurrentUser()).thenReturn(user);
+        when(courseConvertor.toCourse(dto)).thenReturn(course);
+        doReturn(true).when(courseService).save(course);
+        when(categoryCourseMapper.insert(any(CategoryCourse.class))).thenReturn(1);
+
+        courseService.create(dto);
+
+        assertThat(course.getDifficulty()).isEqualTo("unknown");
+    }
+
+    @Test
+    @DisplayName("create 分类关联插入失败抛出异常")
+    void createCategoryRelationFails() {
+        User user = User.builder().id(1L).userType(UserType.SCHOOL).build();
+        CourseRequest dto = CourseRequest.builder()
+                .title("课程")
+                .categoryId(1L)
+                .build();
+        Course course = Course.builder().title("课程").build();
+        course.setId(1L);
+        course.setCreatorId(1L);
+
+        when(userService.getCurrentUser()).thenReturn(user);
+        when(courseConvertor.toCourse(dto)).thenReturn(course);
+        doReturn(true).when(courseService).save(course);
+        when(categoryCourseMapper.insert(any(CategoryCourse.class))).thenReturn(0);
+
+        assertThatThrownBy(() -> courseService.create(dto))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", CourseErrorConstants.COURSE_SAVE_FAILED);
+    }
 }

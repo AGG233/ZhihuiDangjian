@@ -36,4 +36,11 @@ class MediaTypeUtilTest {
 
         assertThat(result).isEqualTo("image/png");
     }
+
+    @Test
+    @DisplayName("实例化 MediaTypeUtil 覆盖构造器")
+    void constructor() {
+        var instance = new MediaTypeUtil();
+        assertThat(instance).isNotNull();
+    }
 }

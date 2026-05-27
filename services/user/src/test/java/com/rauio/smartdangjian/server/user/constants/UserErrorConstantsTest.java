@@ -2,6 +2,8 @@ package com.rauio.smartdangjian.server.user.constants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Constructor;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -48,4 +50,5 @@ class UserErrorConstantsTest {
     void passwordChangeError() {
         assertThat(UserErrorConstants.PASSWORD_CHANGE_ERROR).isEqualTo(2007);
     }
+
 }

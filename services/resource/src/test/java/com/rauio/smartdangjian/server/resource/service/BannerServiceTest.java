@@ -305,4 +305,129 @@ class BannerServiceTest {
         assertThat(result).isTrue();
         verify(listOperations).remove(ResourceConstant.BANNER_PREFIX, 1, "hash-to-remove");
     }
+
+    // ==================== appendBanner edge cases ====================
+
+    @SuppressWarnings("unchecked")
+    @Test
+    @DisplayName("create 资源哈希为空时抛出异常")
+    void createWithNullHash() {
+        when(resourceMetaService.get(1L))
+                .thenReturn(ResourceMeta.builder().id(1L).hash(null).build());
+
+        assertThatThrownBy(() -> bannerService.create("1"))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("轮播图资源不能为空");
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    @DisplayName("create rightPush 返回 null 时抛出异常")
+    void createRightPushNull() {
+        when(redisTemplate.opsForList()).thenReturn(listOperations);
+        when(listOperations.size(ResourceConstant.BANNER_PREFIX)).thenReturn(0L);
+        when(listOperations.range(ResourceConstant.BANNER_PREFIX, 0, -1)).thenReturn(List.of());
+        when(resourceMetaService.get(1L))
+                .thenReturn(ResourceMeta.builder().id(1L).hash(HASH).build());
+        when(listOperations.rightPush(ResourceConstant.BANNER_PREFIX, HASH)).thenReturn(null);
+
+        assertThatThrownBy(() -> bannerService.create("1"))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("轮播图创建失败");
+    }
+
+    // ==================== getList edge cases ====================
+
+    @SuppressWarnings("unchecked")
+    @Test
+    @DisplayName("getList 跳过非字符串类型的轮播项")
+    void getListSkipsNonStringItem() {
+        when(redisTemplate.opsForList()).thenReturn(listOperations);
+        when(listOperations.range(ResourceConstant.BANNER_PREFIX, 0, -1)).thenReturn(List.of(123, HASH));
+        when(resourceMetaService.getByHash(HASH))
+                .thenReturn(ResourceMeta.builder().id(1L).hash(HASH).build());
+
+        List<ResourceMeta> result = bannerService.getList();
+
+        assertThat(result).hasSize(1);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    @DisplayName("getList 跳过空白哈希的轮播项")
+    void getListSkipsBlankHash() {
+        when(redisTemplate.opsForList()).thenReturn(listOperations);
+        when(listOperations.range(ResourceConstant.BANNER_PREFIX, 0, -1)).thenReturn(List.of("", HASH));
+        when(resourceMetaService.getByHash(HASH))
+                .thenReturn(ResourceMeta.builder().id(1L).hash(HASH).build());
+
+        List<ResourceMeta> result = bannerService.getList();
+
+        assertThat(result).hasSize(1);
+    }
+
+    // ==================== updateByHash ====================
+
+    @SuppressWarnings("unchecked")
+    @Test
+    @DisplayName("updateByHash 按哈希更新轮播图")
+    void updateByHash() {
+        when(redisTemplate.opsForList()).thenReturn(listOperations);
+        when(listOperations.size(ResourceConstant.BANNER_PREFIX)).thenReturn(5L);
+        when(resourceMetaService.getByHash(HASH))
+                .thenReturn(ResourceMeta.builder().id(1L).hash(HASH).build());
+        when(listOperations.index(ResourceConstant.BANNER_PREFIX, 2)).thenReturn("old-hash");
+        when(listOperations.range(ResourceConstant.BANNER_PREFIX, 0, -1)).thenReturn(List.of("h1", "h2"));
+
+        ResourceMeta result = bannerService.updateByHash(2, HASH);
+
+        assertThat(result).isNotNull();
+        verify(listOperations).set(ResourceConstant.BANNER_PREFIX, 2, HASH);
+    }
+
+    // ==================== replaceBanner already exists ====================
+
+    @SuppressWarnings("unchecked")
+    @Test
+    @DisplayName("update 新哈希已存在于轮播图时抛出异常")
+    void updateAlreadyExists() {
+        when(redisTemplate.opsForList()).thenReturn(listOperations);
+        when(listOperations.size(ResourceConstant.BANNER_PREFIX)).thenReturn(5L);
+        when(resourceMetaService.get(1L))
+                .thenReturn(ResourceMeta.builder().id(1L).hash(HASH).build());
+        when(listOperations.index(ResourceConstant.BANNER_PREFIX, 2)).thenReturn("old-hash");
+        when(listOperations.range(ResourceConstant.BANNER_PREFIX, 0, -1)).thenReturn(List.of("h1", HASH));
+
+        assertThatThrownBy(() -> bannerService.update(2, "1"))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("该资源已存在于轮播图中");
+    }
+
+    // ==================== getUserList empty ====================
+
+    @SuppressWarnings("unchecked")
+    @Test
+    @DisplayName("getUserList 轮播图列表为空时返回空列表")
+    void getUserListEmpty() {
+        when(redisTemplate.opsForList()).thenReturn(listOperations);
+        when(listOperations.range(ResourceConstant.BANNER_PREFIX, 0, -1)).thenReturn(List.of());
+
+        List<BannerResourceResponse> result = bannerService.getUserList();
+
+        assertThat(result).isEmpty();
+    }
+
+    // ==================== validateOrder null size ====================
+
+    @SuppressWarnings("unchecked")
+    @Test
+    @DisplayName("validateOrder size 为 null 时抛出异常")
+    void getWithNullSize() {
+        when(redisTemplate.opsForList()).thenReturn(listOperations);
+        when(listOperations.size(ResourceConstant.BANNER_PREFIX)).thenReturn(null);
+
+        assertThatThrownBy(() -> bannerService.get(0))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("轮播图不存在");
+    }
 }

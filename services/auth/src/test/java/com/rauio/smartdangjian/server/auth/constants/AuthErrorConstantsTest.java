@@ -2,6 +2,8 @@ package com.rauio.smartdangjian.server.auth.constants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Constructor;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -88,4 +90,5 @@ class AuthErrorConstantsTest {
         assertThat(AuthErrorConstants.USER_NOT_FOUND).isBetween(1000, 1999);
         assertThat(AuthErrorConstants.OLD_PASSWORD_ERROR).isBetween(1000, 1999);
     }
+
 }

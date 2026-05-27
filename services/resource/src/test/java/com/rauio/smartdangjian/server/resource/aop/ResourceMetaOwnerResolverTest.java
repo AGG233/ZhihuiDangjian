@@ -30,6 +30,17 @@ class ResourceMetaOwnerResolverTest {
     }
 
     @Test
+    @DisplayName("findResourceOwner 传入Long参数时返回上传人ID")
+    void findResourceOwnerWithLongArgument() {
+        when(resourceMetaService.get(1L))
+                .thenReturn(ResourceMeta.builder().id(1L).uploaderId(1L).build());
+
+        String owner = resolver.findResourceOwner(1L);
+
+        assertThat(owner).isEqualTo("1");
+    }
+
+    @Test
     @DisplayName("findResourceOwner 返回上传人ID")
     void findResourceOwner() {
         when(resourceMetaService.get(1L))

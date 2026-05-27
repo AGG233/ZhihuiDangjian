@@ -1,15 +1,29 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
+
+import java.util.Map;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.ai.chat.model.ToolContext;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
 import com.rauio.smartdangjian.server.ai.service.AiChatMessageService;
+import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
 import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,9 +38,97 @@ class QuizToolTest {
     @InjectMocks
     private QuizTool quizTool;
 
-    @Test
-    @DisplayName("QuizTool 被正确创建")
-    void quizToolCreated() {
-        assertThat(quizTool).isNotNull();
+    @Nested
+    @DisplayName("getQuizReasoning 方法")
+    class GetQuizReasoningTest {
+
+        @SuppressWarnings("unchecked")
+        private LambdaQueryChainWrapper<AiChatMessage> realChain(AiChatMessage result) {
+            BaseMapper<AiChatMessage> mockMapper = mock(BaseMapper.class);
+            when(mockMapper.selectOne(any())).thenReturn(result);
+            LambdaQueryChainWrapper<AiChatMessage> wrapper = new LambdaQueryChainWrapper<>(mockMapper);
+            doReturn(wrapper).when(messageService).lambdaQuery();
+            return wrapper;
+        }
+
+        @Test
+        @DisplayName("提供 sessionId 参数时使用该值查询并返回 metadata")
+        void usesProvidedSessionIdAndReturnsMetadata() {
+            Map<String, Object> metadata = Map.of("reasoning", "some reasoning");
+            AiChatMessage message = AiChatMessage.builder()
+                    .sessionId("session-1")
+                    .userId(1L)
+                    .metadata(metadata)
+                    .build();
+
+            ToolContext toolContext = mock(ToolContext.class);
+
+            try (MockedStatic<ToolContextUtil> mocked = mockStatic(ToolContextUtil.class)) {
+                mocked.when(() -> ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-1");
+
+                realChain(message);
+
+                Object result = quizTool.getQuizReasoning("session-1", toolContext);
+
+                assertThat(result).isEqualTo(metadata);
+            }
+        }
+
+        @Test
+        @DisplayName("sessionId 为 null 时从 ToolContext 获取会话 ID")
+        void usesSessionIdFromToolContextWhenParamIsNull() {
+            Map<String, Object> metadata = Map.of("reasoning", "context reasoning");
+            AiChatMessage message = AiChatMessage.builder()
+                    .sessionId("context-session")
+                    .userId(2L)
+                    .metadata(metadata)
+                    .build();
+
+            ToolContext toolContext = mock(ToolContext.class);
+
+            try (MockedStatic<ToolContextUtil> mocked = mockStatic(ToolContextUtil.class)) {
+                mocked.when(() -> ToolContextUtil.getSessionId(toolContext)).thenReturn("context-session");
+                mocked.when(() -> ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-2");
+
+                realChain(message);
+
+                Object result = quizTool.getQuizReasoning(null, toolContext);
+
+                assertThat(result).isEqualTo(metadata);
+            }
+        }
+
+        @Test
+        @DisplayName("sessionId 为空白字符串时从 ToolContext 获取会话 ID")
+        void usesSessionIdFromToolContextWhenParamIsBlank() {
+            ToolContext toolContext = mock(ToolContext.class);
+
+            try (MockedStatic<ToolContextUtil> mocked = mockStatic(ToolContextUtil.class)) {
+                mocked.when(() -> ToolContextUtil.getSessionId(toolContext)).thenReturn("blank-session");
+                mocked.when(() -> ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-3");
+
+                realChain(null);
+
+                Object result = quizTool.getQuizReasoning("   ", toolContext);
+
+                assertThat(result).isNull();
+            }
+        }
+
+        @Test
+        @DisplayName("未找到消息时返回 null")
+        void returnsNullWhenMessageNotFound() {
+            ToolContext toolContext = mock(ToolContext.class);
+
+            try (MockedStatic<ToolContextUtil> mocked = mockStatic(ToolContextUtil.class)) {
+                mocked.when(() -> ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-4");
+
+                realChain(null);
+
+                Object result = quizTool.getQuizReasoning("nonexistent-session", toolContext);
+
+                assertThat(result).isNull();
+            }
+        }
     }
 }

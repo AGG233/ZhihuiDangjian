@@ -24,4 +24,5 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.h2database:h2")
+    testImplementation(libs.mybatis.plus.join.starter)
 }

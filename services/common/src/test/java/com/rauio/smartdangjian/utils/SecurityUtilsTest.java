@@ -5,6 +5,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Constructor;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,6 +16,7 @@ import org.mockito.MockedStatic;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
+import cn.dev33.satoken.exception.SaTokenContextException;
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 
@@ -125,4 +128,25 @@ class SecurityUtilsTest {
 
         assertThat(result).isNull();
     }
+
+    @Test
+    @DisplayName("getCurrentUser SaTokenContextException 时返回 null")
+    void getCurrentUserReturnsNullOnSaTokenContextException() {
+        stpUtilMock.when(StpUtil::isLogin).thenThrow(SaTokenContextException.class);
+
+        CurrentUserPrincipal result = SecurityUtils.getCurrentUser();
+
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("getCurrentUserId SaTokenContextException 时返回 null")
+    void getCurrentUserIdReturnsNullOnSaTokenContextException() {
+        stpUtilMock.when(StpUtil::isLogin).thenThrow(SaTokenContextException.class);
+
+        String result = SecurityUtils.getCurrentUserId();
+
+        assertThat(result).isNull();
+    }
+
 }

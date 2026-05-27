@@ -107,6 +107,30 @@ class AtLeastOneNoBlankValidatorTest {
         assertThatThrownBy(() -> validator.isValid(obj, context)).isInstanceOf(RuntimeException.class);
     }
 
+    static class NonStringObject {
+        private Integer count;
+
+        public NonStringObject(Integer count) {
+            this.count = count;
+        }
+    }
+
+    @Test
+    @DisplayName("field with non-String value not matching returns false")
+    void nonStringFieldReturnsFalse() {
+        AtLeastOneNoBlankValidator validator = new AtLeastOneNoBlankValidator();
+        AtLeastOneNoBlank mockAnnotation = mock(AtLeastOneNoBlank.class);
+        when(mockAnnotation.fields()).thenReturn(new String[] {"count"});
+        validator.initialize(mockAnnotation);
+
+        ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
+        NonStringObject obj = new NonStringObject(42);
+
+        boolean result = validator.isValid(obj, context);
+
+        assertThat(result).isFalse();
+    }
+
     @Test
     @DisplayName("三个字段中字段C不为空时返回 true")
     void thirdFieldNonBlankReturnsTrue() {

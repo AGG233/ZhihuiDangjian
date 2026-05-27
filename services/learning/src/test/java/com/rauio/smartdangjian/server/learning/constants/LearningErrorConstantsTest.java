@@ -5,8 +5,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Constructor;
+
 @DisplayName("LearningErrorConstants 学习模块错误码常量")
 class LearningErrorConstantsTest {
+
+    @Test
+    @DisplayName("工具类不应被实例化")
+    void shouldNotBeInstantiated() throws Exception {
+        Constructor<LearningErrorConstants> constructor = LearningErrorConstants.class.getDeclaredConstructor();
+        assertThat(constructor.newInstance()).isNotNull();
+    }
 
     @Test
     @DisplayName("学习记录错误码在 4000-4010 范围内")

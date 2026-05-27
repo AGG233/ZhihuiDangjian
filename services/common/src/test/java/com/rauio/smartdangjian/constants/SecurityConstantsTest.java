@@ -2,6 +2,8 @@ package com.rauio.smartdangjian.constants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Constructor;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -54,4 +56,5 @@ class SecurityConstantsTest {
     void captchaExpiration() {
         assertThat(SecurityConstants.CAPTCHA_EXPIRATION).isEqualTo(60_000L);
     }
+
 }

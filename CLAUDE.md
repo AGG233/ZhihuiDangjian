@@ -1,179 +1,251 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+此文件为 Claude Code (claude.ai/code) 在此仓库中工作提供指导。
 
-## gstack
-
-Use the `/browse` skill from gstack for all web browsing. Never use `mcp__claude-in-chrome__*` tools.
-
-Available gstack skills: `/office-hours`, `/plan-ceo-review`, `/plan-eng-review`, `/plan-design-review`, `/design-consultation`, `/design-shotgun`, `/design-html`, `/review`, `/ship`, `/land-and-deploy`, `/canary`, `/benchmark`, `/browse`, `/connect-chrome`, `/qa`, `/qa-only`, `/design-review`, `/setup-browser-cookies`, `/setup-deploy`, `/setup-gbrain`, `/retro`, `/investigate`, `/document-release`, `/document-generate`, `/codex`, `/cso`, `/autoplan`, `/plan-devex-review`, `/devex-review`, `/careful`, `/freeze`, `/guard`, `/unfreeze`, `/gstack-upgrade`, `/learn`.
-
-## Build Commands
+## 构建命令
 
 ```bash
-./gradlew compileJava                    # Compile only
-./gradlew bootJar -x test                # Build bootable JAR (skip tests)
-./gradlew clean bootJar -x test          # Clean build
-./gradlew test                           # Run tests (JUnit 5)
+./gradlew compileJava
+./gradlew test
+./gradlew bootJar -x test
+
+# 单模块测试
+./gradlew :services:ai:test
+./gradlew :server:test
+
+# 按测试类/方法运行
+./gradlew :server:test --tests "*SomeTest*"
+./gradlew :services:ai:test --tests "com.rauio.smartdangjian.server.ai.tool.*"
+
+# 集成测试（独立源码集）
+./gradlew integrationTest
+
+# 聚合覆盖率报告 + 阈值检查
+./gradlew jacocoRootReport jacocoRootCoverageVerification
+
+# 代码格式化
+./gradlew spotlessApply
+./gradlew spotlessCheck
 ```
 
-The project requires Java 21. Gradle wrapper (`./gradlew`) is included.
+项目要求 Java 21，Gradle Wrapper (`./gradlew`) 已包含。
 
-## Architecture
+## 项目架构
 
-Single Spring Boot application using Gradle multi-module layout. Despite Spring Cloud dependencies being present, `@EnableFeignClients` and `@EnableDiscoveryClient` are commented out — it runs as a monolith.
+单体 Spring Boot 应用，Gradle 多模块布局。聚合入口：SmartDangjianApplication（server 模块，端口 9000）。
 
-### Module Structure
+### 模块一览
 
-- **`server`** — Main boot application entry point (`SmartDangjianApplication`). Aggregates all service modules into one JAR.
-- **`services/common`** — Shared library: Spring Security, Redis, MyBatis-Plus config, custom validation annotations, AOP-based access control, global exception handling, COS/Tika utilities. All other modules depend on this.
-- **`services/ai`**, **`services/auth`** — Independent boot applications (each has its own `@SpringBootApplication`).
-- **`services/user`**, **`services/content`**, **`services/article`**, etc. — Library modules providing domain-specific controllers, services, and mappers.
+- server — 聚合 JAR 入口
+- services/common — 共享基础库
+- services/ai — Spring AI Alibaba Agent
+- services/auth — Sa-Token 认证授权
+- services/quiz — 测验模块
+- services/user — 用户管理
+- services/content — 内容管理
+- services/article — 文章
+- services/category — 分类
+- services/chapter — 章节
+- services/course — 课程
+- services/graph — 知识图谱（Neo4j）
+- services/learning — 学习路径
+- services/search — 搜索
+- services/resource — 文件资源（腾讯云 COS）
 
-### Key Technical Decisions
+### 关键技术决策
 
-- **ORM**: MyBatis-Plus (not JPA/Hibernate). Entities use `@TableName`, mappers extend `BaseMapper<T>`.
-- **Database**: MySQL (`zhihuidangjian`), connection via environment variables `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`.
-- **Additional stores**: Redis (cache/sessions via Redisson), Neo4j (knowledge graph in `graph` module).
-- **Security**: Sa-Token + custom AOP annotations (`@SaCheckRole`, `@SaCheckLogin`, `@ResourceAccess`, `@DataScopeAccess`). BCrypt via Hutool. Formerly Spring Security + JWT (migrated 2026-05).
-- **API docs**: Knife4j/OpenAPI via SpringDoc.
-- **Build conventions**: `buildSrc/` convention plugins (`service-conventions`, `boot-application-conventions`) centralize Java toolchain, BOM imports, and repository config.
-- **Dependency catalog**: `gradle/libs.versions.toml` defines all versions and dependency bundles.
+| 领域 | 选型 |
+|------|------|
+| ORM | MyBatis-Plus（非 JPA），主键策略 ASSIGN_ID |
+| 数据库 | MySQL 8.4，Flyway 迁移（server/src/main/resources/db/migration/）|
+| 缓存/会话 | Redis + Redisson |
+| 知识图谱 | Neo4j（graph 模块）|
+| 认证授权 | Sa-Token + 自研 AOP 注解（Header: Authorization: Bearer <token>）|
+| API 文档 | Knife4j / OpenAPI via SpringDoc |
+| AI | Spring AI Alibaba（Qwen / DeepSeek 兼容）|
+| 对象映射 | MapStruct（生成代码被 JaCoCo 排除）|
+| 文件存储 | 腾讯云 COS（X-File-Storage 封装）|
 
-### Convention Plugins (buildSrc/)
+### AI 模块架构（services/ai）
 
-- `service-conventions` — `java-library` + Spring dependency management + Java 21 toolchain + Aliyun Maven mirror
-- `boot-application-conventions` — extends service-conventions + `org.springframework.boot` plugin + bootJar naming
+基于 Spring AI Alibaba Graph/Agent 框架：
 
-### AutoConfiguration (common module)
+- 1 个 LlmRoutingAgent 协调器：按意图路由请求
+- 5 个 ReactAgent 专业 Agent：STUDY_ASSISTANT、CONTENT_DISCOVERY、ASSESSMENT、REVIEW、PROFILE
+- 14 个 Tool：ContentSearchTool、QuizTool、QuizManageTool、UserInfoTool、UserProfileTool、RecommendTool、ArticleDetailTool、ContentReviewTool、ContentSafetyTool、LearningTool、LearningPathTool、AiQuizGeneratorTool、UserQuizAnswerTool 等
+- 动态技能系统：SkillService + DatabaseSkillRegistry
+- 会话记忆：RedisMemory（Redis Checkpointer 持久化）
+- 入口：UserChatController（SSE 流式响应）
 
-Registered via `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`:
-`AsyncConfig`, `BeanConfig`, `MybatisConfig` (pagination + auto-fill), `OpenApiConfig`, `RedisConfig`, `SecurityCoreAutoConfiguration`, `SecuritySupportAutoConfiguration`, `TransactionConfig`, `WebConfig`
+### 安全架构
 
-## Code Patterns
+- 认证：Sa-Token Token 认证（Header: Authorization: Bearer <token>）
+- 角色层级：MANAGER > SCHOOL > STUDENT
+- AOP 注解：@ResourceAccess（资源归属校验）、@DataScopeAccess（数据范围过滤）
+- 全局异常处理：GlobalExceptionHandler，统一返回 Result<T>
 
-- **API response**: All endpoints return `Result<T>` (`Result.ok(data)`, `Result.error(code, msg)`).
-- **Exceptions**: Throw `BusinessException(code, message)`, caught by `GlobalExceptionHandler`.
-- **Module package base**: `com.rauio.smartdangjian.server.<module>.<layer>`
-- **Mappers**: `@Mapper` interface extending `BaseMapper<T>`, scanned from `com.rauio.smartdangjian`.
+### 约定插件（buildSrc/，Kotlin DSL）
 
-## Development Workflow
+- service-conventions — java-library + Spring 依赖管理 + Java 21 工具链 + Spotless（Palantir 格式）+ JaCoCo + 集成测试源码集，仓库使用阿里云 Maven 镜像
+- boot-application-conventions — 继承 service-conventions + org.springframework.boot 插件 + BootJar 命名
 
-Two branches, no feature branches:
+### 自动配置（common 模块）
 
-```
-dev       日常开发，随时推送
-  ↓ 创建 PR → CI + SonarQube → 合并
-product   发布基线，推送后自动构建部署
+通过 AutoConfiguration.imports 注册：
+AsyncConfig（4 个线程池）、BeanConfig（Tika）、MybatisConfig（分页 + 自动填充 createdAt/updatedAt）、OpenApiConfig、RedisConfig、SecurityCoreAutoConfiguration（CORS）、TransactionConfig、WebConfig
+
+### 环境变量
+
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| DATABASE_URL | MySQL JDBC URL | `jdbc:mysql://127.0.0.1:3306/zhihuidangjian?...` |
+| DATABASE_USERNAME | 数据库用户 | — |
+| DATABASE_PASSWORD | 数据库密码 | — |
+| REDIS_HOST | Redis 主机 | — |
+| REDIS_PORT | Redis 端口 | — |
+| REDIS_DATABASE | Redis 数据库编号 | — |
+| NEO4J_URI | Neo4j bolt URI | `bolt://localhost:7687` |
+| NEO4J_USERNAME | Neo4j 用户 | `neo4j` |
+| NEO4J_PASSWORD | Neo4j 密码 | `password` |
+| AI_KEY | AI API key（DeepSeek 兼容） | `dummy-key` |
+| AI_MODEL | AI 模型名 | `deepseek-chat` |
+| AI_MCP_ENABLED | MCP 客户端开关 | `false` |
+| COS_SECRET_ID / COS_SECRET_KEY | 腾讯云 COS 凭据 | — |
+| COS_REGION | COS 地域 | `ap-guangzhou` |
+| COS_BUCKET | COS 存储桶 | — |
+| COS_LINK | COS 访问域名 | — |
+| TENCENT_CLOUD_COS_ENABLED | COS 启用开关 | `true`（测试环境 `false`）|
+| AUTH_TEST_CAPTCHA_CODE | 验证码测试码 | 测试环境 `TEST8888` / `CI8888` |
+
+### 代码模式
+
+- 统一响应：所有端点返回 Result<T>（Result.ok(data) / Result.error(code, msg)）
+- 业务异常：抛出 BusinessException(code, message)，code 使用模块级错误码常量
+- 分层结构：Controller → Service → Mapper (BaseMapper<T>) → Entity
+- 对象映射：MapStruct 接口命名 `*Convertor` / `*Mapper`，JaCoCo 自动排除 `*Impl` 生成类
+- 包命名：com.rauio.smartdangjian.<模块>.<层>
+- 全局 Mapper 扫描：@MapperScan(basePackages = "com.rauio.smartdangjian")
+- Entity 设计：继承 MyBatis-Plus `Model<T>`，主键 `@TableId(type = ASSIGN_ID)`，MybatisConfig 自动填充 `created_at`/`updated_at`
+- 枚举序列化：业务枚举使用 `@JsonValue` 标注（如 `UserType.STUDENT` → `"学生"`），VO 敏感字段使用 `@Sensitive` 脱敏
+
+## 开发工作流
+
+双分支模式，无 feature 分支：
+
+```bash
+dev（日常开发，随时推送）
+  └── 创建 PR → CI(SonarQube) → 合并
+product（发布基线，通过打标签触发发布流水线）
 ```
 
 ### 日常流程
 
 ```bash
-# dev 上开发
+# dev 开发
 git checkout dev
-# ...修改代码、提交...
+# 修改、提交
 git push origin dev
 
-# 准备发版：dev → product（通过 PR）
-# 1. 创建 Pull Request: dev → product
+# 发版：创建 dev → product PR
 gh pr create --base product --head dev --title "合并 dev 到 product"
-# 2. PR 自动触发 CI（编译 + 测试 + bootJar）和 SonarQube 扫描
-# 3. 全部通过后，在 GitHub 上合并 PR
-
-# 或者合并后手动推 product
-git checkout product
-git merge dev
-# 修改 gradle.properties 版本号
-git add gradle.properties && git commit -m "chore: bump to x.x.x"
-git push origin product          # → 触发 Release Pipeline
+# PR 触发 CI（编译 + 测试 + JaCoCo + bootJar + SonarQube）
+# 全部通过后在 GitHub 上合并 PR
 ```
 
 ### 紧急修复
 
 ```bash
+# product 发布
 git checkout product
-# 修复、提交、推送
-git push origin product          # → 自动构建部署
+# 修复、提交
+git commit -m "fix: ..."
+git push origin product
+# 创建版本标签触发 release 流水线
+git tag v0.x.y
+git push origin v0.x.y
+
+# 修复同步回 dev
 git checkout dev
-git merge product                # 修复同步回 dev
+git merge product
 ```
 
 ### 错误码规范
 
-所有业务异常统一抛出 `BusinessException(code, message)`，错误码使用模块级常量：
-
 | 模块 | 常量类 | 范围 |
 |------|--------|------|
-| 通用 | `ErrorConstants` | 1-99 |
-| auth | `AuthErrorConstants` | 1000-1999 |
-| user | `UserErrorConstants` | 2000-2999 |
-| category | `CategoryErrorConstants` | 3000-3099 |
-| chapter | `ChapterErrorConstants` | 3100-3199 |
-| course | `CourseErrorConstants` | 3200-3299 |
-| learning | `LearningErrorConstants` | 4000-4999 |
-| resource | `ResourceErrorConstants` | 5000-5999 |
-| quiz | `QuizErrorConstants` | 6000-6999 |
-| graph | `GraphErrorConstants` | 7000-7999 |
-| ai | `AiErrorConstants` | 8000-8999 |
+| 通用 | ErrorConstants | 1-99 |
+| auth | AuthErrorConstants | 1000-1999 |
+| user | UserErrorConstants | 2000-2999 |
+| category | CategoryErrorConstants | 3000-3099 |
+| chapter | ChapterErrorConstants | 3100-3199 |
+| course | CourseErrorConstants | 3200-3299 |
+| learning | LearningErrorConstants | 4000-4999 |
+| resource | ResourceErrorConstants | 5000-5999 |
+| quiz | QuizErrorConstants | 6000-6999 |
+| graph | GraphErrorConstants | 7000-7999 |
+| ai | AiErrorConstants | 8000-8999 |
+
+### 数据库迁移（Flyway）
+
+迁移脚本位于 `server/src/main/resources/db/migration/`，命名遵循 `V<序号>__<描述>.sql`：
+
+- V1：初始 schema，统一 utf8mb4、datetime(3)、bigint unsigned ASSIGN_ID 主键
+- V2：种子数据（学校列表）
+- V3：AI agent 相关表
+- V4：增量字段（source_url），使用 `INFORMATION_SCHEMA.COLUMNS` 做幂等检查
+
+新增迁移规则：增量 DDL 必须幂等（IF NOT EXISTS / INFORMATION_SCHEMA 检查），禁止修改已发布的 V1-V4 文件。
 
 ### 测试规范
 
-- **Controller mock 测试**（`BaseControllerTest` 风格）只验证路由、参数校验、响应包装，不作为业务回归唯一证明。
-- **新增 bugfix** 需要同时满足：service 层单元测试更新 + 至少一个跨层回归测试（`extends CrossLayerTestBase`），除非该 bug 完全位于纯函数/DTO/validator。
-- **CI 必须运行根任务** `./gradlew test --continue`，不能只跑 `:server:test`。
+- BaseControllerTest — Controller MockMvc 测试：mock SaToken，排除 DataSource 自动配置
+- CrossLayerTestBase — 跨层回归测试：H2 内存数据库，Flyway 禁用，连接真实 Service + Mapper
+- Controller mock 测试只验证路由、参数校验、响应包装
+- Service 层测试使用 @Spy + @InjectMocks mock MyBatis-Plus 父类方法
+- AOP 切面测试使用 @ExtendWith(MockitoExtension.class)，不启动 Spring 上下文
+- 新增 bugfix 须同时满足：service 层单元测试 + 至少一个跨层回归测试
+- CI 必须运行 ./gradlew test --continue
+- 独立模块测试：./gradlew :services:ai:test
+- 测试数据工厂：UserTestDataFactory 提供可复用的 VO/DTO 构建方法
+- 详细测试编写指南见 docs/测试编写指南.md
 
-### 注意事项
-
-- **不要在 `product` 上开发新功能**，它只接收发版合并和紧急修复
-- **确保 `dev` 和 `product` 的 Gradle 版本一致**：`./gradlew wrapper --gradle-version 9.5.0`
-- 推送后去 [Actions](https://github.com/AGG233/ZhihuiDangjian/actions) 页面查看 CI/CD 运行状态
+测试环境：application-test.yaml（H2 + Redis + Neo4j + 验证码测试码 TEST8888）
 
 ## CI/CD
 
 | 工作流 | 触发条件 | 执行内容 |
-|---|---|---|
-| `ci.yml` | PR `dev`→`product` | compileJava → test + JaCoCo → Codacy 覆盖率上传 → bootJar（含 Redis + Neo4j 服务容器）|
-| `release.yml` | 推送到 `product` | bootJar → Docker 镜像（GHCR）|
+|--------|----------|----------|
+| ci.yml | PR dev→product | compileJava → test + integrationTest + JaCoCo（LINE/BRANCH ≥ 95%）→ Codacy → bootJar → API 烟雾测试 |
+| release.yml | 推送版本标签 (`v*`) | bootJar → Docker 多架构镜像（linux/amd64 + linux/arm64）→ 推送 GHCR → 自托管 Runner 部署 |
 
-- **Dockerfile** (`server/Dockerfile`): eclipse-temurin:21-jre-alpine，多阶段构建
+- Dockerfile（server/Dockerfile）：eclipse-temurin:21-jre-alpine，端口 9000，非 root 用户运行
+- API 烟雾测试：CI 启动 bootJar 后通过 Node.js 脚本（.github/scripts/api-smoke-openapi.mjs）验证关键 API
+- API 手动测试：tests/bruno/ 目录提供 Bruno 集合
+- Docker Compose：Redis + app + watchtower 容器编排（docker-compose.yml）
+- watchtower 每 5 分钟检查 GHCR 镜像更新并自动重启容器
+- 生产部署在自托管 Runner，通过 docker-compose pull && up -d 完成
 
-## Agent Team (`zhihui-dev`)
+## 依赖管理
 
-本项目的 AI 协作团队，使用 `TeamCreate` 工具创建。
+版本统一管理在 gradle/libs.versions.toml，按 bundle 分组：
+common、ai（spring-ai）、sa-token、datasource-core、file-storage（腾讯云 COS）
 
-### 创建团队
+## CodeGraph 使用
 
-```
-TeamCreate(team_name="zhihui-dev", description="智慧党建开发团队")
-```
+本仓库已初始化 .codegraph/ 索引。优先使用 codegraph_* 工具进行代码探索：
 
-### 成员与派发
+| 场景 | 工具 |
+|------|------|
+| 查找符号定义 | codegraph_search |
+| 了解模块/特性 | codegraph_context |
+| 查看调用链 | codegraph_callers / codegraph_callees |
+| 评估修改影响 | codegraph_impact |
+| 查看符号源码 | codegraph_node / codegraph_explore |
 
-| 角色 | Agent 类型 | 适用场景 | 派发示例 |
-|------|-----------|----------|----------|
-| `backend-dev` | `spring-boot-coder` | controller、service、mapper、entity、config、Spring Boot 配置 | `Agent(name="backend-dev", subagent_type="spring-boot-coder", team_name="zhihui-dev")` |
-| `test-engineer` | `test-coder` | 单元测试、跨层测试、覆盖率提升 | `Agent(name="test-engineer", subagent_type="test-coder", team_name="zhihui-dev")` |
-| `code-reviewer` | `pr-review-toolkit:code-reviewer` | 提交前审查、安全审查、规范检查 | `Agent(name="code-reviewer", subagent_type="pr-review-toolkit:code-reviewer", team_name="zhihui-dev")` |
-| `architect` | `feature-dev:code-architect` | 架构设计、影响分析、重构规划 | `Agent(name="architect", subagent_type="feature-dev:code-architect", team_name="zhihui-dev")` |
+## 注意事项
 
-### 工作流
-
-```
-新功能：architect 设计 → backend-dev 实现 → test-engineer 测试 → code-reviewer 审查
-Bug修复：architect 定位 → backend-dev 修复 → test-engineer 回归测试
-重构：  architect 规划 → backend-dev 执行 → test-engineer 验证 → code-reviewer 审批
-并行：  多个独立模块任务可用 dispatching-parallel-agents 模式并行派发
-```
-
-### 经验教训
-
-- **测试引擎写跨层测试时**：必须提醒用 `extends CrossLayerTestBase`，避免纯 Mockito 单元测试遇到 MyBatis-Plus `LambdaQueryWrapper` 的 `can not find lambda cache` 错误
-- **backend-dev 适合拆分任务**：会自动将大任务拆成子任务逐个完成，适合独立模块改动
-- **agent 间消息单向**：Shutdown 用 `SendMessage(type="shutdown_request")`，日常工作成果通过 git diff 验证
-- **权限模式**：推荐 `acceptEdits`，架构/DB schema 变更时手动确认
-
-### 团队配置
-
-团队配置文件：`~/.claude/teams/zhihui-dev/config.json`
-任务计划文件：`~/.claude/plans/agent-team-swift-fern.md`
+- 不要在 product 上开发新功能，只接收发版合并和紧急修复
+- Gradle 版本保持一致：./gradlew wrapper --gradle-version 9.5.0
+- 配置分为 dev/prod/test 三套 profile，环境变量注入敏感信息
+- 可独立运行模块：server（聚合 JAR）、ai、auth、quiz
+- 推送后去 GitHub Actions 页面查看 CI/CD 状态
