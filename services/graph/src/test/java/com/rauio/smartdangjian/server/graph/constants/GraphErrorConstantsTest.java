@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Constructor;
 
 @DisplayName("GraphErrorConstants 知识图谱错误码常量")
+@SuppressWarnings("java:S3011")
 class GraphErrorConstantsTest {
 
     @Test

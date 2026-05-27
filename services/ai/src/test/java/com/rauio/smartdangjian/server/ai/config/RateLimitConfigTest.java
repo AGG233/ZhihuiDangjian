@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("java:S3011")
 class RateLimitConfigTest {
 
     @Captor

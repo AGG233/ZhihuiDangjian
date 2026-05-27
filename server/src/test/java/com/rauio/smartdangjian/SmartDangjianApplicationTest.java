@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+@SuppressWarnings("java:S3011")
 class SmartDangjianApplicationTest {
 
     @Test

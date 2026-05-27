@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("java:S3011")
 class HashUtilTest {
 
     @Test

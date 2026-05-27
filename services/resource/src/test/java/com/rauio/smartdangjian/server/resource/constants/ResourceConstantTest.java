@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("ResourceConstant 资源常量")
+@SuppressWarnings("java:S3011")
 class ResourceConstantTest {
 
     @Test

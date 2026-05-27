@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.rauio.smartdangjian.annotation.validation.Sensitive;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("java:S3011")
 class SensitiveDataSerializerTest {
 
     @Mock

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("ResourceErrorConstants 资源模块错误码常量")
+@SuppressWarnings("java:S3011")
 class ResourceErrorConstantsTest {
 
     @Test

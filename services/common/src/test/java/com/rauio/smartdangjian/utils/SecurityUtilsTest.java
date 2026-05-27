@@ -20,6 +20,7 @@ import cn.dev33.satoken.exception.SaTokenContextException;
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 
+@SuppressWarnings("java:S3011")
 class SecurityUtilsTest {
 
     private MockedStatic<StpUtil> stpUtilMock;

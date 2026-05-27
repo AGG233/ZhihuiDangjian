@@ -40,6 +40,7 @@ import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
 import com.rauio.smartdangjian.server.quiz.service.QuizService;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("java:S3011")
 class AiQuizGeneratorToolTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();

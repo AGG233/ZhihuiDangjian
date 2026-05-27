@@ -24,6 +24,7 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.utils.SecurityUtils;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
+@SuppressWarnings("java:S3011")
 class ResourceAccessAspectTest {
 
     private MockedStatic<SecurityUtils> securityUtilsMock;
