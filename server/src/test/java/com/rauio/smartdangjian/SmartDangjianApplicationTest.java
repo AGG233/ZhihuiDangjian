@@ -2,14 +2,12 @@ package com.rauio.smartdangjian;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Constructor;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-/**
- * SmartDangjianApplication 的 Smoke Test。
- * 验证主配置类能被加载、annotation 正确、main 方法可调用。
- */
 class SmartDangjianApplicationTest {
 
     @Test
@@ -38,11 +36,19 @@ class SmartDangjianApplicationTest {
     }
 
     @Test
-    @DisplayName("main 方法存在并可反射调用")
+    @DisplayName("main 方法存在并可反射调用（不启动完整 Spring 上下文）")
     void mainMethodExists() throws Exception {
         var mainMethod = SmartDangjianApplication.class.getDeclaredMethod("main", String[].class);
         assertThat(mainMethod).isNotNull();
         assertThat(java.lang.reflect.Modifier.isPublic(mainMethod.getModifiers())).isTrue();
         assertThat(java.lang.reflect.Modifier.isStatic(mainMethod.getModifiers())).isTrue();
+    }
+
+    @Test
+    @DisplayName("private 构造器覆盖")
+    void privateConstructor() throws Exception {
+        Constructor<SmartDangjianApplication> constructor = SmartDangjianApplication.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        constructor.newInstance();
     }
 }

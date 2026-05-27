@@ -24,6 +24,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import com.rauio.smartdangjian.pojo.response.Result;
 
 import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.exception.NotRoleException;
 
 class GlobalExceptionHandlerTest {
@@ -110,6 +111,17 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    @DisplayName("handleNotPermissionException 返回 403 和无权限操作信息")
+    void handleNotPermissionException() {
+        NotPermissionException ex = new NotPermissionException("admin:delete");
+
+        Result<?> result = handler.handleNotPermissionException(ex);
+
+        assertThat(result.getCode()).isEqualTo("403");
+        assertThat(result.getMessage()).isEqualTo("无权限执行该操作");
+    }
+
+    @Test
     @DisplayName("handleDuplicateKeyException 返回 409 和数据已存在信息")
     void handleDuplicateKeyException() {
         DuplicateKeyException ex = new DuplicateKeyException("duplicate key");
@@ -143,8 +155,19 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    @DisplayName("handleMethodArgumentTypeMismatchException requiredType null returns 400 and fallback message")
-    void handleMethodArgumentTypeMismatchExceptionNullRequiredType() {
+    @DisplayName("handleRuntimeExceptions 返回 500 和服务器错误信息")
+    void handleRuntimeException() {
+        RuntimeException ex = new RuntimeException("internal error");
+
+        Result<?> result = handler.handleRuntimeExceptions(ex);
+
+        assertThat(result.getCode()).isEqualTo("500");
+        assertThat(result.getMessage()).isEqualTo("服务器内部错误，请稍后重试");
+    }
+
+    @Test
+    @DisplayName("handleMethodArgumentTypeMismatchException requiredType null 返回 fallback 消息")
+    void handleMethodArgumentTypeMismatchNullRequiredType() {
         MethodArgumentTypeMismatchException ex = mock(MethodArgumentTypeMismatchException.class);
         when(ex.getName()).thenReturn("userId");
         when(ex.getRequiredType()).thenReturn(null);
@@ -156,8 +179,8 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    @DisplayName("handleMethodArgumentTypeMismatchException with requiredType returns type name")
-    void handleMethodArgumentTypeMismatchExceptionWithRequiredType() {
+    @DisplayName("handleMethodArgumentTypeMismatchException requiredType 非空返回类型名")
+    void handleMethodArgumentTypeMismatchWithRequiredType() {
         MethodArgumentTypeMismatchException ex = mock(MethodArgumentTypeMismatchException.class);
         when(ex.getName()).thenReturn("sort");
         when(ex.getRequiredType()).thenReturn((Class) Integer.class);
@@ -166,16 +189,5 @@ class GlobalExceptionHandlerTest {
 
         assertThat(result.getCode()).isEqualTo("400");
         assertThat(result.getMessage()).isEqualTo("请求参数类型错误: sort 应为 Integer");
-    }
-
-    @Test
-    @DisplayName("handleRuntimeExceptions returns 500 and server error message")
-    void handleRuntimeException() {
-        RuntimeException ex = new RuntimeException("internal error");
-
-        Result<?> result = handler.handleRuntimeExceptions(ex);
-
-        assertThat(result.getCode()).isEqualTo("500");
-        assertThat(result.getMessage()).isEqualTo("服务器内部错误，请稍后重试");
     }
 }

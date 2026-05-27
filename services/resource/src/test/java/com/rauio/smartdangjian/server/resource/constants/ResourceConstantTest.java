@@ -2,6 +2,8 @@ package com.rauio.smartdangjian.server.resource.constants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Constructor;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -15,5 +17,13 @@ class ResourceConstantTest {
         assertThat(ResourceConstant.BANNER_MAX_SIZE).isEqualTo(100);
         assertThat(ResourceConstant.COS_PLATFORM).isEqualTo("tencent-cos");
         assertThat(ResourceConstant.COS_KEY_EXPIRATION).isEqualTo(10 * 60 * 1000);
+    }
+
+    @Test
+    @DisplayName("private 构造器覆盖")
+    void privateConstructor() throws Exception {
+        Constructor<ResourceConstant> constructor = ResourceConstant.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        constructor.newInstance();
     }
 }

@@ -2,6 +2,8 @@ package com.rauio.smartdangjian.constants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Constructor;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -53,5 +55,13 @@ class SecurityConstantsTest {
     @DisplayName("CAPTCHA_EXPIRATION 为 60000 毫秒 (1分钟)")
     void captchaExpiration() {
         assertThat(SecurityConstants.CAPTCHA_EXPIRATION).isEqualTo(60_000L);
+    }
+
+    @Test
+    @DisplayName("private 构造器覆盖")
+    void privateConstructor() throws Exception {
+        Constructor<SecurityConstants> constructor = SecurityConstants.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        constructor.newInstance();
     }
 }

@@ -192,6 +192,7 @@ class PromptServiceTest {
         doReturn(expectedResponse).when(convertor).toResponse(any(AiPrompts.class));
 
         AiPromptUpdateRequest request = new AiPromptUpdateRequest();
+        request.setAgentType("CHAT");
         request.setName("新名称");
         request.setContent("新内容");
         request.setRole("DEVELOPER");
