@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -43,10 +44,7 @@ class UniversitiesServiceTest {
     void setUp() throws Exception {
         universitiesMapper = mock(UniversitiesMapper.class);
         universitiesService = spy(new UniversitiesService());
-        var field = com.baomidou.mybatisplus.extension.repository.CrudRepository.class
-                .getDeclaredField("baseMapper");
-        field.setAccessible(true); // NOSONAR
-        field.set(universitiesService, universitiesMapper);
+        ReflectionTestUtils.setField(universitiesService, "baseMapper", universitiesMapper);
     }
 
     private Universities createUniversity() {

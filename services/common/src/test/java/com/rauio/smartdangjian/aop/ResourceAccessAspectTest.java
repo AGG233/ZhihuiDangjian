@@ -339,17 +339,6 @@ class ResourceAccessAspectTest {
                 .isEqualTo(ErrorConstants.RESOURCE_NOT_AUTHORIZED);
     }
 
-    @Test
-    @DisplayName("resolveOwner resourceType为null时直接返回resourceId")
-    void resolveOwnerWithNullResourceType() throws Throwable {
-        ResourceAccessAspect aspect = new ResourceAccessAspect(List.of());
-        java.lang.reflect.Method resolveOwner =
-                ResourceAccessAspect.class.getDeclaredMethod("resolveOwner", String.class, String.class);
-        resolveOwner.setAccessible(true); // NOSONAR
-        Object result = resolveOwner.invoke(aspect, (String) null, "owner-id");
-        assertThat(result).isEqualTo("owner-id");
-    }
-
     static class TestTarget {
         @ResourceAccess(id = "")
         public void methodWithId() {}

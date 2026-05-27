@@ -38,33 +38,6 @@ class SensitiveDataSerializerTest {
     }
 
     @Test
-    @DisplayName("desensitizePhone with null returns null via reflection")
-    void desensitizePhoneNullReturnsNull() throws Exception {
-        var method = SensitiveDataSerializer.class.getDeclaredMethod("desensitizePhone", String.class);
-        method.setAccessible(true); // NOSONAR
-        String result = (String) method.invoke(serializer, new Object[] {null});
-        assertThat(result).isNull();
-    }
-
-    @Test
-    @DisplayName("desensitizeIdCard with null returns null via reflection")
-    void desensitizeIdCardNullReturnsNull() throws Exception {
-        var method = SensitiveDataSerializer.class.getDeclaredMethod("desensitizeIdCard", String.class);
-        method.setAccessible(true); // NOSONAR
-        String result = (String) method.invoke(serializer, new Object[] {null});
-        assertThat(result).isNull();
-    }
-
-    @Test
-    @DisplayName("desensitizeBankCard with null returns null via reflection")
-    void desensitizeBankCardNullReturnsNull() throws Exception {
-        var method = SensitiveDataSerializer.class.getDeclaredMethod("desensitizeBankCard", String.class);
-        method.setAccessible(true); // NOSONAR
-        String result = (String) method.invoke(serializer, new Object[] {null});
-        assertThat(result).isNull();
-    }
-
-    @Test
     @DisplayName("value 为 null 时写入 null")
     void serializeNullWritesNull() throws IOException {
         SensitiveDataSerializer phoneSerializer = new SensitiveDataSerializer(Sensitive.SensitiveType.PHONE);

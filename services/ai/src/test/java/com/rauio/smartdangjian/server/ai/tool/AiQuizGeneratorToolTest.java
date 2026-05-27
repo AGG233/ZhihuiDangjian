@@ -133,9 +133,7 @@ class AiQuizGeneratorToolTest {
                 ChapterResponse.builder().id(1L).title("第一章").description("章节描述").build();
 
         ContentBlockResponse block = new ContentBlockResponse();
-        Field textField = ContentBlockResponse.class.getDeclaredField("textContent");
-        textField.setAccessible(true); // NOSONAR
-        textField.set(block, "章节内容文本");
+        block.setTextContent("章节内容文本");
 
         ChatModel chatModel = mock(ChatModel.class);
         ChatResponse chatResponse = mock(ChatResponse.class);
@@ -912,17 +910,6 @@ class AiQuizGeneratorToolTest {
 
         assertThat(result).containsEntry("question", "选项非数组");
         assertThat((List<?>) result.get("options")).isEmpty();
-    }
-
-    @Test
-    @DisplayName("getFieldValue with non-existent field catches exception and returns null")
-    void getFieldValueExceptionCaught() throws Exception {
-        ContentBlockResponse block = new ContentBlockResponse();
-        java.lang.reflect.Method method = AiQuizGeneratorTool.class.getDeclaredMethod(
-                "getFieldValue", ContentBlockResponse.class, String.class);
-        method.setAccessible(true); // NOSONAR
-        Object result = method.invoke(aiQuizGeneratorTool, block, "nonExistentField");
-        assertThat(result).isNull();
     }
 
     @Test

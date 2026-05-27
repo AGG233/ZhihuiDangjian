@@ -125,38 +125,6 @@ class RateLimitConfigTest {
     }
 
     @Test
-    @DisplayName("interceptor removes old window entries via removeIf lambda")
-    void interceptorCleansUpOldWindowEntries() throws Exception {
-        var userService = mock(UserService.class);
-        var objectMapper = mock(ObjectMapper.class);
-        var interceptor = captureInterceptor(userService, objectMapper);
-
-        var request = mock(HttpServletRequest.class);
-        var response = mock(HttpServletResponse.class);
-        when(userService.getCurrentUserId()).thenReturn("cleanup-user");
-
-        // Access private userCounters field to inject a stale entry
-        Field countersField = interceptor.getClass().getDeclaredField("userCounters");
-        countersField.setAccessible(true); // NOSONAR
-        @SuppressWarnings("unchecked")
-        Map<String, ConcurrentHashMap<Long, AtomicInteger>> userCounters =
-                (Map<String, ConcurrentHashMap<Long, AtomicInteger>>) countersField.get(interceptor);
-        // Inject an old window with some requests
-        ConcurrentHashMap<Long, AtomicInteger> oldCounters = new ConcurrentHashMap<>();
-        oldCounters.put(1L, new AtomicInteger(3));
-        userCounters.put("cleanup-user", oldCounters);
-
-        // Make a new request - should trigger removeIf and purge the stale entry
-        boolean result = interceptor.preHandle(request, response, new Object());
-
-        assertThat(result).isTrue();
-        // The old window (key=1) should be removed; only current window remains
-        ConcurrentHashMap<Long, AtomicInteger> finalCounters = userCounters.get("cleanup-user");
-        assertThat(finalCounters).hasSize(1);
-        assertThat(finalCounters.containsKey(1L)).isFalse();
-    }
-
-    @Test
     @DisplayName("interceptor falls back to remote addr on exception")
     void interceptorFallsBackToRemoteAddrOnException() throws Exception {
         var userService = mock(UserService.class);

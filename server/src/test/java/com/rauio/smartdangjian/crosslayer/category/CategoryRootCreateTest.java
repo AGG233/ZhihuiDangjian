@@ -59,7 +59,7 @@ class CategoryRootCreateTest extends CrossLayerTestBase {
             try {
                 // baseMapper 声明在 CrudRepository 中（MyBatis-Plus 3.5.14）
                 Field field = findBaseMapperField(service.getClass());
-                field.setAccessible(true); // NOSONAR
+                field.setAccessible(true);
                 field.set(service, categoryMapper);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to set baseMapper on CategoryService", e);
