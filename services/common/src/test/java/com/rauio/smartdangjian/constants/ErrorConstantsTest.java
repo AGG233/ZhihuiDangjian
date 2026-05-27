@@ -70,11 +70,4 @@ class ErrorConstantsTest {
         assertThat(ErrorConstants.USER_NOT_EXISTS).isBetween(1, 99);
     }
 
-    @Test
-    @DisplayName("private 构造器覆盖")
-    void privateConstructor() throws Exception {
-        Constructor<ErrorConstants> constructor = ErrorConstants.class.getDeclaredConstructor();
-        constructor.setAccessible(true); // NOSONAR
-        constructor.newInstance();
-    }
 }

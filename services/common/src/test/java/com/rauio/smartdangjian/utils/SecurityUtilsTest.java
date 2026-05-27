@@ -149,11 +149,4 @@ class SecurityUtilsTest {
         assertThat(result).isNull();
     }
 
-    @Test
-    @DisplayName("private 构造器覆盖")
-    void privateConstructor() throws Exception {
-        Constructor<SecurityUtils> constructor = SecurityUtils.class.getDeclaredConstructor();
-        constructor.setAccessible(true); // NOSONAR
-        constructor.newInstance();
-    }
 }

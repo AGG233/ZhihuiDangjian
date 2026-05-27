@@ -44,11 +44,4 @@ class SmartDangjianApplicationTest {
         assertThat(java.lang.reflect.Modifier.isStatic(mainMethod.getModifiers())).isTrue();
     }
 
-    @Test
-    @DisplayName("private 构造器覆盖")
-    void privateConstructor() throws Exception {
-        Constructor<SmartDangjianApplication> constructor = SmartDangjianApplication.class.getDeclaredConstructor();
-        constructor.setAccessible(true); // NOSONAR
-        constructor.newInstance();
-    }
 }

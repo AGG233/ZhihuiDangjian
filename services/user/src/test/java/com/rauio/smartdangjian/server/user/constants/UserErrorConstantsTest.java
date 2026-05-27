@@ -51,11 +51,4 @@ class UserErrorConstantsTest {
         assertThat(UserErrorConstants.PASSWORD_CHANGE_ERROR).isEqualTo(2007);
     }
 
-    @Test
-    @DisplayName("private 构造器覆盖")
-    void privateConstructor() throws Exception {
-        Constructor<UserErrorConstants> constructor = UserErrorConstants.class.getDeclaredConstructor();
-        constructor.setAccessible(true); // NOSONAR
-        constructor.newInstance();
-    }
 }

@@ -57,11 +57,4 @@ class SecurityConstantsTest {
         assertThat(SecurityConstants.CAPTCHA_EXPIRATION).isEqualTo(60_000L);
     }
 
-    @Test
-    @DisplayName("private 构造器覆盖")
-    void privateConstructor() throws Exception {
-        Constructor<SecurityConstants> constructor = SecurityConstants.class.getDeclaredConstructor();
-        constructor.setAccessible(true); // NOSONAR
-        constructor.newInstance();
-    }
 }

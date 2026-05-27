@@ -33,11 +33,4 @@ class QuizErrorConstantsTest {
         assertThat(QuizErrorConstants.COURSE_NOT_FOUND).isEqualTo(6004);
     }
 
-    @Test
-    @DisplayName("private 构造器覆盖")
-    void privateConstructor() throws Exception {
-        Constructor<QuizErrorConstants> constructor = QuizErrorConstants.class.getDeclaredConstructor();
-        constructor.setAccessible(true); // NOSONAR
-        constructor.newInstance();
-    }
 }

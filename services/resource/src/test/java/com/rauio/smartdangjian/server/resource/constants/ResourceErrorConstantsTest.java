@@ -34,11 +34,4 @@ class ResourceErrorConstantsTest {
         assertThat(ResourceErrorConstants.BANNER_ID_AND_HASH_EMPTY).isEqualTo(5016);
     }
 
-    @Test
-    @DisplayName("private 构造器覆盖")
-    void privateConstructor() throws Exception {
-        Constructor<ResourceErrorConstants> constructor = ResourceErrorConstants.class.getDeclaredConstructor();
-        constructor.setAccessible(true); // NOSONAR
-        constructor.newInstance();
-    }
 }

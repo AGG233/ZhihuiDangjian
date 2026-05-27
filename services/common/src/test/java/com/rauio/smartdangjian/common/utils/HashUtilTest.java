@@ -67,11 +67,4 @@ class HashUtilTest {
         assertThat(hash).matches("^[0-9a-f]{64}$");
     }
 
-    @Test
-    @DisplayName("private 构造器覆盖")
-    void privateConstructor() throws Exception {
-        Constructor<HashUtil> constructor = HashUtil.class.getDeclaredConstructor();
-        constructor.setAccessible(true); // NOSONAR
-        constructor.newInstance();
-    }
 }

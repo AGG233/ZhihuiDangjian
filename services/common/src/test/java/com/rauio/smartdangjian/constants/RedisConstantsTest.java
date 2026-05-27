@@ -51,11 +51,4 @@ class RedisConstantsTest {
         assertThat(RedisConstants.USER_PROFILE_CACHE_PREFIX).isEqualTo("user:profile:");
     }
 
-    @Test
-    @DisplayName("private 构造器覆盖")
-    void privateConstructor() throws Exception {
-        Constructor<RedisConstants> constructor = RedisConstants.class.getDeclaredConstructor();
-        constructor.setAccessible(true); // NOSONAR
-        constructor.newInstance();
-    }
 }

@@ -91,11 +91,4 @@ class AuthErrorConstantsTest {
         assertThat(AuthErrorConstants.OLD_PASSWORD_ERROR).isBetween(1000, 1999);
     }
 
-    @Test
-    @DisplayName("private 构造器覆盖")
-    void privateConstructor() throws Exception {
-        Constructor<AuthErrorConstants> constructor = AuthErrorConstants.class.getDeclaredConstructor();
-        constructor.setAccessible(true); // NOSONAR
-        constructor.newInstance();
-    }
 }

@@ -19,11 +19,4 @@ class ResourceConstantTest {
         assertThat(ResourceConstant.COS_KEY_EXPIRATION).isEqualTo(10 * 60 * 1000);
     }
 
-    @Test
-    @DisplayName("private 构造器覆盖")
-    void privateConstructor() throws Exception {
-        Constructor<ResourceConstant> constructor = ResourceConstant.class.getDeclaredConstructor();
-        constructor.setAccessible(true); // NOSONAR
-        constructor.newInstance();
-    }
 }

@@ -14,7 +14,6 @@ class GraphErrorConstantsTest {
     @DisplayName("工具类不应被实例化")
     void shouldNotBeInstantiated() throws Exception {
         Constructor<GraphErrorConstants> constructor = GraphErrorConstants.class.getDeclaredConstructor();
-        constructor.setAccessible(true); // NOSONAR
         assertThat(constructor.newInstance()).isNotNull();
     }
 

@@ -14,7 +14,6 @@ class LearningErrorConstantsTest {
     @DisplayName("工具类不应被实例化")
     void shouldNotBeInstantiated() throws Exception {
         Constructor<LearningErrorConstants> constructor = LearningErrorConstants.class.getDeclaredConstructor();
-        constructor.setAccessible(true); // NOSONAR
         assertThat(constructor.newInstance()).isNotNull();
     }
 
