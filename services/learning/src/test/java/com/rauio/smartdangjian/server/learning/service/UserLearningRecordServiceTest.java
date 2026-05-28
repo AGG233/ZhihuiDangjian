@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
@@ -299,8 +298,16 @@ class UserLearningRecordServiceTest {
     @DisplayName("syncUserLearningGraph 记录中 userId 或 chapterId 为 null 时跳过图谱同步")
     void syncUserLearningGraphSkipsNullFields() {
         List<UserLearningRecord> records = List.of(
-                UserLearningRecord.builder().id(1L).userId(null).chapterId(CHAPTER_ID).build(),
-                UserLearningRecord.builder().id(2L).userId(USER_ID).chapterId(null).build());
+                UserLearningRecord.builder()
+                        .id(1L)
+                        .userId(null)
+                        .chapterId(CHAPTER_ID)
+                        .build(),
+                UserLearningRecord.builder()
+                        .id(2L)
+                        .userId(USER_ID)
+                        .chapterId(null)
+                        .build());
         doReturn(records).when(recordService).list(any(QueryWrapper.class));
 
         int result = recordService.syncUserLearningGraph(USER_ID);
@@ -398,9 +405,8 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("create 学习记录中 userId 为 null 时跳过图谱同步")
     void createNoUserIdSkipsGraphSync() {
-        UserLearningRecordRequest dto = UserLearningRecordRequest.builder()
-                .chapterId(CHAPTER_ID)
-                .build();
+        UserLearningRecordRequest dto =
+                UserLearningRecordRequest.builder().chapterId(CHAPTER_ID).build();
 
         UserLearningRecord entity = UserLearningRecord.builder()
                 .chapterId(CHAPTER_ID)
@@ -470,16 +476,13 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("update 不提供起止时间时跳过时长计算")
     void updateNoTimeRange() {
-        UserLearningRecordRequest dto = UserLearningRecordRequest.builder()
-                .id(RECORD_ID)
-                .build();
+        UserLearningRecordRequest dto =
+                UserLearningRecordRequest.builder().id(RECORD_ID).build();
         doReturn(UserLearningRecord.builder().id(RECORD_ID).build())
                 .when(recordService)
                 .getById(RECORD_ID);
 
-        UserLearningRecord entity = UserLearningRecord.builder()
-                .id(RECORD_ID)
-                .build();
+        UserLearningRecord entity = UserLearningRecord.builder().id(RECORD_ID).build();
         when(convertor.toEntity(dto)).thenReturn(entity);
         doReturn(true).when(recordService).updateById(any(UserLearningRecord.class));
 
@@ -562,15 +565,12 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("update updateById 失败时抛出异常")
     void updateFailed() {
-        UserLearningRecordRequest dto = UserLearningRecordRequest.builder()
-                .id(RECORD_ID)
-                .build();
+        UserLearningRecordRequest dto =
+                UserLearningRecordRequest.builder().id(RECORD_ID).build();
         doReturn(UserLearningRecord.builder().id(RECORD_ID).build())
                 .when(recordService)
                 .getById(RECORD_ID);
-        UserLearningRecord entity = UserLearningRecord.builder()
-                .id(RECORD_ID)
-                .build();
+        UserLearningRecord entity = UserLearningRecord.builder().id(RECORD_ID).build();
         when(convertor.toEntity(dto)).thenReturn(entity);
         doReturn(false).when(recordService).updateById(any(UserLearningRecord.class));
 
@@ -607,9 +607,8 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("create userId set but chapterId null skips graph sync")
     void createWithUserIdOnlyNoChapterSkipsGraphSync() {
-        UserLearningRecordRequest dto = UserLearningRecordRequest.builder()
-                .userId(USER_ID)
-                .build();
+        UserLearningRecordRequest dto =
+                UserLearningRecordRequest.builder().userId(USER_ID).build();
 
         UserLearningRecord entity = UserLearningRecord.builder()
                 .userId(USER_ID)
@@ -636,10 +635,8 @@ class UserLearningRecordServiceTest {
                 .when(recordService)
                 .getById(RECORD_ID);
 
-        UserLearningRecord entity = UserLearningRecord.builder()
-                .id(RECORD_ID)
-                .startTime(start)
-                .build();
+        UserLearningRecord entity =
+                UserLearningRecord.builder().id(RECORD_ID).startTime(start).build();
         when(convertor.toEntity(dto)).thenReturn(entity);
         doReturn(true).when(recordService).updateById(any(UserLearningRecord.class));
 

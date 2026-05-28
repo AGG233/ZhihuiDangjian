@@ -1,26 +1,21 @@
 package com.rauio.smartdangjian.config;
 
-import java.util.List;
+import java.util.Arrays;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.rauio.smartdangjian.aop.ResourceAccessAspect;
-import com.rauio.smartdangjian.aop.resolver.ResourceOwnerResolver;
 import com.rauio.smartdangjian.exception.GlobalExceptionHandler;
 
 @AutoConfiguration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Bean
-    @ConditionalOnProperty(name = "app.security.enabled", havingValue = "true", matchIfMissing = true)
-    public ResourceAccessAspect resourceAccessAspect(List<ResourceOwnerResolver> ownerResolvers) {
-        return new ResourceAccessAspect(ownerResolvers);
-    }
+    @Value("${app.cors.allowed-origins:http://localhost:*,http://127.0.0.1:*}")
+    private String allowedOrigins;
 
     @Bean
     public GlobalExceptionHandler globalExceptionHandler() {
@@ -29,8 +24,12 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        String[] origins = Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .toArray(String[]::new);
         registry.addMapping("/**")
-                .allowedOriginPatterns("*")
+                .allowedOriginPatterns(origins)
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowCredentials(true)
                 .maxAge(3600);
@@ -38,7 +37,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:./uploads/");
+        registry.addResourceHandler("/uploads/**").addResourceLocations("file:./uploads/");
     }
 }

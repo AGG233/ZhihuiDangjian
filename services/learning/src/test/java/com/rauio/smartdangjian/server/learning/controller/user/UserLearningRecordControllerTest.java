@@ -41,8 +41,7 @@ class UserLearningRecordControllerTest {
     @DisplayName("getByUserId 委托 service 获取用户所有记录")
     void getByUserId() {
         when(recordService.getByUserId(1L))
-                .thenReturn(
-                        List.of(UserLearningRecordResponse.builder().id(1L).build()));
+                .thenReturn(List.of(UserLearningRecordResponse.builder().id(1L).build()));
 
         var result = controller.getByUserId(1L);
 
@@ -53,8 +52,7 @@ class UserLearningRecordControllerTest {
     @DisplayName("getByUserIdAndChapterId 委托 service 获取用户章节记录")
     void getByUserIdAndChapterId() {
         when(recordService.getByUserIdAndChapterId(1L, 2L))
-                .thenReturn(
-                        List.of(UserLearningRecordResponse.builder().id(1L).build()));
+                .thenReturn(List.of(UserLearningRecordResponse.builder().id(1L).build()));
 
         var result = controller.getByUserIdAndChapterId(1L, 2L);
 
@@ -64,10 +62,8 @@ class UserLearningRecordControllerTest {
     @Test
     @DisplayName("create 委托 service 创建记录")
     void create() {
-        UserLearningRecordRequest dto = UserLearningRecordRequest.builder()
-                .userId(1L)
-                .chapterId(1L)
-                .build();
+        UserLearningRecordRequest dto =
+                UserLearningRecordRequest.builder().userId(1L).chapterId(1L).build();
         when(recordService.create(dto)).thenReturn(true);
 
         var result = controller.create(dto);

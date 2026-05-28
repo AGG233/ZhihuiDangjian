@@ -50,11 +50,23 @@ class AgentModuleConfigTest {
         when(anyProvider.getToolCallbacks()).thenReturn(new ToolCallback[0]);
 
         AiAgentRegistry registry = config.aiAgentRegistry(
-                chatModel, redisSaver, promptService, aiMemoryService,
+                chatModel,
+                redisSaver,
+                promptService,
+                aiMemoryService,
                 skillsAgentHook,
-                anyProvider, anyProvider, anyProvider, anyProvider,
-                anyProvider, anyProvider, anyProvider, anyProvider,
-                anyProvider, anyProvider, anyProvider, anyProvider,
+                anyProvider,
+                anyProvider,
+                anyProvider,
+                anyProvider,
+                anyProvider,
+                anyProvider,
+                anyProvider,
+                anyProvider,
+                anyProvider,
+                anyProvider,
+                anyProvider,
+                anyProvider,
                 anyProvider);
 
         assertThat(registry).isNotNull();

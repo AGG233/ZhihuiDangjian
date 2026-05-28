@@ -23,8 +23,11 @@ import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.content.pojo.request.CourseRequest;
 import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.content.pojo.response.PageResponse;
+import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
+import com.rauio.smartdangjian.service.DataScopeService;
+import com.rauio.smartdangjian.service.PermissionValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,6 +43,9 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
     private final UserService userService;
     private final CourseConvertor courseConvertor;
     private final CategoryCourseMapper categoryCourseMapper;
+    private final DataScopeService dataScopeService;
+    private final PermissionValidator permissionValidator;
+    private final UserMapper userMapper;
 
     private void normalizeCourseFields(Course course) {
         if (course.getCoverImageId() != null && course.getCoverImageId() <= 0) {
@@ -61,6 +67,7 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
     }
 
     public void create(CourseRequest courseRequest) {
+        dataScopeService.requireUniversityId();
         User user = userService.getCurrentUser();
         Course course = courseConvertor.toCourse(courseRequest);
         course.setCreatorId(user.getId());
@@ -85,6 +92,14 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         if (target == null) {
             throw new BusinessException(CourseErrorConstants.COURSE_NOT_FOUND, "课程不存在");
         }
+        String universityId = null;
+        if (target.getCreatorId() != null) {
+            User creator = userMapper.selectById(target.getCreatorId());
+            if (creator != null) {
+                universityId = creator.getUniversityId();
+            }
+        }
+        dataScopeService.requireManageable(universityId);
         Course course = courseConvertor.toCourse(courseRequest);
         course.setId(id);
         normalizeCourseFields(course);
@@ -104,6 +119,18 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
     }
 
     public void delete(Long courseId) {
+        Course target = this.getById(courseId);
+        if (target == null) {
+            throw new BusinessException(CourseErrorConstants.COURSE_NOT_FOUND, "课程不存在");
+        }
+        String universityId = null;
+        if (target.getCreatorId() != null) {
+            User creator = userMapper.selectById(target.getCreatorId());
+            if (creator != null) {
+                universityId = creator.getUniversityId();
+            }
+        }
+        dataScopeService.requireManageable(universityId);
         categoryCourseMapper.delete(new LambdaQueryWrapper<CategoryCourse>().eq(CategoryCourse::getCourseId, courseId));
         if (!this.removeById(courseId)) {
             throw new BusinessException(CourseErrorConstants.COURSE_DELETE_FAILED, "课程删除失败");

@@ -20,8 +20,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterConvertor;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterContentBlockConvertor;
+import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterConvertor;
 import com.rauio.smartdangjian.server.content.pojo.dto.ContentBlockDto;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
@@ -92,10 +92,8 @@ class ChapterServiceTest {
         Chapter chapter = Chapter.builder().title("新章节").build();
         chapter.setId(1L);
 
-        ChapterContentBlock block = ChapterContentBlock.builder()
-                .chapterId(1L)
-                .textContent("文本内容")
-                .build();
+        ChapterContentBlock block =
+                ChapterContentBlock.builder().chapterId(1L).textContent("文本内容").build();
 
         doReturn(null).when(chapterService).getOne(any(LambdaQueryWrapper.class));
         when(chapterConvertor.toEntity(dto)).thenReturn(chapter);
@@ -230,16 +228,8 @@ class ChapterServiceTest {
     @DisplayName("getByCourseId 根据课程 ID 返回章节列表")
     void getByCourseIdReturnsChapterResponseList() {
         List<Chapter> chapters = List.of(
-                Chapter.builder()
-                        .id(1L)
-                        .courseId(1L)
-                        .title("第一章")
-                        .build(),
-                Chapter.builder()
-                        .id(1L)
-                        .courseId(1L)
-                        .title("第二章")
-                        .build());
+                Chapter.builder().id(1L).courseId(1L).title("第一章").build(),
+                Chapter.builder().id(1L).courseId(1L).title("第二章").build());
         List<ChapterResponse> vos = List.of(
                 ChapterResponse.builder().id(1L).title("第一章").build(),
                 ChapterResponse.builder().id(2L).title("第二章").build());

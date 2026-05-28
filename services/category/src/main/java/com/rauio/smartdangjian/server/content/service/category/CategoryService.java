@@ -15,6 +15,7 @@ import com.rauio.smartdangjian.server.content.pojo.convertor.CategoryConvertor;
 import com.rauio.smartdangjian.server.content.pojo.entity.Category;
 import com.rauio.smartdangjian.server.content.pojo.request.CategoryRequest;
 import com.rauio.smartdangjian.server.content.pojo.response.CategoryResponse;
+import com.rauio.smartdangjian.service.DataScopeService;
 import com.rauio.smartdangjian.utils.SecurityUtils;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
@@ -26,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
 
     private final CategoryConvertor convertor;
+    private final DataScopeService dataScopeService;
 
     public final int MAX_LEVEL = 3;
 
@@ -41,6 +43,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
         if (category == null) {
             throw new BusinessException(CategoryErrorConstants.CATEGORY_NOT_FOUND, "目录不存在");
         }
+        dataScopeService.requireSameUniversity(category.getUniversityId());
 
         CategoryResponse parent = convertor.toResponse(category);
         children = parent.getChildren();
@@ -62,7 +65,14 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      * @return 所有顶级目录
      */
     public List<CategoryResponse> getRootList() {
-        return convertor.toResponseList(this.list(new LambdaQueryWrapper<Category>().eq(Category::getLevel, 0)));
+        LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<Category>().eq(Category::getLevel, 0);
+        CurrentUserPrincipal currentUser = SecurityUtils.getCurrentUser();
+        if (currentUser != null && currentUser.getUserType() != UserType.MANAGER) {
+            wrapper.and(w -> w.eq(Category::getUniversityId, currentUser.getUniversityId())
+                    .or()
+                    .isNull(Category::getUniversityId));
+        }
+        return convertor.toResponseList(this.list(wrapper));
     }
 
     /**
@@ -72,8 +82,20 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      * @return 父目录的子目录
      * */
     public List<CategoryResponse> getByParentId(Long categoryId) {
-        return convertor.toResponseList(
-                this.list(new LambdaQueryWrapper<Category>().eq(Category::getParentId, categoryId)));
+        Category parent = super.getById(categoryId);
+        if (parent == null) {
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_NOT_FOUND, "目录不存在");
+        }
+        dataScopeService.requireSameUniversity(parent.getUniversityId());
+
+        LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<Category>().eq(Category::getParentId, categoryId);
+        CurrentUserPrincipal currentUser = SecurityUtils.getCurrentUser();
+        if (currentUser != null && currentUser.getUserType() != UserType.MANAGER) {
+            wrapper.and(w -> w.eq(Category::getUniversityId, currentUser.getUniversityId())
+                    .or()
+                    .isNull(Category::getUniversityId));
+        }
+        return convertor.toResponseList(this.list(wrapper));
     }
 
     /**
@@ -206,5 +228,4 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
         category.setParentId(existing.getParentId());
         return this.updateById(category);
     }
-
 }

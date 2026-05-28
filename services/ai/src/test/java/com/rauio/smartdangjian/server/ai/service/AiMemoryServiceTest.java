@@ -85,7 +85,10 @@ class AiMemoryServiceTest {
     @DisplayName("buildLongTermMemory sessionId non-null but blank excludes nothing")
     void buildLongTermMemoryBlankSessionId() {
         AiChatMessage msg = AiChatMessage.builder()
-                .agentType("CHAT").senderType("user").content("content").build();
+                .agentType("CHAT")
+                .senderType("user")
+                .content("content")
+                .build();
         doReturn(List.of(msg)).when(aiChatMessageService).list(any(LambdaQueryWrapper.class));
 
         String memory = aiMemoryService.buildLongTermMemory("user-1", "  ", 10);
@@ -119,7 +122,10 @@ class AiMemoryServiceTest {
     @DisplayName("buildLongTermMemory sessionId is null does not exclude current session")
     void buildLongTermMemoryNullSessionId() {
         AiChatMessage msg = AiChatMessage.builder()
-                .agentType("CHAT").senderType("user").content("content").build();
+                .agentType("CHAT")
+                .senderType("user")
+                .content("content")
+                .build();
         doReturn(List.of(msg)).when(aiChatMessageService).list(any(LambdaQueryWrapper.class));
 
         String memory = aiMemoryService.buildLongTermMemory("user-1", null, 10);

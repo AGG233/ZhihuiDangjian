@@ -65,7 +65,8 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 获取提示词成功")
         void getPromptSuccess() throws Exception {
-            when(promptService.getByIdResponse("prompt-1")).thenReturn(AiTestDataFactory.createAiPromptResponse("prompt-1"));
+            when(promptService.getByIdResponse("prompt-1"))
+                    .thenReturn(AiTestDataFactory.createAiPromptResponse("prompt-1"));
 
             mockMvc.perform(get("/api/admin/ai/prompts/prompt-1"))
                     .andExpect(status().isOk())
@@ -77,7 +78,8 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @DisplayName("GET / - 查询提示词列表成功")
         void listPromptsSuccess() throws Exception {
             List<AiPromptResponse> list = List.of(
-                    AiTestDataFactory.createAiPromptResponse("prompt-1"), AiTestDataFactory.createAiPromptResponse("prompt-2"));
+                    AiTestDataFactory.createAiPromptResponse("prompt-1"),
+                    AiTestDataFactory.createAiPromptResponse("prompt-2"));
             when(promptService.listResponses()).thenReturn(list);
 
             mockMvc.perform(get("/api/admin/ai/prompts"))
@@ -89,7 +91,8 @@ class AdminPromptControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - 更新提示词成功")
         void updatePromptSuccess() throws Exception {
-            when(promptService.update(eq("prompt-1"), any())).thenReturn(AiTestDataFactory.createAiPromptResponse("prompt-1"));
+            when(promptService.update(eq("prompt-1"), any()))
+                    .thenReturn(AiTestDataFactory.createAiPromptResponse("prompt-1"));
 
             mockMvc.perform(put("/api/admin/ai/prompts/prompt-1")
                             .contentType(MediaType.APPLICATION_JSON)

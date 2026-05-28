@@ -9,7 +9,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
@@ -129,8 +128,11 @@ class AiQuizGeneratorToolTest {
     @Test
     @DisplayName("generateMiniQuiz 基于章节内容生成题目")
     void generateMiniQuizWithChapter() throws Exception {
-        ChapterResponse chapter =
-                ChapterResponse.builder().id(1L).title("第一章").description("章节描述").build();
+        ChapterResponse chapter = ChapterResponse.builder()
+                .id(1L)
+                .title("第一章")
+                .description("章节描述")
+                .build();
 
         ContentBlockResponse block = new ContentBlockResponse();
         block.setTextContent("章节内容文本");
@@ -360,8 +362,8 @@ class AiQuizGeneratorToolTest {
         ChatModel chatModel = mock(ChatModel.class);
         ChatResponse chatResponse = mock(ChatResponse.class);
         Generation generation = mock(Generation.class);
-        AssistantMessage assistantMessage = new AssistantMessage(
-                """
+        AssistantMessage assistantMessage =
+                new AssistantMessage("""
                 {"question": "无选项题", "explanation": "解析"}
                 """);
 
@@ -425,7 +427,10 @@ class AiQuizGeneratorToolTest {
     @DisplayName("generateMiniQuiz 章节有空白描述时仍可正常生成")
     void generateMiniQuizWithChapterNullDescription() throws Exception {
         ChapterResponse chapter = ChapterResponse.builder()
-                .id(1L).title("无描述章节").description(null).build();
+                .id(1L)
+                .title("无描述章节")
+                .description(null)
+                .build();
 
         ContentBlockResponse block = new ContentBlockResponse();
         block.setTextContent("章节内容");
@@ -459,7 +464,10 @@ class AiQuizGeneratorToolTest {
     @DisplayName("generateMiniQuiz 章节内容块为空列表时仍可正常生成")
     void generateMiniQuizWithEmptyBlocks() throws Exception {
         ChapterResponse chapter = ChapterResponse.builder()
-                .id(1L).title("空内容章节").description("描述").build();
+                .id(1L)
+                .title("空内容章节")
+                .description("描述")
+                .build();
 
         when(chapterService.get(1L)).thenReturn(chapter);
         when(contentBlockService.getByChapterId(1L)).thenReturn(List.of());
@@ -493,7 +501,10 @@ class AiQuizGeneratorToolTest {
     @DisplayName("generateMiniQuiz 内容块 textContent 为空时跳过该块")
     void generateMiniQuizWithBlankBlockText() throws Exception {
         ChapterResponse chapter = ChapterResponse.builder()
-                .id(1L).title("空文本块章节").description("描述").build();
+                .id(1L)
+                .title("空文本块章节")
+                .description("描述")
+                .build();
         ContentBlockResponse block = new ContentBlockResponse();
         block.setTextContent("");
 
@@ -557,8 +568,8 @@ class AiQuizGeneratorToolTest {
         ChatModel chatModel = mock(ChatModel.class);
         ChatResponse chatResponse = mock(ChatResponse.class);
         Generation generation = mock(Generation.class);
-        AssistantMessage assistantMessage = new AssistantMessage(
-                """
+        AssistantMessage assistantMessage =
+                new AssistantMessage("""
                 {"explanation": "解析", "options": []}
                 """);
 
@@ -631,7 +642,10 @@ class AiQuizGeneratorToolTest {
     @DisplayName("generateMiniQuiz 内容块列表为 null 时跳过内容拼装")
     void generateMiniQuizWithNullBlocks() throws Exception {
         ChapterResponse chapter = ChapterResponse.builder()
-                .id(1L).title("null块章节").description("描述").build();
+                .id(1L)
+                .title("null块章节")
+                .description("描述")
+                .build();
 
         when(chapterService.get(1L)).thenReturn(chapter);
         when(contentBlockService.getByChapterId(1L)).thenReturn(null);
@@ -663,7 +677,10 @@ class AiQuizGeneratorToolTest {
     @DisplayName("generateMiniQuiz getFieldValue 返回 null 时跳过该文本块")
     void generateMiniQuizWithNullFieldValue() throws Exception {
         ChapterResponse chapter = ChapterResponse.builder()
-                .id(1L).title("null字段值章节").description("描述").build();
+                .id(1L)
+                .title("null字段值章节")
+                .description("描述")
+                .build();
 
         // ContentBlockResponse 中 textContent 字段不存在 → getFieldValue 返回 null
         ContentBlockResponse block = new ContentBlockResponse();

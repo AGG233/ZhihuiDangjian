@@ -73,7 +73,7 @@ jobs:
         run: ./gradlew --no-daemon compileJava
 
       - name: Run tests with coverage
-        run: ./gradlew --no-daemon test integrationTest jacocoRootReport jacocoRootCoverageVerification --continue
+        run: ./gradlew --no-daemon check jacocoRootReport jacocoRootCoverageVerification --continue
 
       - name: Upload coverage to Codacy
         if: always()

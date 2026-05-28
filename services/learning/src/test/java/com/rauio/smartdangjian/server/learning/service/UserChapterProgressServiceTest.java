@@ -376,41 +376,44 @@ class UserChapterProgressServiceTest {
                 .progress(50)
                 .build();
         UserChapterProgress existing = UserChapterProgress.builder()
-                .id(PROGRESS_ID).progress(30).status("in_progress").build();
+                .id(PROGRESS_ID)
+                .progress(30)
+                .status("in_progress")
+                .build();
         doReturn(existing).when(progressService).getById(PROGRESS_ID);
 
-        UserChapterProgress converted = UserChapterProgress.builder()
-                .id(PROGRESS_ID).progress(50).build();
+        UserChapterProgress converted =
+                UserChapterProgress.builder().id(PROGRESS_ID).progress(50).build();
         when(convertor.toEntity(dto)).thenReturn(converted);
         doReturn(true).when(progressService).updateById(any(UserChapterProgress.class));
 
         Boolean result = progressService.update(dto);
 
         assertThat(result).isTrue();
-        verify(progressService).updateById(argThat(entity ->
-                entity.getStatus() == null));
+        verify(progressService).updateById(argThat(entity -> entity.getStatus() == null));
     }
 
     @Test
     @DisplayName("update progress null skips completion check")
     void updateNullProgressSkipsCompletion() {
-        UserChapterProgressRequest dto = UserChapterProgressRequest.builder()
-                .id(PROGRESS_ID)
-                .build();
+        UserChapterProgressRequest dto =
+                UserChapterProgressRequest.builder().id(PROGRESS_ID).build();
         UserChapterProgress existing = UserChapterProgress.builder()
-                .id(PROGRESS_ID).progress(50).status("in_progress").build();
+                .id(PROGRESS_ID)
+                .progress(50)
+                .status("in_progress")
+                .build();
         doReturn(existing).when(progressService).getById(PROGRESS_ID);
 
-        UserChapterProgress converted = UserChapterProgress.builder()
-                .id(PROGRESS_ID).build();
+        UserChapterProgress converted =
+                UserChapterProgress.builder().id(PROGRESS_ID).build();
         when(convertor.toEntity(dto)).thenReturn(converted);
         doReturn(true).when(progressService).updateById(any(UserChapterProgress.class));
 
         Boolean result = progressService.update(dto);
 
         assertThat(result).isTrue();
-        verify(progressService).updateById(argThat(entity ->
-                entity.getStatus() == null));
+        verify(progressService).updateById(argThat(entity -> entity.getStatus() == null));
     }
 
     @Test
@@ -421,11 +424,14 @@ class UserChapterProgressServiceTest {
                 .progress(100)
                 .build();
         UserChapterProgress existing = UserChapterProgress.builder()
-                .id(PROGRESS_ID).progress(100).completedAt(LocalDateTime.now()).build();
+                .id(PROGRESS_ID)
+                .progress(100)
+                .completedAt(LocalDateTime.now())
+                .build();
         doReturn(existing).when(progressService).getById(PROGRESS_ID);
 
-        UserChapterProgress converted = UserChapterProgress.builder()
-                .id(PROGRESS_ID).progress(100).build();
+        UserChapterProgress converted =
+                UserChapterProgress.builder().id(PROGRESS_ID).progress(100).build();
         when(convertor.toEntity(dto)).thenReturn(converted);
         doReturn(true).when(progressService).updateById(any(UserChapterProgress.class));
 
@@ -433,19 +439,24 @@ class UserChapterProgressServiceTest {
 
         assertThat(result).isTrue();
         // Should NOT set status to "completed" because existing.completedAt is not null
-        verify(progressService).updateById(argThat(entity ->
-                entity.getStatus() == null));
+        verify(progressService).updateById(argThat(entity -> entity.getStatus() == null));
     }
 
     @Test
     @DisplayName("update 更新失败抛出异常")
     void updateFailed() {
         UserChapterProgressRequest dto = UserChapterProgressRequest.builder()
-                .id(PROGRESS_ID).progress(80).build();
+                .id(PROGRESS_ID)
+                .progress(80)
+                .build();
         doReturn(UserChapterProgress.builder().id(PROGRESS_ID).build())
-                .when(progressService).getById(PROGRESS_ID);
+                .when(progressService)
+                .getById(PROGRESS_ID);
         when(convertor.toEntity(dto))
-                .thenReturn(UserChapterProgress.builder().id(PROGRESS_ID).progress(80).build());
+                .thenReturn(UserChapterProgress.builder()
+                        .id(PROGRESS_ID)
+                        .progress(80)
+                        .build());
         doReturn(false).when(progressService).updateById(any(UserChapterProgress.class));
 
         assertThatThrownBy(() -> progressService.update(dto))

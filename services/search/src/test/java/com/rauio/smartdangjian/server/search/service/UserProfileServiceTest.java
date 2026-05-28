@@ -86,13 +86,25 @@ class UserProfileServiceTest {
         String userId = "user-1";
 
         UserLearningRecord record1 = UserLearningRecord.builder()
-                .userId(1L).chapterId(1L).duration(600).deviceType("web").build();
+                .userId(1L)
+                .chapterId(1L)
+                .duration(600)
+                .deviceType("web")
+                .build();
         UserLearningRecord record2 = UserLearningRecord.builder()
-                .userId(1L).chapterId(1L).duration(300).deviceType("web").build();
+                .userId(1L)
+                .chapterId(1L)
+                .duration(300)
+                .deviceType("web")
+                .build();
         doReturn(List.of(record1, record2)).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
 
         UserChapterProgress progress = UserChapterProgress.builder()
-                .userId(1L).chapterId(1L).progress(100).status("completed").build();
+                .userId(1L)
+                .chapterId(1L)
+                .progress(100)
+                .status("completed")
+                .build();
         doReturn(List.of(progress)).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
         doReturn(1L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
 
@@ -101,7 +113,8 @@ class UserProfileServiceTest {
         doReturn(List.of(chapter, chapter2)).when(chapterMapper).selectList(any(LambdaQueryWrapper.class));
 
         CategoryCourse cc = CategoryCourse.builder().courseId(1L).categoryId(1L).build();
-        CategoryCourse cc2 = CategoryCourse.builder().courseId(1L).categoryId(1L).build();
+        CategoryCourse cc2 =
+                CategoryCourse.builder().courseId(1L).categoryId(1L).build();
         doReturn(List.of(cc, cc2)).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
 
         doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
@@ -159,11 +172,23 @@ class UserProfileServiceTest {
         doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
 
         UserQuizAnswer a1 = UserQuizAnswer.builder()
-                .userId(1L).quizId(1L).isCorrect(1).timeSpent(30).build();
+                .userId(1L)
+                .quizId(1L)
+                .isCorrect(1)
+                .timeSpent(30)
+                .build();
         UserQuizAnswer a2 = UserQuizAnswer.builder()
-                .userId(1L).quizId(2L).isCorrect(0).timeSpent(60).build();
+                .userId(1L)
+                .quizId(2L)
+                .isCorrect(0)
+                .timeSpent(60)
+                .build();
         UserQuizAnswer a3 = UserQuizAnswer.builder()
-                .userId(1L).quizId(3L).isCorrect(1).timeSpent(45).build();
+                .userId(1L)
+                .quizId(3L)
+                .isCorrect(1)
+                .timeSpent(45)
+                .build();
         doReturn(List.of(a1, a2, a3)).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
 
         Quiz q1 = Quiz.builder().id(1L).difficulty("easy").build();
@@ -187,7 +212,11 @@ class UserProfileServiceTest {
         String userId = "user-1";
 
         UserLearningRecord record = UserLearningRecord.builder()
-                .userId(1L).chapterId(1L).duration(null).deviceType("mobile").build();
+                .userId(1L)
+                .chapterId(1L)
+                .duration(null)
+                .deviceType("mobile")
+                .build();
         doReturn(List.of(record)).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
         doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
         doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
@@ -209,9 +238,17 @@ class UserProfileServiceTest {
         doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
 
         UserChapterProgress p1 = UserChapterProgress.builder()
-                .userId(1L).chapterId(1L).progress(null).status("in_progress").build();
+                .userId(1L)
+                .chapterId(1L)
+                .progress(null)
+                .status("in_progress")
+                .build();
         UserChapterProgress p2 = UserChapterProgress.builder()
-                .userId(1L).chapterId(2L).progress(60).status("in_progress").build();
+                .userId(1L)
+                .chapterId(2L)
+                .progress(60)
+                .status("in_progress")
+                .build();
         doReturn(List.of(p1, p2)).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
 
         UserProfileResponse profile = userProfileService.getProfile(userId);
@@ -242,9 +279,17 @@ class UserProfileServiceTest {
         String userId = "user-1";
 
         UserLearningRecord r1 = UserLearningRecord.builder()
-                .userId(1L).chapterId(1L).duration(100).deviceType("mobile").build();
+                .userId(1L)
+                .chapterId(1L)
+                .duration(100)
+                .deviceType("mobile")
+                .build();
         UserLearningRecord r2 = UserLearningRecord.builder()
-                .userId(1L).chapterId(1L).duration(200).deviceType(null).build();
+                .userId(1L)
+                .chapterId(1L)
+                .duration(200)
+                .deviceType(null)
+                .build();
         doReturn(List.of(r1, r2)).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
         doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
         doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
@@ -266,9 +311,17 @@ class UserProfileServiceTest {
         doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
 
         UserChapterProgress weak = UserChapterProgress.builder()
-                .userId(1L).chapterId(10L).progress(30).status("in_progress").build();
+                .userId(1L)
+                .chapterId(10L)
+                .progress(30)
+                .status("in_progress")
+                .build();
         UserChapterProgress strong = UserChapterProgress.builder()
-                .userId(1L).chapterId(20L).progress(80).status("in_progress").build();
+                .userId(1L)
+                .chapterId(20L)
+                .progress(80)
+                .status("in_progress")
+                .build();
         doReturn(List.of(weak, strong)).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
 
         UserProfileResponse profile = userProfileService.getProfile(userId);
@@ -282,7 +335,10 @@ class UserProfileServiceTest {
         String userId = "user-1";
 
         UserLearningRecord record = UserLearningRecord.builder()
-                .userId(1L).chapterId(null).duration(100).build();
+                .userId(1L)
+                .chapterId(null)
+                .duration(100)
+                .build();
         doReturn(List.of(record)).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
         doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
         doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
@@ -303,9 +359,17 @@ class UserProfileServiceTest {
         doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
 
         UserQuizAnswer a1 = UserQuizAnswer.builder()
-                .userId(1L).quizId(1L).isCorrect(1).timeSpent(30).build();
+                .userId(1L)
+                .quizId(1L)
+                .isCorrect(1)
+                .timeSpent(30)
+                .build();
         UserQuizAnswer a2 = UserQuizAnswer.builder()
-                .userId(1L).quizId(1L).isCorrect(1).timeSpent(null).build();
+                .userId(1L)
+                .quizId(1L)
+                .isCorrect(1)
+                .timeSpent(null)
+                .build();
         doReturn(List.of(a1, a2)).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
 
         Quiz q1 = Quiz.builder().id(1L).difficulty("easy").build();
@@ -327,9 +391,17 @@ class UserProfileServiceTest {
         doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
 
         UserQuizAnswer a1 = UserQuizAnswer.builder()
-                .userId(1L).quizId(null).isCorrect(1).timeSpent(30).build();
+                .userId(1L)
+                .quizId(null)
+                .isCorrect(1)
+                .timeSpent(30)
+                .build();
         UserQuizAnswer a2 = UserQuizAnswer.builder()
-                .userId(1L).quizId(null).isCorrect(0).timeSpent(60).build();
+                .userId(1L)
+                .quizId(null)
+                .isCorrect(0)
+                .timeSpent(60)
+                .build();
         doReturn(List.of(a1, a2)).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
 
         // quizMapper should NOT be called because quizIds set is empty
@@ -350,9 +422,17 @@ class UserProfileServiceTest {
         doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
 
         UserQuizAnswer a1 = UserQuizAnswer.builder()
-                .userId(1L).quizId(1L).isCorrect(1).timeSpent(30).build();
+                .userId(1L)
+                .quizId(1L)
+                .isCorrect(1)
+                .timeSpent(30)
+                .build();
         UserQuizAnswer a2 = UserQuizAnswer.builder()
-                .userId(1L).quizId(2L).isCorrect(0).timeSpent(60).build();
+                .userId(1L)
+                .quizId(2L)
+                .isCorrect(0)
+                .timeSpent(60)
+                .build();
         doReturn(List.of(a1, a2)).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
 
         Quiz q1 = Quiz.builder().id(1L).difficulty("easy").build();

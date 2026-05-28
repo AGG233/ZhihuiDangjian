@@ -5,13 +5,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import cn.dev33.satoken.annotation.SaCheckRole;
-import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
 import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
-import com.rauio.smartdangjian.utils.spec.UserType;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,7 +27,7 @@ public class UserKnowledgeGraphController {
     @Operation(summary = "获取用户学习图谱", description = "返回用户学习课程和章节的图谱结构")
     @GetMapping("/users/{userId}")
     @SaCheckRole("STUDENT")
-    @ResourceAccess(id = "#userId")
+    @SaCheckPermission("graph:read")
     public Result<KnowledgeGraphResponse> getUserGraph(
             @Parameter(name = "userId", description = "用户ID") @PathVariable String userId) {
         return Result.ok(knowledgeGraphService.getUserGraph(userId));

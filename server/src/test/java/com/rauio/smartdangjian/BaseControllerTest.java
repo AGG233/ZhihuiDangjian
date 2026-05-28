@@ -2,7 +2,6 @@ package com.rauio.smartdangjian;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,10 +15,10 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import com.rauio.smartdangjian.utils.spec.UserType;
+
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
-
-import com.rauio.smartdangjian.utils.spec.UserType;
 
 @AutoConfigureMockMvc(addFilters = false)
 @TestPropertySource(

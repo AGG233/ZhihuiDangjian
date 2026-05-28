@@ -3,7 +3,6 @@ package com.rauio.smartdangjian.server.search.controller;
 import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
@@ -11,8 +10,8 @@ import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 import com.rauio.smartdangjian.server.search.service.RecommendService;
 import com.rauio.smartdangjian.server.search.service.SearchService;
 import com.rauio.smartdangjian.server.search.service.UserProfileService;
-import com.rauio.smartdangjian.utils.spec.UserType;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

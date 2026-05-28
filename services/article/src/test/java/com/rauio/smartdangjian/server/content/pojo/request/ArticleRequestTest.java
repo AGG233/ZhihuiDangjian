@@ -30,8 +30,10 @@ class ArticleRequestTest {
     @Test
     @DisplayName("builder 构造 ArticleRequest 状态为 Draft")
     void builderCreatesArticleRequestWithDraftStatus() {
-        ArticleRequest request =
-                ArticleRequest.builder().title("草稿文章").status(ArticleStatus.Draft).build();
+        ArticleRequest request = ArticleRequest.builder()
+                .title("草稿文章")
+                .status(ArticleStatus.Draft)
+                .build();
 
         assertThat(request.getStatus()).isEqualTo(ArticleStatus.Draft);
     }

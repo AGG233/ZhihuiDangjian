@@ -74,8 +74,7 @@ class SearchControllerTest {
     @Test
     @DisplayName("recommend 委托 Service 返回推荐")
     void recommendDelegates() {
-        UserProfileResponse profile =
-                UserProfileResponse.builder().userId("1").build();
+        UserProfileResponse profile = UserProfileResponse.builder().userId("1").build();
         when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
         Page<Long> recPage = new Page<>(1, 10);
         recPage.setRecords(List.of(1L));
@@ -90,8 +89,7 @@ class SearchControllerTest {
     @Test
     @DisplayName("getProfile 委托 Service 返回用户画像")
     void getProfileDelegates() {
-        UserProfileResponse profile =
-                UserProfileResponse.builder().userId("1").build();
+        UserProfileResponse profile = UserProfileResponse.builder().userId("1").build();
         when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
 
         var result = searchController.getProfile();

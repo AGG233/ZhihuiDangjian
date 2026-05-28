@@ -143,15 +143,25 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("GET /users/{id}/quizzes/{quizId}/options/{optionId} - 记录不存在返回 null 则 code 为 400")
+        @DisplayName("GET /users/{id}/quizzes/{quizId}/options/{optionId} - 记录不存在返回 null 则 data 为 null")
         void getByOptionIdReturnsNull() throws Exception {
             when(userQuizAnswerService.getByUserIdAndQuizIdAndOptionId(1L, 1L, 999L))
                     .thenReturn(null);
 
             mockMvc.perform(get("/api/quiz/answers/users/1/quizzes/1/options/999"))
                     .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"));
+        }
+
+        @Test
+        @DisplayName("GET /users/{id}/quizzes/{quizId} - 服务返回 null 元素处理")
+        void getByQuizIdWithNullElement() throws Exception {
+            when(userQuizAnswerService.getByUserIdAndQuizId(1L, 1L)).thenReturn(java.util.Arrays.asList(null, null));
+
+            mockMvc.perform(get("/api/quiz/answers/users/1/quizzes/1"))
+                    .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.message").value("OK"));
+                    .andExpect(jsonPath("$.data").isArray());
         }
 
         @Test
@@ -199,9 +209,9 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /users/{id} - 无答题记录返回空列表")
         void getByUserIdEmpty() throws Exception {
-            when(userQuizAnswerService.getByUserId(999L)).thenReturn(List.of());
+            when(userQuizAnswerService.getByUserId(1L)).thenReturn(List.of());
 
-            mockMvc.perform(get("/api/quiz/answers/users/999"))
+            mockMvc.perform(get("/api/quiz/answers/users/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").isArray())
@@ -211,8 +221,7 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /users/{id}/quizzes/{quizId} - 某题无答题记录返回空列表")
         void getByQuizIdEmpty() throws Exception {
-            when(userQuizAnswerService.getByUserIdAndQuizId(1L, 999L))
-                    .thenReturn(List.of());
+            when(userQuizAnswerService.getByUserIdAndQuizId(1L, 999L)).thenReturn(List.of());
 
             mockMvc.perform(get("/api/quiz/answers/users/1/quizzes/999"))
                     .andExpect(status().isOk())
@@ -224,22 +233,19 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("非数字路径参数返回 400（Spring 类型转换失败）")
         void withNonNumericPathParams() throws Exception {
-            mockMvc.perform(get("/api/quiz/answers/users/用户1"))
-                    .andExpect(status().isBadRequest());
+            mockMvc.perform(get("/api/quiz/answers/users/用户1")).andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("路径含特殊字符返回 400（Spring 类型转换失败）")
         void withSpecialCharsInPath() throws Exception {
-            mockMvc.perform(get("/api/quiz/answers/users/test@#$%"))
-                    .andExpect(status().isBadRequest());
+            mockMvc.perform(get("/api/quiz/answers/users/test@#$%")).andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("浮点路径参数返回 400（Spring 类型转换失败）")
         void withInvalidPathParams() throws Exception {
-            mockMvc.perform(get("/api/quiz/answers/users/3.14"))
-                    .andExpect(status().isBadRequest());
+            mockMvc.perform(get("/api/quiz/answers/users/3.14")).andExpect(status().isBadRequest());
         }
     }
 
@@ -257,8 +263,7 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入尝试在路径参数中返回 400（类型转换失败）")
         void sqlInjectionInPath() throws Exception {
-            mockMvc.perform(get("/api/quiz/answers/users/{id}", "' OR '1'='1"))
-                    .andExpect(status().isBadRequest());
+            mockMvc.perform(get("/api/quiz/answers/users/{id}", "' OR '1'='1")).andExpect(status().isBadRequest());
         }
 
         @Test

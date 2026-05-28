@@ -35,7 +35,6 @@ import cn.dev33.satoken.stp.StpUtil;
             "NEO4J_URI=bolt://localhost:7687",
             "NEO4J_USERNAME=neo4j",
             "NEO4J_PASSWORD=password",
-            "app.security.enabled=false"
         })
 public abstract class CrossLayerTestBase {
 
@@ -67,9 +66,20 @@ public abstract class CrossLayerTestBase {
         stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
         stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn(String.valueOf(userId));
         CurrentUserPrincipal principal = new CurrentUserPrincipal() {
-            @Override public Long getId() { return userId; }
-            @Override public UserType getUserType() { return userType; }
-            @Override public String getUniversityId() { return universityId; }
+            @Override
+            public Long getId() {
+                return userId;
+            }
+
+            @Override
+            public UserType getUserType() {
+                return userType;
+            }
+
+            @Override
+            public String getUniversityId() {
+                return universityId;
+            }
         };
         SaSession session = mock(SaSession.class);
         when(session.get("user")).thenReturn(principal);

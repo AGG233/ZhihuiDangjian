@@ -42,9 +42,8 @@ class ChapterContentBlockServiceTest {
     @Test
     @DisplayName("create 创建内容块成功")
     void createSuccess() {
-        ChapterContentBlock entity = ChapterContentBlock.builder()
-                .chapterId(CHAPTER_ID)
-                .build();
+        ChapterContentBlock entity =
+                ChapterContentBlock.builder().chapterId(CHAPTER_ID).build();
         doReturn(true).when(service).save(any(ChapterContentBlock.class));
 
         boolean result = service.create(entity);
@@ -55,9 +54,8 @@ class ChapterContentBlockServiceTest {
     @Test
     @DisplayName("create 创建内容块失败")
     void createFailed() {
-        ChapterContentBlock entity = ChapterContentBlock.builder()
-                .chapterId(CHAPTER_ID)
-                .build();
+        ChapterContentBlock entity =
+                ChapterContentBlock.builder().chapterId(CHAPTER_ID).build();
         doReturn(false).when(service).save(any(ChapterContentBlock.class));
 
         boolean result = service.create(entity);
@@ -134,10 +132,8 @@ class ChapterContentBlockServiceTest {
     @Test
     @DisplayName("get 根据ID获取内容块成功")
     void getSuccess() {
-        ChapterContentBlock entity = ChapterContentBlock.builder()
-                .id(BLOCK_ID)
-                .chapterId(CHAPTER_ID)
-                .build();
+        ChapterContentBlock entity =
+                ChapterContentBlock.builder().id(BLOCK_ID).chapterId(CHAPTER_ID).build();
         doReturn(entity).when(service).getById(BLOCK_ID);
 
         ContentBlockResponse response = new ContentBlockResponse();

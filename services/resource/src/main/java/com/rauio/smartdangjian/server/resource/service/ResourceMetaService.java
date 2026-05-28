@@ -17,6 +17,7 @@ import com.rauio.smartdangjian.server.resource.mapper.ResourceMetaMapper;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaCreateRequest;
 import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaUpdateRequest;
+import com.rauio.smartdangjian.service.PermissionValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, ResourceMeta> {
+
+    private final PermissionValidator permissionValidator;
 
     public ResourceMeta create(ResourceMetaCreateRequest request) {
         validateDuplicate(null, request.getHash(), request.getObjectKey());
@@ -78,6 +81,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
 
     public Boolean update(Long id, ResourceMetaUpdateRequest request) {
         ResourceMeta existing = this.get(id);
+        permissionValidator.requireResourceAccess(existing.getUploaderId());
         validateDuplicate(id, existing.getHash(), existing.getObjectKey());
 
         ResourceMeta meta = ResourceMeta.builder()
@@ -104,7 +108,8 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
     }
 
     public Boolean delete(Long id) {
-        this.get(id);
+        ResourceMeta meta = this.get(id);
+        permissionValidator.requireResourceAccess(meta.getUploaderId());
 
         if (!this.removeById(id)) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_DELETE_FAILED, "删除资源失败");
@@ -119,6 +124,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         if (meta == null) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在");
         }
+        permissionValidator.requireResourceAccess(meta.getUploaderId());
         return delete(meta.getId());
     }
 

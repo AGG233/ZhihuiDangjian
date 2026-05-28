@@ -2,8 +2,6 @@ package com.rauio.smartdangjian.constants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.lang.reflect.Constructor;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -50,5 +48,4 @@ class RedisConstantsTest {
     void userProfileCachePrefix() {
         assertThat(RedisConstants.USER_PROFILE_CACHE_PREFIX).isEqualTo("user:profile:");
     }
-
 }

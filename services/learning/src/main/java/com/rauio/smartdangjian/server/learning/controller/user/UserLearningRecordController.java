@@ -6,17 +6,12 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
-import cn.dev33.satoken.annotation.SaCheckRole;
-import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
-import com.rauio.smartdangjian.aop.support.DataScopeAction;
-import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserLearningRecordRequest;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
-import com.rauio.smartdangjian.utils.spec.UserType;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,9 +28,7 @@ public class UserLearningRecordController {
     @Operation(summary = "获取学习记录", description = "根据记录ID获取学习记录详情")
     @GetMapping("/{id}")
     @SaCheckRole("STUDENT")
-    @DataScopeAccess(resource = DataScopeResources.LEARNING_RECORD, action = DataScopeAction.READ, id = "#id")
-    public Result<UserLearningRecordResponse> get(
-            @Parameter(name = "id", description = "记录ID") @PathVariable Long id) {
+    public Result<UserLearningRecordResponse> get(@Parameter(name = "id", description = "记录ID") @PathVariable Long id) {
         UserLearningRecordResponse result = recordService.get(id);
         return Result.ok(result);
     }
@@ -43,7 +36,6 @@ public class UserLearningRecordController {
     @Operation(summary = "获取用户所有学习记录", description = "根据用户ID获取该用户的所有学习记录")
     @GetMapping("/users/{userId}")
     @SaCheckRole("STUDENT")
-    @ResourceAccess(id = "#userId")
     public Result<List<UserLearningRecordResponse>> getByUserId(
             @Parameter(name = "userId", description = "用户ID") @PathVariable Long userId) {
         List<UserLearningRecordResponse> result = recordService.getByUserId(userId);
@@ -53,7 +45,6 @@ public class UserLearningRecordController {
     @Operation(summary = "获取用户章节学习记录", description = "获取指定用户在指定章节的所有学习记录")
     @GetMapping("/users/{userId}/chapters/{chapterId}")
     @SaCheckRole("STUDENT")
-    @ResourceAccess(id = "#userId")
     public Result<List<UserLearningRecordResponse>> getByUserIdAndChapterId(
             @Parameter(name = "userId", description = "用户ID") @PathVariable Long userId,
             @Parameter(name = "chapterId", description = "章节ID") @PathVariable Long chapterId) {
@@ -64,7 +55,6 @@ public class UserLearningRecordController {
     @Operation(summary = "创建学习记录", description = "创建新的学习记录")
     @PostMapping
     @SaCheckRole("STUDENT")
-    @ResourceAccess(id = "#dto.userId")
     public Result<Boolean> create(@RequestBody @Valid UserLearningRecordRequest dto) {
         Boolean result = recordService.create(dto);
         return Result.ok(result);
@@ -73,7 +63,6 @@ public class UserLearningRecordController {
     @Operation(summary = "更新学习记录", description = "更新学习记录")
     @PutMapping
     @SaCheckRole("STUDENT")
-    @ResourceAccess(id = "#dto.userId")
     public Result<Boolean> update(@RequestBody @Valid UserLearningRecordRequest dto) {
         Boolean result = recordService.update(dto);
         return Result.ok(result);

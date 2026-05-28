@@ -23,10 +23,6 @@ import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import cn.dev33.satoken.stp.StpUtil;
-import cn.dev33.satoken.session.SaSession;
-import cn.hutool.crypto.digest.BCrypt;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.exception.BusinessException;
@@ -38,6 +34,10 @@ import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
+
+import cn.dev33.satoken.session.SaSession;
+import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.crypto.digest.BCrypt;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -499,7 +499,9 @@ class UserServiceTest {
         doReturn(true).when(userService).updateById(any(User.class));
 
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
-            bcryptMock.when(() -> BCrypt.checkpw("oldPassword", "encodedOldPassword")).thenReturn(true);
+            bcryptMock
+                    .when(() -> BCrypt.checkpw("oldPassword", "encodedOldPassword"))
+                    .thenReturn(true);
             bcryptMock.when(() -> BCrypt.hashpw("newPassword")).thenReturn("encodedNewPassword");
 
             userService.changePassword("oldPassword", "newPassword");
@@ -520,7 +522,9 @@ class UserServiceTest {
         doReturn(user).when(userService).getCurrentUser();
 
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
-            bcryptMock.when(() -> BCrypt.checkpw("wrongPassword", "encodedOldPassword")).thenReturn(false);
+            bcryptMock
+                    .when(() -> BCrypt.checkpw("wrongPassword", "encodedOldPassword"))
+                    .thenReturn(false);
 
             assertThatThrownBy(() -> userService.changePassword("wrongPassword", "newPassword"))
                     .isInstanceOf(BusinessException.class)
@@ -542,7 +546,9 @@ class UserServiceTest {
         doReturn(false).when(userService).updateById(any(User.class));
 
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
-            bcryptMock.when(() -> BCrypt.checkpw("oldPassword", "encodedOldPassword")).thenReturn(true);
+            bcryptMock
+                    .when(() -> BCrypt.checkpw("oldPassword", "encodedOldPassword"))
+                    .thenReturn(true);
             bcryptMock.when(() -> BCrypt.hashpw("newPassword")).thenReturn("encodedNewPassword");
 
             assertThatThrownBy(() -> userService.changePassword("oldPassword", "newPassword"))

@@ -92,7 +92,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Result handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
-        return buildResult("400", "请求参数类型错误: " + e.getName() + " 应为 " + (e.getRequiredType() != null ? e.getRequiredType().getSimpleName() : "合法值"));
+        return buildResult(
+                "400",
+                "请求参数类型错误: " + e.getName() + " 应为 "
+                        + (e.getRequiredType() != null ? e.getRequiredType().getSimpleName() : "合法值"));
     }
 
     @ExceptionHandler(RuntimeException.class)

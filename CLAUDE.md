@@ -225,6 +225,70 @@ git merge product
 - watchtower 每 5 分钟检查 GHCR 镜像更新并自动重启容器
 - 生产部署在自托管 Runner，通过 docker-compose pull && up -d 完成
 
+## 可复用工作流（.claude/workflows/）
+
+通过 Workflow 工具按名称调用，例如 `Workflow({name: "dev-to-prod"})` 或 `/dev-to-prod`。
+
+| 工作流 | 用途 | 阶段 |
+|--------|------|------|
+| `dev-to-prod` | **全生命周期编排** | 需求分析 → **需求确认** → **任务拆分** → 编码 → 测试 → QA检查 → **审查-发版循环**。通过 `startPhase` 从任意阶段进入，支持全自动模式（autoMerge+autoTag） |
+| `requirements-confirm` | **需求确认** | 审查 → 决策 → 修订。对需求文档进行多维度评审，驳回时自动修订并重新提交，最多 3 轮 |
+| `task-splitter` | **任务拆分** | 分析 → 拆解 → 验证 → 输出。将复杂功能拆分为并行子任务，支持按 wave 分批执行，默认最多 100 个子任务 |
+| `ship-to-product` | **PR 创建与监控** | 创建 PR → 轮询远程 CI → 检查 PR review → 报告结果。发现问题时返回结构化 issues 供 review-diff 处理 |
+| `qa-check` | 快速质量检查 | 编译 → 单元测试+JaCoCo → 集成测试 → 格式检查。支持 `{ module: "ai" }` 按模块过滤，`{ skipIntegration: true }` 跳过集成测试 |
+| `review-diff` | **多维代码审查** | 发现变更 → 3 维度并行审查(bugs/security/patterns) → 3票对抗验证 → 报告。发现问题时返回结构化 findings 列表，支持迭代修复后重新审查 |
+| `nl-router` | **自然语言路由** | 解析自然语言意图 → 提取参数 → 路由到对应工作流。支持口语化表达，低置信度时提示确认 |
+
+### 典型使用方式
+
+```bash
+# 从零构建功能（需求→确认→拆分→编码→测试→QA→审查-发版循环）
+/dev-to-prod { feature: "导出用户资料", module: "user", startPhase: "requirements" }
+
+# 日常：默认从 QA检查 开始（验证+审查-发版循环）
+/dev-to-prod
+
+# 已有代码，补测试后发布
+/dev-to-prod { module: "ai", startPhase: "testing" }
+
+# 仅审查当前分支
+/review-diff { base: "product" }
+
+# 审查-发版循环（自动修复 review/ship 发现的问题）
+/dev-to-prod { startPhase: "reviewship", autoMerge: true, autoTag: true }
+
+# 单独拆分任务（不执行后续阶段）
+/task-splitter { feature: "实现课程推荐系统", module: "course", maxSubtasks: 100 }
+
+# 自然语言方式（自动解析意图并路由）
+/nl "帮我实现一个用户导出功能，在 user 模块"
+/nl "审查当前分支的代码"
+/nl "跑一遍质量检查"
+/nl "把 dev 的改动发到 product"
+```
+
+#### 自然语言路由支持的语义
+
+| 表达 | 路由到 | 参数提取 |
+|------|--------|----------|
+| "实现/做/开发 [功能]" | dev-to-prod | feature |
+| "在/针对 [模块]" | — | module |
+| "审查/检查 代码" | review-diff | base |
+| "跑/执行 QA/测试" | qa-check | module, skipIntegration |
+| "发布/发版/ship" | ship-to-product | autoMerge |
+| "拆分/分解 [功能]" | task-splitter | feature, module |
+| "从零开始/从头" | dev-to-prod | startPhase: "requirements" |
+| "只做测试" | dev-to-prod | startPhase: "testing" |
+| "从审查开始" | dev-to-prod | startPhase: "reviewship" |
+| "自动合并" | — | autoMerge: true |
+| "自动打标签" | — | autoTag: true |
+
+### 可用技能
+
+| 技能 | 用途 |
+|------|------|
+| `release-checklist` | 发布前验证清单（代码质量、API稳定性、数据库、配置、Docker、版本号）。autoTag 前的最后门控 |
+
 ## 依赖管理
 
 版本统一管理在 gradle/libs.versions.toml，按 bundle 分组：

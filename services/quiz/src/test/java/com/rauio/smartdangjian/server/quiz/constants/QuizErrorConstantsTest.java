@@ -2,8 +2,6 @@ package com.rauio.smartdangjian.server.quiz.constants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.lang.reflect.Constructor;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -32,5 +30,4 @@ class QuizErrorConstantsTest {
     void courseNotFoundIs6004() {
         assertThat(QuizErrorConstants.COURSE_NOT_FOUND).isEqualTo(6004);
     }
-
 }

@@ -84,5 +84,4 @@ public class User implements CurrentUserPrincipal {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     @Schema(description = "更新时间")
     private LocalDateTime updatedAt;
-
 }

@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
 
-import cn.hutool.crypto.digest.BCrypt;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.pojo.response.Result;
@@ -22,6 +20,7 @@ import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
 
 import cn.dev33.satoken.stp.SaLoginModel;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.crypto.digest.BCrypt;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -56,9 +55,7 @@ public class AuthService {
         String platform = loginRequest.getPlatform() != null ? loginRequest.getPlatform() : "web";
         long timeout = "app".equals(platform) ? 2592000L : 7200L;
 
-        StpUtil.login(user.getId(), SaLoginModel.create()
-                .setDevice(platform)
-                .setTimeout(timeout));
+        StpUtil.login(user.getId(), SaLoginModel.create().setDevice(platform).setTimeout(timeout));
 
         StpUtil.getSession().set("user", user);
 

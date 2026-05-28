@@ -42,9 +42,8 @@ class ArticleContentBlockServiceTest {
     @Test
     @DisplayName("create 创建内容块成功")
     void createSuccess() {
-        ArticleContentBlock entity = ArticleContentBlock.builder()
-                .articleId(ARTICLE_ID)
-                .build();
+        ArticleContentBlock entity =
+                ArticleContentBlock.builder().articleId(ARTICLE_ID).build();
         doReturn(true).when(service).save(any(ArticleContentBlock.class));
 
         boolean result = service.create(entity);
@@ -55,9 +54,8 @@ class ArticleContentBlockServiceTest {
     @Test
     @DisplayName("create 创建内容块失败")
     void createFailed() {
-        ArticleContentBlock entity = ArticleContentBlock.builder()
-                .articleId(ARTICLE_ID)
-                .build();
+        ArticleContentBlock entity =
+                ArticleContentBlock.builder().articleId(ARTICLE_ID).build();
         doReturn(false).when(service).save(any(ArticleContentBlock.class));
 
         boolean result = service.create(entity);
@@ -135,10 +133,8 @@ class ArticleContentBlockServiceTest {
     @Test
     @DisplayName("get 根据ID获取内容块成功")
     void getSuccess() {
-        ArticleContentBlock entity = ArticleContentBlock.builder()
-                .id(BLOCK_ID)
-                .articleId(ARTICLE_ID)
-                .build();
+        ArticleContentBlock entity =
+                ArticleContentBlock.builder().id(BLOCK_ID).articleId(ARTICLE_ID).build();
         doReturn(entity).when(service).getById(BLOCK_ID);
 
         ContentBlockResponse response = new ContentBlockResponse();

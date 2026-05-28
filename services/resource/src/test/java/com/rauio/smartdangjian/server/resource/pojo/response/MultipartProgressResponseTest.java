@@ -13,8 +13,7 @@ class MultipartProgressResponseTest {
     @DisplayName("response 的 getter 返回正确值")
     void getters() {
         var part = new MultipartUploadedPartResponse(1, "etag-value");
-        var response = new MultipartProgressResponse(
-                "upload-id", "resource/abc.mp4", "UPLOADING", List.of(part));
+        var response = new MultipartProgressResponse("upload-id", "resource/abc.mp4", "UPLOADING", List.of(part));
 
         assertThat(response.uploadId()).isEqualTo("upload-id");
         assertThat(response.objectKey()).isEqualTo("resource/abc.mp4");

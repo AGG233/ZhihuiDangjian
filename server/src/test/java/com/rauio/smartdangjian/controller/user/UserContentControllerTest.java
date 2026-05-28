@@ -89,7 +89,8 @@ class UserContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 400")
         void getCarouselThrowsBusinessException() throws Exception {
-            when(chapterContentBlockService.getByChapterId(1145141919810L)).thenThrow(new BusinessException(4000, "轮播图查询失败"));
+            when(chapterContentBlockService.getByChapterId(1145141919810L))
+                    .thenThrow(new BusinessException(4000, "轮播图查询失败"));
 
             mockMvc.perform(get(CAROUSEL_URL))
                     .andExpect(status().isBadRequest())

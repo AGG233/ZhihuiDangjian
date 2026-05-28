@@ -37,11 +37,8 @@ class ArticleDetailToolTest {
     @Test
     @DisplayName("searchArticles 根据关键词搜索文章并返回映射列表")
     void searchArticles() {
-        Article article = Article.builder()
-                .id(1L)
-                .title("党建理论学习")
-                .summary("深入理解党的理论")
-                .build();
+        Article article =
+                Article.builder().id(1L).title("党建理论学习").summary("深入理解党的理论").build();
 
         when(articleService.list(any(LambdaQueryWrapper.class))).thenReturn(List.of(article));
 
@@ -66,11 +63,8 @@ class ArticleDetailToolTest {
     @Test
     @DisplayName("getArticleDetail 返回文章详情和内容块")
     void getArticleDetail() {
-        Article article = Article.builder()
-                .id(1L)
-                .title("党建理论学习")
-                .summary("深入理解党的理论")
-                .build();
+        Article article =
+                Article.builder().id(1L).title("党建理论学习").summary("深入理解党的理论").build();
 
         when(articleService.getById(any())).thenReturn(article);
         when(contentBlockService.getByArticleId(anyLong())).thenReturn(List.of());

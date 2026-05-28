@@ -39,8 +39,7 @@ class ArticleTest {
     @Test
     @DisplayName("builder 构造 Article Status 为 Draft")
     void builderCreatesArticleWithDraftStatus() {
-        Article article =
-                Article.builder().id(1L).status(ArticleStatus.Draft).build();
+        Article article = Article.builder().id(1L).status(ArticleStatus.Draft).build();
 
         assertThat(article.getStatus()).isEqualTo(ArticleStatus.Draft);
     }
@@ -48,8 +47,7 @@ class ArticleTest {
     @Test
     @DisplayName("builder 构造 Article Status 为 Deleted(archived)")
     void builderCreatesArticleWithArchivedStatus() {
-        Article article =
-                Article.builder().id(1L).status(ArticleStatus.Deleted).build();
+        Article article = Article.builder().id(1L).status(ArticleStatus.Deleted).build();
 
         assertThat(article.getStatus()).isEqualTo(ArticleStatus.Deleted);
     }
@@ -67,8 +65,7 @@ class ArticleTest {
     @Test
     @DisplayName("setter 修改 status 后 getter 返回新值")
     void setterAndGetterWorkForStatus() {
-        Article article =
-                Article.builder().id(1L).status(ArticleStatus.Draft).build();
+        Article article = Article.builder().id(1L).status(ArticleStatus.Draft).build();
 
         article.setStatus(ArticleStatus.Published);
 
@@ -92,16 +89,10 @@ class ArticleTest {
     @Test
     @DisplayName("两个相同字段的 Article equals 和 hashCode 行为符合 @Data 预期")
     void equalsAndHashCodeBehavior() {
-        Article a1 = Article.builder()
-                .id(1L)
-                .title("标题")
-                .status(ArticleStatus.Draft)
-                .build();
-        Article a2 = Article.builder()
-                .id(1L)
-                .title("标题")
-                .status(ArticleStatus.Draft)
-                .build();
+        Article a1 =
+                Article.builder().id(1L).title("标题").status(ArticleStatus.Draft).build();
+        Article a2 =
+                Article.builder().id(1L).title("标题").status(ArticleStatus.Draft).build();
 
         assertThat(a1).isEqualTo(a2);
         assertThat(a1.hashCode()).isEqualTo(a2.hashCode());
