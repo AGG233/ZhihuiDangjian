@@ -59,7 +59,10 @@ class CategoryRootCreateTest extends CrossLayerTestBase {
 
         @Bean
         @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
-        CategoryService categoryService(CategoryConvertor convertor, CategoryMapper categoryMapper, com.rauio.smartdangjian.service.DataScopeService dataScopeService) {
+        CategoryService categoryService(
+                CategoryConvertor convertor,
+                CategoryMapper categoryMapper,
+                com.rauio.smartdangjian.service.DataScopeService dataScopeService) {
             CategoryService service = new CategoryService(convertor, dataScopeService);
             try {
                 // baseMapper 声明在 CrudRepository 中（MyBatis-Plus 3.5.14）

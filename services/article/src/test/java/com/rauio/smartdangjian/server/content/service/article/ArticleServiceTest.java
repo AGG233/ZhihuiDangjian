@@ -23,9 +23,9 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.constants.ArticleErrorConstants;
 import com.rauio.smartdangjian.server.content.mapper.CategoryArticleMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ArticleConvertor;
-import com.rauio.smartdangjian.server.content.pojo.request.ArticleRequest;
 import com.rauio.smartdangjian.server.content.pojo.entity.Article;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryArticle;
+import com.rauio.smartdangjian.server.content.pojo.request.ArticleRequest;
 import com.rauio.smartdangjian.server.content.spec.ArticleStatus;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
@@ -189,8 +189,10 @@ class ArticleServiceTest {
         when(userService.getCurrentUser()).thenReturn(user);
         doReturn(false).when(articleService).save(any(Article.class));
 
-        ArticleRequest dto =
-                ArticleRequest.builder().title("失败文章").status(ArticleStatus.Draft).build();
+        ArticleRequest dto = ArticleRequest.builder()
+                .title("失败文章")
+                .status(ArticleStatus.Draft)
+                .build();
 
         assertThatThrownBy(() -> articleService.create(dto))
                 .isInstanceOf(BusinessException.class)

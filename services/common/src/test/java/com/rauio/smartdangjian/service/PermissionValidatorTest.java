@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -76,8 +75,7 @@ class PermissionValidatorTest {
     @DisplayName("Null user throws exception")
     void nullUserThrowsException() {
         securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(null);
-        assertThatThrownBy(() -> validator.requireResourceAccess(1L))
-                .isInstanceOf(BusinessException.class);
+        assertThatThrownBy(() -> validator.requireResourceAccess(1L)).isInstanceOf(BusinessException.class);
     }
 
     @Test
@@ -91,7 +89,6 @@ class PermissionValidatorTest {
     @DisplayName("Null resourceOwnerId throws exception for non-manager")
     void nullResourceOwnerIdThrows() {
         mockUser(UserType.STUDENT, 1L);
-        assertThatThrownBy(() -> validator.requireResourceAccess(null))
-                .isInstanceOf(BusinessException.class);
+        assertThatThrownBy(() -> validator.requireResourceAccess(null)).isInstanceOf(BusinessException.class);
     }
 }

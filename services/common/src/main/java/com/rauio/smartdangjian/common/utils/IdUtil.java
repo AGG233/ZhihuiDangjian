@@ -1,7 +1,7 @@
 package com.rauio.smartdangjian.common.utils;
 
-import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.constants.ErrorConstants;
+import com.rauio.smartdangjian.exception.BusinessException;
 
 public final class IdUtil {
 

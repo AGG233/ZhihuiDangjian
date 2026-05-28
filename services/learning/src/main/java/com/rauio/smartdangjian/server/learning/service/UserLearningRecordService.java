@@ -150,8 +150,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @param chapterId 章节 ID
      * @return 学习记录列表
      */
-    public List<UserLearningRecord> getByUserIdAndCourseIdAndChapterId(
-            Long userId, Long courseId, Long chapterId) {
+    public List<UserLearningRecord> getByUserIdAndCourseIdAndChapterId(Long userId, Long courseId, Long chapterId) {
         if (courseId == null || chapterId == null) {
             return List.of();
         }

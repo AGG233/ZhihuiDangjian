@@ -8,7 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 @MapperScan(basePackages = "com.rauio.smartdangjian", annotationClass = org.apache.ibatis.annotations.Mapper.class)
 @EnableFileStorage
-
 public class SmartDangjianApplication {
     public static void main(String[] args) {
         SpringApplication.run(SmartDangjianApplication.class, args);

@@ -52,8 +52,7 @@ class LearningToolTest {
         ToolContext toolContext = mock(ToolContext.class);
         when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
         UserLearningRecord record = mock(UserLearningRecord.class);
-        when(userLearningRecordService.getByUserIdAndCourseId(1L, 1L))
-                .thenReturn(List.of(record));
+        when(userLearningRecordService.getByUserIdAndCourseId(1L, 1L)).thenReturn(List.of(record));
 
         List<UserLearningRecord> result = learningTool.getLearningRecordOfCourse("1", toolContext);
 
@@ -69,8 +68,7 @@ class LearningToolTest {
         when(userLearningRecordService.getByUserIdAndCourseIdAndChapterId(1L, 1L, 1L))
                 .thenReturn(List.of(record));
 
-        List<UserLearningRecord> result =
-                learningTool.getLearningRecordOfCourseChapter("1", "1", toolContext);
+        List<UserLearningRecord> result = learningTool.getLearningRecordOfCourseChapter("1", "1", toolContext);
 
         assertThat(result).hasSize(1);
     }

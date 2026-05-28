@@ -7,14 +7,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
 import org.dromara.x.file.storage.core.FileInfo;
@@ -302,10 +299,8 @@ class FileServiceTest {
         @Test
         @DisplayName("成功保存本地文件")
         void handleUploadCallbackSuccess() {
-            ResourceMeta meta = ResourceMeta.builder()
-                    .id(RESOURCE_ID)
-                    .objectKey(OBJECT_KEY)
-                    .build();
+            ResourceMeta meta =
+                    ResourceMeta.builder().id(RESOURCE_ID).objectKey(OBJECT_KEY).build();
             when(resourceMetaService.get(RESOURCE_ID)).thenReturn(meta);
 
             fileService.handleUploadCallback(RESOURCE_ID, mock(InputStream.class));
@@ -397,8 +392,10 @@ class FileServiceTest {
         @Test
         @DisplayName("getBatchByIds 返回多个URL")
         void getBatchByIds() {
-            ResourceMeta meta1 = ResourceMeta.builder().id(1L).objectKey("image/a.png").build();
-            ResourceMeta meta2 = ResourceMeta.builder().id(2L).objectKey("image/b.png").build();
+            ResourceMeta meta1 =
+                    ResourceMeta.builder().id(1L).objectKey("image/a.png").build();
+            ResourceMeta meta2 =
+                    ResourceMeta.builder().id(2L).objectKey("image/b.png").build();
             when(resourceMetaService.get(1L)).thenReturn(meta1);
             when(resourceMetaService.get(2L)).thenReturn(meta2);
             when(fileStorageService.generatePresignedUrl()).thenReturn(pretreatment);
@@ -416,7 +413,11 @@ class FileServiceTest {
         @Test
         @DisplayName("getBatchByHashes 返回多个URL")
         void getBatchByHashes() {
-            ResourceMeta meta = ResourceMeta.builder().id(1L).hash("hash1").objectKey("image/a.png").build();
+            ResourceMeta meta = ResourceMeta.builder()
+                    .id(1L)
+                    .hash("hash1")
+                    .objectKey("image/a.png")
+                    .build();
             when(resourceMetaService.getByHash("hash1")).thenReturn(meta);
             // Use lazy answer for repeated calls
             when(fileStorageService.generatePresignedUrl()).thenReturn(pretreatment);
@@ -440,7 +441,11 @@ class FileServiceTest {
         @Test
         @DisplayName("根据hash获取下载URL")
         void getByHash() {
-            ResourceMeta meta = ResourceMeta.builder().id(1L).hash("hash1").objectKey("image/a.png").build();
+            ResourceMeta meta = ResourceMeta.builder()
+                    .id(1L)
+                    .hash("hash1")
+                    .objectKey("image/a.png")
+                    .build();
             when(resourceMetaService.getByHash("hash1")).thenReturn(meta);
             when(fileStorageService.generatePresignedUrl()).thenReturn(pretreatment);
 

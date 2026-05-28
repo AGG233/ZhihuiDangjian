@@ -44,11 +44,8 @@ class CourseResponseTest {
     @Test
     @DisplayName("categoryId 为 null 时 builder 正常工作")
     void builderWithNullCategoryId() {
-        CourseResponse vo = CourseResponse.builder()
-                .id(1L)
-                .title("无分类课程")
-                .categoryId(null)
-                .build();
+        CourseResponse vo =
+                CourseResponse.builder().id(1L).title("无分类课程").categoryId(null).build();
 
         assertThat(vo.getCategoryId()).isNull();
     }
@@ -56,8 +53,7 @@ class CourseResponseTest {
     @Test
     @DisplayName("setter 修改 title 后 getter 返回新值")
     void setterAndGetterWorkForTitle() {
-        CourseResponse vo =
-                CourseResponse.builder().id(1L).title("旧标题").build();
+        CourseResponse vo = CourseResponse.builder().id(1L).title("旧标题").build();
 
         vo.setTitle("新标题");
 

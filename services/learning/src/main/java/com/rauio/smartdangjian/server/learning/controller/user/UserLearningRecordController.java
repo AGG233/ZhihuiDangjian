@@ -6,13 +6,12 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
-import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserLearningRecordRequest;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
-import com.rauio.smartdangjian.utils.spec.UserType;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,8 +28,7 @@ public class UserLearningRecordController {
     @Operation(summary = "获取学习记录", description = "根据记录ID获取学习记录详情")
     @GetMapping("/{id}")
     @SaCheckRole("STUDENT")
-    public Result<UserLearningRecordResponse> get(
-            @Parameter(name = "id", description = "记录ID") @PathVariable Long id) {
+    public Result<UserLearningRecordResponse> get(@Parameter(name = "id", description = "记录ID") @PathVariable Long id) {
         UserLearningRecordResponse result = recordService.get(id);
         return Result.ok(result);
     }

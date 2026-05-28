@@ -7,10 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.server.quiz.mapper.UserQuizAnswerMapper;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
-import com.rauio.smartdangjian.utils.spec.UserType;
+
+import cn.dev33.satoken.annotation.SaCheckRole;
 
 @Service
 @Transactional

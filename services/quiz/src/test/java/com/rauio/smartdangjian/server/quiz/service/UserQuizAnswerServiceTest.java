@@ -35,11 +35,8 @@ class UserQuizAnswerServiceTest {
     @Test
     @DisplayName("create 保存答题记录成功返回 true")
     void createReturnsTrueOnSuccess() {
-        UserQuizAnswer answer = UserQuizAnswer.builder()
-                .userId(1L)
-                .quizId(1L)
-                .optionId(1L)
-                .build();
+        UserQuizAnswer answer =
+                UserQuizAnswer.builder().userId(1L).quizId(1L).optionId(1L).build();
         doReturn(true).when(userQuizAnswerService).save(answer);
 
         Boolean result = userQuizAnswerService.create(answer);
@@ -63,8 +60,7 @@ class UserQuizAnswerServiceTest {
     @Test
     @DisplayName("update 更新答题记录成功返回 true")
     void updateReturnsTrueOnSuccess() {
-        UserQuizAnswer answer =
-                UserQuizAnswer.builder().id(1L).scoreObtained(5).build();
+        UserQuizAnswer answer = UserQuizAnswer.builder().id(1L).scoreObtained(5).build();
         doReturn(true).when(userQuizAnswerService).updateById(answer);
 
         Boolean result = userQuizAnswerService.update(answer);
@@ -116,11 +112,8 @@ class UserQuizAnswerServiceTest {
     @Test
     @DisplayName("updateByUserIdAndQuizIdAndOptionId 记录不存在时返回 false")
     void updateByCompositeKeyReturnsFalseWhenNotFound() {
-        UserQuizAnswer input = UserQuizAnswer.builder()
-                .userId(1L)
-                .quizId(1L)
-                .optionId(1L)
-                .build();
+        UserQuizAnswer input =
+                UserQuizAnswer.builder().userId(1L).quizId(1L).optionId(1L).build();
 
         doReturn(null).when(userQuizAnswerService).getByUserIdAndQuizIdAndOptionId(1L, 1L, 1L);
 
@@ -211,8 +204,7 @@ class UserQuizAnswerServiceTest {
     @Test
     @DisplayName("getByOptionId 根据选项 ID 返回答题记录")
     void getByOptionIdReturnsAnswer() {
-        UserQuizAnswer answer =
-                UserQuizAnswer.builder().id(1L).optionId(1L).build();
+        UserQuizAnswer answer = UserQuizAnswer.builder().id(1L).optionId(1L).build();
         doReturn(answer).when(userQuizAnswerService).getOne(any(Wrapper.class));
 
         UserQuizAnswer result = userQuizAnswerService.getByOptionId(1L);
@@ -260,11 +252,8 @@ class UserQuizAnswerServiceTest {
     @Test
     @DisplayName("getByUserIdAndQuizId 根据用户和测验 ID 返回答题记录列表")
     void getByUserIdAndQuizIdReturnsAnswerList() {
-        UserQuizAnswer a1 = UserQuizAnswer.builder()
-                .id(1L)
-                .userId(1L)
-                .quizId(1L)
-                .build();
+        UserQuizAnswer a1 =
+                UserQuizAnswer.builder().id(1L).userId(1L).quizId(1L).build();
         doReturn(List.of(a1)).when(userQuizAnswerService).list(any(Wrapper.class));
 
         List<UserQuizAnswer> result = userQuizAnswerService.getByUserIdAndQuizId(1L, 1L);

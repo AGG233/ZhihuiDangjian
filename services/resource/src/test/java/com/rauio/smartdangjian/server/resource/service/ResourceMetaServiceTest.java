@@ -258,7 +258,11 @@ class ResourceMetaServiceTest {
     @Test
     @DisplayName("deleteByHash 按哈希删除资源成功")
     void deleteByHashSuccess() {
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).hash(HASH).uploaderId(1L).build())
+        doReturn(ResourceMeta.builder()
+                        .id(RESOURCE_ID)
+                        .hash(HASH)
+                        .uploaderId(1L)
+                        .build())
                 .when(resourceMetaService)
                 .getOne(any(LambdaQueryWrapper.class));
         doReturn(ResourceMeta.builder().id(RESOURCE_ID).uploaderId(1L).build())
@@ -277,7 +281,11 @@ class ResourceMetaServiceTest {
     @Test
     @DisplayName("deleteByHashes 批量按哈希删除")
     void deleteByHashes() {
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).hash(HASH).uploaderId(1L).build())
+        doReturn(ResourceMeta.builder()
+                        .id(RESOURCE_ID)
+                        .hash(HASH)
+                        .uploaderId(1L)
+                        .build())
                 .when(resourceMetaService)
                 .getOne(any(LambdaQueryWrapper.class));
         doReturn(ResourceMeta.builder().id(RESOURCE_ID).uploaderId(1L).build())
@@ -388,7 +396,11 @@ class ResourceMetaServiceTest {
     @Test
     @DisplayName("deleteByHash 删除数据库失败时抛出异常")
     void deleteByHashFailed() {
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).hash(HASH).uploaderId(1L).build())
+        doReturn(ResourceMeta.builder()
+                        .id(RESOURCE_ID)
+                        .hash(HASH)
+                        .uploaderId(1L)
+                        .build())
                 .when(resourceMetaService)
                 .getOne(any(LambdaQueryWrapper.class));
         doReturn(ResourceMeta.builder().id(RESOURCE_ID).uploaderId(1L).build())

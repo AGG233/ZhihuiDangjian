@@ -66,12 +66,8 @@ class QuizTest {
     @Test
     @DisplayName("toString 包含所有字段值")
     void toStringContainsAllFieldValues() {
-        Quiz quiz = Quiz.builder()
-                .id(1L)
-                .question("测试题目")
-                .chapterId(1L)
-                .score(5)
-                .build();
+        Quiz quiz =
+                Quiz.builder().id(1L).question("测试题目").chapterId(1L).score(5).build();
 
         String str = quiz.toString();
 
@@ -81,24 +77,9 @@ class QuizTest {
     @Test
     @DisplayName("equals 比较所有字段相同的 Quiz 视为相等")
     void equalsComparesAllFields() {
-        Quiz quiz1 = Quiz.builder()
-                .id(1L)
-                .question("Q1")
-                .chapterId(1L)
-                .score(5)
-                .build();
-        Quiz quiz2 = Quiz.builder()
-                .id(1L)
-                .question("Q1")
-                .chapterId(1L)
-                .score(5)
-                .build();
-        Quiz quiz3 = Quiz.builder()
-                .id(2L)
-                .question("Q1")
-                .chapterId(1L)
-                .score(5)
-                .build();
+        Quiz quiz1 = Quiz.builder().id(1L).question("Q1").chapterId(1L).score(5).build();
+        Quiz quiz2 = Quiz.builder().id(1L).question("Q1").chapterId(1L).score(5).build();
+        Quiz quiz3 = Quiz.builder().id(2L).question("Q1").chapterId(1L).score(5).build();
         Quiz quiz4 = Quiz.builder()
                 .id(1L)
                 .question("different")
@@ -114,18 +95,8 @@ class QuizTest {
     @Test
     @DisplayName("hashCode 所有字段相同时产生相同哈希值")
     void hashCodeBasedOnAllFields() {
-        Quiz quiz1 = Quiz.builder()
-                .id(1L)
-                .question("Q1")
-                .chapterId(1L)
-                .score(5)
-                .build();
-        Quiz quiz2 = Quiz.builder()
-                .id(1L)
-                .question("Q1")
-                .chapterId(1L)
-                .score(5)
-                .build();
+        Quiz quiz1 = Quiz.builder().id(1L).question("Q1").chapterId(1L).score(5).build();
+        Quiz quiz2 = Quiz.builder().id(1L).question("Q1").chapterId(1L).score(5).build();
 
         assertThat(quiz1.hashCode()).isEqualTo(quiz2.hashCode());
     }

@@ -199,22 +199,19 @@ class UserQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 非数字 ID 返回 400（Spring 类型转换失败）")
         void getWithNonNumericId() throws Exception {
-            mockMvc.perform(get("/api/quiz/quizzes/试题"))
-                    .andExpect(status().isBadRequest());
+            mockMvc.perform(get("/api/quiz/quizzes/试题")).andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("GET /{id} - 路径含特殊字符返回 400（Spring 类型转换失败）")
         void getWithSpecialCharsInPath() throws Exception {
-            mockMvc.perform(get("/api/quiz/quizzes/{id}", "test@#$%"))
-                    .andExpect(status().isBadRequest());
+            mockMvc.perform(get("/api/quiz/quizzes/{id}", "test@#$%")).andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("GET /by-chapter/{chapterId} - Float ID 路径返回 400（Spring 类型转换失败）")
         void getByChapterWithInvalidId() throws Exception {
-            mockMvc.perform(get("/api/quiz/quizzes/by-chapter/3.14"))
-                    .andExpect(status().isBadRequest());
+            mockMvc.perform(get("/api/quiz/quizzes/by-chapter/3.14")).andExpect(status().isBadRequest());
         }
     }
 

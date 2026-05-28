@@ -51,16 +51,10 @@ class BannerServiceTest {
         when(redisTemplate.opsForList()).thenReturn(listOperations);
         when(listOperations.range(ResourceConstant.BANNER_PREFIX, 0, -1)).thenReturn(List.of(HASH, HASH2));
 
-        ResourceMeta meta1 = ResourceMeta.builder()
-                .id(1L)
-                .hash(HASH)
-                .originalName("b1.png")
-                .build();
-        ResourceMeta meta2 = ResourceMeta.builder()
-                .id(1L)
-                .hash(HASH2)
-                .originalName("b2.png")
-                .build();
+        ResourceMeta meta1 =
+                ResourceMeta.builder().id(1L).hash(HASH).originalName("b1.png").build();
+        ResourceMeta meta2 =
+                ResourceMeta.builder().id(1L).hash(HASH2).originalName("b2.png").build();
         when(resourceMetaService.getByHash(HASH)).thenReturn(meta1);
         when(resourceMetaService.getByHash(HASH2)).thenReturn(meta2);
 

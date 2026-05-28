@@ -8,9 +8,6 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
-import cn.dev33.satoken.annotation.SaCheckLogin;
-import cn.dev33.satoken.annotation.SaCheckPermission;
-import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.UploadFileRequest;
@@ -19,6 +16,9 @@ import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
 import com.rauio.smartdangjian.server.resource.service.FileService;
 import com.rauio.smartdangjian.utils.SecurityUtils;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -51,9 +51,7 @@ public class FileController {
     @SaCheckLogin
     @SaCheckRole("STUDENT")
     @SaCheckPermission("resource:write")
-    public Result<Void> uploadCallback(
-            @PathVariable Long resourceId,
-            HttpServletRequest request) throws IOException {
+    public Result<Void> uploadCallback(@PathVariable Long resourceId, HttpServletRequest request) throws IOException {
         fileService.handleUploadCallback(resourceId, request.getInputStream());
         return Result.ok(null);
     }

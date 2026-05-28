@@ -211,8 +211,7 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /users/{id}/quizzes/{quizId} - 某题无答题记录返回空列表")
         void getByQuizIdEmpty() throws Exception {
-            when(userQuizAnswerService.getByUserIdAndQuizId(1L, 999L))
-                    .thenReturn(List.of());
+            when(userQuizAnswerService.getByUserIdAndQuizId(1L, 999L)).thenReturn(List.of());
 
             mockMvc.perform(get("/api/quiz/answers/users/1/quizzes/999"))
                     .andExpect(status().isOk())
@@ -224,22 +223,19 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("非数字路径参数返回 400（Spring 类型转换失败）")
         void withNonNumericPathParams() throws Exception {
-            mockMvc.perform(get("/api/quiz/answers/users/用户1"))
-                    .andExpect(status().isBadRequest());
+            mockMvc.perform(get("/api/quiz/answers/users/用户1")).andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("路径含特殊字符返回 400（Spring 类型转换失败）")
         void withSpecialCharsInPath() throws Exception {
-            mockMvc.perform(get("/api/quiz/answers/users/test@#$%"))
-                    .andExpect(status().isBadRequest());
+            mockMvc.perform(get("/api/quiz/answers/users/test@#$%")).andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("浮点路径参数返回 400（Spring 类型转换失败）")
         void withInvalidPathParams() throws Exception {
-            mockMvc.perform(get("/api/quiz/answers/users/3.14"))
-                    .andExpect(status().isBadRequest());
+            mockMvc.perform(get("/api/quiz/answers/users/3.14")).andExpect(status().isBadRequest());
         }
     }
 
@@ -257,8 +253,7 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入尝试在路径参数中返回 400（类型转换失败）")
         void sqlInjectionInPath() throws Exception {
-            mockMvc.perform(get("/api/quiz/answers/users/{id}", "' OR '1'='1"))
-                    .andExpect(status().isBadRequest());
+            mockMvc.perform(get("/api/quiz/answers/users/{id}", "' OR '1'='1")).andExpect(status().isBadRequest());
         }
 
         @Test

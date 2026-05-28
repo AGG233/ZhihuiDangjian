@@ -21,19 +21,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.controller.factory.CategoryTestDataFactory;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.content.controller.admin.AdminCategoryController;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.content.pojo.request.CategoryRequest;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.content.service.category.CategoryService;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.utils.spec.UserType;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
@@ -77,8 +71,7 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /{id}/children - 创建子目录成功")
         void createChildrenSuccess() throws Exception {
-            when(categoryService.createByParentId(any(List.class), eq(1L)))
-                    .thenReturn(true);
+            when(categoryService.createByParentId(any(List.class), eq(1L))).thenReturn(true);
 
             List<CategoryRequest> children = CategoryTestDataFactory.createSingleChildCategoryRequestList("子分类A");
             mockMvc.perform(post("/api/admin/content/categories/1/children")
@@ -167,8 +160,7 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /{id}/children - 请求体为空数组返回 200（空操作）")
         void createChildrenWithEmptyList() throws Exception {
-            when(categoryService.createByParentId(any(List.class), eq(1L)))
-                    .thenReturn(true);
+            when(categoryService.createByParentId(any(List.class), eq(1L))).thenReturn(true);
 
             mockMvc.perform(post("/api/admin/content/categories/1/children")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -276,8 +268,7 @@ class AdminCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /{id}/children - 批量创建多个子目录成功")
         void createMultipleChildrenSuccess() throws Exception {
-            when(categoryService.createByParentId(any(List.class), eq(1L)))
-                    .thenReturn(true);
+            when(categoryService.createByParentId(any(List.class), eq(1L))).thenReturn(true);
 
             List<CategoryRequest> children = CategoryTestDataFactory.createCategoryRequestList(5);
             mockMvc.perform(post("/api/admin/content/categories/1/children")

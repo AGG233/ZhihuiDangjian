@@ -59,9 +59,15 @@ class ContentSearchToolTest {
         @DisplayName("使用 like 查询匹配标题并返回映射列表")
         void returnsMappedResults() {
             Course course1 = Course.builder()
-                    .id(1L).title("Java Basics").description("Intro to Java").build();
+                    .id(1L)
+                    .title("Java Basics")
+                    .description("Intro to Java")
+                    .build();
             Course course2 = Course.builder()
-                    .id(2L).title("Advanced Java").description("Deep dive").build();
+                    .id(2L)
+                    .title("Advanced Java")
+                    .description("Deep dive")
+                    .build();
 
             when(courseService.list(argThat((LambdaQueryWrapper<Course> w) -> w != null)))
                     .thenReturn(List.of(course1, course2));
@@ -69,10 +75,12 @@ class ContentSearchToolTest {
             List<Map<String, Object>> result = contentSearchTool.searchCourses("Java");
 
             assertThat(result).hasSize(2);
-            assertThat(result.get(0)).containsEntry("id", 1L)
+            assertThat(result.get(0))
+                    .containsEntry("id", 1L)
                     .containsEntry("title", "Java Basics")
                     .containsEntry("description", "Intro to Java");
-            assertThat(result.get(1)).containsEntry("id", 2L)
+            assertThat(result.get(1))
+                    .containsEntry("id", 2L)
                     .containsEntry("title", "Advanced Java")
                     .containsEntry("description", "Deep dive");
             verify(courseService, times(1)).list(any(LambdaQueryWrapper.class));
@@ -97,9 +105,15 @@ class ContentSearchToolTest {
         @DisplayName("使用 like 查询匹配标题并返回映射列表")
         void returnsMappedResults() {
             Article article1 = Article.builder()
-                    .id(1L).title("Article 1").summary("Summary 1").build();
+                    .id(1L)
+                    .title("Article 1")
+                    .summary("Summary 1")
+                    .build();
             Article article2 = Article.builder()
-                    .id(2L).title("Article 2").summary("Summary 2").build();
+                    .id(2L)
+                    .title("Article 2")
+                    .summary("Summary 2")
+                    .build();
 
             when(articleService.list(argThat((LambdaQueryWrapper<Article> w) -> w != null)))
                     .thenReturn(List.of(article1, article2));
@@ -107,10 +121,12 @@ class ContentSearchToolTest {
             List<Map<String, Object>> result = contentSearchTool.searchArticles("Article");
 
             assertThat(result).hasSize(2);
-            assertThat(result.get(0)).containsEntry("id", 1L)
+            assertThat(result.get(0))
+                    .containsEntry("id", 1L)
                     .containsEntry("title", "Article 1")
                     .containsEntry("description", "Summary 1");
-            assertThat(result.get(1)).containsEntry("id", 2L)
+            assertThat(result.get(1))
+                    .containsEntry("id", 2L)
                     .containsEntry("title", "Article 2")
                     .containsEntry("description", "Summary 2");
             verify(articleService, times(1)).list(any(LambdaQueryWrapper.class));
@@ -135,9 +151,15 @@ class ContentSearchToolTest {
         @DisplayName("使用 like 查询匹配标题并返回映射列表")
         void returnsMappedResults() {
             Chapter chapter1 = Chapter.builder()
-                    .id(1L).title("Chapter 1").description("Desc 1").build();
+                    .id(1L)
+                    .title("Chapter 1")
+                    .description("Desc 1")
+                    .build();
             Chapter chapter2 = Chapter.builder()
-                    .id(2L).title("Chapter 2").description("Desc 2").build();
+                    .id(2L)
+                    .title("Chapter 2")
+                    .description("Desc 2")
+                    .build();
 
             when(chapterService.list(argThat((LambdaQueryWrapper<Chapter> w) -> w != null)))
                     .thenReturn(List.of(chapter1, chapter2));
@@ -145,10 +167,12 @@ class ContentSearchToolTest {
             List<Map<String, Object>> result = contentSearchTool.searchChapters("Chapter");
 
             assertThat(result).hasSize(2);
-            assertThat(result.get(0)).containsEntry("id", 1L)
+            assertThat(result.get(0))
+                    .containsEntry("id", 1L)
                     .containsEntry("title", "Chapter 1")
                     .containsEntry("description", "Desc 1");
-            assertThat(result.get(1)).containsEntry("id", 2L)
+            assertThat(result.get(1))
+                    .containsEntry("id", 2L)
                     .containsEntry("title", "Chapter 2")
                     .containsEntry("description", "Desc 2");
             verify(chapterService, times(1)).list(any(LambdaQueryWrapper.class));
@@ -173,16 +197,25 @@ class ContentSearchToolTest {
         @DisplayName("返回课程详情及其章节列表")
         void returnsCourseDetailWithChapters() {
             CourseResponse course = CourseResponse.builder()
-                    .id(1L).title("Course").description("Description").difficulty("easy").build();
+                    .id(1L)
+                    .title("Course")
+                    .description("Description")
+                    .difficulty("easy")
+                    .build();
             ChapterResponse chapter = ChapterResponse.builder()
-                    .id(10L).title("Chapter 1").description("Chapter desc").orderIndex(1).build();
+                    .id(10L)
+                    .title("Chapter 1")
+                    .description("Chapter desc")
+                    .orderIndex(1)
+                    .build();
 
             when(courseService.get(1L)).thenReturn(course);
             when(chapterService.getByCourseId(1L)).thenReturn(List.of(chapter));
 
             Map<String, Object> result = contentSearchTool.getCourseDetail("1");
 
-            assertThat(result).containsEntry("id", 1L)
+            assertThat(result)
+                    .containsEntry("id", 1L)
                     .containsEntry("title", "Course")
                     .containsEntry("description", "Description")
                     .containsEntry("difficulty", "easy");
@@ -191,7 +224,8 @@ class ContentSearchToolTest {
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> chapters = (List<Map<String, Object>>) result.get("chapters");
             assertThat(chapters).hasSize(1);
-            assertThat(chapters.get(0)).containsEntry("id", 10L)
+            assertThat(chapters.get(0))
+                    .containsEntry("id", 10L)
                     .containsEntry("title", "Chapter 1")
                     .containsEntry("description", "Chapter desc")
                     .containsEntry("orderIndex", 1);
@@ -215,7 +249,12 @@ class ContentSearchToolTest {
         @DisplayName("返回章节详情及其内容块")
         void returnsChapterDetailWithBlocks() {
             ChapterResponse chapter = ChapterResponse.builder()
-                    .id(1L).title("Chapter").description("Desc").courseId(10L).orderIndex(1).build();
+                    .id(1L)
+                    .title("Chapter")
+                    .description("Desc")
+                    .courseId(10L)
+                    .orderIndex(1)
+                    .build();
             ContentBlockResponse block = new ContentBlockResponse();
 
             when(chapterService.get(1L)).thenReturn(chapter);
@@ -223,7 +262,8 @@ class ContentSearchToolTest {
 
             Map<String, Object> result = contentSearchTool.getChapterDetail("1");
 
-            assertThat(result).containsEntry("id", 1L)
+            assertThat(result)
+                    .containsEntry("id", 1L)
                     .containsEntry("title", "Chapter")
                     .containsEntry("description", "Desc")
                     .containsEntry("courseId", 10L)

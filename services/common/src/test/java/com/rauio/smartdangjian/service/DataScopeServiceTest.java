@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -88,8 +87,7 @@ class DataScopeServiceTest {
     @DisplayName("Null user throws exception")
     void nullUserThrowsForSameUniversity() {
         securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(null);
-        assertThatThrownBy(() -> service.requireSameUniversity("uni-1"))
-                .isInstanceOf(BusinessException.class);
+        assertThatThrownBy(() -> service.requireSameUniversity("uni-1")).isInstanceOf(BusinessException.class);
     }
 
     // ==================== requireManageable ====================
@@ -124,8 +122,7 @@ class DataScopeServiceTest {
     @DisplayName("SCHOOL user cannot manage other university resources")
     void schoolCannotManageOther() {
         mockUser(UserType.SCHOOL, "uni-1");
-        assertThatThrownBy(() -> service.requireManageable("uni-2"))
-                .isInstanceOf(BusinessException.class);
+        assertThatThrownBy(() -> service.requireManageable("uni-2")).isInstanceOf(BusinessException.class);
     }
 
     @Test

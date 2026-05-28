@@ -593,7 +593,8 @@ class CategoryServiceTest {
         doReturn(child2).when(categoryService).getById(12L);
         // Sequential stubs: parent list returns children, each child list returns empty
         doReturn(List.of(child1, child2), Collections.emptyList(), Collections.emptyList())
-                .when(categoryService).list(any(LambdaQueryWrapper.class));
+                .when(categoryService)
+                .list(any(LambdaQueryWrapper.class));
         doReturn(true).when(categoryService).removeById(anyLong());
 
         Boolean result = categoryService.deleteByIdWithChildren(10L);

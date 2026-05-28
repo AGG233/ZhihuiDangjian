@@ -66,9 +66,20 @@ public abstract class CrossLayerTestBase {
         stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
         stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn(String.valueOf(userId));
         CurrentUserPrincipal principal = new CurrentUserPrincipal() {
-            @Override public Long getId() { return userId; }
-            @Override public UserType getUserType() { return userType; }
-            @Override public String getUniversityId() { return universityId; }
+            @Override
+            public Long getId() {
+                return userId;
+            }
+
+            @Override
+            public UserType getUserType() {
+                return userType;
+            }
+
+            @Override
+            public String getUniversityId() {
+                return universityId;
+            }
         };
         SaSession session = mock(SaSession.class);
         when(session.get("user")).thenReturn(principal);

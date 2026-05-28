@@ -26,8 +26,7 @@ public class PromptSanitizer {
             Pattern.compile("<\\s*/?\\s*script\\s*\\u003e", Pattern.CASE_INSENSITIVE),
             Pattern.compile("<\\s*/?\\s*prompt\\s*\\u003e", Pattern.CASE_INSENSITIVE));
 
-    private PromptSanitizer() {
-    }
+    private PromptSanitizer() {}
 
     public static String sanitize(String input) {
         if (input == null) {

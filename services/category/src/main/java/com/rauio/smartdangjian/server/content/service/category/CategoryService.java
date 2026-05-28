@@ -65,8 +65,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      * @return 所有顶级目录
      */
     public List<CategoryResponse> getRootList() {
-        LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<Category>()
-                .eq(Category::getLevel, 0);
+        LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<Category>().eq(Category::getLevel, 0);
         CurrentUserPrincipal currentUser = SecurityUtils.getCurrentUser();
         if (currentUser != null && currentUser.getUserType() != UserType.MANAGER) {
             wrapper.eq(Category::getUniversityId, currentUser.getUniversityId());
@@ -87,8 +86,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
         }
         dataScopeService.requireSameUniversity(parent.getUniversityId());
 
-        LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<Category>()
-                .eq(Category::getParentId, categoryId);
+        LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<Category>().eq(Category::getParentId, categoryId);
         CurrentUserPrincipal currentUser = SecurityUtils.getCurrentUser();
         if (currentUser != null && currentUser.getUserType() != UserType.MANAGER) {
             wrapper.eq(Category::getUniversityId, currentUser.getUniversityId());
@@ -226,5 +224,4 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
         category.setParentId(existing.getParentId());
         return this.updateById(category);
     }
-
 }

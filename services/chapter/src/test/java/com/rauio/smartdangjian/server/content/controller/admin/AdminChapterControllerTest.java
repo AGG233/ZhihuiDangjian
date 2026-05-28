@@ -59,11 +59,8 @@ class AdminChapterControllerTest {
     @Test
     @DisplayName("get 返回的 Result 包含成功状态码")
     void getShouldReturnSuccessResult() {
-        ChapterResponse vo = ChapterResponse.builder()
-                .id(1L)
-                .courseId(1L)
-                .title("第一章")
-                .build();
+        ChapterResponse vo =
+                ChapterResponse.builder().id(1L).courseId(1L).title("第一章").build();
         when(chapterService.get(1L)).thenReturn(vo);
 
         Result<ChapterResponse> result = controller.get(1L);

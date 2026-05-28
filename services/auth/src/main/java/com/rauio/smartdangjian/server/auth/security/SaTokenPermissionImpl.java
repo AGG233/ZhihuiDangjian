@@ -31,8 +31,35 @@ public class SaTokenPermissionImpl implements StpInterface {
         if (userObj instanceof User user && user.getUserType() != null) {
             return switch (user.getUserType()) {
                 case MANAGER -> List.of("*");
-                case SCHOOL -> List.of("category:*","chapter:*","course:*","quiz:*","resource:*","user:read","user:update","content:*","article:*","learning:read","graph:read","search:*","file:*");
-                case STUDENT -> List.of("content:read","article:read","course:read","chapter:read","quiz:answer","quiz:read","learning:*","file:read","category:read","search:*","graph:read","user:read");
+                case SCHOOL ->
+                    List.of(
+                            "category:*",
+                            "chapter:*",
+                            "course:*",
+                            "quiz:*",
+                            "resource:*",
+                            "user:read",
+                            "user:update",
+                            "content:*",
+                            "article:*",
+                            "learning:read",
+                            "graph:read",
+                            "search:*",
+                            "file:*");
+                case STUDENT ->
+                    List.of(
+                            "content:read",
+                            "article:read",
+                            "course:read",
+                            "chapter:read",
+                            "quiz:answer",
+                            "quiz:read",
+                            "learning:*",
+                            "file:read",
+                            "category:read",
+                            "search:*",
+                            "graph:read",
+                            "user:read");
             };
         }
         return List.of();

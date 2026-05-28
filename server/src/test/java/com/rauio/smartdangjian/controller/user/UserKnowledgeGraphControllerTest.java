@@ -19,10 +19,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.graph.controller.user.UserKnowledgeGraphController;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphEdgeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphNodeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
-import com.rauio.smartdangjian.server.graph.controller.user.UserKnowledgeGraphController;
 import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 
 @SpringBootTest(
@@ -175,8 +175,10 @@ class UserKnowledgeGraphControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /users/{userId} - 知识图谱空结构（无节点无边）")
         void getUserGraphEmpty() throws Exception {
-            KnowledgeGraphResponse emptyVo =
-                    KnowledgeGraphResponse.builder().nodes(List.of()).edges(List.of()).build();
+            KnowledgeGraphResponse emptyVo = KnowledgeGraphResponse.builder()
+                    .nodes(List.of())
+                    .edges(List.of())
+                    .build();
             when(knowledgeGraphService.getUserGraph("user-empty")).thenReturn(emptyVo);
 
             mockMvc.perform(get("/api/graph/knowledge-graphs/users/user-empty"))
@@ -189,8 +191,10 @@ class UserKnowledgeGraphControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /courses/{courseId} - 课程无关联用户和章节")
         void getCourseGraphEmpty() throws Exception {
-            KnowledgeGraphResponse emptyVo =
-                    KnowledgeGraphResponse.builder().nodes(List.of()).edges(List.of()).build();
+            KnowledgeGraphResponse emptyVo = KnowledgeGraphResponse.builder()
+                    .nodes(List.of())
+                    .edges(List.of())
+                    .build();
             when(knowledgeGraphService.getCourseGraph("course-empty")).thenReturn(emptyVo);
 
             mockMvc.perform(get("/api/graph/knowledge-graphs/courses/course-empty"))

@@ -33,8 +33,8 @@ import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
-import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.session.SaSession;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.crypto.digest.BCrypt;
 
 @ExtendWith(MockitoExtension.class)
@@ -80,8 +80,10 @@ class AuthServiceTest {
         when(userService.getByPassport("admin")).thenReturn(user);
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
-             MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
-            bcryptMock.when(() -> BCrypt.checkpw(rawPassword, user.getPassword())).thenReturn(true);
+                MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock
+                    .when(() -> BCrypt.checkpw(rawPassword, user.getPassword()))
+                    .thenReturn(true);
             SaSession session = mock(SaSession.class);
             stpUtilMock.when(StpUtil::getSession).thenReturn(session);
             stpUtilMock.when(StpUtil::getTokenValue).thenReturn("sa-token-abc");
@@ -104,8 +106,10 @@ class AuthServiceTest {
         when(userService.getByPassport("admin")).thenReturn(user);
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
-             MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
-            bcryptMock.when(() -> BCrypt.checkpw(rawPassword, user.getPassword())).thenReturn(true);
+                MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock
+                    .when(() -> BCrypt.checkpw(rawPassword, user.getPassword()))
+                    .thenReturn(true);
             SaSession session = mock(SaSession.class);
             stpUtilMock.when(StpUtil::getSession).thenReturn(session);
             stpUtilMock.when(StpUtil::getTokenValue).thenReturn("sa-token-app");
@@ -128,8 +132,10 @@ class AuthServiceTest {
         when(userService.getByPassport("admin")).thenReturn(user);
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
-             MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
-            bcryptMock.when(() -> BCrypt.checkpw(rawPassword, user.getPassword())).thenReturn(true);
+                MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock
+                    .when(() -> BCrypt.checkpw(rawPassword, user.getPassword()))
+                    .thenReturn(true);
             SaSession session = mock(SaSession.class);
             stpUtilMock.when(StpUtil::getSession).thenReturn(session);
             stpUtilMock.when(StpUtil::getTokenValue).thenReturn("sa-token-null-plat");
@@ -151,7 +157,9 @@ class AuthServiceTest {
         when(userService.getByPassport("admin")).thenReturn(user);
 
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
-            bcryptMock.when(() -> BCrypt.checkpw(rawPassword, user.getPassword())).thenReturn(false);
+            bcryptMock
+                    .when(() -> BCrypt.checkpw(rawPassword, user.getPassword()))
+                    .thenReturn(false);
 
             assertThatThrownBy(() -> authService.login(request))
                     .isInstanceOf(BusinessException.class)
@@ -367,10 +375,12 @@ class AuthServiceTest {
         user.setPassword(newEncodedPassword());
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
-             MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+                MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
             stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("u1");
             when(userMapper.selectById("u1")).thenReturn(user);
-            bcryptMock.when(() -> BCrypt.checkpw(request.getOldPassword(), user.getPassword())).thenReturn(false);
+            bcryptMock
+                    .when(() -> BCrypt.checkpw(request.getOldPassword(), user.getPassword()))
+                    .thenReturn(false);
 
             assertThatThrownBy(() -> authService.changePassword(request))
                     .isInstanceOf(BusinessException.class)
@@ -389,12 +399,14 @@ class AuthServiceTest {
         user.setPassword(newEncodedPassword());
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
-             MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+                MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
             SaSession session = mock(SaSession.class);
             stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("u1");
             stpUtilMock.when(StpUtil::getSession).thenReturn(session);
             when(userMapper.selectById("u1")).thenReturn(user);
-            bcryptMock.when(() -> BCrypt.checkpw(request.getOldPassword(), user.getPassword())).thenReturn(true);
+            bcryptMock
+                    .when(() -> BCrypt.checkpw(request.getOldPassword(), user.getPassword()))
+                    .thenReturn(true);
             bcryptMock.when(() -> BCrypt.hashpw(newRawPassword)).thenReturn(encodedNewPassword);
             when(userMapper.updateById(user)).thenReturn(1);
 
@@ -415,10 +427,12 @@ class AuthServiceTest {
         user.setPassword(newEncodedPassword());
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
-             MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+                MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
             stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("u1");
             when(userMapper.selectById("u1")).thenReturn(user);
-            bcryptMock.when(() -> BCrypt.checkpw(request.getOldPassword(), user.getPassword())).thenReturn(true);
+            bcryptMock
+                    .when(() -> BCrypt.checkpw(request.getOldPassword(), user.getPassword()))
+                    .thenReturn(true);
             bcryptMock.when(() -> BCrypt.hashpw(newRawPassword)).thenReturn(newEncodedPassword());
             when(userMapper.updateById(user)).thenReturn(0);
 

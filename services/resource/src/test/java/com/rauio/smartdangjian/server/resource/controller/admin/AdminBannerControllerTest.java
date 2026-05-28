@@ -2,7 +2,6 @@ package com.rauio.smartdangjian.server.resource.controller.admin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -14,12 +13,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.BannerCreateRequest;
 import com.rauio.smartdangjian.server.resource.pojo.request.BannerUpdateRequest;
 import com.rauio.smartdangjian.server.resource.service.BannerService;
-
-import com.rauio.smartdangjian.exception.BusinessException;
 
 @ExtendWith(MockitoExtension.class)
 class AdminBannerControllerTest {
@@ -55,8 +53,7 @@ class AdminBannerControllerTest {
     @DisplayName("create 使用 resourceId 创建轮播图")
     void createByResourceId() {
         BannerCreateRequest request = new BannerCreateRequest("1", null);
-        when(bannerService.create("1"))
-                .thenReturn(ResourceMeta.builder().id(1L).build());
+        when(bannerService.create("1")).thenReturn(ResourceMeta.builder().id(1L).build());
 
         var result = controller.create(request);
 

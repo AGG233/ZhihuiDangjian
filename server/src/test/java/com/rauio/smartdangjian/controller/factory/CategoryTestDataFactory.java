@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rauio.smartdangjian.server.content.pojo.request.CategoryRequest;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryArticle;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
+import com.rauio.smartdangjian.server.content.pojo.request.CategoryRequest;
 import com.rauio.smartdangjian.server.content.pojo.response.CategoryResponse;
 
 /**
@@ -81,7 +81,8 @@ public final class CategoryTestDataFactory {
         return vo;
     }
 
-    public static CategoryResponse createCategoryResponse(Long id, String name, Long parentId, List<CategoryResponse> children) {
+    public static CategoryResponse createCategoryResponse(
+            Long id, String name, Long parentId, List<CategoryResponse> children) {
         CategoryResponse vo = createCategoryResponse(id, name, parentId);
         vo.setChildren(children);
         return vo;

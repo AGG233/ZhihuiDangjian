@@ -39,15 +39,16 @@ class SaTokenConfigureTest {
         verify(registry).addInterceptor(interceptorCaptor.capture());
         assertThat(interceptorCaptor.getValue()).isInstanceOf(SaInterceptor.class);
         verify(registration).addPathPatterns("/**");
-        verify(registration).excludePathPatterns(
-                "/api/auth/login",
-                "/api/auth/captcha/**",
-                "/api/auth/register",
-                "/api/schools/list",
-                "/v3/api-docs/**",
-                "/swagger-ui/**",
-                "/swagger-ui.html",
-                "/webjars/**",
-                "/error");
+        verify(registration)
+                .excludePathPatterns(
+                        "/api/auth/login",
+                        "/api/auth/captcha/**",
+                        "/api/auth/register",
+                        "/api/schools/list",
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/webjars/**",
+                        "/error");
     }
 }
