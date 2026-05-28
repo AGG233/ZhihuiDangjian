@@ -105,10 +105,63 @@ class SaTokenPermissionImplTest {
     }
 
     @Test
-    @DisplayName("getPermissionList always returns empty list")
-    void permissionListIsAlwaysEmpty() {
-        List<String> permissions = permission.getPermissionList("1", "login");
+    @DisplayName("MANAGER 用户返回通配权限 *")
+    void managerPermissions() {
+        var user = new User();
+        user.setUserType(UserType.MANAGER);
 
-        assertThat(permissions).isEmpty();
+        try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
+            stpUtil.when(StpUtil::getSession).thenReturn(session);
+            when(session.get("user")).thenReturn(user);
+
+            List<String> permissions = permission.getPermissionList("1", "login");
+
+            assertThat(permissions).containsExactly("*");
+        }
+    }
+
+    @Test
+    @DisplayName("SCHOOL 用户返回模块管理权限")
+    void schoolPermissions() {
+        var user = new User();
+        user.setUserType(UserType.SCHOOL);
+
+        try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
+            stpUtil.when(StpUtil::getSession).thenReturn(session);
+            when(session.get("user")).thenReturn(user);
+
+            List<String> permissions = permission.getPermissionList("1", "login");
+
+            assertThat(permissions).contains("category:*", "chapter:*", "course:*", "quiz:*", "resource:*");
+        }
+    }
+
+    @Test
+    @DisplayName("STUDENT 用户返回只读权限")
+    void studentPermissions() {
+        var user = new User();
+        user.setUserType(UserType.STUDENT);
+
+        try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
+            stpUtil.when(StpUtil::getSession).thenReturn(session);
+            when(session.get("user")).thenReturn(user);
+
+            List<String> permissions = permission.getPermissionList("1", "login");
+
+            assertThat(permissions).contains("content:read", "quiz:answer", "learning:*", "file:read");
+        }
+    }
+
+    @Test
+    @DisplayName("Session 中无用户时返回空权限列表")
+    void emptyPermissionsWhenNoUser() {
+        try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
+            stpUtil.when(StpUtil::getSession).thenReturn(session);
+            when(session.get("user")).thenReturn(null);
+
+            List<String> permissions = permission.getPermissionList("1", "login");
+
+            assertThat(permissions).isEmpty();
+        }
     }
 }

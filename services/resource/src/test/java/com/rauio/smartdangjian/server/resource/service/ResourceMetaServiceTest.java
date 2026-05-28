@@ -22,12 +22,16 @@ import com.rauio.smartdangjian.server.resource.mapper.ResourceMetaMapper;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaCreateRequest;
 import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaUpdateRequest;
+import com.rauio.smartdangjian.service.PermissionValidator;
 
 @ExtendWith(MockitoExtension.class)
 class ResourceMetaServiceTest {
 
     @Mock
     private ResourceMetaMapper mapper;
+
+    @Mock
+    private PermissionValidator permissionValidator;
 
     @Spy
     @InjectMocks
@@ -206,6 +210,7 @@ class ResourceMetaServiceTest {
                 .build();
         doReturn(existing).when(resourceMetaService).getById(RESOURCE_ID);
         doReturn(null).when(resourceMetaService).getOne(any(LambdaQueryWrapper.class));
+        doNothing().when(permissionValidator).requireResourceAccess(any());
 
         ResourceMetaUpdateRequest request = new ResourceMetaUpdateRequest();
         request.setOriginalName("new.png");
@@ -223,10 +228,11 @@ class ResourceMetaServiceTest {
     @Test
     @DisplayName("delete 删除资源成功")
     void deleteSuccess() {
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).build())
+        doReturn(ResourceMeta.builder().id(RESOURCE_ID).uploaderId(1L).build())
                 .when(resourceMetaService)
                 .getById(RESOURCE_ID);
         doReturn(true).when(resourceMetaService).removeById(RESOURCE_ID);
+        doNothing().when(permissionValidator).requireResourceAccess(any());
 
         Boolean result = resourceMetaService.delete(RESOURCE_ID);
 
@@ -236,10 +242,11 @@ class ResourceMetaServiceTest {
     @Test
     @DisplayName("delete 删除失败抛出异常")
     void deleteFailed() {
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).build())
+        doReturn(ResourceMeta.builder().id(RESOURCE_ID).uploaderId(1L).build())
                 .when(resourceMetaService)
                 .getById(RESOURCE_ID);
         doReturn(false).when(resourceMetaService).removeById(RESOURCE_ID);
+        doNothing().when(permissionValidator).requireResourceAccess(any());
 
         assertThatThrownBy(() -> resourceMetaService.delete(RESOURCE_ID))
                 .isInstanceOf(BusinessException.class)
@@ -251,13 +258,14 @@ class ResourceMetaServiceTest {
     @Test
     @DisplayName("deleteByHash 按哈希删除资源成功")
     void deleteByHashSuccess() {
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).hash(HASH).build())
+        doReturn(ResourceMeta.builder().id(RESOURCE_ID).hash(HASH).uploaderId(1L).build())
                 .when(resourceMetaService)
                 .getOne(any(LambdaQueryWrapper.class));
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).build())
+        doReturn(ResourceMeta.builder().id(RESOURCE_ID).uploaderId(1L).build())
                 .when(resourceMetaService)
                 .getById(RESOURCE_ID);
         doReturn(true).when(resourceMetaService).removeById(RESOURCE_ID);
+        doNothing().when(permissionValidator).requireResourceAccess(any());
 
         Boolean result = resourceMetaService.deleteByHash(HASH);
 
@@ -269,13 +277,14 @@ class ResourceMetaServiceTest {
     @Test
     @DisplayName("deleteByHashes 批量按哈希删除")
     void deleteByHashes() {
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).hash(HASH).build())
+        doReturn(ResourceMeta.builder().id(RESOURCE_ID).hash(HASH).uploaderId(1L).build())
                 .when(resourceMetaService)
                 .getOne(any(LambdaQueryWrapper.class));
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).build())
+        doReturn(ResourceMeta.builder().id(RESOURCE_ID).uploaderId(1L).build())
                 .when(resourceMetaService)
                 .getById(RESOURCE_ID);
         doReturn(true).when(resourceMetaService).removeById(RESOURCE_ID);
+        doNothing().when(permissionValidator).requireResourceAccess(any());
 
         Boolean result = resourceMetaService.deleteByHashes(List.of(HASH));
 
@@ -319,6 +328,7 @@ class ResourceMetaServiceTest {
                 .build();
         doReturn(existing).when(resourceMetaService).getById(RESOURCE_ID);
         doReturn(existing).when(resourceMetaService).getOne(any(LambdaQueryWrapper.class));
+        doNothing().when(permissionValidator).requireResourceAccess(any());
 
         ResourceMetaUpdateRequest request = new ResourceMetaUpdateRequest();
         request.setObjectKey("new/key.png");
@@ -349,6 +359,7 @@ class ResourceMetaServiceTest {
                 .build();
         doReturn(existing).when(resourceMetaService).getById(RESOURCE_ID);
         doReturn(null).when(resourceMetaService).getOne(any(LambdaQueryWrapper.class));
+        doNothing().when(permissionValidator).requireResourceAccess(any());
 
         ResourceMetaUpdateRequest request = new ResourceMetaUpdateRequest();
         request.setOriginalName("new.png");
@@ -377,13 +388,14 @@ class ResourceMetaServiceTest {
     @Test
     @DisplayName("deleteByHash 删除数据库失败时抛出异常")
     void deleteByHashFailed() {
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).hash(HASH).build())
+        doReturn(ResourceMeta.builder().id(RESOURCE_ID).hash(HASH).uploaderId(1L).build())
                 .when(resourceMetaService)
                 .getOne(any(LambdaQueryWrapper.class));
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).build())
+        doReturn(ResourceMeta.builder().id(RESOURCE_ID).uploaderId(1L).build())
                 .when(resourceMetaService)
                 .getById(RESOURCE_ID);
         doReturn(false).when(resourceMetaService).removeById(RESOURCE_ID);
+        doNothing().when(permissionValidator).requireResourceAccess(any());
 
         assertThatThrownBy(() -> resourceMetaService.deleteByHash(HASH))
                 .isInstanceOf(BusinessException.class)

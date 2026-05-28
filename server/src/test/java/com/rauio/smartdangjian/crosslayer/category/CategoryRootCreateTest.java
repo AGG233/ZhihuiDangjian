@@ -53,9 +53,14 @@ class CategoryRootCreateTest extends CrossLayerTestBase {
         }
 
         @Bean
+        com.rauio.smartdangjian.service.DataScopeService dataScopeService() {
+            return mock(com.rauio.smartdangjian.service.DataScopeService.class);
+        }
+
+        @Bean
         @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
-        CategoryService categoryService(CategoryConvertor convertor, CategoryMapper categoryMapper) {
-            CategoryService service = new CategoryService(convertor);
+        CategoryService categoryService(CategoryConvertor convertor, CategoryMapper categoryMapper, com.rauio.smartdangjian.service.DataScopeService dataScopeService) {
+            CategoryService service = new CategoryService(convertor, dataScopeService);
             try {
                 // baseMapper 声明在 CrudRepository 中（MyBatis-Plus 3.5.14）
                 Field field = findBaseMapperField(service.getClass());

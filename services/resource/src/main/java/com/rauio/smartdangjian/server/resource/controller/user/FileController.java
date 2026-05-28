@@ -9,8 +9,8 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
-import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.UploadFileRequest;
@@ -18,7 +18,6 @@ import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
 import com.rauio.smartdangjian.server.resource.service.FileService;
 import com.rauio.smartdangjian.utils.SecurityUtils;
-import com.rauio.smartdangjian.utils.spec.UserType;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -51,7 +50,7 @@ public class FileController {
     @PutMapping("/upload/callback/{resourceId}")
     @SaCheckLogin
     @SaCheckRole("STUDENT")
-    @ResourceAccess(id = "#resourceId", type = "RESOURCE_META")
+    @SaCheckPermission("resource:write")
     public Result<Void> uploadCallback(
             @PathVariable Long resourceId,
             HttpServletRequest request) throws IOException {
@@ -65,7 +64,7 @@ public class FileController {
     @SaCheckLogin
     @PostMapping("/confirm/{resourceId}")
     @SaCheckRole("STUDENT")
-    @ResourceAccess(id = "#resourceId", type = "RESOURCE_META")
+    @SaCheckPermission("resource:write")
     public Result<ResourceMeta> confirmUpload(@PathVariable Long resourceId) {
         return Result.ok(fileService.confirmUpload(resourceId));
     }
@@ -107,7 +106,7 @@ public class FileController {
     @SaCheckLogin
     @DeleteMapping("/{id}")
     @SaCheckRole("STUDENT")
-    @ResourceAccess(id = "#id", type = "RESOURCE_META")
+    @SaCheckPermission("resource:delete")
     public Result<Boolean> delete(@PathVariable Long id) {
         fileService.delete(id);
         return Result.ok(true);

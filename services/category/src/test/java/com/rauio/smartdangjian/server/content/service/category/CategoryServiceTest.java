@@ -47,6 +47,9 @@ class CategoryServiceTest {
     @Mock
     private CategoryConvertor convertor;
 
+    @Mock
+    private com.rauio.smartdangjian.service.DataScopeService dataScopeService;
+
     @Spy
     @InjectMocks
     private CategoryService categoryService;
@@ -56,6 +59,9 @@ class CategoryServiceTest {
     @BeforeEach
     void setUp() {
         securityUtilsMock = mockStatic(SecurityUtils.class);
+        CurrentUserPrincipal manager = mock(CurrentUserPrincipal.class);
+        lenient().when(manager.getUserType()).thenReturn(UserType.MANAGER);
+        lenient().when(SecurityUtils.getCurrentUser()).thenReturn(manager);
     }
 
     @AfterEach
@@ -167,11 +173,13 @@ class CategoryServiceTest {
     @Test
     @DisplayName("getByParentId 根据父目录 ID 返回直接子目录的 VO 列表")
     void getByParentIdReturnsVOList() {
+        Category parent = createCategory(1L, "父目录", 0, null);
         List<Category> children = List.of(createCategory(2L, "子目录1", 1, 1L), createCategory(3L, "子目录2", 1, 1L));
         List<CategoryResponse> childVOs = List.of(
                 createCategoryResponse(2L, "子目录1", 1L, Collections.emptyList()),
                 createCategoryResponse(3L, "子目录2", 1L, Collections.emptyList()));
 
+        doReturn(parent).when(categoryService).getById(1L);
         doReturn(children).when(categoryService).list(any(LambdaQueryWrapper.class));
         doReturn(childVOs).when(convertor).toResponseList(children);
 

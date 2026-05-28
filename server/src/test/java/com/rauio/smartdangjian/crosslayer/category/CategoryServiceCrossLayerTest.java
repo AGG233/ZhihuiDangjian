@@ -59,9 +59,14 @@ class CategoryServiceCrossLayerTest extends CrossLayerTestBase {
         }
 
         @Bean
+        com.rauio.smartdangjian.service.DataScopeService dataScopeService() {
+            return mock(com.rauio.smartdangjian.service.DataScopeService.class);
+        }
+
+        @Bean
         @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
-        CategoryService categoryService(CategoryConvertor convertor, CategoryMapper categoryMapper) {
-            CategoryService service = new CategoryService(convertor);
+        CategoryService categoryService(CategoryConvertor convertor, CategoryMapper categoryMapper, com.rauio.smartdangjian.service.DataScopeService dataScopeService) {
+            CategoryService service = new CategoryService(convertor, dataScopeService);
             try {
                 Field field = findBaseMapperField(service.getClass());
                 field.setAccessible(true);
@@ -130,8 +135,10 @@ class CategoryServiceCrossLayerTest extends CrossLayerTestBase {
     @Test
     @DisplayName("getByParentId should return children using LambdaQueryWrapper")
     void getByParentIdShouldReturnChildren() {
+        Category parent = createCategory(1L, "parent", 0, null, "1");
         List<Category> children = List.of(
                 createCategory(3L, "child1", 1, 1L, "1"));
+        when(categoryMapper.selectById(1L)).thenReturn(parent);
         when(categoryMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(children);
         when(categoryConvertor.toResponseList(children)).thenReturn(
                 List.of(createResponse(3L, "child1")));

@@ -35,7 +35,6 @@ import cn.dev33.satoken.stp.StpUtil;
             "NEO4J_URI=bolt://localhost:7687",
             "NEO4J_USERNAME=neo4j",
             "NEO4J_PASSWORD=password",
-            "app.security.enabled=false"
         })
 public abstract class CrossLayerTestBase {
 

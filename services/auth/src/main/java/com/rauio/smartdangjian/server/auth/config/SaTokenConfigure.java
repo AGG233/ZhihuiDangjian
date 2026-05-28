@@ -1,6 +1,5 @@
 package com.rauio.smartdangjian.server.auth.config;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -10,7 +9,6 @@ import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.stp.StpUtil;
 
 @Configuration
-@ConditionalOnProperty(name = "app.security.enabled", havingValue = "true", matchIfMissing = true)
 public class SaTokenConfigure implements WebMvcConfigurer {
 
     private static final String[] EXCLUDE_PATHS = {

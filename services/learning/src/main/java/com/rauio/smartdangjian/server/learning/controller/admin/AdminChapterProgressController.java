@@ -4,10 +4,7 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
 import cn.dev33.satoken.annotation.SaCheckRole;
-import com.rauio.smartdangjian.aop.support.DataScopeAction;
-import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
 import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
@@ -29,7 +26,6 @@ public class AdminChapterProgressController {
 
     @Operation(summary = "获取章节所有进度")
     @GetMapping("/chapter/{chapterId}")
-    @DataScopeAccess(resource = DataScopeResources.CHAPTER_PROGRESS, action = DataScopeAction.FILTER, id = "#chapterId")
     public Result<List<UserChapterProgressResponse>> getByChapterId(
             @Parameter(name = "chapterId", description = "章节ID") @PathVariable Long chapterId) {
         return Result.ok(progressService.getByChapterId(chapterId));
@@ -37,7 +33,6 @@ public class AdminChapterProgressController {
 
     @Operation(summary = "删除进度记录")
     @DeleteMapping("/{id}")
-    @DataScopeAccess(resource = DataScopeResources.CHAPTER_PROGRESS, action = DataScopeAction.DELETE, id = "#id")
     public Result<Boolean> delete(@Parameter(name = "id", description = "进度ID") @PathVariable Long id) {
         return Result.ok(progressService.delete(id));
     }

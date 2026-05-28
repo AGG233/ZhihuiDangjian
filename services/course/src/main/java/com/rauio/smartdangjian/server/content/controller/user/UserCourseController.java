@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
-import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
@@ -43,7 +43,7 @@ public class UserCourseController {
     @Operation(summary = "获取用户已学习课程", description = "根据用户ID获取已学习课程列表")
     @GetMapping("/learned/{id}")
     @SaCheckRole("STUDENT")
-    @ResourceAccess(id = "#id")
+    @SaCheckPermission("course:read")
     public Result<List<Course>> getByUserIdCourses(@PathVariable Long id) {
         return Result.ok(courseService.getByUserId(id));
     }

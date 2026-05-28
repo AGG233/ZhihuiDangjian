@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
-import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
 import com.rauio.smartdangjian.server.quiz.pojo.response.UserQuizAnswerResponse;
@@ -28,7 +28,7 @@ public class UserQuizAnswerController {
 
     @Operation(summary = "获取用户全部答题记录", description = "根据用户ID获取该用户的所有答题记录")
     @GetMapping("/users/{id}")
-    @ResourceAccess(id = "#id")
+    @SaCheckPermission("quiz:read")
     public Result<List<UserQuizAnswerResponse>> getByUserIdQuizAnswers(
             @Parameter(name = "id", description = "用户ID") @PathVariable Long id) {
         List<UserQuizAnswerResponse> responses = userQuizAnswerService.getByUserId(id).stream()
@@ -39,7 +39,7 @@ public class UserQuizAnswerController {
 
     @Operation(summary = "获取用户某题答题记录", description = "根据用户ID和试题ID获取该用户在某道题的答题记录")
     @GetMapping("/users/{id}/quizzes/{quizId}")
-    @ResourceAccess(id = "#id")
+    @SaCheckPermission("quiz:read")
     public Result<List<UserQuizAnswerResponse>> getByQuizIdQuizAnswers(
             @Parameter(name = "id", description = "用户ID") @PathVariable Long id,
             @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId) {
@@ -51,7 +51,7 @@ public class UserQuizAnswerController {
 
     @Operation(summary = "获取指定答题记录", description = "根据用户ID、试题ID、选项ID精确获取一条答题记录")
     @GetMapping("/users/{id}/quizzes/{quizId}/options/{optionId}")
-    @ResourceAccess(id = "#id")
+    @SaCheckPermission("quiz:read")
     public Result<UserQuizAnswerResponse> getByUserIdAndQuizIdAndOptionIdQuizAnswer(
             @Parameter(name = "id", description = "用户ID") @PathVariable Long id,
             @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId,
@@ -62,7 +62,7 @@ public class UserQuizAnswerController {
 
     @Operation(summary = "提交答题", description = "用户提交一道题的答案")
     @PostMapping("/users/{id}/quizzes/{quizId}/options/{optionId}")
-    @ResourceAccess(id = "#id")
+    @SaCheckPermission("quiz:write")
     public Result<Boolean> createQuizAnswer(
             @Parameter(name = "id", description = "用户ID") @PathVariable Long id,
             @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId,
@@ -76,7 +76,7 @@ public class UserQuizAnswerController {
 
     @Operation(summary = "更新答题", description = "用户更新已提交的答案")
     @PutMapping("/users/{id}/quizzes/{quizId}/options/{optionId}")
-    @ResourceAccess(id = "#id")
+    @SaCheckPermission("quiz:write")
     public Result<Boolean> updateQuizAnswer(
             @Parameter(name = "id", description = "用户ID") @PathVariable Long id,
             @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId,

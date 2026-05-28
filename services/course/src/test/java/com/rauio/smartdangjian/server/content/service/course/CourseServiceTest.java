@@ -31,8 +31,11 @@ import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.content.pojo.request.CourseRequest;
 import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.content.pojo.response.PageResponse;
+import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
+import com.rauio.smartdangjian.service.DataScopeService;
+import com.rauio.smartdangjian.service.PermissionValidator;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,6 +49,15 @@ class CourseServiceTest {
 
     @Mock
     private CategoryCourseMapper categoryCourseMapper;
+
+    @Mock
+    private DataScopeService dataScopeService;
+
+    @Mock
+    private PermissionValidator permissionValidator;
+
+    @Mock
+    private UserMapper userMapper;
 
     @Spy
     @InjectMocks
@@ -208,10 +220,12 @@ class CourseServiceTest {
         CourseRequest dto =
                 CourseRequest.builder().title("更新课程").categoryId(1L).build();
         Course course = Course.builder().title("更新课程").build();
-        Course target = Course.builder().id(1L).title("旧课程").build();
+        Course target = Course.builder().id(1L).title("旧课程").creatorId(1L).build();
+        User creator = User.builder().id(1L).universityId("1").build();
 
         when(courseConvertor.toCourse(dto)).thenReturn(course);
         doReturn(target).when(courseService).getById(1L);
+        when(userMapper.selectById(1L)).thenReturn(creator);
         doReturn(true).when(courseService).updateById(any(Course.class));
         when(categoryCourseMapper.delete(any(LambdaQueryWrapper.class))).thenReturn(1);
         when(categoryCourseMapper.insert(any(CategoryCourse.class))).thenReturn(1);
@@ -249,10 +263,12 @@ class CourseServiceTest {
     void updateThrowsExceptionWhenUpdateByIdFails() {
         CourseRequest dto = CourseRequest.builder().title("更新").build();
         Course course = Course.builder().title("更新").build();
-        Course target = Course.builder().id(1L).title("旧").build();
+        Course target = Course.builder().id(1L).title("旧").creatorId(1L).build();
+        User creator = User.builder().id(1L).universityId("1").build();
 
         when(courseConvertor.toCourse(dto)).thenReturn(course);
         doReturn(target).when(courseService).getById(1L);
+        when(userMapper.selectById(1L)).thenReturn(creator);
         doReturn(false).when(courseService).updateById(any(Course.class));
 
         assertThatThrownBy(() -> courseService.update(dto, 1L))
@@ -266,10 +282,12 @@ class CourseServiceTest {
         CourseRequest dto =
                 CourseRequest.builder().title("只改标题").categoryId(null).build();
         Course course = Course.builder().title("只改标题").build();
-        Course target = Course.builder().id(1L).title("旧").build();
+        Course target = Course.builder().id(1L).title("旧").creatorId(1L).build();
+        User creator = User.builder().id(1L).universityId("1").build();
 
         when(courseConvertor.toCourse(dto)).thenReturn(course);
         doReturn(target).when(courseService).getById(1L);
+        when(userMapper.selectById(1L)).thenReturn(creator);
         doReturn(true).when(courseService).updateById(any(Course.class));
 
         courseService.update(dto, 1L);
@@ -285,6 +303,11 @@ class CourseServiceTest {
     @Test
     @DisplayName("delete 删除课程及其分类关联成功")
     void deleteCourseSuccessfully() {
+        Course target = Course.builder().id(1L).creatorId(1L).build();
+        User creator = User.builder().id(1L).universityId("1").build();
+
+        doReturn(target).when(courseService).getById(1L);
+        when(userMapper.selectById(1L)).thenReturn(creator);
         when(categoryCourseMapper.delete(any(LambdaQueryWrapper.class))).thenReturn(1);
         doReturn(true).when(courseService).removeById(1L);
 
@@ -296,12 +319,11 @@ class CourseServiceTest {
     @Test
     @DisplayName("delete 删除不存在的课程抛出 BusinessException")
     void deleteThrowsExceptionWhenCourseNotFound() {
-        when(categoryCourseMapper.delete(any(LambdaQueryWrapper.class))).thenReturn(0);
-        doReturn(false).when(courseService).removeById(999L);
+        doReturn(null).when(courseService).getById(999L);
 
         assertThatThrownBy(() -> courseService.delete(999L))
                 .isInstanceOf(BusinessException.class)
-                .hasFieldOrPropertyWithValue("code", CourseErrorConstants.COURSE_DELETE_FAILED);
+                .hasFieldOrPropertyWithValue("code", CourseErrorConstants.COURSE_NOT_FOUND);
     }
 
     // ================================================================
@@ -624,10 +646,12 @@ class CourseServiceTest {
                 .categoryId(1L)
                 .build();
         Course course = Course.builder().title("更新课程").build();
-        Course target = Course.builder().id(1L).title("旧课程").build();
+        Course target = Course.builder().id(1L).title("旧课程").creatorId(1L).build();
+        User creator = User.builder().id(1L).universityId("1").build();
 
         when(courseConvertor.toCourse(dto)).thenReturn(course);
         doReturn(target).when(courseService).getById(1L);
+        when(userMapper.selectById(1L)).thenReturn(creator);
         doReturn(true).when(courseService).updateById(any(Course.class));
         when(categoryCourseMapper.delete(any(LambdaQueryWrapper.class))).thenReturn(1);
         when(categoryCourseMapper.insert(any(CategoryCourse.class))).thenReturn(0);

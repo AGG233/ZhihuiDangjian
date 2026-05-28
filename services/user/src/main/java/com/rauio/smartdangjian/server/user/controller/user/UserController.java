@@ -3,10 +3,8 @@ package com.rauio.smartdangjian.server.user.controller.user;
 import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
-import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
-import com.rauio.smartdangjian.aop.support.DataScopeAction;
-import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
@@ -30,14 +28,12 @@ public class UserController {
 
     @Operation(summary = "获取用户信息", description = "通过ID获取用户信息，返回含脱敏联系方式的用户详情")
     @GetMapping("/{id}")
-    @DataScopeAccess(resource = DataScopeResources.USER_MANAGEMENT, action = DataScopeAction.READ, id = "#id")
     public Result<UserResponse> get(@Parameter(name = "id", description = "用户ID") @PathVariable Long id) {
         return Result.ok(userService.get(id));
     }
 
     @Operation(summary = "用户分页搜索", description = "按条件分页查询用户，仅返回基本公开信息（用户名、姓名、党员信息等），不包含邮箱、手机等敏感数据")
     @PostMapping("/search")
-    @DataScopeAccess(resource = DataScopeResources.USER_MANAGEMENT, action = DataScopeAction.SEARCH, query = "#userDto")
     public Result<Page<UserPublicResponse>> getPage(
             @RequestBody UserRequest userDto,
             @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
@@ -47,11 +43,7 @@ public class UserController {
 
     @Operation(summary = "更新用户信息", description = "通过ID更新用户信息")
     @PutMapping("/{id}")
-    @DataScopeAccess(
-            resource = DataScopeResources.USER_MANAGEMENT,
-            action = DataScopeAction.UPDATE,
-            id = "#id",
-            body = "#user")
+    @SaCheckPermission("user:update")
     public Result<Void> update(@PathVariable Long id, @RequestBody User user) {
         userService.update(id, user);
         return Result.ok(null);

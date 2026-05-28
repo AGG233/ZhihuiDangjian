@@ -1,8 +1,9 @@
 app:
-  security:
-    enabled: false
   dev:
     default-user-id: 1987026098687483905
+  cors:
+    allowed-origins: http://localhost:*,http://127.0.0.1:*
+
 server:
   port: 9000
   ai:
