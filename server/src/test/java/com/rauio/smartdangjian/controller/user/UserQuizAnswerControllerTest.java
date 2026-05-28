@@ -199,9 +199,9 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /users/{id} - 无答题记录返回空列表")
         void getByUserIdEmpty() throws Exception {
-            when(userQuizAnswerService.getByUserId(999L)).thenReturn(List.of());
+            when(userQuizAnswerService.getByUserId(1L)).thenReturn(List.of());
 
-            mockMvc.perform(get("/api/quiz/answers/users/999"))
+            mockMvc.perform(get("/api/quiz/answers/users/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").isArray())

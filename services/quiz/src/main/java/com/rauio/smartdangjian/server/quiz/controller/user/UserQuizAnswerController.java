@@ -8,6 +8,7 @@ import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
 import com.rauio.smartdangjian.server.quiz.pojo.response.UserQuizAnswerResponse;
 import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
+import com.rauio.smartdangjian.utils.SecurityUtils;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
@@ -30,6 +31,10 @@ public class UserQuizAnswerController {
     @SaCheckPermission("quiz:read")
     public Result<List<UserQuizAnswerResponse>> getByUserIdQuizAnswers(
             @Parameter(name = "id", description = "用户ID") @PathVariable Long id) {
+        String currentUserId = SecurityUtils.getCurrentUserId();
+        if (!currentUserId.equals(String.valueOf(id))) {
+            return Result.error("403", "无权查看其他用户的答题记录");
+        }
         List<UserQuizAnswerResponse> responses = userQuizAnswerService.getByUserId(id).stream()
                 .map(this::toUserQuizAnswerResponse)
                 .toList();
@@ -42,6 +47,10 @@ public class UserQuizAnswerController {
     public Result<List<UserQuizAnswerResponse>> getByQuizIdQuizAnswers(
             @Parameter(name = "id", description = "用户ID") @PathVariable Long id,
             @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId) {
+        String currentUserId = SecurityUtils.getCurrentUserId();
+        if (!currentUserId.equals(String.valueOf(id))) {
+            return Result.error("403", "无权查看其他用户的答题记录");
+        }
         List<UserQuizAnswerResponse> responses = userQuizAnswerService.getByUserIdAndQuizId(id, quizId).stream()
                 .map(this::toUserQuizAnswerResponse)
                 .toList();
@@ -55,13 +64,17 @@ public class UserQuizAnswerController {
             @Parameter(name = "id", description = "用户ID") @PathVariable Long id,
             @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId,
             @Parameter(name = "optionId", description = "选项ID") @PathVariable Long optionId) {
+        String currentUserId = SecurityUtils.getCurrentUserId();
+        if (!currentUserId.equals(String.valueOf(id))) {
+            return Result.error("403", "无权查看其他用户的答题记录");
+        }
         return Result.ok(
                 toUserQuizAnswerResponse(userQuizAnswerService.getByUserIdAndQuizIdAndOptionId(id, quizId, optionId)));
     }
 
     @Operation(summary = "提交答题", description = "用户提交一道题的答案")
     @PostMapping("/users/{id}/quizzes/{quizId}/options/{optionId}")
-    @SaCheckPermission("quiz:write")
+    @SaCheckPermission("quiz:answer")
     public Result<Boolean> createQuizAnswer(
             @Parameter(name = "id", description = "用户ID") @PathVariable Long id,
             @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId,
@@ -75,7 +88,7 @@ public class UserQuizAnswerController {
 
     @Operation(summary = "更新答题", description = "用户更新已提交的答案")
     @PutMapping("/users/{id}/quizzes/{quizId}/options/{optionId}")
-    @SaCheckPermission("quiz:write")
+    @SaCheckPermission("quiz:answer")
     public Result<Boolean> updateQuizAnswer(
             @Parameter(name = "id", description = "用户ID") @PathVariable Long id,
             @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId,

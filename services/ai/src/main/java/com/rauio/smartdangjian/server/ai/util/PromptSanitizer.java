@@ -21,10 +21,10 @@ public class PromptSanitizer {
             Pattern.compile("pretend\\s+to\\s+be", Pattern.CASE_INSENSITIVE));
 
     private static final List<Pattern> DANGEROUS_TAG_PATTERNS = List.of(
-            Pattern.compile("<\\s*/?\\s*system\\s*\\u003e", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("<\\s*/?\\s*instruction\\s*\\u003e", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("<\\s*/?\\s*script\\s*\\u003e", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("<\\s*/?\\s*prompt\\s*\\u003e", Pattern.CASE_INSENSITIVE));
+            Pattern.compile("<\\s*/?\\s*system\\b[^>]*\\s*>", Pattern.CASE_INSENSITIVE),
+            Pattern.compile("<\\s*/?\\s*instruction\\b[^>]*\\s*>", Pattern.CASE_INSENSITIVE),
+            Pattern.compile("<\\s*/?\\s*script\\b[^>]*\\s*>", Pattern.CASE_INSENSITIVE),
+            Pattern.compile("<\\s*/?\\s*prompt\\b[^>]*\\s*>", Pattern.CASE_INSENSITIVE));
 
     private PromptSanitizer() {}
 

@@ -50,7 +50,7 @@ public class FileController {
     @PutMapping("/upload/callback/{resourceId}")
     @SaCheckLogin
     @SaCheckRole("STUDENT")
-    @SaCheckPermission("resource:write")
+    @SaCheckPermission("file:write")
     public Result<Void> uploadCallback(@PathVariable Long resourceId, HttpServletRequest request) throws IOException {
         fileService.handleUploadCallback(resourceId, request.getInputStream());
         return Result.ok(null);
@@ -62,7 +62,7 @@ public class FileController {
     @SaCheckLogin
     @PostMapping("/confirm/{resourceId}")
     @SaCheckRole("STUDENT")
-    @SaCheckPermission("resource:write")
+    @SaCheckPermission("file:write")
     public Result<ResourceMeta> confirmUpload(@PathVariable Long resourceId) {
         return Result.ok(fileService.confirmUpload(resourceId));
     }
@@ -104,7 +104,7 @@ public class FileController {
     @SaCheckLogin
     @DeleteMapping("/{id}")
     @SaCheckRole("STUDENT")
-    @SaCheckPermission("resource:delete")
+    @SaCheckPermission("file:delete")
     public Result<Boolean> delete(@PathVariable Long id) {
         fileService.delete(id);
         return Result.ok(true);

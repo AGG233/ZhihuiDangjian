@@ -68,7 +68,9 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
         LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<Category>().eq(Category::getLevel, 0);
         CurrentUserPrincipal currentUser = SecurityUtils.getCurrentUser();
         if (currentUser != null && currentUser.getUserType() != UserType.MANAGER) {
-            wrapper.eq(Category::getUniversityId, currentUser.getUniversityId());
+            wrapper.and(w -> w.eq(Category::getUniversityId, currentUser.getUniversityId())
+                    .or()
+                    .isNull(Category::getUniversityId));
         }
         return convertor.toResponseList(this.list(wrapper));
     }
@@ -89,7 +91,9 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
         LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<Category>().eq(Category::getParentId, categoryId);
         CurrentUserPrincipal currentUser = SecurityUtils.getCurrentUser();
         if (currentUser != null && currentUser.getUserType() != UserType.MANAGER) {
-            wrapper.eq(Category::getUniversityId, currentUser.getUniversityId());
+            wrapper.and(w -> w.eq(Category::getUniversityId, currentUser.getUniversityId())
+                    .or()
+                    .isNull(Category::getUniversityId));
         }
         return convertor.toResponseList(this.list(wrapper));
     }

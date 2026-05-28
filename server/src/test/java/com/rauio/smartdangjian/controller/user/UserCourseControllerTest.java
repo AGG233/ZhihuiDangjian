@@ -174,9 +174,9 @@ class UserCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /learned/{id} - 返回空列表")
         void getLearnedCoursesEmpty() throws Exception {
-            when(courseService.getByUserId(999L)).thenReturn(List.of());
+            when(courseService.getByUserId(1L)).thenReturn(List.of());
 
-            mockMvc.perform(get("/api/content/courses/learned/999"))
+            mockMvc.perform(get("/api/content/courses/learned/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").isArray())

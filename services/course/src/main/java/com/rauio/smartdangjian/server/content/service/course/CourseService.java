@@ -92,10 +92,14 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         if (target == null) {
             throw new BusinessException(CourseErrorConstants.COURSE_NOT_FOUND, "课程不存在");
         }
-        User creator = userMapper.selectById(target.getCreatorId());
-        if (creator != null) {
-            dataScopeService.requireManageable(creator.getUniversityId());
+        String universityId = null;
+        if (target.getCreatorId() != null) {
+            User creator = userMapper.selectById(target.getCreatorId());
+            if (creator != null) {
+                universityId = creator.getUniversityId();
+            }
         }
+        dataScopeService.requireManageable(universityId);
         Course course = courseConvertor.toCourse(courseRequest);
         course.setId(id);
         normalizeCourseFields(course);
@@ -119,10 +123,14 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         if (target == null) {
             throw new BusinessException(CourseErrorConstants.COURSE_NOT_FOUND, "课程不存在");
         }
-        User creator = userMapper.selectById(target.getCreatorId());
-        if (creator != null) {
-            dataScopeService.requireManageable(creator.getUniversityId());
+        String universityId = null;
+        if (target.getCreatorId() != null) {
+            User creator = userMapper.selectById(target.getCreatorId());
+            if (creator != null) {
+                universityId = creator.getUniversityId();
+            }
         }
+        dataScopeService.requireManageable(universityId);
         categoryCourseMapper.delete(new LambdaQueryWrapper<CategoryCourse>().eq(CategoryCourse::getCourseId, courseId));
         if (!this.removeById(courseId)) {
             throw new BusinessException(CourseErrorConstants.COURSE_DELETE_FAILED, "课程删除失败");

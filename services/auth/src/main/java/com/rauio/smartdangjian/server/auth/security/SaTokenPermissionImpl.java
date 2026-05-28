@@ -56,6 +56,8 @@ public class SaTokenPermissionImpl implements StpInterface {
                             "quiz:read",
                             "learning:*",
                             "file:read",
+                            "file:write",
+                            "file:delete",
                             "category:read",
                             "search:*",
                             "graph:read",
