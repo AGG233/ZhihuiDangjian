@@ -143,15 +143,25 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("GET /users/{id}/quizzes/{quizId}/options/{optionId} - 记录不存在返回 null 则 code 为 400")
+        @DisplayName("GET /users/{id}/quizzes/{quizId}/options/{optionId} - 记录不存在返回 null 则 data 为 null")
         void getByOptionIdReturnsNull() throws Exception {
             when(userQuizAnswerService.getByUserIdAndQuizIdAndOptionId(1L, 1L, 999L))
                     .thenReturn(null);
 
             mockMvc.perform(get("/api/quiz/answers/users/1/quizzes/1/options/999"))
                     .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"));
+        }
+
+        @Test
+        @DisplayName("GET /users/{id}/quizzes/{quizId} - 服务返回 null 元素处理")
+        void getByQuizIdWithNullElement() throws Exception {
+            when(userQuizAnswerService.getByUserIdAndQuizId(1L, 1L)).thenReturn(java.util.Arrays.asList(null, null));
+
+            mockMvc.perform(get("/api/quiz/answers/users/1/quizzes/1"))
+                    .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.message").value("OK"));
+                    .andExpect(jsonPath("$.data").isArray());
         }
 
         @Test

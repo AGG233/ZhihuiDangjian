@@ -153,6 +153,19 @@ class SaTokenPermissionImplTest {
     }
 
     @Test
+    @DisplayName("Session 中的 user 属性为非 User 类型时返回空权限列表")
+    void nonUserSessionAttributeReturnsEmptyPermissions() {
+        try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
+            stpUtil.when(StpUtil::getSession).thenReturn(session);
+            when(session.get("user")).thenReturn(new Object());
+
+            List<String> permissions = permission.getPermissionList("1", "login");
+
+            assertThat(permissions).isEmpty();
+        }
+    }
+
+    @Test
     @DisplayName("Session 中无用户时返回空权限列表")
     void emptyPermissionsWhenNoUser() {
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {

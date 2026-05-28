@@ -128,6 +128,17 @@ class SecurityUtilsTest {
     }
 
     @Test
+    @DisplayName("getCurrentUser 已登录但 Session 为 null 时返回 null")
+    void getCurrentUserReturnsNullWhenSessionIsNull() {
+        stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
+        stpUtilMock.when(StpUtil::getSession).thenReturn(null);
+
+        CurrentUserPrincipal result = SecurityUtils.getCurrentUser();
+
+        assertThat(result).isNull();
+    }
+
+    @Test
     @DisplayName("getCurrentUser SaTokenContextException 时返回 null")
     void getCurrentUserReturnsNullOnSaTokenContextException() {
         stpUtilMock.when(StpUtil::isLogin).thenThrow(SaTokenContextException.class);
