@@ -1,5 +1,7 @@
 package com.rauio.smartdangjian.server.user.pojo.entity;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
@@ -26,7 +28,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "用户")
-public class User implements CurrentUserPrincipal {
+public class User implements CurrentUserPrincipal, Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)

@@ -89,7 +89,7 @@ class AdminUserControllerTest {
     @DisplayName("update 委托 service 更新用户信息")
     void update() {
         User user = User.builder().realName("新名字").build();
-        doNothing().when(userService).update(1L, user);
+        when(userService.update(1L, user)).thenReturn(user);
 
         var result = controller.update(1L, user);
 

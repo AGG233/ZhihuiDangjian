@@ -3,7 +3,6 @@ package com.rauio.smartdangjian.server.user.controller.user;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -78,7 +77,7 @@ class UserControllerTest {
     @DisplayName("update 委托 service 更新用户信息")
     void update() {
         User user = User.builder().realName("新名字").build();
-        doNothing().when(userService).update(1L, user);
+        when(userService.update(1L, user)).thenReturn(user);
 
         var result = controller.update(1L, user);
 

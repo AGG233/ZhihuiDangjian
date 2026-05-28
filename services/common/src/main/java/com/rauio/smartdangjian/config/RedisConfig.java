@@ -2,10 +2,13 @@ package com.rauio.smartdangjian.config;
 
 import java.time.Duration;
 
+import org.redisson.spring.starter.RedissonAutoConfigurationV2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -20,6 +23,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @AutoConfiguration
 @EnableCaching
+@AutoConfigureBefore(RedissonAutoConfigurationV2.class)
 public class RedisConfig {
 
     @Value("${spring.data.redis.host}")
@@ -31,7 +35,8 @@ public class RedisConfig {
     @Value("${spring.data.redis.database}")
     private int database;
 
-    private ObjectMapper createObjectMapper() {
+    @Bean
+    public ObjectMapper redisObjectMapper() {
         ObjectMapper om = new ObjectMapper();
         om.registerModule(new JavaTimeModule());
         om.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -44,7 +49,7 @@ public class RedisConfig {
         template.setConnectionFactory(connectionFactory);
 
         GenericJackson2JsonRedisSerializer jsonSerializer =
-                new GenericJackson2JsonRedisSerializer(createObjectMapper());
+                new GenericJackson2JsonRedisSerializer(redisObjectMapper());
 
         template.setValueSerializer(jsonSerializer);
         template.setKeySerializer(new StringRedisSerializer());
@@ -54,9 +59,10 @@ public class RedisConfig {
     }
 
     @Bean
+    @Primary
     public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
         GenericJackson2JsonRedisSerializer valueSerializer =
-                new GenericJackson2JsonRedisSerializer(createObjectMapper());
+                new GenericJackson2JsonRedisSerializer(redisObjectMapper());
         StringRedisSerializer keySerializer = new StringRedisSerializer();
 
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
