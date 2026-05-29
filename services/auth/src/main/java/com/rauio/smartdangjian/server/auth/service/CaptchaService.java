@@ -68,8 +68,11 @@ public class CaptchaService {
      * @return 是否校验通过
      */
     public Boolean validate(String uuid, String code) {
-        if (env != null && Arrays.asList(env.getActiveProfiles()).contains("dev")
-                && testCode != null && !testCode.isBlank() && testCode.equals(code)) {
+        if (env != null
+                && Arrays.asList(env.getActiveProfiles()).contains("dev")
+                && testCode != null
+                && !testCode.isBlank()
+                && testCode.equals(code)) {
             return true;
         }
         return code != null && code.equals(redisTemplate.opsForValue().get("captcha:" + uuid));

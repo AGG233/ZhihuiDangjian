@@ -64,7 +64,7 @@ public final class AuthTestDataFactory {
     public static ChangePasswordRequest createChangePasswordRequest() {
         ChangePasswordRequest request = new ChangePasswordRequest();
         request.setOldPassword("oldPass123");
-        request.setNewPassword("newPass456");
+        request.setNewPassword("NewPass456!");
         return request;
     }
 

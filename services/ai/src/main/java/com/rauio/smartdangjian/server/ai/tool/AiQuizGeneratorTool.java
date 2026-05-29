@@ -230,9 +230,11 @@ public class AiQuizGeneratorTool {
     private String getFieldValue(ContentBlockResponse block, String fieldName) {
         return switch (fieldName) {
             case "textContent" -> block.getTextContent();
-            case "blockType" -> block.getBlockType() != null ? block.getBlockType().toString() : null;
+            case "blockType" ->
+                block.getBlockType() != null ? block.getBlockType().toString() : null;
             case "parentId" -> block.getParentId() != null ? block.getParentId().toString() : null;
-            case "resourceId" -> block.getResourceId() != null ? block.getResourceId().toString() : null;
+            case "resourceId" ->
+                block.getResourceId() != null ? block.getResourceId().toString() : null;
             case "caption" -> block.getCaption();
             default -> {
                 log.warn("未知字段: {}", fieldName);
