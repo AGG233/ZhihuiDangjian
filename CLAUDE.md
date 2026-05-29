@@ -215,7 +215,7 @@ git merge product
 
 | 工作流 | 触发条件 | 执行内容 |
 |--------|----------|----------|
-| ci.yml | PR dev→product | compileJava → test + integrationTest + JaCoCo（LINE/BRANCH ≥ 94%）→ Codacy → bootJar → API 烟雾测试 |
+| ci.yml | PR dev→product | compileJava → test + integrationTest + JaCoCo（LINE/BRANCH ≥ 85%）→ Codacy → bootJar → API 烟雾测试 |
 | release.yml | 推送版本标签 (`v*`) | bootJar → Docker 多架构镜像（linux/amd64 + linux/arm64）→ 推送 GHCR → 自托管 Runner 部署 |
 
 ### 查看 PR CI 状态
