@@ -146,10 +146,10 @@ class CaptchaServiceTest {
     }
 
     @Test
-    @DisplayName("validate testCode 匹配但非 dev profile 时不走旁路且 Redis 不符则返回 false")
-    void validateTestCodeBypassBlockedWhenNotDevProfile() {
+    @DisplayName("validate testCode 匹配但非 dev/prod profile 时不走旁路且 Redis 不符则返回 false")
+    void validateTestCodeBypassBlockedWhenNotDevOrProdProfile() {
         ReflectionTestUtils.setField(captchaService, "testCode", "9999");
-        when(env.getActiveProfiles()).thenReturn(new String[] {"prod"});
+        when(env.getActiveProfiles()).thenReturn(new String[] {"test"});
         when(valueOps.get(eq("captcha:any-uuid"))).thenReturn("0000");
 
         Boolean result = captchaService.validate("any-uuid", "9999");

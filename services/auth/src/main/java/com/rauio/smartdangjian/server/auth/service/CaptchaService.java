@@ -69,7 +69,8 @@ public class CaptchaService {
      */
     public Boolean validate(String uuid, String code) {
         if (env != null
-                && (Arrays.asList(env.getActiveProfiles()).contains("dev") || Arrays.asList(env.getActiveProfiles()).contains("prod"))
+                && (Arrays.asList(env.getActiveProfiles()).contains("dev")
+                        || Arrays.asList(env.getActiveProfiles()).contains("prod"))
                 && testCode != null
                 && !testCode.isBlank()
                 && testCode.equals(code)) {
