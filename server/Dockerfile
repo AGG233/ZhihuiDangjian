@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 RUN addgroup -S app && adduser -S -G app app
 COPY server/build/libs/server.jar app.jar
 LABEL com.rauio.zhihuidangjian=true
