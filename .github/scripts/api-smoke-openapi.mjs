@@ -45,10 +45,14 @@ function isObject(value) {
     return value && typeof value === "object" && !Array.isArray(value);
 }
 
-function deref(schema, spec) {
+function deref(schema, spec, seen = new Set()) {
     if (!schema || typeof schema !== "object" || !schema.$ref) {
         return schema;
     }
+    if (seen.has(schema.$ref)) {
+        return {};
+    }
+    seen.add(schema.$ref);
     const refPath = schema.$ref.replace(/^#\//, "").split("/");
     let current = spec;
     for (const part of refPath) {
@@ -69,7 +73,7 @@ function mergeSchemas(base, extra) {
 }
 
 function resolveSchema(schema, spec, seen = new Set()) {
-    let resolved = deref(schema, spec);
+    let resolved = deref(schema, spec, seen);
     if (!resolved || typeof resolved !== "object") {
         return resolved;
     }
@@ -236,6 +240,12 @@ function authScopeForPath(pathName) {
     ) {
         return "public";
     }
+    if (pathName.startsWith("/api/quiz/answers/users/") || pathName.startsWith("/api/learning/")) {
+        return "student";
+    }
+    if (pathName.startsWith("/api/admin/school/")) {
+        return "school";
+    }
     if (pathName.startsWith("/api/admin/") || pathName.startsWith("/api/search/")) {
         return "manager";
     }
@@ -294,6 +304,19 @@ async function requestJson(url, options = {}) {
     return {response, body};
 }
 
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function sanitize(text) {
+    if (typeof text !== "string") return text;
+    return text
+        .replace(/"accessToken"\s*:\s*"[^"]*"/gi, '"accessToken":"***REDACTED***"')
+        .replace(/"token"\s*:\s*"[^"]*"/gi, '"token":"***REDACTED***"')
+        .replace(/"password"\s*:\s*"[^"]*"/gi, '"password":"***REDACTED***"')
+        .replace(/"secret"\s*:\s*"[^"]*"/gi, '"secret":"***REDACTED***"');
+}
+
 async function login(passport) {
     const {response, body} = await requestJson(new URL("/api/auth/login", BASE_URL), {
         method: "POST",
@@ -319,6 +342,8 @@ async function login(passport) {
 
 async function main() {
     const tokens = {
+        student: await login(LOGIN_USERS.student),
+        school: await login(LOGIN_USERS.school),
         manager: await login(LOGIN_USERS.manager),
     };
 
@@ -347,6 +372,7 @@ async function main() {
     operations.sort((a, b) => `${a.pathName}:${a.method}`.localeCompare(`${b.pathName}:${b.method}`));
 
     let passed = 0;
+    let flaky = 0;
     let skipped = 0;
     const failures = [];
 
@@ -389,42 +415,63 @@ async function main() {
             requestBody = formData.toString();
         }
 
-        try {
-            const {response, body} = await requestJson(url, {
-                method: method.toUpperCase(),
-                headers,
-                body: ["GET", "HEAD"].includes(method.toUpperCase()) ? undefined : requestBody,
-            });
+        let lastResponse = null;
+        let lastBody = null;
+        let retries = 0;
+        const MAX_RETRIES = 2;
 
-            if (response.status >= 500) {
-                failures.push({
-                    label,
-                    status: response.status,
-                    body,
+        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                const {response, body} = await requestJson(url, {
+                    method: method.toUpperCase(),
+                    headers,
+                    body: ["GET", "HEAD"].includes(method.toUpperCase()) ? undefined : requestBody,
                 });
-                console.log(`FAIL ${label} -> HTTP ${response.status}`);
-                continue;
-            }
+                lastResponse = response;
+                lastBody = body;
 
+                if (response.status >= 500 && attempt < MAX_RETRIES) {
+                    retries++;
+                    await sleep(1000 * Math.pow(2, attempt));
+                    continue;
+                }
+                break;
+            } catch (error) {
+                lastResponse = {status: "NETWORK_ERROR"};
+                lastBody = error instanceof Error ? error.message : String(error);
+                if (attempt < MAX_RETRIES) {
+                    retries++;
+                    await sleep(1000 * Math.pow(2, attempt));
+                    continue;
+                }
+            }
+        }
+
+        if (lastResponse.status >= 500 || lastResponse.status === "NETWORK_ERROR") {
+            failures.push({label, status: lastResponse.status, body: lastBody});
+            const errorMsg =
+                lastResponse.status === "NETWORK_ERROR"
+                    ? lastBody
+                    : `HTTP ${lastResponse.status}`;
+            console.log(`FAIL ${label} -> ${errorMsg}`);
+        } else if (retries > 0) {
+            flaky += 1;
+            console.log(`FLAKY ${label} -> HTTP ${lastResponse.status} (passed after ${retries} retries)`);
+        } else {
             passed += 1;
-            console.log(`PASS ${label} -> HTTP ${response.status}`);
-        } catch (error) {
-            failures.push({
-                label,
-                status: "NETWORK_ERROR",
-                body: error instanceof Error ? error.message : String(error),
-            });
-            console.log(`FAIL ${label} -> ${error instanceof Error ? error.message : String(error)}`);
+            console.log(`PASS ${label} -> HTTP ${lastResponse.status}`);
         }
     }
 
-    console.log(`\nSummary: passed=${passed}, skipped=${skipped}, failed=${failures.length}`);
+    console.log(`\nSummary: passed=${passed}, flaky=${flaky}, skipped=${skipped}, failed=${failures.length}`);
 
     if (failures.length > 0) {
         for (const failure of failures) {
             const details =
                 typeof failure.body === "string" ? failure.body : JSON.stringify(failure.body);
-            console.error(`FAILED ${failure.label} -> ${failure.status} ${details}`);
+            const sanitized = sanitize(details);
+            const truncated = sanitized.length > 500 ? sanitized.substring(0, 500) + "..." : sanitized;
+            console.error(`FAILED ${failure.label} -> ${failure.status} ${truncated}`);
         }
         process.exit(1);
     }

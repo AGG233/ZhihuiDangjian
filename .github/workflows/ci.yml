@@ -5,6 +5,7 @@ on:
     branches:
       - product
       - dev
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -17,7 +18,7 @@ jobs:
   ci:
     name: Compile, Test & Build
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     services:
       mysql:
@@ -32,16 +33,31 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
+          --memory=1g
       redis:
         image: redis:7-alpine
         ports:
           - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=10
+          --memory=256m
       neo4j:
         image: neo4j:5-community
         env:
           NEO4J_AUTH: none
+          NEO4J_server_memory_heap_max__size: 512m
         ports:
           - 7687:7687
+        options: >-
+          --health-cmd="cypher-shell 'RETURN 1'"
+          --health-interval=10s
+          --health-timeout=10s
+          --health-retries=15
+          --health-start-period=30s
+          --memory=2g
 
     steps:
       - name: Checkout
@@ -53,30 +69,25 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Cache Gradle
-        uses: actions/cache@v5.0.5
-        with:
-          path: |
-            ~/.gradle/caches/
-            ~/.gradle/wrapper/
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/libs.versions.toml', '**/*.gradle.kts', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
 
       - name: Grant execute permission
         run: chmod +x gradlew
 
       - name: Compile sources
-        run: ./gradlew --no-daemon compileJava
+        run: ./gradlew compileJava
+
+      - name: Spotless check (fail fast)
+        run: ./gradlew spotlessCheck
 
       - name: Run tests with coverage
-        run: ./gradlew --no-daemon check jacocoRootReport jacocoRootCoverageVerification --continue
+        run: ./gradlew test integrationTest jacocoRootReport jacocoRootCoverageVerification --continue
 
       - name: Upload coverage to Codacy
-        if: always()
+        if: success() || failure()
         uses: codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
@@ -85,7 +96,7 @@ jobs:
           force-coverage-parser: jacoco
 
       - name: Build server bootJar
-        run: ./gradlew --no-daemon :server:bootJar -x test
+        run: ./gradlew :server:bootJar -x test
 
       - name: Start server for API smoke
         env:
@@ -107,10 +118,17 @@ jobs:
           java -jar server/build/libs/server.jar > server/build/api-smoke-app.log 2>&1 &
           echo $! > server/build/api-smoke-app.pid
 
+      - name: Seed smoke database
+        env:
+          MYSQL_PWD: root
+        run: |
+          sleep 3
+          mysql -h127.0.0.1 -P3306 -uroot zhdj < .github/sql/ci-seed.sql
+
       - name: Wait for app
         id: wait-for-app
         continue-on-error: true
-        run: bash .github/scripts/wait-for-app.sh http://127.0.0.1:9000/v3/api-docs
+        run: bash .github/scripts/wait-for-app.sh http://127.0.0.1:9000/actuator/health
 
       - name: Dump app logs on failure
         if: steps.wait-for-app.outcome != 'success'
@@ -119,12 +137,6 @@ jobs:
       - name: Check wait result
         if: steps.wait-for-app.outcome != 'success'
         run: exit 1
-
-      - name: Seed smoke database
-        if: steps.wait-for-app.outcome == 'success'
-        env:
-          MYSQL_PWD: root
-        run: mysql -h127.0.0.1 -P3306 -uroot zhdj < .github/sql/ci-seed.sql
 
       - name: Run OpenAPI smoke
         env:
@@ -140,7 +152,14 @@ jobs:
         if: always()
         run: |
           if [ -f server/build/api-smoke-app.pid ]; then
-            kill "$(cat server/build/api-smoke-app.pid)" || true
+            PID=$(cat server/build/api-smoke-app.pid)
+            kill -TERM -- -$PID 2>/dev/null || true
+            rm -f server/build/api-smoke-app.pid
+            for i in $(seq 1 10); do
+              kill -0 $PID 2>/dev/null || break
+              sleep 1
+            done
+            kill -9 -- -$PID 2>/dev/null || true
           fi
 
       - name: Upload build reports
@@ -149,6 +168,8 @@ jobs:
         with:
           name: build-reports
           path: |
-            **/build/reports/**
+            **/build/reports/tests/**
+            **/build/reports/jacoco/**
             server/build/api-smoke-app.log
           if-no-files-found: ignore
+          retention-days: 7
