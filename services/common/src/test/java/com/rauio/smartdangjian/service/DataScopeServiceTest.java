@@ -154,7 +154,7 @@ class DataScopeServiceTest {
     }
 
     @Test
-    @DisplayName("SCHOOL without university id throws")
+    @DisplayName("SCHOOL without university id throws for requireUniversityId")
     void schoolWithoutUniversityIdThrows() {
         mockUser(UserType.SCHOOL, null);
         assertThatThrownBy(() -> service.requireUniversityId())
@@ -163,5 +163,78 @@ class DataScopeServiceTest {
                     BusinessException be = (BusinessException) e;
                     assertThat(be.getMessage()).contains("未绑定学校");
                 });
+    }
+
+    // ==================== isSameUniversity ====================
+
+    @Test
+    @DisplayName("isSameUniversity null user returns false")
+    void isSameUniversityNullUserReturnsFalse() {
+        securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(null);
+        assertThat(service.isSameUniversity("uni-1")).isFalse();
+    }
+
+    @Test
+    @DisplayName("isSameUniversity non-matching university id returns false")
+    void isSameUniversityNonMatchingReturnsFalse() {
+        mockUser(UserType.SCHOOL, "uni-1");
+        assertThat(service.isSameUniversity("uni-2")).isFalse();
+    }
+
+    @Test
+    @DisplayName("requireManageable null user after non-manager check throws exception")
+    void requireManageableNullUserThrows() {
+        securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(null);
+        assertThatThrownBy(() -> service.requireManageable("uni-1"))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> {
+                    BusinessException be = (BusinessException) e;
+                    assertThat(be.getCode()).isEqualTo(ErrorConstants.RESOURCE_NOT_AUTHORIZED);
+                    assertThat(be.getMessage()).contains("用户未登录");
+                });
+    }
+
+    @Test
+    @DisplayName("requireUniversityId null user throws exception")
+    void requireUniversityIdNullUserThrows() {
+        securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(null);
+        assertThatThrownBy(() -> service.requireUniversityId())
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> {
+                    BusinessException be = (BusinessException) e;
+                    assertThat(be.getMessage()).contains("用户未登录");
+                });
+    }
+
+    @Test
+    @DisplayName("requireSameUniversity user universityId blank with non-blank entity throws")
+    void requireSameUniversityUserBlankUniWithEntityThrows() {
+        mockUser(UserType.SCHOOL, null);
+        assertThatThrownBy(() -> service.requireSameUniversity("uni-1"))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> {
+                    BusinessException be = (BusinessException) e;
+                    assertThat(be.getCode()).isEqualTo(ErrorConstants.RESOURCE_NOT_AUTHORIZED);
+                });
+    }
+
+    @Test
+    @DisplayName("requireManageable user universityId blank with non-blank entity throws")
+    void requireManageableUserBlankUniWithEntityThrows() {
+        mockUser(UserType.SCHOOL, null);
+        assertThatThrownBy(() -> service.requireManageable("uni-1"))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> {
+                    BusinessException be = (BusinessException) e;
+                    assertThat(be.getCode()).isEqualTo(ErrorConstants.RESOURCE_NOT_AUTHORIZED);
+                });
+    }
+
+    @Test
+    @DisplayName("requireSameUniversity student user matching university passes")
+    void studentMatchingUniversityPasses() {
+        mockUser(UserType.STUDENT, "uni-1");
+        service.requireSameUniversity("uni-1");
+        assertThat(service.isSameUniversity("uni-1")).isTrue();
     }
 }

@@ -28,27 +28,27 @@ export function setup() {
 }
 
 export default function (tokens) {
-  let rand = Math.random();
+  const rand = Math.random();
 
   if (rand < 0.6) {
-    let token = tokens[Math.floor(Math.random() * tokens.length)];
+    const token = tokens[Math.floor(Math.random() * tokens.length)];
     if (!token) return;
-    let ep = READ_ENDPOINTS[Math.floor(Math.random() * READ_ENDPOINTS.length)];
-    let res = http.get(ep.url, getAuthParams(token));
+    const ep = READ_ENDPOINTS[Math.floor(Math.random() * READ_ENDPOINTS.length)];
+    const res = http.get(ep.url, getAuthParams(token));
     checkOk(res, ep.name);
   } else if (rand < 0.85) {
-    let token3 = tokens[Math.floor(Math.random() * tokens.length)];
+    const token3 = tokens[Math.floor(Math.random() * tokens.length)];
     if (!token3) return;
-    let res3 = http.post(
+    const res3 = http.post(
       BASE_URL + '/api/user/users/search',
       JSON.stringify({}),
       getAuthParams(token3),
     );
     checkOk(res3, 'user-search');
   } else {
-    let token4 = tokens[Math.floor(Math.random() * tokens.length)];
+    const token4 = tokens[Math.floor(Math.random() * tokens.length)];
     if (!token4) return;
-    let res4 = http.get(BASE_URL + '/api/graph/knowledge-graphs/users/1', getAuthParams(token4));
+    const res4 = http.get(BASE_URL + '/api/graph/knowledge-graphs/users/1', getAuthParams(token4));
     checkOk(res4, 'knowledge-graph');
   }
 

@@ -166,6 +166,22 @@ class SaTokenPermissionImplTest {
     }
 
     @Test
+    @DisplayName("User has null userType returns empty permission list")
+    void nullUserTypeReturnsEmptyPermissions() {
+        var user = new User();
+        user.setUserType(null);
+
+        try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
+            stpUtil.when(StpUtil::getSession).thenReturn(session);
+            when(session.get("user")).thenReturn(user);
+
+            List<String> permissions = permission.getPermissionList("1", "login");
+
+            assertThat(permissions).isEmpty();
+        }
+    }
+
+    @Test
     @DisplayName("Session 中无用户时返回空权限列表")
     void emptyPermissionsWhenNoUser() {
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {

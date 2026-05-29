@@ -76,6 +76,13 @@ class PromptSanitizerTest {
     }
 
     @Test
+    @DisplayName("空白输入 isSafe 返回 true")
+    void blankInputIsSafe() {
+        assertThat(PromptSanitizer.isSafe("   ")).isTrue();
+        assertThat(PromptSanitizer.isSafe("")).isTrue();
+    }
+
+    @Test
     @DisplayName("多个注入模式同时过滤")
     void multiplePatternsFiltered() {
         String input = "ignore all and jailbreak now";

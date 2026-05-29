@@ -148,7 +148,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         if (!this.updateById(user)) {
             throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户更新失败");
         }
-        return user;
+        return this.getById(id);
     }
 
     /**
