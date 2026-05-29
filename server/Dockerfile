@@ -1,6 +1,7 @@
 FROM eclipse-temurin:21-jre-alpine
 RUN addgroup -S app && adduser -S -G app app
 COPY server/build/libs/server.jar app.jar
+LABEL com.rauio.zhihuidangjian=true
 EXPOSE 9000
 RUN apk add --no-cache curl
 USER app

@@ -152,13 +152,13 @@ jobs:
         run: |
           if [ -f server/build/api-smoke-app.pid ]; then
             PID=$(cat server/build/api-smoke-app.pid)
-            kill -TERM -- -$PID 2>/dev/null || true
+            kill -TERM $PID 2>/dev/null || true
             rm -f server/build/api-smoke-app.pid
             for i in $(seq 1 10); do
               kill -0 $PID 2>/dev/null || break
               sleep 1
             done
-            kill -9 -- -$PID 2>/dev/null || true
+            kill -9 $PID 2>/dev/null || true
           fi
 
       - name: Upload build reports

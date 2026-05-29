@@ -83,7 +83,7 @@ function resolveSchema(schema, spec, seen = new Set()) {
             return {};
         }
         seen.add(resolved.$ref);
-        resolved = deref(resolved, spec);
+        resolved = deref(resolved, spec, seen);
     }
 
     if (Array.isArray(resolved.allOf) && resolved.allOf.length > 0) {
