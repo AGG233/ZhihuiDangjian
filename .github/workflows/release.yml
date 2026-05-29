@@ -65,11 +65,11 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Using version: ${VERSION}"
 
-      - name: Spotless check
-        run: ./gradlew --no-daemon spotlessCheck
+      - name: Run tests
+        run: ./gradlew --no-daemon test
 
       - name: Build bootJar
-        run: ./gradlew --no-daemon clean :server:bootJar -x test -x integrationTest -x spotlessCheck
+        run: ./gradlew --no-daemon clean :server:bootJar -x test
 
       - name: Set lowercase image name
         run: echo "IMAGE_NAME=${GITHUB_REPOSITORY_OWNER,,}/zhihuidangjian" >> "$GITHUB_ENV"
@@ -93,7 +93,6 @@ jobs:
             type=semver,pattern={{version}}
 
       - name: Build and push Docker image (GHCR)
-        id: build-and-push
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -102,22 +101,6 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           labels: ${{ steps.docker-meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
-
-      - name: Scan Docker image for vulnerabilities
-        uses: aquasecurity/trivy-action@0.30.0
-        with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
-          format: sarif
-          output: trivy-results.sarif
-          severity: CRITICAL,HIGH
-          exit-code: 0
-
-      - name: Upload Trivy results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: trivy-results.sarif
-          category: trivy
 
   # ── Stage 2: Deploy to Server ────────────────────────────────────────
   deploy:
