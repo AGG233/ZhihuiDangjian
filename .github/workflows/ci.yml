@@ -118,13 +118,6 @@ jobs:
           java -jar server/build/libs/server.jar > server/build/api-smoke-app.log 2>&1 &
           echo $! > server/build/api-smoke-app.pid
 
-      - name: Seed smoke database
-        env:
-          MYSQL_PWD: root
-        run: |
-          sleep 3
-          mysql -h127.0.0.1 -P3306 -uroot zhdj < .github/sql/ci-seed.sql
-
       - name: Wait for app
         id: wait-for-app
         continue-on-error: true
@@ -137,6 +130,12 @@ jobs:
       - name: Check wait result
         if: steps.wait-for-app.outcome != 'success'
         run: exit 1
+
+      - name: Seed smoke database
+        if: steps.wait-for-app.outcome == 'success'
+        env:
+          MYSQL_PWD: root
+        run: mysql -h127.0.0.1 -P3306 -uroot zhdj < .github/sql/ci-seed.sql
 
       - name: Run OpenAPI smoke
         env:
