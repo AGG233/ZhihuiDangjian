@@ -22,6 +22,13 @@ public class WebConfig implements WebMvcConfigurer {
         return new GlobalExceptionHandler();
     }
 
+    /**
+     * CORS configuration - security notes:
+     * - allowCredentials(true) with allowedOriginPatterns IS safe (not the insecure allowCredentials+allowedOrigins("*") pattern)
+     * - Current defaults (localhost:*, 127.0.0.1:*) are safe for development
+     * - Production: set app.cors.allowed-origins to specific domain names
+     * - If origins are ever relaxed to "*", allowCredentials must be set to false
+     */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         String[] origins = Arrays.stream(allowedOrigins.split(","))

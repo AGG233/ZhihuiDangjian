@@ -218,6 +218,21 @@ git merge product
 | ci.yml | PR dev→product | compileJava → test + integrationTest + JaCoCo（LINE/BRANCH ≥ 94%）→ Codacy → bootJar → API 烟雾测试 |
 | release.yml | 推送版本标签 (`v*`) | bootJar → Docker 多架构镜像（linux/amd64 + linux/arm64）→ 推送 GHCR → 自托管 Runner 部署 |
 
+### 查看 PR CI 状态
+
+排查 PR 是否通过 CI 时，需要同时检查 **GitHub Checks** 和 **Bot Review 评论**：
+
+```bash
+# 查看 PR 的 CI checks 状态
+gh pr checks <PR编号>
+
+# 查看 PR 的所有评论（含 bot review）
+gh pr view <PR编号> --comments --json comments,reviews
+```
+
+- Codacy、Sourcery、CodeRabbit 等 bot 会以 PR review 或 comment 形式报告问题，不能只看 check 通过/失败标志
+- 部分 bot 问题可能是误报或已在后续提交中修复，需要逐条评估
+
 - 生产构建 Dockerfile（server/Dockerfile）：eclipse-temurin:21-jre-alpine，端口 9000，非 root 用户运行
 - 本地开发 Dockerfile（server/Dockerfile.dev）：多阶段 Gradle JDK21 → JRE，用于 docker-compose.dev.yml
 - API 烟雾测试：CI 启动 bootJar 后通过 Node.js 脚本（.github/scripts/api-smoke-openapi.mjs）验证关键 API

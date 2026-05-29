@@ -20,30 +20,28 @@ class RedisConfigTest {
     private final RedisConfig redisConfig = new RedisConfig();
 
     @Test
-    @DisplayName("redisObjectMapper 序列化包含 @class 多态类型信息")
-    void shouldIncludeTypeInfo() throws JsonProcessingException {
+    @DisplayName("redisObjectMapper 不包含 @class 多态类型信息（已禁用 activateDefaultTyping 防 RCE）")
+    void shouldNotIncludeTypeInfo() throws JsonProcessingException {
         ObjectMapper mapper = redisConfig.createObjectMapper();
 
         Map<String, Object> data = new HashMap<>();
         data.put("id", "10001");
 
         String json = mapper.writeValueAsString(data);
-        assertThat(json).contains("java.util.HashMap");
+        assertThat(json).doesNotContain("java.util.HashMap");
     }
 
     @Test
-    @DisplayName("WRITE_ONLY 属性在自定义 ObjectMapper 中也会被序列化（被重写为 READ_WRITE）")
-    void shouldSerializeWriteOnlyPropertyAsReadWrite() throws JsonProcessingException {
+    @DisplayName("WRITE_ONLY 属性不会被序列化到 Redis（安全：不暴露 password/idCard 等字段）")
+    void shouldNotSerializeWriteOnlyProperty() throws JsonProcessingException {
         ObjectMapper mapper = redisConfig.createObjectMapper();
 
         var obj = new WriteOnlyTestBean();
         obj.setName("visible");
-        obj.setSecret("should-appear");
+        obj.setSecret("should-not-appear");
 
         String json = mapper.writeValueAsString(obj);
-        // 验证 secret 出现在 JSON 中（说明 WRITE_ONLY 被覆盖为 READ_WRITE）
-        assertThat(json).contains("secret");
-        assertThat(json).contains("should-appear");
+        assertThat(json).doesNotContain("secret");
         assertThat(json).contains("name");
     }
 

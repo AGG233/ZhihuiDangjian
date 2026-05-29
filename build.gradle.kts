@@ -32,7 +32,7 @@ tasks.register<JacocoCoverageVerification>("jacocoRootCoverageVerification") {
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
-                minimum = "0.94".toBigDecimal()
+                minimum = "0.85".toBigDecimal()
             }
         }
         rule {

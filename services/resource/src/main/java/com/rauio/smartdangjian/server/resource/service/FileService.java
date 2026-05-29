@@ -153,7 +153,8 @@ public class FileService {
             FileInfo fileInfo = buildFileInfo(meta.getObjectKey());
             fileStorageService.delete(fileInfo);
         } catch (Exception e) {
-            log.warn("删除COS文件失败，可能文件已不存在: {}", meta.getObjectKey(), e);
+            log.error("删除COS文件失败，元数据未删除: resourceId={}, objectKey={}", resourceId, meta.getObjectKey(), e);
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_DELETE_FAILED, "文件删除失败，请稍后重试");
         }
         resourceMetaService.delete(resourceId);
     }

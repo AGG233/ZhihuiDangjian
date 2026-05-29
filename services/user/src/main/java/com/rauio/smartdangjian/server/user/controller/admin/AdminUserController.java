@@ -12,6 +12,7 @@ import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Tag(name = "管理员用户接口", description = "提供管理员侧用户管理能力，可查看包含联系方式在内的完整用户信息")
@@ -40,14 +41,14 @@ public class AdminUserController {
 
     @Operation(summary = "创建用户", description = "由管理员创建用户")
     @PostMapping
-    public Result<Void> create(@RequestBody User user) {
+    public Result<Void> create(@RequestBody @Valid User user) {
         userService.register(user);
         return Result.ok(null);
     }
 
     @Operation(summary = "更新用户", description = "根据用户ID更新用户")
     @PutMapping("/{id}")
-    public Result<Void> update(@PathVariable Long id, @RequestBody User user) {
+    public Result<Void> update(@PathVariable Long id, @RequestBody @Valid User user) {
         userService.update(id, user);
         return Result.ok(null);
     }

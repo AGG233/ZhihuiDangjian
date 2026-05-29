@@ -17,6 +17,8 @@ import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -41,10 +43,12 @@ public class User implements CurrentUserPrincipal, Serializable {
     @Schema(description = "学校ID")
     private String universityId;
 
+    @NotBlank
     @Schema(description = "用户名")
     private String username;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @NotBlank
     @Schema(description = "密码")
     private String password;
 
@@ -76,6 +80,7 @@ public class User implements CurrentUserPrincipal, Serializable {
     @Schema(description = "权限等级：0为最高，9为最低")
     private Integer permissionLevel;
 
+    @Email
     @Schema(description = "邮箱")
     private String email;
 

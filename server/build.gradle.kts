@@ -17,6 +17,7 @@ dependencies {
     implementation(project(":services:resource"))
     implementation(project(":services:search"))
     implementation(project(":services:user"))
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation(libs.flyway.core)
     runtimeOnly(libs.flyway.mysql)
     compileOnly(libs.lombok)

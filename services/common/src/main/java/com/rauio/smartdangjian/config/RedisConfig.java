@@ -17,12 +17,8 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.introspect.Annotated;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @AutoConfiguration
@@ -45,17 +41,6 @@ public class RedisConfig {
         ObjectMapper om = new ObjectMapper();
         om.registerModule(new JavaTimeModule());
         om.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        BasicPolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
-                .allowIfBaseType("com.rauio.smartdangjian")
-                .build();
-        om.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
-        om.setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
-            @Override
-            public JsonProperty.Access findPropertyAccess(Annotated m) {
-                JsonProperty.Access acc = super.findPropertyAccess(m);
-                return (acc == JsonProperty.Access.WRITE_ONLY) ? JsonProperty.Access.READ_WRITE : acc;
-            }
-        });
         return om;
     }
 

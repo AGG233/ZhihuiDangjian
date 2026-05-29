@@ -9,15 +9,15 @@ import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.stereotype.Service;
 
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
-import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
+import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
+import com.rauio.smartdangjian.server.content.service.course.CourseService;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.graph.constants.GraphErrorConstants;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphEdgeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphNodeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
-import com.rauio.smartdangjian.server.user.mapper.UserMapper;
+import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 
 import lombok.RequiredArgsConstructor;
@@ -27,9 +27,9 @@ import lombok.RequiredArgsConstructor;
 public class KnowledgeGraphService {
 
     private final Neo4jClient neo4jClient;
-    private final UserMapper userMapper;
-    private final CourseMapper courseMapper;
-    private final ChapterMapper chapterMapper;
+    private final UserService userService;
+    private final CourseService courseService;
+    private final ChapterService chapterService;
 
     /**
      * 将用户学习章节的关系写入知识图谱。
@@ -38,15 +38,15 @@ public class KnowledgeGraphService {
      * @param chapterId 章节 ID
      */
     public void upsertLearningGraph(Long userId, Long chapterId) {
-        User user = userMapper.selectById(userId);
+        User user = userService.getById(userId);
         if (user == null) {
             throw new BusinessException(GraphErrorConstants.USER_NOT_FOUND, "用户不存在");
         }
-        Chapter chapter = chapterMapper.selectById(chapterId);
+        Chapter chapter = chapterService.getById(chapterId);
         if (chapter == null) {
             throw new BusinessException(GraphErrorConstants.CHAPTER_NOT_FOUND, "章节不存在");
         }
-        Course course = courseMapper.selectById(chapter.getCourseId());
+        Course course = courseService.getById(chapter.getCourseId());
         if (course == null) {
             throw new BusinessException(GraphErrorConstants.COURSE_NOT_FOUND, "课程不存在");
         }

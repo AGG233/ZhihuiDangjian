@@ -228,14 +228,16 @@ public class AiQuizGeneratorTool {
     }
 
     private String getFieldValue(ContentBlockResponse block, String fieldName) {
-        try {
-            java.lang.reflect.Field field = ContentBlockResponse.class.getDeclaredField(fieldName);
-            field.setAccessible(true);
-            Object value = field.get(block);
-            return value != null ? value.toString() : null;
-        } catch (Exception e) {
-            log.warn("无法读取ContentBlockResponse字段 {}", fieldName, e);
-            return null;
-        }
+        return switch (fieldName) {
+            case "textContent" -> block.getTextContent();
+            case "blockType" -> block.getBlockType() != null ? block.getBlockType().toString() : null;
+            case "parentId" -> block.getParentId() != null ? block.getParentId().toString() : null;
+            case "resourceId" -> block.getResourceId() != null ? block.getResourceId().toString() : null;
+            case "caption" -> block.getCaption();
+            default -> {
+                log.warn("未知字段: {}", fieldName);
+                yield null;
+            }
+        };
     }
 }

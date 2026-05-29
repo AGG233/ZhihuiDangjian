@@ -5,6 +5,7 @@ import static com.rauio.smartdangjian.constants.RedisConstants.USER_PROFILE_CACH
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -212,5 +213,10 @@ public class UserProfileService {
                 .avgTimeSpent(avgTimeSpent)
                 .byDifficulty(byDifficulty)
                 .build();
+    }
+
+    @CacheEvict(value = USER_PROFILE_CACHE_PREFIX, key = "#userId")
+    public void evictProfile(String userId) {
+        // Evicts cached user profile when underlying data changes
     }
 }

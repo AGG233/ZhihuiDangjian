@@ -30,6 +30,7 @@ public class AsyncConfig implements WebMvcConfigurer {
         executor.setMaxPoolSize(processors * 4);
         executor.setQueueCapacity(64);
         executor.setThreadNamePrefix("IO-Task-");
+        executor.setRejectedExecutionHandler(new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy());
 
         executor.initialize();
         return executor;
@@ -57,6 +58,7 @@ public class AsyncConfig implements WebMvcConfigurer {
         executor.setQueueCapacity(10);
         executor.setKeepAliveSeconds(300);
         executor.setThreadNamePrefix("Long-Task-");
+        // DiscardOldestPolicy: 长时间运行的任务超载时，丢弃最旧任务以保证新任务能及时执行
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
         executor.initialize();
         return executor;

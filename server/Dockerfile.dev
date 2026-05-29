@@ -3,6 +3,7 @@ WORKDIR /build
 USER root
 
 COPY gradle.properties settings.gradle build.gradle.kts ./
+COPY gradlew gradlew.bat ./
 COPY gradle gradle/
 COPY buildSrc buildSrc/
 
@@ -24,12 +25,12 @@ COPY server/build.gradle.kts server/build.gradle.kts
 
 RUN for d in services/*/ server/; do mkdir -p "$d/src/main/java" "$d/src/main/resources"; done
 
-RUN gradle dependencies --no-daemon 2>&1
+RUN ./gradlew dependencies --no-daemon 2>&1
 
 COPY services services/
 COPY server server/
 
-RUN gradle bootJar -x test -x compileTestJava -x processTestResources --no-daemon
+RUN ./gradlew bootJar -x test -x compileTestJava -x processTestResources --no-daemon
 
 FROM eclipse-temurin:21-jre-alpine
 RUN addgroup -S app && adduser -S -G app app

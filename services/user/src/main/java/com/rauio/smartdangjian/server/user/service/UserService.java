@@ -3,7 +3,6 @@ package com.rauio.smartdangjian.server.user.service;
 import static com.rauio.smartdangjian.constants.RedisConstants.USER_VO_CACHE_PREFIX;
 
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -139,7 +138,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param user 用户实体
      * @throws BusinessException 如果更新失败
      */
-    @CachePut(value = USER_VO_CACHE_PREFIX, key = "#id")
+    @CacheEvict(value = USER_VO_CACHE_PREFIX, allEntries = true)
     public User update(Long id, User user) {
         user.setId(id);
         if (StringUtils.isNotBlank(user.getPassword())) {
@@ -157,7 +156,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param id 用户 ID
      * @throws BusinessException 如果删除失败
      */
-    @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#id")
+    @CacheEvict(value = USER_VO_CACHE_PREFIX, allEntries = true)
     public void delete(Long id) {
         if (!this.removeById(id)) {
             throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户删除失败");

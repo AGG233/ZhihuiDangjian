@@ -68,12 +68,14 @@ public class FileController {
     }
 
     @Operation(summary = "根据资源ID获取文件信息", description = "根据资源ID查询文件元数据，并返回包含预签名下载链接的文件信息。下载链接具有时效性，过期后需重新调用。")
+    @SaCheckLogin
     @GetMapping("/by-id/{id}")
     public Result<FileInfoResponse> getById(@PathVariable Long id) {
         return Result.ok(fileService.getFileInfo(id));
     }
 
     @Operation(summary = "根据文件哈希获取文件信息", description = "根据文件内容哈希查询文件元数据，并返回包含预签名下载链接的文件信息。")
+    @SaCheckLogin
     @GetMapping("/by-hash/{hash}")
     public Result<FileInfoResponse> getByHash(@PathVariable String hash) {
         return Result.ok(fileService.getFileInfoByHash(hash));
@@ -89,12 +91,14 @@ public class FileController {
     }
 
     @Operation(summary = "批量根据资源ID获取下载链接", description = "上传一个资源ID列表，返回对应的预签名下载链接列表。顺序与输入列表一致。")
+    @SaCheckLogin
     @PostMapping("/batch/id")
     public Result<List<String>> getBatchById(@RequestBody @Valid List<Long> ids) {
         return Result.ok(fileService.getBatchByIds(ids));
     }
 
     @Operation(summary = "批量根据文件哈希获取下载链接", description = "上传一个文件哈希列表，返回对应的预签名下载链接列表。顺序与输入列表一致。")
+    @SaCheckLogin
     @PostMapping("/batch/hash")
     public Result<List<String>> getBatchByHash(@RequestBody @Valid List<String> hashes) {
         return Result.ok(fileService.getBatchByHashes(hashes));

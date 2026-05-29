@@ -2,9 +2,11 @@ package com.rauio.smartdangjian.server.auth.service;
 
 import static com.rauio.smartdangjian.constants.SecurityConstants.CAPTCHA_EXPIRATION;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 public class CaptchaService {
 
     private final RedisTemplate<String, Object> redisTemplate;
+
+    private final Environment env;
 
     @Value("${auth.captcha.test-code:}")
     private String testCode;
@@ -64,7 +68,8 @@ public class CaptchaService {
      * @return 是否校验通过
      */
     public Boolean validate(String uuid, String code) {
-        if (testCode != null && !testCode.isBlank() && testCode.equals(code)) {
+        if (env != null && Arrays.asList(env.getActiveProfiles()).contains("dev")
+                && testCode != null && !testCode.isBlank() && testCode.equals(code)) {
             return true;
         }
         return code != null && code.equals(redisTemplate.opsForValue().get("captcha:" + uuid));

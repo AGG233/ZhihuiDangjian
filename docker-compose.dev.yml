@@ -15,6 +15,11 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE:-zhdj}
     volumes:
       - mysql-data:/var/lib/mysql
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
     networks:
       - zhihuidangjian
 
@@ -29,6 +34,11 @@ services:
       retries: 10
     ports:
       - "6379:6379"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
     networks:
       - zhihuidangjian
 
@@ -49,6 +59,11 @@ services:
       NEO4J_AUTH: ${NEO4J_USERNAME:-neo4j}/${NEO4J_PASSWORD:-password}
     volumes:
       - neo4j-data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "2.0"
     networks:
       - zhihuidangjian
 
@@ -92,6 +107,11 @@ services:
         condition: service_healthy
     volumes:
       - ./logs:/app/logs
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "2.0"
     networks:
       - zhihuidangjian
 
