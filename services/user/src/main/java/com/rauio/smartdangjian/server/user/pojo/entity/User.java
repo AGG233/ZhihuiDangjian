@@ -44,7 +44,6 @@ public class User implements CurrentUserPrincipal, Serializable {
     @Schema(description = "用户名")
     private String username;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Schema(description = "密码")
     private String password;
 

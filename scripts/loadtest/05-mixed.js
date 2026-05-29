@@ -30,21 +30,12 @@ export function setup() {
 export default function (tokens) {
   var rand = Math.random();
 
-  if (rand < 0.4) {
+  if (rand < 0.6) {
     var token = tokens[Math.floor(Math.random() * tokens.length)];
     if (!token) return;
     var ep = READ_ENDPOINTS[Math.floor(Math.random() * READ_ENDPOINTS.length)];
     var res = http.get(ep.url, getAuthParams(token));
     checkOk(res, ep.name);
-  } else if (rand < 0.7) {
-    var token2 = tokens[Math.floor(Math.random() * tokens.length)];
-    if (!token2) return;
-    var res2 = http.post(
-      BASE_URL + '/api/learning/progress',
-      JSON.stringify({ chapterId: '1', progress: Math.floor(Math.random() * 100) }),
-      getAuthParams(token2),
-    );
-    checkOk(res2, 'write-progress');
   } else if (rand < 0.85) {
     var token3 = tokens[Math.floor(Math.random() * tokens.length)];
     if (!token3) return;
