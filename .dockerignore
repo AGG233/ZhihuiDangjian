@@ -54,3 +54,11 @@ src/test/
 docker-compose*.yml
 .env
 .env.*
+.codegraph/
+.claude/
+node_modules/
+.venv/
+*.db
+*.db-wal
+*.db-shm
+logs/
