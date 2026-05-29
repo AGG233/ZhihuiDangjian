@@ -209,6 +209,7 @@ function shouldSkip(pathName, method, operation) {
     // Skip endpoints that require complex seed data not available in CI
     if ((pathName.startsWith("/api/admin/content/chapters") ||
          pathName === "/api/admin/content/courses" || pathName === "/api/admin/content/courses/" ||
+         pathName.startsWith("/api/admin/content/content-blocks/") ||
          pathName.startsWith("/api/admin/quiz/quizzes") ||
          pathName.startsWith("/api/admin/resource/files") ||
          pathName.startsWith("/api/learning/progress") ||

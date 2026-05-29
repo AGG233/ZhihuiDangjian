@@ -2,14 +2,18 @@ package com.rauio.smartdangjian.exception;
 
 import jakarta.validation.ConstraintViolationException;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import com.rauio.smartdangjian.pojo.response.Result;
 
@@ -77,6 +81,13 @@ public class GlobalExceptionHandler {
         return buildResult("409", "数据已存在");
     }
 
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result handleDataIntegrityViolationException(DataIntegrityViolationException e) {
+        log.warn("数据完整性约束违反:", e);
+        return buildResult("400", "数据完整性约束违反，请检查请求参数");
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Result handleIllegalArgumentException(IllegalArgumentException e) {
@@ -96,6 +107,24 @@ public class GlobalExceptionHandler {
                 "400",
                 "请求参数类型错误: " + e.getName() + " 应为 "
                         + (e.getRequiredType() != null ? e.getRequiredType().getSimpleName() : "合法值"));
+    }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Result<?> handleNoHandlerFound(NoHandlerFoundException e) {
+        return buildResult("404", "请求的资源不存在");
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    public Result<?> handleMethodNotSupported(HttpRequestMethodNotSupportedException e) {
+        return buildResult("405", "不支持的请求方法: " + e.getMethod());
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    @ResponseStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+    public Result<?> handleMediaTypeNotSupported(HttpMediaTypeNotSupportedException e) {
+        return buildResult("415", "不支持的媒体类型");
     }
 
     @ExceptionHandler(RuntimeException.class)

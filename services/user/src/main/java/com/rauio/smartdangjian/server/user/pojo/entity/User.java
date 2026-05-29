@@ -1,6 +1,11 @@
 package com.rauio.smartdangjian.server.user.pojo.entity;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDateTime;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -26,7 +31,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "用户")
-public class User implements CurrentUserPrincipal {
+public class User implements CurrentUserPrincipal, Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     @TableId
     @JsonSerialize(using = ToStringSerializer.class)
@@ -36,10 +44,12 @@ public class User implements CurrentUserPrincipal {
     @Schema(description = "学校ID")
     private String universityId;
 
+    @NotBlank
     @Schema(description = "用户名")
     private String username;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @NotBlank
     @Schema(description = "密码")
     private String password;
 
@@ -71,6 +81,7 @@ public class User implements CurrentUserPrincipal {
     @Schema(description = "权限等级：0为最高，9为最低")
     private Integer permissionLevel;
 
+    @Email
     @Schema(description = "邮箱")
     private String email;
 

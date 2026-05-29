@@ -1,5 +1,7 @@
 package com.rauio.smartdangjian.server.user.controller.admin;
 
+import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -40,14 +42,14 @@ public class AdminUserController {
 
     @Operation(summary = "创建用户", description = "由管理员创建用户")
     @PostMapping
-    public Result<Void> create(@RequestBody User user) {
+    public Result<Void> create(@RequestBody @Valid User user) {
         userService.register(user);
         return Result.ok(null);
     }
 
     @Operation(summary = "更新用户", description = "根据用户ID更新用户")
     @PutMapping("/{id}")
-    public Result<Void> update(@PathVariable Long id, @RequestBody User user) {
+    public Result<Void> update(@PathVariable Long id, @RequestBody @Valid User user) {
         userService.update(id, user);
         return Result.ok(null);
     }

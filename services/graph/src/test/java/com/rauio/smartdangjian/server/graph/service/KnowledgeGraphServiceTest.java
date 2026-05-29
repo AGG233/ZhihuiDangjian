@@ -32,15 +32,15 @@ import org.neo4j.driver.types.Type;
 import org.springframework.data.neo4j.core.Neo4jClient;
 
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
-import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
+import com.rauio.smartdangjian.server.content.service.course.CourseService;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphEdgeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphNodeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
-import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -50,13 +50,13 @@ class KnowledgeGraphServiceTest {
     private Neo4jClient neo4jClient;
 
     @Mock
-    private UserMapper userMapper;
+    private UserService userService;
 
     @Mock
-    private CourseMapper courseMapper;
+    private CourseService courseService;
 
     @Mock
-    private ChapterMapper chapterMapper;
+    private ChapterService chapterService;
 
     @InjectMocks
     private KnowledgeGraphService knowledgeGraphService;
@@ -234,9 +234,9 @@ class KnowledgeGraphServiceTest {
                     .build();
             Course course = Course.builder().id(COURSE_ID).title("测试课程").build();
 
-            when(userMapper.selectById(USER_ID)).thenReturn(user);
-            when(chapterMapper.selectById(CHAPTER_ID)).thenReturn(chapter);
-            when(courseMapper.selectById(COURSE_ID)).thenReturn(course);
+            when(userService.getById(USER_ID)).thenReturn(user);
+            when(chapterService.getById(CHAPTER_ID)).thenReturn(chapter);
+            when(courseService.getById(COURSE_ID)).thenReturn(course);
 
             Neo4jClient.UnboundRunnableSpec spec = setupQueryChain();
 
@@ -343,9 +343,9 @@ class KnowledgeGraphServiceTest {
                     .build();
             Course course = Course.builder().id(COURSE_ID).title("测试课程").build();
 
-            when(userMapper.selectById(USER_ID_NO_REAL_NAME)).thenReturn(user);
-            when(chapterMapper.selectById(CHAPTER_ID)).thenReturn(chapter);
-            when(courseMapper.selectById(COURSE_ID)).thenReturn(course);
+            when(userService.getById(USER_ID_NO_REAL_NAME)).thenReturn(user);
+            when(chapterService.getById(CHAPTER_ID)).thenReturn(chapter);
+            when(courseService.getById(COURSE_ID)).thenReturn(course);
 
             Neo4jClient.UnboundRunnableSpec spec = setupQueryChain();
 
@@ -364,7 +364,7 @@ class KnowledgeGraphServiceTest {
         @Test
         @DisplayName("upsertLearningGraph 用户不存在抛出 USER_NOT_FOUND")
         void upsertLearningGraphUserNotFound() {
-            when(userMapper.selectById(USER_ID)).thenReturn(null);
+            when(userService.getById(USER_ID)).thenReturn(null);
 
             assertThatThrownBy(() -> knowledgeGraphService.upsertLearningGraph(USER_ID, CHAPTER_ID))
                     .isInstanceOf(BusinessException.class)
@@ -376,9 +376,9 @@ class KnowledgeGraphServiceTest {
         @Test
         @DisplayName("upsertLearningGraph 章节不存在抛出 CHAPTER_NOT_FOUND")
         void upsertLearningGraphChapterNotFound() {
-            when(userMapper.selectById(USER_ID))
+            when(userService.getById(USER_ID))
                     .thenReturn(User.builder().id(USER_ID).username("test").build());
-            when(chapterMapper.selectById(CHAPTER_ID)).thenReturn(null);
+            when(chapterService.getById(CHAPTER_ID)).thenReturn(null);
 
             assertThatThrownBy(() -> knowledgeGraphService.upsertLearningGraph(USER_ID, CHAPTER_ID))
                     .isInstanceOf(BusinessException.class)
@@ -390,12 +390,12 @@ class KnowledgeGraphServiceTest {
         @Test
         @DisplayName("upsertLearningGraph 课程不存在抛出 COURSE_NOT_FOUND")
         void upsertLearningGraphCourseNotFound() {
-            when(userMapper.selectById(USER_ID))
+            when(userService.getById(USER_ID))
                     .thenReturn(User.builder().id(USER_ID).username("test").build());
-            when(chapterMapper.selectById(CHAPTER_ID))
+            when(chapterService.getById(CHAPTER_ID))
                     .thenReturn(
                             Chapter.builder().id(CHAPTER_ID).courseId(COURSE_ID).build());
-            when(courseMapper.selectById(COURSE_ID)).thenReturn(null);
+            when(courseService.getById(COURSE_ID)).thenReturn(null);
 
             assertThatThrownBy(() -> knowledgeGraphService.upsertLearningGraph(USER_ID, CHAPTER_ID))
                     .isInstanceOf(BusinessException.class)

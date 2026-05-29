@@ -20,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -33,6 +34,9 @@ class CaptchaServiceTest {
     @Mock
     private RedisTemplate<String, Object> redisTemplate;
 
+    @Mock
+    private Environment env;
+
     @InjectMocks
     private CaptchaService captchaService;
 
@@ -43,6 +47,7 @@ class CaptchaServiceTest {
     void setUp() {
         valueOps = mock(ValueOperations.class);
         when(redisTemplate.opsForValue()).thenReturn(valueOps);
+        when(env.getActiveProfiles()).thenReturn(new String[0]);
     }
 
     @Test
@@ -81,6 +86,7 @@ class CaptchaServiceTest {
     @DisplayName("validate testCode 配置不为空且匹配时直接返回 true")
     void validateReturnsTrueWhenTestCodeMatches() {
         ReflectionTestUtils.setField(captchaService, "testCode", "9999");
+        when(env.getActiveProfiles()).thenReturn(new String[] {"dev"});
 
         Boolean result = captchaService.validate("any-uuid", "9999");
 
@@ -137,6 +143,18 @@ class CaptchaServiceTest {
         Boolean result = captchaService.validate("uuid-1", "1234");
 
         assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("validate testCode 匹配但非 dev/prod profile 时不走旁路且 Redis 不符则返回 false")
+    void validateTestCodeBypassBlockedWhenNotDevOrProdProfile() {
+        ReflectionTestUtils.setField(captchaService, "testCode", "9999");
+        when(env.getActiveProfiles()).thenReturn(new String[] {"test"});
+        when(valueOps.get(eq("captcha:any-uuid"))).thenReturn("0000");
+
+        Boolean result = captchaService.validate("any-uuid", "9999");
+
+        assertThat(result).isFalse();
     }
 
     @Test

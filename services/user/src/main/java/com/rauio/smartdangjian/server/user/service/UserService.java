@@ -2,7 +2,7 @@ package com.rauio.smartdangjian.server.user.service;
 
 import static com.rauio.smartdangjian.constants.RedisConstants.USER_VO_CACHE_PREFIX;
 
-import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -138,8 +138,8 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param user 用户实体
      * @throws BusinessException 如果更新失败
      */
-    @CachePut(value = USER_VO_CACHE_PREFIX, key = "#id")
-    public void update(Long id, User user) {
+    @CacheEvict(value = USER_VO_CACHE_PREFIX, allEntries = true)
+    public User update(Long id, User user) {
         user.setId(id);
         if (StringUtils.isNotBlank(user.getPassword())) {
             user.setPassword(BCrypt.hashpw(user.getPassword()));
@@ -147,6 +147,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         if (!this.updateById(user)) {
             throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户更新失败");
         }
+        return this.getById(id);
     }
 
     /**
@@ -155,6 +156,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param id 用户 ID
      * @throws BusinessException 如果删除失败
      */
+    @CacheEvict(value = USER_VO_CACHE_PREFIX, allEntries = true)
     public void delete(Long id) {
         if (!this.removeById(id)) {
             throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户删除失败");
@@ -185,6 +187,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param newPassword 新密码
      * @throws BusinessException 如果修改失败
      */
+    @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#root.target.getCurrentUser().id")
     public void changePassword(String oldPassword, String newPassword) {
         if (oldPassword == null || oldPassword.isEmpty()) {
             throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "有空参数");

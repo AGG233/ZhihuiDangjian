@@ -75,34 +75,6 @@ class UserChatControllerTest extends BaseControllerTest {
                     .andExpect(status().isOk());
         }
 
-        @Test
-        @DisplayName("POST /evaluation - SSE 学习评估成功（兼容垫片）")
-        void evaluateSuccess() throws Exception {
-            when(llmService.chat(any(AiChatRequest.class)))
-                    .thenReturn(
-                            Flux.just(new AiChatResponse("assistant", "评估结果", null, AiChatResponseType.TEXT, null)));
-
-            mockMvc.perform(post("/api/ai/chat/evaluation")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .accept(MediaType.TEXT_EVENT_STREAM)
-                            .content("{}"))
-                    .andExpect(status().isOk());
-        }
-
-        @Test
-        @DisplayName("POST /quiz - SSE 测试小题成功（兼容垫片）")
-        void quizSuccess() throws Exception {
-            when(llmService.chat(any(AiChatRequest.class)))
-                    .thenReturn(Flux.just(new AiChatResponse("assistant", "测试题", null, AiChatResponseType.TEXT, null)));
-
-            mockMvc.perform(post("/api/ai/chat/quiz")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .accept(MediaType.TEXT_EVENT_STREAM)
-                            .content("{\"topic\":\"党的纪律建设\"}"))
-                    .andExpect(status().isOk());
-        }
-
-        @Test
         @DisplayName("GET /{sessionId}/messages - 查询会话消息成功")
         void listMessagesSuccess() throws Exception {
             when(userService.getCurrentUserId()).thenReturn("stu-001");
@@ -129,9 +101,6 @@ class UserChatControllerTest extends BaseControllerTest {
         @DisplayName("流式接口声明 SSE 响应类型")
         void streamingEndpointsDeclareSseMediaType() throws Exception {
             assertPostMappingProducesSse("chat", AiChatRequest.class);
-            assertPostMappingProducesSse(
-                    "evaluate", com.rauio.smartdangjian.server.ai.pojo.request.AiEvaluationRequest.class);
-            assertPostMappingProducesSse("quiz", com.rauio.smartdangjian.server.ai.pojo.request.AiQuizRequest.class);
         }
     }
 
@@ -154,15 +123,6 @@ class UserChatControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/ai/chat")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(""))
-                    .andExpect(status().isBadRequest());
-        }
-
-        @Test
-        @DisplayName("POST /quiz - topic 为空返回 400")
-        void quizWithEmptyTopic() throws Exception {
-            mockMvc.perform(post("/api/ai/chat/quiz")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content("{\"topic\":\"\"}"))
                     .andExpect(status().isBadRequest());
         }
 

@@ -371,15 +371,17 @@ class FileServiceTest {
         }
 
         @Test
-        @DisplayName("COS 删除异常时仍然删除本地记录")
+        @DisplayName("COS 删除异常时抛出业务异常并保留本地记录")
         void deleteCosException() {
             ResourceMeta meta = createResourceMeta();
             when(resourceMetaService.get(RESOURCE_ID)).thenReturn(meta);
             doThrow(new RuntimeException("COS error")).when(fileStorageService).delete(any(FileInfo.class));
 
-            fileService.delete(RESOURCE_ID);
+            assertThatThrownBy(() -> fileService.delete(RESOURCE_ID))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("文件删除失败");
 
-            verify(resourceMetaService).delete(RESOURCE_ID);
+            verify(resourceMetaService, never()).delete(any());
         }
     }
 

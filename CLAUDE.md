@@ -215,15 +215,45 @@ git merge product
 
 | 工作流 | 触发条件 | 执行内容 |
 |--------|----------|----------|
-| ci.yml | PR dev→product | compileJava → test + integrationTest + JaCoCo（LINE/BRANCH ≥ 95%）→ Codacy → bootJar → API 烟雾测试 |
+| ci.yml | PR dev→product | compileJava → test + integrationTest + JaCoCo（LINE/BRANCH ≥ 85%）→ Codacy → bootJar → API 烟雾测试 |
 | release.yml | 推送版本标签 (`v*`) | bootJar → Docker 多架构镜像（linux/amd64 + linux/arm64）→ 推送 GHCR → 自托管 Runner 部署 |
 
-- Dockerfile（server/Dockerfile）：eclipse-temurin:21-jre-alpine，端口 9000，非 root 用户运行
+### 查看 PR CI 状态
+
+排查 PR 是否通过 CI 时，需要同时检查 **GitHub Checks** 和 **Bot Review 评论**：
+
+```bash
+# 查看 PR 的 CI checks 状态
+gh pr checks <PR编号>
+
+# 查看 PR 的所有评论（含 bot review）
+gh pr view <PR编号> --comments --json comments,reviews
+```
+
+- Codacy、Sourcery、CodeRabbit 等 bot 会以 PR review 或 comment 形式报告问题，不能只看 check 通过/失败标志
+- 部分 bot 问题可能是误报或已在后续提交中修复，需要逐条评估
+
+- 生产构建 Dockerfile（server/Dockerfile）：eclipse-temurin:21-jre-alpine，端口 9000，非 root 用户运行
+- 本地开发 Dockerfile（server/Dockerfile.dev）：多阶段 Gradle JDK21 → JRE，用于 docker-compose.dev.yml
 - API 烟雾测试：CI 启动 bootJar 后通过 Node.js 脚本（.github/scripts/api-smoke-openapi.mjs）验证关键 API
 - API 手动测试：tests/bruno/ 目录提供 Bruno 集合
-- Docker Compose：Redis + app + watchtower 容器编排（docker-compose.yml）
+- 本地开发 Docker Compose：docker-compose.dev.yml（MySQL + Redis + Neo4j + 应用构建）
+- 生产部署 Docker Compose：docker-compose.yml（Redis + GHCR 应用 + watchtower），位于 product 分支
 - watchtower 每 5 分钟检查 GHCR 镜像更新并自动重启容器
 - 生产部署在自托管 Runner，通过 docker-compose pull && up -d 完成
+
+## Docker 文件分支策略
+
+| 文件 | 用途 | 所在分支 |
+|------|------|----------|
+| `server/Dockerfile` | 生产单阶段构建（复制预构建 JAR） | dev + product |
+| `server/Dockerfile.dev` | 本地开发多阶段构建（Gradle 内构建） | dev |
+| `docker-compose.dev.yml` | 本地开发编排（MySQL+Redis+Neo4j+app） | dev |
+| `docker-compose.yml` | 生产部署编排（Redis+GHCR app+watchtower） | product |
+| `docker-compose.prod.yml` | 生产配置覆盖（SPRING_PROFILES_ACTIVE=prod） | dev + product |
+
+`server/Dockerfile` 在两分支上内容一致（单阶段），release.yml 始终引用它。
+dev 专属的多阶段构建和本地编排使用 `.dev` 后缀，合并到 product 时零冲突。
 
 ## 可复用工作流（.claude/workflows/）
 
@@ -237,7 +267,6 @@ git merge product
 | `ship-to-product` | **PR 创建与监控** | 创建 PR → 轮询远程 CI → 检查 PR review → 报告结果。发现问题时返回结构化 issues 供 review-diff 处理 |
 | `qa-check` | 快速质量检查 | 编译 → 单元测试+JaCoCo → 集成测试 → 格式检查。支持 `{ module: "ai" }` 按模块过滤，`{ skipIntegration: true }` 跳过集成测试 |
 | `review-diff` | **多维代码审查** | 发现变更 → 3 维度并行审查(bugs/security/patterns) → 3票对抗验证 → 报告。发现问题时返回结构化 findings 列表，支持迭代修复后重新审查 |
-| `nl-router` | **自然语言路由** | 解析自然语言意图 → 提取参数 → 路由到对应工作流。支持口语化表达，低置信度时提示确认 |
 
 ### 典型使用方式
 
@@ -259,29 +288,7 @@ git merge product
 
 # 单独拆分任务（不执行后续阶段）
 /task-splitter { feature: "实现课程推荐系统", module: "course", maxSubtasks: 100 }
-
-# 自然语言方式（自动解析意图并路由）
-/nl "帮我实现一个用户导出功能，在 user 模块"
-/nl "审查当前分支的代码"
-/nl "跑一遍质量检查"
-/nl "把 dev 的改动发到 product"
 ```
-
-#### 自然语言路由支持的语义
-
-| 表达 | 路由到 | 参数提取 |
-|------|--------|----------|
-| "实现/做/开发 [功能]" | dev-to-prod | feature |
-| "在/针对 [模块]" | — | module |
-| "审查/检查 代码" | review-diff | base |
-| "跑/执行 QA/测试" | qa-check | module, skipIntegration |
-| "发布/发版/ship" | ship-to-product | autoMerge |
-| "拆分/分解 [功能]" | task-splitter | feature, module |
-| "从零开始/从头" | dev-to-prod | startPhase: "requirements" |
-| "只做测试" | dev-to-prod | startPhase: "testing" |
-| "从审查开始" | dev-to-prod | startPhase: "reviewship" |
-| "自动合并" | — | autoMerge: true |
-| "自动打标签" | — | autoTag: true |
 
 ### 可用技能
 

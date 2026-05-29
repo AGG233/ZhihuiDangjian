@@ -222,5 +222,14 @@ class UserCourseControllerTest extends BaseControllerTest {
         void getPageWithWrongMethod() throws Exception {
             mockMvc.perform(delete("/api/content/courses")).andExpect(status().isMethodNotAllowed());
         }
+
+        @Test
+        @DisplayName("查看其他用户学习课程返回 403")
+        void viewOtherUserLearnedCoursesReturns403() throws Exception {
+            mockMvc.perform(get("/api/content/courses/learned/2"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("403"))
+                    .andExpect(jsonPath("$.message").value("无权查看其他用户的学习课程"));
+        }
     }
 }

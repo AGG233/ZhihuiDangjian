@@ -18,6 +18,7 @@ import com.rauio.smartdangjian.server.ai.agent.AiAgentRegistry;
 import com.rauio.smartdangjian.server.ai.constants.AiChatResponseType;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiChatRequest;
 import com.rauio.smartdangjian.server.ai.pojo.response.AiChatResponse;
+import com.rauio.smartdangjian.server.ai.util.PromptSanitizer;
 import com.rauio.smartdangjian.server.user.service.UserService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -57,11 +58,12 @@ public class LLMService {
             AtomicReference<String> finalOutput = new AtomicReference<>("");
 
             log.info("AI请求开始 sessionId={} userId={}", sessionId, uid);
+            var sanitizedInput = PromptSanitizer.sanitize(input);
             try {
                 return Flux.concat(
                                 Flux.just(new AiChatResponse(
                                         AiChatResponseType.START, sessionId, "", "start", "coordinator")),
-                                aiAgentRegistry.getCoordinator().stream(input, runnableConfig)
+                                aiAgentRegistry.getCoordinator().stream(sanitizedInput, runnableConfig)
                                         .<AiChatResponse>handle((output, sink) -> {
                                             String agentName = output.node() != null ? output.node() : "coordinator";
                                             sink.next(buildAiChatResponse(sessionId, agentName, output, finalOutput));
@@ -81,7 +83,7 @@ public class LLMService {
                                                 output = "[AI 未返回文本内容]";
                                             }
                                             aiMemoryService.saveConversation(
-                                                    uid, sessionId, "COORDINATOR", input, output);
+                                                    uid, sessionId, "COORDINATOR", sanitizedInput, output);
                                             log.info("AI请求完成 sessionId={}", sessionId);
                                         })
                                         .doOnCancel(() -> log.warn("客户端断开连接 sessionId={}", sessionId))

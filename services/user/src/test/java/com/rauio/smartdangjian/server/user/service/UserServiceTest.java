@@ -287,6 +287,7 @@ class UserServiceTest {
         user.setPassword(null);
 
         doReturn(true).when(userService).updateById(any(User.class));
+        doReturn(user).when(userService).getById(1L);
 
         userService.update(1L, user);
 
@@ -303,6 +304,7 @@ class UserServiceTest {
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
             bcryptMock.when(() -> BCrypt.hashpw("plainPassword")).thenReturn("encodedNewPassword");
             doReturn(true).when(userService).updateById(any(User.class));
+            doReturn(user).when(userService).getById(1L);
 
             userService.update(1L, user);
 
@@ -334,6 +336,7 @@ class UserServiceTest {
         user.setPassword("");
 
         doReturn(true).when(userService).updateById(any(User.class));
+        doReturn(user).when(userService).getById(1L);
 
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
             userService.update(1L, user);

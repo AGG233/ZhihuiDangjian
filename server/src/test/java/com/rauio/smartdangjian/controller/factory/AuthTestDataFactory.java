@@ -64,7 +64,7 @@ public final class AuthTestDataFactory {
     public static ChangePasswordRequest createChangePasswordRequest() {
         ChangePasswordRequest request = new ChangePasswordRequest();
         request.setOldPassword("oldPass123");
-        request.setNewPassword("newPass456");
+        request.setNewPassword("NewPass456!");
         return request;
     }
 
@@ -73,7 +73,6 @@ public final class AuthTestDataFactory {
     public static LoginResponse createLoginResponse() {
         return LoginResponse.builder()
                 .accessToken("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.test-signature")
-                .refreshToken("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.refresh-signature")
                 .build();
     }
 
