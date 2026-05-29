@@ -1,5 +1,5 @@
 import http from 'k6/http';
-import { check, sleep, group } from 'k6';
+import { sleep, group } from 'k6';
 import { BASE_URL, TEST_USERS, login, getAuthParams, checkOk } from './shared.js';
 
 export const options = {
@@ -28,12 +28,12 @@ export function setup() {
 }
 
 export default function (tokens) {
-  var token = tokens[Math.floor(Math.random() * tokens.length)];
+  let token = tokens[Math.floor(Math.random() * tokens.length)];
   if (!token) return;
 
-  var endpoint = ENDPOINTS[Math.floor(Math.random() * ENDPOINTS.length)];
+  let endpoint = ENDPOINTS[Math.floor(Math.random() * ENDPOINTS.length)];
   group(endpoint.name, function () {
-    var res = http.get(endpoint.url, getAuthParams(token));
+    let res = http.get(endpoint.url, getAuthParams(token));
     checkOk(res, endpoint.name);
   });
   sleep(Math.random() * 0.5 + 0.1);

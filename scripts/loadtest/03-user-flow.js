@@ -1,5 +1,5 @@
 import http from 'k6/http';
-import { check, sleep, group } from 'k6';
+import { sleep, group } from 'k6';
 import { BASE_URL, TEST_USERS, login, getAuthParams, checkOk } from './shared.js';
 
 export const options = {
@@ -20,20 +20,20 @@ export function setup() {
 }
 
 export default function (tokens) {
-  var token = tokens[Math.floor(Math.random() * tokens.length)];
+  let token = tokens[Math.floor(Math.random() * tokens.length)];
   if (!token) return;
 
   group('full-user-flow', function () {
-    var catRes = http.get(BASE_URL + '/api/content/categories', getAuthParams(token));
+    let catRes = http.get(BASE_URL + '/api/content/categories', getAuthParams(token));
     checkOk(catRes, 'categories');
 
-    var courseRes = http.get(BASE_URL + '/api/content/courses', getAuthParams(token));
+    let courseRes = http.get(BASE_URL + '/api/content/courses', getAuthParams(token));
     checkOk(courseRes, 'courses');
 
-    var searchRes = http.get(BASE_URL + '/api/search/courses?keyword=test', getAuthParams(token));
+    let searchRes = http.get(BASE_URL + '/api/search/courses?keyword=test', getAuthParams(token));
     checkOk(searchRes, 'search');
 
-    var progressRes = http.post(
+    let progressRes = http.post(
       BASE_URL + '/api/learning/progress',
       JSON.stringify({ chapterId: '1', progress: 50 }),
       getAuthParams(token),

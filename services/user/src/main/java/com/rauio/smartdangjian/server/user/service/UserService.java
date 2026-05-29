@@ -188,6 +188,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param newPassword 新密码
      * @throws BusinessException 如果修改失败
      */
+    @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#root.target.getCurrentUser().id")
     public void changePassword(String oldPassword, String newPassword) {
         if (oldPassword == null || oldPassword.isEmpty()) {
             throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "有空参数");

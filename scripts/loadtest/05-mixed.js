@@ -1,5 +1,5 @@
 import http from 'k6/http';
-import { check, sleep } from 'k6';
+import { sleep } from 'k6';
 import { BASE_URL, TEST_USERS, login, getAuthParams, checkOk } from './shared.js';
 
 export const options = {
@@ -15,7 +15,7 @@ export const options = {
   },
 };
 
-var READ_ENDPOINTS = [
+const READ_ENDPOINTS = [
   { url: BASE_URL + '/api/school/all', name: 'school-all' },
   { url: BASE_URL + '/api/content/categories', name: 'categories' },
   { url: BASE_URL + '/api/content/courses', name: 'courses' },
@@ -28,27 +28,27 @@ export function setup() {
 }
 
 export default function (tokens) {
-  var rand = Math.random();
+  let rand = Math.random();
 
   if (rand < 0.6) {
-    var token = tokens[Math.floor(Math.random() * tokens.length)];
+    let token = tokens[Math.floor(Math.random() * tokens.length)];
     if (!token) return;
-    var ep = READ_ENDPOINTS[Math.floor(Math.random() * READ_ENDPOINTS.length)];
-    var res = http.get(ep.url, getAuthParams(token));
+    let ep = READ_ENDPOINTS[Math.floor(Math.random() * READ_ENDPOINTS.length)];
+    let res = http.get(ep.url, getAuthParams(token));
     checkOk(res, ep.name);
   } else if (rand < 0.85) {
-    var token3 = tokens[Math.floor(Math.random() * tokens.length)];
+    let token3 = tokens[Math.floor(Math.random() * tokens.length)];
     if (!token3) return;
-    var res3 = http.post(
+    let res3 = http.post(
       BASE_URL + '/api/user/users/search',
       JSON.stringify({}),
       getAuthParams(token3),
     );
     checkOk(res3, 'user-search');
   } else {
-    var token4 = tokens[Math.floor(Math.random() * tokens.length)];
+    let token4 = tokens[Math.floor(Math.random() * tokens.length)];
     if (!token4) return;
-    var res4 = http.get(BASE_URL + '/api/graph/knowledge-graphs/users/1', getAuthParams(token4));
+    let res4 = http.get(BASE_URL + '/api/graph/knowledge-graphs/users/1', getAuthParams(token4));
     checkOk(res4, 'knowledge-graph');
   }
 

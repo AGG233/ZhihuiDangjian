@@ -47,7 +47,7 @@ export function login(user) {
   if (res.status !== 200) return null;
   try {
     return JSON.parse(res.body).data.accessToken || null;
-  } catch (e) {
+  } catch (_e) {
     return null;
   }
 }
@@ -56,7 +56,7 @@ export function checkOk(res, name) {
   return check(res, {
     [name + ' status 200']: (r) => r.status === 200,
     [name + ' body ok']: (r) => {
-      try { return JSON.parse(r.body).code === '200'; } catch (e) { return false; }
+      try { return JSON.parse(r.body).code === '200'; } catch (_e) { return false; }
     },
   });
 }

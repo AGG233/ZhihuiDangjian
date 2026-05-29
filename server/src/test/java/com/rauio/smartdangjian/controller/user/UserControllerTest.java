@@ -99,7 +99,9 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - 更新用户成功")
         void updateSuccess() throws Exception {
-            when(userService.update(eq(1L), any())).thenReturn(new com.rauio.smartdangjian.server.user.pojo.entity.User());;
+            when(userService.update(eq(1L), any()))
+                    .thenReturn(new com.rauio.smartdangjian.server.user.pojo.entity.User());
+            ;
 
             String json = "{\"realName\":\"张三丰\"}";
             mockMvc.perform(put("/api/user/users/1")
@@ -203,7 +205,9 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - Service 正常返回 200 OK")
         void updateNormalSuccess() throws Exception {
-            when(userService.update(eq(1L), any())).thenReturn(new com.rauio.smartdangjian.server.user.pojo.entity.User());;
+            when(userService.update(eq(1L), any()))
+                    .thenReturn(new com.rauio.smartdangjian.server.user.pojo.entity.User());
+            ;
 
             mockMvc.perform(put("/api/user/users/1")
                             .contentType(MediaType.APPLICATION_JSON)
