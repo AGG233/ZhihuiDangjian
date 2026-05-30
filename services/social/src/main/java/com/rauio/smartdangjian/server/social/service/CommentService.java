@@ -32,8 +32,8 @@ public class CommentService extends ServiceImpl<CommentMapper, Comment> {
     private final UserService userService;
     private final SensitiveWordService sensitiveWordService;
 
-    public Page<CommentResponse> getPage(String targetType, Long targetId, Long parentId,
-            int pageNum, int pageSize, String sortBy) {
+    public Page<CommentResponse> getPage(
+            String targetType, Long targetId, Long parentId, int pageNum, int pageSize, String sortBy) {
         LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Comment::getTargetType, targetType)
                 .eq(Comment::getTargetId, targetId)
@@ -75,7 +75,12 @@ public class CommentService extends ServiceImpl<CommentMapper, Comment> {
             this.baseMapper.update(null, updateWrapper);
         }
 
-        log.info("评论创建 targetType={} targetId={} userId={} status={}", request.getTargetType(), request.getTargetId(), userId, status);
+        log.info(
+                "评论创建 targetType={} targetId={} userId={} status={}",
+                request.getTargetType(),
+                request.getTargetId(),
+                userId,
+                status);
         User user = userService.getById(userId);
         return toCommentResponse(comment, Map.of(userId, user));
     }
@@ -112,11 +117,9 @@ public class CommentService extends ServiceImpl<CommentMapper, Comment> {
     }
 
     private Page<CommentResponse> toCommentResponsePage(Page<Comment> page) {
-        Set<Long> userIds = page.getRecords().stream()
-                .map(Comment::getUserId)
-                .collect(Collectors.toSet());
-        Map<Long, User> userMap = userService.listByIds(userIds).stream()
-                .collect(Collectors.toMap(User::getId, u -> u, (a, b) -> a));
+        Set<Long> userIds = page.getRecords().stream().map(Comment::getUserId).collect(Collectors.toSet());
+        Map<Long, User> userMap =
+                userService.listByIds(userIds).stream().collect(Collectors.toMap(User::getId, u -> u, (a, b) -> a));
         List<CommentResponse> list = page.getRecords().stream()
                 .map(comment -> toCommentResponse(comment, userMap))
                 .toList();

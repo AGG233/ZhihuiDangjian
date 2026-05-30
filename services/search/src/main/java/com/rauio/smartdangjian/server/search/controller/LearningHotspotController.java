@@ -7,14 +7,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import cn.dev33.satoken.annotation.SaCheckRole;
-
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.search.pojo.response.HotCategoryResponse;
 import com.rauio.smartdangjian.server.search.pojo.response.HotCourseResponse;
 import com.rauio.smartdangjian.server.search.pojo.response.LearningTrendResponse;
 import com.rauio.smartdangjian.server.search.service.LearningHotspotService;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

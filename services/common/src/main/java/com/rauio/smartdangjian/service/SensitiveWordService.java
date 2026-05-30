@@ -29,14 +29,41 @@ public class SensitiveWordService implements InitializingBean {
     private volatile SensitiveWordBs sensitiveWordBs;
 
     private static final List<String> HARDCODED_WHITELIST = List.of(
-            "毛泽东", "周恩来", "邓小平", "江泽民", "胡锦涛", "习近平",
-            "共产党", "中国共产党", "社会主义", "无产阶级", "马列主义",
-            "革命", "解放", "红色", "工农", "党支部", "党委书记",
-            "组织生活", "民主集中制", "群众路线", "三个代表", "科学发展观",
+            "毛泽东",
+            "周恩来",
+            "邓小平",
+            "江泽民",
+            "胡锦涛",
+            "习近平",
+            "共产党",
+            "中国共产党",
+            "社会主义",
+            "无产阶级",
+            "马列主义",
+            "革命",
+            "解放",
+            "红色",
+            "工农",
+            "党支部",
+            "党委书记",
+            "组织生活",
+            "民主集中制",
+            "群众路线",
+            "三个代表",
+            "科学发展观",
             "新时代中国特色社会主义",
-            "南昌起义", "秋收起义", "广州起义", "长征", "遵义会议",
-            "抗日战争", "解放战争", "改革开放", "一国两制",
-            "为人民服务", "不忘初心", "牢记使命");
+            "南昌起义",
+            "秋收起义",
+            "广州起义",
+            "长征",
+            "遵义会议",
+            "抗日战争",
+            "解放战争",
+            "改革开放",
+            "一国两制",
+            "为人民服务",
+            "不忘初心",
+            "牢记使命");
 
     @Override
     public void afterPropertiesSet() {
@@ -58,8 +85,7 @@ public class SensitiveWordService implements InitializingBean {
                 .ignoreRepeat(true)
                 .init();
 
-        log.info("敏感词过滤器初始化完成，白名单 {} 条，自定义拒绝词 {} 条",
-                whitelist.size(), customDeny.size());
+        log.info("敏感词过滤器初始化完成，白名单 {} 条，自定义拒绝词 {} 条", whitelist.size(), customDeny.size());
     }
 
     public SensitiveWordMatchResult check(String text) {
@@ -127,9 +153,7 @@ public class SensitiveWordService implements InitializingBean {
 
     private List<String> loadFileWhitelist() {
         String location = properties.getWhitelistLocation();
-        String path = location.startsWith("classpath:")
-                ? location.substring("classpath:".length())
-                : location;
+        String path = location.startsWith("classpath:") ? location.substring("classpath:".length()) : location;
 
         ClassPathResource resource = new ClassPathResource(path);
         if (!resource.exists()) {
@@ -138,8 +162,8 @@ public class SensitiveWordService implements InitializingBean {
         }
 
         List<String> result = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
+        try (BufferedReader reader =
+                new BufferedReader(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();

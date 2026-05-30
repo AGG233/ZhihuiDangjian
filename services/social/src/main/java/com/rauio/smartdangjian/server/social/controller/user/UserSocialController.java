@@ -1,5 +1,7 @@
 package com.rauio.smartdangjian.server.social.controller.user;
 
+import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,7 +23,6 @@ import com.rauio.smartdangjian.server.user.service.UserService;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Tag(name = "社交互动接口", description = "评论和点赞功能")
@@ -50,9 +51,7 @@ public class UserSocialController {
     @Operation(summary = "发表评论")
     @PostMapping("/{targetType}/{targetId}/comments")
     public Result<CommentResponse> createComment(
-            @PathVariable String targetType,
-            @PathVariable Long targetId,
-            @RequestBody @Valid CommentRequest request) {
+            @PathVariable String targetType, @PathVariable Long targetId, @RequestBody @Valid CommentRequest request) {
         request.setTargetType(targetType);
         request.setTargetId(targetId);
         Long userId = Long.valueOf(userService.getCurrentUserId());
@@ -61,9 +60,7 @@ public class UserSocialController {
 
     @Operation(summary = "回复评论")
     @PostMapping("/comments/{commentId}/replies")
-    public Result<CommentResponse> reply(
-            @PathVariable Long commentId,
-            @RequestBody @Valid CommentRequest request) {
+    public Result<CommentResponse> reply(@PathVariable Long commentId, @RequestBody @Valid CommentRequest request) {
         request.setParentId(commentId);
         Long userId = Long.valueOf(userService.getCurrentUserId());
         return Result.ok(commentService.create(userId, request));
@@ -79,18 +76,14 @@ public class UserSocialController {
 
     @Operation(summary = "点赞/取消点赞")
     @PostMapping("/{targetType}/{targetId}/like")
-    public Result<LikeStatusResponse> toggleLike(
-            @PathVariable String targetType,
-            @PathVariable Long targetId) {
+    public Result<LikeStatusResponse> toggleLike(@PathVariable String targetType, @PathVariable Long targetId) {
         Long userId = Long.valueOf(userService.getCurrentUserId());
         return Result.ok(likeService.toggle(userId, targetType, targetId));
     }
 
     @Operation(summary = "查询点赞状态")
     @GetMapping("/{targetType}/{targetId}/like/status")
-    public Result<LikeStatusResponse> getLikeStatus(
-            @PathVariable String targetType,
-            @PathVariable Long targetId) {
+    public Result<LikeStatusResponse> getLikeStatus(@PathVariable String targetType, @PathVariable Long targetId) {
         Long userId = Long.valueOf(userService.getCurrentUserId());
         return Result.ok(likeService.getStatus(userId, targetType, targetId));
     }

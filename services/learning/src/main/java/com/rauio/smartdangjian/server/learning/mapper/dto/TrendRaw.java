@@ -11,5 +11,6 @@ public class TrendRaw {
      * MySQL DATE() 函数返回字符串格式如 "2026-05-30"
      */
     private String date;
+
     private Integer count;
 }

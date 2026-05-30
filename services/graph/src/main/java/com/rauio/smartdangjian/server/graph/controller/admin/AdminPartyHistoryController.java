@@ -40,15 +40,13 @@ public class AdminPartyHistoryController {
 
     @Operation(summary = "批量导入关系", description = "批量导入党史实体间的关系")
     @PostMapping("/import/relationships")
-    public Result<Integer> importRelationships(
-            @RequestBody List<Map<String, Object>> relationships) {
+    public Result<Integer> importRelationships(@RequestBody List<Map<String, Object>> relationships) {
         return Result.ok(importService.importRelationships(relationships));
     }
 
     @Operation(summary = "删除实体", description = "根据 graph_id 删除党史实体及其所有关联关系")
     @DeleteMapping("/entities/{graphId}")
-    public Result<Void> deleteEntity(
-            @Parameter(description = "实体 graph_id") @PathVariable String graphId) {
+    public Result<Void> deleteEntity(@Parameter(description = "实体 graph_id") @PathVariable String graphId) {
         graphService.deleteEntity(graphId);
         return Result.ok();
     }

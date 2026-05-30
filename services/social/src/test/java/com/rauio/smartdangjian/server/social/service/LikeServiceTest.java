@@ -133,10 +133,7 @@ class LikeServiceTest {
     void getStatusWhenLiked() {
         doReturn(1L).when(likeService).count(any(LambdaQueryWrapper.class));
 
-        Comment comment = Comment.builder()
-                .id(100L)
-                .likeCount(42)
-                .build();
+        Comment comment = Comment.builder().id(100L).likeCount(42).build();
         when(commentMapper.selectById(100L)).thenReturn(comment);
 
         LikeStatusResponse result = likeService.getStatus(1L, "comment", 100L);
@@ -152,10 +149,7 @@ class LikeServiceTest {
     void getStatusWhenNotLiked() {
         doReturn(0L).when(likeService).count(any(LambdaQueryWrapper.class));
 
-        Comment comment = Comment.builder()
-                .id(100L)
-                .likeCount(0)
-                .build();
+        Comment comment = Comment.builder().id(100L).likeCount(0).build();
         when(commentMapper.selectById(100L)).thenReturn(comment);
 
         LikeStatusResponse result = likeService.getStatus(1L, "comment", 100L);

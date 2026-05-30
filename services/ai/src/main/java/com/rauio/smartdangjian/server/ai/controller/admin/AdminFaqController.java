@@ -40,8 +40,7 @@ public class AdminFaqController {
     @Operation(summary = "分页查询FAQ", description = "分页查询FAQ列表，按sort升序")
     @GetMapping
     public Result<IPage<AiFaqResponse>> page(
-            @RequestParam(defaultValue = "1") int pageNum,
-            @RequestParam(defaultValue = "10") int pageSize) {
+            @RequestParam(defaultValue = "1") int pageNum, @RequestParam(defaultValue = "10") int pageSize) {
         return Result.ok(faqService.pageFaqs(pageNum, pageSize));
     }
 

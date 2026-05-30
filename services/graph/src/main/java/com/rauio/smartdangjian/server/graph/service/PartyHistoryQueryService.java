@@ -32,8 +32,7 @@ public class PartyHistoryQueryService {
 
     private static final Set<String> VALID_ENTITY_TYPES = Set.of("Person", "Event", "Location", "Theory", "Document");
     private static final Set<String> INFLUENCE_REL_TYPES = Set.of(
-            "INITIATED", "PARTICIPATED_IN", "PROMOTED", "ELABORATED",
-            "INHERITED_DEVELOPED", "AUTHORED", "RELATED_TO");
+            "INITIATED", "PARTICIPATED_IN", "PROMOTED", "ELABORATED", "INHERITED_DEVELOPED", "AUTHORED", "RELATED_TO");
 
     // ==================== 公共查询 API ====================
 
@@ -48,24 +47,27 @@ public class PartyHistoryQueryService {
                 + "ORDER BY score DESC "
                 + "SKIP $skip LIMIT $limit";
 
-        var rows = (Collection<Map<String, Object>>) neo4jClient.query(cypher)
-                .bind(keyword).to("keyword")
-                .bind(types).to("types")
-                .bind(skip).to("skip")
-                .bind(limit).to("limit")
-                .fetch().all();
+        var rows = (Collection<Map<String, Object>>) neo4jClient
+                .query(cypher)
+                .bind(keyword)
+                .to("keyword")
+                .bind(types)
+                .to("types")
+                .bind(skip)
+                .to("skip")
+                .bind(limit)
+                .to("limit")
+                .fetch()
+                .all();
 
         return buildFromNodeCollection(rows, "node");
     }
 
     public KnowledgeGraphResponse getEntityDetail(String graphId) {
-        String cypher = "MATCH (n) WHERE n.graph_id = $graphId "
-                + "OPTIONAL MATCH (n)-[r]-(m) "
-                + "RETURN n, r, m";
+        String cypher = "MATCH (n) WHERE n.graph_id = $graphId " + "OPTIONAL MATCH (n)-[r]-(m) " + "RETURN n, r, m";
 
-        var rows = (Collection<Map<String, Object>>) neo4jClient.query(cypher)
-                .bind(graphId).to("graphId")
-                .fetch().all();
+        var rows = (Collection<Map<String, Object>>)
+                neo4jClient.query(cypher).bind(graphId).to("graphId").fetch().all();
 
         return buildFromNodeRelCollection(rows, "n", "r", "m");
     }
@@ -75,9 +77,12 @@ public class PartyHistoryQueryService {
                 + "MATCH (n)-[r:INITIATED|PARTICIPATED_IN|PROMOTED]-(m:Event) "
                 + "RETURN n, r, m";
 
-        var rows = (Collection<Map<String, Object>>) neo4jClient.query(cypher)
-                .bind(personGraphId).to("graphId")
-                .fetch().all();
+        var rows = (Collection<Map<String, Object>>) neo4jClient
+                .query(cypher)
+                .bind(personGraphId)
+                .to("graphId")
+                .fetch()
+                .all();
 
         return buildFromNodeRelCollection(rows, "n", "r", "m");
     }
@@ -90,9 +95,12 @@ public class PartyHistoryQueryService {
                 + "WHERE all(rel IN relationships(p) WHERE type(rel) IN ['CAUSED', 'PRECEDED', 'RELATED_TO', 'LED_TO']) "
                 + "RETURN nodes(p) AS nodes, relationships(p) AS relationships";
 
-        var rows = (Collection<Map<String, Object>>) neo4jClient.query(cypher)
-                .bind(eventGraphId).to("graphId")
-                .fetch().all();
+        var rows = (Collection<Map<String, Object>>) neo4jClient
+                .query(cypher)
+                .bind(eventGraphId)
+                .to("graphId")
+                .fetch()
+                .all();
 
         return buildFromPathRows(rows);
     }
@@ -102,9 +110,12 @@ public class PartyHistoryQueryService {
                 + "OPTIONAL MATCH (t)-[r:ELABORATED|INHERITED_DEVELOPED|RELATED_TO]-(related:Theory) "
                 + "RETURN t, r, related";
 
-        var rows = (Collection<Map<String, Object>>) neo4jClient.query(cypher)
-                .bind(theoryGraphId).to("graphId")
-                .fetch().all();
+        var rows = (Collection<Map<String, Object>>) neo4jClient
+                .query(cypher)
+                .bind(theoryGraphId)
+                .to("graphId")
+                .fetch()
+                .all();
 
         return buildFromNodeRelCollection(rows, "t", "r", "related");
     }
@@ -120,14 +131,19 @@ public class PartyHistoryQueryService {
                 + "MATCH p = shortestPath((a)-[*.." + maxDepth + "]-(b)) "
                 + "RETURN nodes(p) AS nodes, relationships(p) AS relationships LIMIT 1";
 
-        var rows = (Collection<Map<String, Object>>) neo4jClient.query(cypher)
-                .bind(sourceGraphId).to("sourceId")
-                .bind(targetGraphId).to("targetId")
-                .fetch().all();
+        var rows = (Collection<Map<String, Object>>) neo4jClient
+                .query(cypher)
+                .bind(sourceGraphId)
+                .to("sourceId")
+                .bind(targetGraphId)
+                .to("targetId")
+                .fetch()
+                .all();
 
         KnowledgeGraphResponse result = buildFromPathRows(rows);
         if (result.getNodes().isEmpty()) {
-            throw new BusinessException(GraphErrorConstants.GRAPH_ENTITY_NOT_FOUND,
+            throw new BusinessException(
+                    GraphErrorConstants.GRAPH_ENTITY_NOT_FOUND,
                     "未找到从 " + sourceGraphId + " 到 " + targetGraphId + " 的路径");
         }
         return result;
@@ -143,9 +159,12 @@ public class PartyHistoryQueryService {
                 + "MATCH p = (p)-[:" + relTypes + "*1.." + maxDepth + "]-(related) "
                 + "RETURN nodes(p) AS nodes, relationships(p) AS relationships";
 
-        var rows = (Collection<Map<String, Object>>) neo4jClient.query(cypher)
-                .bind(personGraphId).to("personId")
-                .fetch().all();
+        var rows = (Collection<Map<String, Object>>) neo4jClient
+                .query(cypher)
+                .bind(personGraphId)
+                .to("personId")
+                .fetch()
+                .all();
 
         return buildFromPathRows(rows);
     }
@@ -166,8 +185,8 @@ public class PartyHistoryQueryService {
                 .build();
     }
 
-    private KnowledgeGraphResponse buildFromNodeRelCollection(Collection<Map<String, Object>> rows,
-            String fromKey, String relKey, String toKey) {
+    private KnowledgeGraphResponse buildFromNodeRelCollection(
+            Collection<Map<String, Object>> rows, String fromKey, String relKey, String toKey) {
         Map<String, GraphNodeResponse> nodeMap = new LinkedHashMap<>();
         Set<String> edgeKeys = new LinkedHashSet<>();
         List<GraphEdgeResponse> edges = new ArrayList<>();
@@ -220,15 +239,18 @@ public class PartyHistoryQueryService {
 
     private String addPartyNode(Map<String, GraphNodeResponse> nodeMap, Node node) {
         if (node == null) return null;
-        String label = node.labels().iterator().hasNext() ? node.labels().iterator().next() : "Entity";
+        String label =
+                node.labels().iterator().hasNext() ? node.labels().iterator().next() : "Entity";
         String graphId = readGraphId(node);
         String key = label + ":" + graphId;
         if (!nodeMap.containsKey(key)) {
-            nodeMap.put(key, GraphNodeResponse.builder()
-                    .id(key)
-                    .label(label)
-                    .name(readName(node, graphId))
-                    .build());
+            nodeMap.put(
+                    key,
+                    GraphNodeResponse.builder()
+                            .id(key)
+                            .label(label)
+                            .name(readName(node, graphId))
+                            .build());
         }
         return key;
     }
@@ -250,8 +272,8 @@ public class PartyHistoryQueryService {
         return fallback;
     }
 
-    private void addEdge(Set<String> edgeKeys, List<GraphEdgeResponse> edges,
-            String source, String target, String type) {
+    private void addEdge(
+            Set<String> edgeKeys, List<GraphEdgeResponse> edges, String source, String target, String type) {
         String key = source + "|" + type + "|" + target;
         if (edgeKeys.add(key)) {
             edges.add(GraphEdgeResponse.builder()
@@ -300,9 +322,6 @@ public class PartyHistoryQueryService {
         if (types == null || types.isEmpty()) {
             return Collections.emptyList();
         }
-        return types.stream()
-                .filter(VALID_ENTITY_TYPES::contains)
-                .distinct()
-                .toList();
+        return types.stream().filter(VALID_ENTITY_TYPES::contains).distinct().toList();
     }
 }

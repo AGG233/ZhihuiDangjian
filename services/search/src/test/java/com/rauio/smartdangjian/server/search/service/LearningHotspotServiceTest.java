@@ -2,8 +2,6 @@ package com.rauio.smartdangjian.server.search.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -109,8 +107,8 @@ class LearningHotspotServiceTest {
         raw.setLearnerCount(10);
 
         when(userLearningRecordMapper.selectHotCourses(10)).thenReturn(List.of(raw));
-        when(courseMapper.selectBatchIds(any())).thenReturn(List.of(
-                Course.builder().id(1L).title("课程").build()));
+        when(courseMapper.selectBatchIds(any()))
+                .thenReturn(List.of(Course.builder().id(1L).title("课程").build()));
 
         List<HotCourseResponse> result = learningHotspotService.getHotCourses(-5);
 
@@ -127,8 +125,8 @@ class LearningHotspotServiceTest {
         raw.setLearnerCount(10);
 
         when(userLearningRecordMapper.selectHotCourses(50)).thenReturn(List.of(raw));
-        when(courseMapper.selectBatchIds(any())).thenReturn(List.of(
-                Course.builder().id(1L).title("课程").build()));
+        when(courseMapper.selectBatchIds(any()))
+                .thenReturn(List.of(Course.builder().id(1L).title("课程").build()));
 
         List<HotCourseResponse> result = learningHotspotService.getHotCourses(100);
 

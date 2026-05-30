@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.server.social.pojo.request;
 
 import jakarta.validation.constraints.NotBlank;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

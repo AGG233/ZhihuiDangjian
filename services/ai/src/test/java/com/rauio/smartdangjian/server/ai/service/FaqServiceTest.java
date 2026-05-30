@@ -19,7 +19,6 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.ai.mapper.AiFaqMapper;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiFaq;
 import com.rauio.smartdangjian.server.ai.pojo.request.FaqCreateRequest;
 import com.rauio.smartdangjian.server.ai.pojo.request.FaqUpdateRequest;
@@ -300,7 +299,8 @@ class FaqServiceTest {
             // getAllEnabledFaqs() uses lambdaQuery() internally which requires baseMapper.
             // In unit test we mock the method directly to verify match() caller behavior.
             doReturn(List.of(enabledFaq1, enabledFaq2, disabledFaq))
-                    .when(faqService).getAllEnabledFaqs();
+                    .when(faqService)
+                    .getAllEnabledFaqs();
 
             // match() calls getAllEnabledFaqs() and filters by keyword matching,
             // not by enabled flag (that's done by the query itself in real impl).
@@ -308,9 +308,7 @@ class FaqServiceTest {
             List<AiFaq> result = faqService.getAllEnabledFaqs();
 
             assertThat(result).hasSize(3);
-            assertThat(result)
-                    .extracting(AiFaq::getId)
-                    .containsExactly(1L, 2L, 3L);
+            assertThat(result).extracting(AiFaq::getId).containsExactly(1L, 2L, 3L);
         }
     }
 }

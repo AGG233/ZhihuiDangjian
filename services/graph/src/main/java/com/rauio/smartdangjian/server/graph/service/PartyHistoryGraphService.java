@@ -50,16 +50,19 @@ public class PartyHistoryGraphService {
         }
 
         String cypher = "MERGE (n:Document {graph_id: $graphId}) SET n += $props";
-        neo4jClient.query(cypher)
-                .bind(props.get("graph_id")).to("graphId")
-                .bind(props).to("props")
+        neo4jClient
+                .query(cypher)
+                .bind(props.get("graph_id"))
+                .to("graphId")
+                .bind(props)
+                .to("props")
                 .run();
     }
 
     // ==================== 关系添加 ====================
 
-    public void addRelationship(String sourceGraphId, String targetGraphId, String relType,
-            Map<String, Object> properties) {
+    public void addRelationship(
+            String sourceGraphId, String targetGraphId, String relType, Map<String, Object> properties) {
         validateRelType(relType);
 
         Map<String, Object> props = properties != null ? new HashMap<>(properties) : new HashMap<>();
@@ -69,10 +72,14 @@ public class PartyHistoryGraphService {
                 + "MERGE (a)-[r:" + relType + "]->(b) "
                 + "SET r += $props";
 
-        neo4jClient.query(cypher)
-                .bind(sourceGraphId).to("sourceId")
-                .bind(targetGraphId).to("targetId")
-                .bind(props).to("props")
+        neo4jClient
+                .query(cypher)
+                .bind(sourceGraphId)
+                .to("sourceId")
+                .bind(targetGraphId)
+                .to("targetId")
+                .bind(props)
+                .to("props")
                 .run();
     }
 
@@ -94,8 +101,8 @@ public class PartyHistoryGraphService {
 
     public void batchAddRelationships(List<Map<String, Object>> relationships) {
         // 按 relType 分组，每组用一次 UNWIND
-        Map<String, List<Map<String, Object>>> grouped = relationships.stream()
-                .collect(Collectors.groupingBy(r -> (String) r.get("relType")));
+        Map<String, List<Map<String, Object>>> grouped =
+                relationships.stream().collect(Collectors.groupingBy(r -> (String) r.get("relType")));
 
         for (var entry : grouped.entrySet()) {
             String relType = entry.getKey();
@@ -131,9 +138,12 @@ public class PartyHistoryGraphService {
         }
 
         String cypher = "MERGE (n:" + label + " {graph_id: $graphId}) SET n += $props";
-        neo4jClient.query(cypher)
-                .bind(props.get("graph_id")).to("graphId")
-                .bind(props).to("props")
+        neo4jClient
+                .query(cypher)
+                .bind(props.get("graph_id"))
+                .to("graphId")
+                .bind(props)
+                .to("props")
                 .run();
     }
 
@@ -146,15 +156,13 @@ public class PartyHistoryGraphService {
 
     private void validateRelType(String relType) {
         if (relType == null || !relType.matches(REL_TYPE_PATTERN)) {
-            throw new BusinessException(GraphErrorConstants.GRAPH_INVALID_RELATIONSHIP,
-                    "无效的关系类型: " + relType);
+            throw new BusinessException(GraphErrorConstants.GRAPH_INVALID_RELATIONSHIP, "无效的关系类型: " + relType);
         }
     }
 
     private void validateLabel(String label) {
         if (label == null || !label.matches(LABEL_PATTERN)) {
-            throw new BusinessException(GraphErrorConstants.GRAPH_INVALID_RELATIONSHIP,
-                    "无效的节点标签: " + label);
+            throw new BusinessException(GraphErrorConstants.GRAPH_INVALID_RELATIONSHIP, "无效的节点标签: " + label);
         }
     }
 }

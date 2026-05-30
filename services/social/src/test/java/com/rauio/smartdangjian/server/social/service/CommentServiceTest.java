@@ -99,7 +99,10 @@ class CommentServiceTest {
                 .build();
 
         when(sensitiveWordService.check("这条评论包含敏感词"))
-                .thenReturn(SensitiveWordMatchResult.builder().matched(true).words(List.of("敏感词")).build());
+                .thenReturn(SensitiveWordMatchResult.builder()
+                        .matched(true)
+                        .words(List.of("敏感词"))
+                        .build());
         doReturn(true).when(commentService).save(any(Comment.class));
 
         User user = User.builder().id(1L).username("testuser").realName("测试用户").build();
