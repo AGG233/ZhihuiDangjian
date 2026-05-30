@@ -32,9 +32,22 @@ COPY server server/
 
 RUN ./gradlew bootJar -x test -x compileTestJava -x processTestResources --no-daemon
 
+# Extract layered JAR
+RUN java -Djarmode=tools -jar server/build/libs/*.jar extract --layers --launcher --destination /extracted
+
+# ── Runtime ──
 FROM eclipse-temurin:21-jre-alpine
 RUN addgroup -S app && adduser -S -G app app
-COPY --from=builder /build/server/build/libs/*.jar app.jar
+
+COPY --from=builder /extracted/dependencies/ ./
+COPY --from=builder /extracted/spring-boot-loader/ ./
+COPY --from=builder /extracted/snapshot-dependencies/ ./
+COPY --from=builder /extracted/application/ ./
+
+LABEL com.rauio.zhihuidangjian=true
 EXPOSE 9000
+RUN apk add --no-cache curl
 USER app
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:9000/actuator/health || exit 1
+ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]
