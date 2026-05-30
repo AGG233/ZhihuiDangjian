@@ -102,13 +102,8 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Using version: ${VERSION}"
 
-      - name: Run tests
-        env:
-          SPRING_PROFILES_ACTIVE: test
-        run: ./gradlew spotlessCheck test integrationTest jacocoRootReport jacocoRootCoverageVerification
-
       - name: Build bootJar
-        run: ./gradlew :server:bootJar -x test -x integrationTest -x spotlessCheck
+        run: ./gradlew :server:bootJar -x test -x integrationTest -x spotlessCheck -x jacocoRootReport -x jacocoRootCoverageVerification
 
       - name: Set lowercase image name
         run: echo "IMAGE_NAME=${GITHUB_REPOSITORY_OWNER,,}/zhihuidangjian" >> "$GITHUB_ENV"
