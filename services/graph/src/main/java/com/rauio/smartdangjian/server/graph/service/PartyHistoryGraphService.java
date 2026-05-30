@@ -115,9 +115,8 @@ public class PartyHistoryGraphService {
             }
         }
         // 过滤 relType 为 null 的无效条目
-        List<Map<String, Object>> validRows = relationships.stream()
-                .filter(r -> r.get("relType") != null)
-                .toList();
+        List<Map<String, Object>> validRows =
+                relationships.stream().filter(r -> r.get("relType") != null).toList();
         if (validRows.size() < relationships.size()) {
             log.warn("跳过了 {} 个缺少 relType 的关系记录", relationships.size() - validRows.size());
         }
