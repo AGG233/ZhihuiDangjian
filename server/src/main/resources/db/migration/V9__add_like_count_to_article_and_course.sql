@@ -1,0 +1,6 @@
+-- V9: 为 article 和 course 表添加点赞数字段
+ALTER TABLE article
+    ADD COLUMN IF NOT EXISTS like_count INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '点赞数';
+
+ALTER TABLE course
+    ADD COLUMN IF NOT EXISTS like_count INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '点赞数';

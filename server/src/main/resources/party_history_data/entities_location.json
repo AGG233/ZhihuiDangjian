@@ -1,0 +1,104 @@
+[
+  {
+    "graph_id": "location-jinggangshan",
+    "name": "井冈山",
+    "locationType": "革命根据地",
+    "summary": "中国第一个农村革命根据地，被誉为中国革命的摇篮"
+  },
+  {
+    "graph_id": "location-yanan",
+    "name": "延安",
+    "locationType": "革命圣地",
+    "summary": "抗日战争和解放战争时期中共中央所在地，中国革命的圣地"
+  },
+  {
+    "graph_id": "location-zunyi",
+    "name": "遵义",
+    "locationType": "会议所在地",
+    "summary": "1935年遵义会议召开地，中国革命转折之城"
+  },
+  {
+    "graph_id": "location-xibaipo",
+    "name": "西柏坡",
+    "locationType": "革命根据地",
+    "summary": "解放战争后期中共中央所在地，七届二中全会召开地"
+  },
+  {
+    "graph_id": "location-ruijin",
+    "name": "瑞金",
+    "locationType": "红色首都",
+    "summary": "中华苏维埃共和国临时中央政府所在地，红军长征出发地"
+  },
+  {
+    "graph_id": "location-nanchang",
+    "name": "南昌",
+    "locationType": "起义地点",
+    "summary": "1927年南昌起义爆发地，人民军队的诞生地"
+  },
+  {
+    "graph_id": "location-gutian",
+    "name": "古田",
+    "locationType": "会议所在地",
+    "summary": "1929年古田会议召开地，思想建党政治建军原则确立地"
+  },
+  {
+    "graph_id": "location-shaoshan",
+    "name": "韶山",
+    "locationType": "政治家故乡",
+    "summary": "毛泽东同志的故乡，位于湖南省湘潭市"
+  },
+  {
+    "graph_id": "location-beijing",
+    "name": "北京",
+    "locationType": "首都",
+    "summary": "中华人民共和国首都，全国政治文化中心"
+  },
+  {
+    "graph_id": "location-shanghai",
+    "name": "上海",
+    "locationType": "经济中心",
+    "summary": "中国共产党诞生地，中国最大的经济中心"
+  },
+  {
+    "graph_id": "location-guangzhou",
+    "name": "广州",
+    "locationType": "起义地点",
+    "summary": "1927年广州起义爆发地，改革开放前沿城市"
+  },
+  {
+    "graph_id": "location-chongqing",
+    "name": "重庆",
+    "locationType": "历史城市",
+    "summary": "抗战时期国民政府陪都，1945年重庆谈判所在地"
+  },
+  {
+    "graph_id": "location-wuhan",
+    "name": "武汉",
+    "locationType": "历史城市",
+    "summary": "辛亥革命首义之地，八七会议召开地"
+  },
+  {
+    "graph_id": "location-nanjing",
+    "name": "南京",
+    "locationType": "历史城市",
+    "summary": "民国时期首都，解放战争中国民党统治覆灭的标志性城市"
+  },
+  {
+    "graph_id": "location-luochuan",
+    "name": "洛川",
+    "locationType": "会议所在地",
+    "summary": "1937年中共中央在陕北洛川召开政治局扩大会议，确立全面抗战路线"
+  },
+  {
+    "graph_id": "location-guangan",
+    "name": "广安",
+    "locationType": "政治家故乡",
+    "summary": "邓小平同志的故乡，位于四川省东部"
+  },
+  {
+    "graph_id": "location-shenzhen",
+    "name": "深圳",
+    "locationType": "经济特区",
+    "summary": "中国第一个经济特区，改革开放的试验田和窗口"
+  }
+]

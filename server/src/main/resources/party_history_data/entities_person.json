@@ -1,0 +1,262 @@
+[
+  {
+    "graph_id": "person-maozedong",
+    "name": "毛泽东",
+    "aliases": ["毛主席", "润之"],
+    "birthYear": 1893,
+    "deathYear": 1976,
+    "birthplace": "湖南湘潭",
+    "role": "革命领袖",
+    "summary": "中国共产党创始人之一，中华人民共和国开国领袖，伟大的无产阶级革命家、战略家和理论家"
+  },
+  {
+    "graph_id": "person-dengxiaoping",
+    "name": "邓小平",
+    "aliases": [],
+    "birthYear": 1904,
+    "deathYear": 1997,
+    "birthplace": "四川广安",
+    "role": "改革开放总设计师",
+    "summary": "中国改革开放和现代化建设的总设计师，创立了邓小平理论"
+  },
+  {
+    "graph_id": "person-zhouenlai",
+    "name": "周恩来",
+    "aliases": ["周总理"],
+    "birthYear": 1898,
+    "deathYear": 1976,
+    "birthplace": "江苏淮安",
+    "role": "国务院总理",
+    "summary": "中国共产党和中华人民共和国的主要领导人，中国人民解放军主要创建人之一"
+  },
+  {
+    "graph_id": "person-liushaoqi",
+    "name": "刘少奇",
+    "aliases": [],
+    "birthYear": 1898,
+    "deathYear": 1969,
+    "birthplace": "湖南宁乡",
+    "role": "国家主席",
+    "summary": "中国共产党和中华人民共和国的主要领导人之一，著有《论共产党员的修养》"
+  },
+  {
+    "graph_id": "person-zhuude",
+    "name": "朱德",
+    "aliases": ["朱总司令"],
+    "birthYear": 1886,
+    "deathYear": 1976,
+    "birthplace": "四川仪陇",
+    "role": "元帅",
+    "summary": "中国人民解放军的主要创建人和领导人，中华人民共和国元帅，被誉为红军之父"
+  },
+  {
+    "graph_id": "person-chenyun",
+    "name": "陈云",
+    "aliases": [],
+    "birthYear": 1905,
+    "deathYear": 1995,
+    "birthplace": "上海青浦",
+    "role": "经济工作领导人",
+    "summary": "中国社会主义经济建设的开创者和奠基人之一，长期主持全国财政经济工作"
+  },
+  {
+    "graph_id": "person-huyaobang",
+    "name": "胡耀邦",
+    "aliases": [],
+    "birthYear": 1915,
+    "deathYear": 1989,
+    "birthplace": "湖南浏阳",
+    "role": "中共中央总书记",
+    "summary": "曾任中共中央主席和中共中央总书记，推动拨乱反正和平反冤假错案"
+  },
+  {
+    "graph_id": "person-jiangzemin",
+    "name": "江泽民",
+    "aliases": [],
+    "birthYear": 1926,
+    "deathYear": 2022,
+    "birthplace": "江苏扬州",
+    "role": "中共中央总书记、国家主席",
+    "summary": "提出三个代表重要思想，领导中国深化改革扩大开放，成功渡过亚洲金融危机"
+  },
+  {
+    "graph_id": "person-hujintao",
+    "name": "胡锦涛",
+    "aliases": [],
+    "birthYear": 1942,
+    "deathYear": null,
+    "birthplace": "安徽绩溪",
+    "role": "中共中央总书记、国家主席",
+    "summary": "提出科学发展观，强调以人为本和全面协调可持续发展"
+  },
+  {
+    "graph_id": "person-xijinping",
+    "name": "习近平",
+    "aliases": [],
+    "birthYear": 1953,
+    "deathYear": null,
+    "birthplace": "陕西富平",
+    "role": "中共中央总书记、国家主席、中央军委主席",
+    "summary": "提出习近平新时代中国特色社会主义思想，推动全面从严治党，开创中国特色社会主义新时代"
+  },
+  {
+    "graph_id": "person-lidazhao",
+    "name": "李大钊",
+    "aliases": [],
+    "birthYear": 1889,
+    "deathYear": 1927,
+    "birthplace": "河北乐亭",
+    "role": "马克思主义传播者",
+    "summary": "中国最早的马克思主义者，中国共产党的主要创始人之一，1927年被军阀张作霖杀害"
+  },
+  {
+    "graph_id": "person-chenduxiu",
+    "name": "陈独秀",
+    "aliases": [],
+    "birthYear": 1879,
+    "deathYear": 1942,
+    "birthplace": "安徽怀宁",
+    "role": "新文化运动领袖",
+    "summary": "中国共产党的主要创建人之一，首任中央局书记，新文化运动的发起者"
+  },
+  {
+    "graph_id": "person-quqiubai",
+    "name": "瞿秋白",
+    "aliases": [],
+    "birthYear": 1899,
+    "deathYear": 1935,
+    "birthplace": "江苏常州",
+    "role": "早期领导人",
+    "summary": "中国共产党早期主要领导人之一，曾主持八七会议，1935年被国民党杀害"
+  },
+  {
+    "graph_id": "person-wangming",
+    "name": "王明",
+    "aliases": ["陈绍禹"],
+    "birthYear": 1904,
+    "deathYear": 1974,
+    "birthplace": "安徽金寨",
+    "role": "早期领导人",
+    "summary": "曾在土地革命战争时期推行左倾错误路线，对革命造成严重损失"
+  },
+  {
+    "graph_id": "person-bogu",
+    "name": "博古",
+    "aliases": ["秦邦宪"],
+    "birthYear": 1907,
+    "deathYear": 1946,
+    "birthplace": "江苏无锡",
+    "role": "早期领导人",
+    "summary": "曾担任中共临时中央总负责，后在遵义会议上被解除领导职务"
+  },
+  {
+    "graph_id": "person-zhangwentian",
+    "name": "张闻天",
+    "aliases": ["洛甫"],
+    "birthYear": 1900,
+    "deathYear": 1976,
+    "birthplace": "上海南汇",
+    "role": "早期领导人",
+    "summary": "遵义会议后在中共中央负总责，为确立毛泽东领导地位做出重要贡献"
+  },
+  {
+    "graph_id": "person-renbishi",
+    "name": "任弼时",
+    "aliases": [],
+    "birthYear": 1904,
+    "deathYear": 1950,
+    "birthplace": "湖南湘阴",
+    "role": "党务工作者",
+    "summary": "中共第一代领导集体的重要成员，延安时期任中共中央秘书长，被誉为党的骆驼"
+  },
+  {
+    "graph_id": "person-pengdehuai",
+    "name": "彭德怀",
+    "aliases": ["彭总"],
+    "birthYear": 1898,
+    "deathYear": 1974,
+    "birthplace": "湖南湘潭",
+    "role": "元帅",
+    "summary": "中华人民共和国元帅，指挥百团大战和抗美援朝战争，功勋卓著"
+  },
+  {
+    "graph_id": "person-liubocheng",
+    "name": "刘伯承",
+    "aliases": ["军神"],
+    "birthYear": 1892,
+    "deathYear": 1986,
+    "birthplace": "重庆开州",
+    "role": "元帅",
+    "summary": "中华人民共和国元帅，中国人民解放军的缔造者之一，被誉为军神"
+  },
+  {
+    "graph_id": "person-helong",
+    "name": "贺龙",
+    "aliases": [],
+    "birthYear": 1896,
+    "deathYear": 1969,
+    "birthplace": "湖南桑植",
+    "role": "元帅",
+    "summary": "中华人民共和国元帅，南昌起义时任总指挥，参与创建湘鄂西革命根据地"
+  },
+  {
+    "graph_id": "person-chenyi",
+    "name": "陈毅",
+    "aliases": ["陈老总"],
+    "birthYear": 1901,
+    "deathYear": 1972,
+    "birthplace": "四川乐至",
+    "role": "元帅",
+    "summary": "中华人民共和国元帅，外交家，曾任国务院副总理兼外交部长"
+  },
+  {
+    "graph_id": "person-luoronghuan",
+    "name": "罗荣桓",
+    "aliases": [],
+    "birthYear": 1902,
+    "deathYear": 1963,
+    "birthplace": "湖南衡山",
+    "role": "元帅",
+    "summary": "中华人民共和国元帅，军队政治工作杰出的领导者"
+  },
+  {
+    "graph_id": "person-xuxiangqian",
+    "name": "徐向前",
+    "aliases": [],
+    "birthYear": 1901,
+    "deathYear": 1990,
+    "birthplace": "山西五台",
+    "role": "元帅",
+    "summary": "中华人民共和国元帅，黄埔一期毕业，红四方面军总指挥"
+  },
+  {
+    "graph_id": "person-nierongzhen",
+    "name": "聂荣臻",
+    "aliases": [],
+    "birthYear": 1899,
+    "deathYear": 1992,
+    "birthplace": "重庆江津",
+    "role": "元帅",
+    "summary": "中华人民共和国元帅，两弹一星事业的主要组织者和领导者"
+  },
+  {
+    "graph_id": "person-yejianying",
+    "name": "叶剑英",
+    "aliases": [],
+    "birthYear": 1897,
+    "deathYear": 1986,
+    "birthplace": "广东梅县",
+    "role": "元帅",
+    "summary": "中华人民共和国元帅，在粉碎四人帮的关键时刻起了决定性作用"
+  },
+  {
+    "graph_id": "person-linbiao",
+    "name": "林彪",
+    "aliases": [],
+    "birthYear": 1907,
+    "deathYear": 1971,
+    "birthplace": "湖北黄冈",
+    "role": "元帅",
+    "summary": "中华人民共和国元帅，曾任国防部长，在辽沈战役和平津战役中立下战功"
+  }
+]

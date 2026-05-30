@@ -1,0 +1,254 @@
+[
+  {
+    "graph_id": "event-nanchangqiyi",
+    "name": "南昌起义",
+    "startDate": "1927-08-01",
+    "endDate": null,
+    "eventType": "起义",
+    "summary": "中国共产党领导的第一次武装起义，打响了武装反抗国民党反动派的第一枪",
+    "significance": "标志着中国共产党独立领导革命战争、创建人民军队和武装夺取政权的开始"
+  },
+  {
+    "graph_id": "event-qiushouqiyi",
+    "name": "秋收起义",
+    "startDate": "1927-09-09",
+    "endDate": null,
+    "eventType": "起义",
+    "summary": "毛泽东在湘赣边界领导的农民武装起义，创建了井冈山革命根据地",
+    "significance": "开创了农村包围城市、武装夺取政权的正确道路"
+  },
+  {
+    "graph_id": "event-guangzhouqiyi",
+    "name": "广州起义",
+    "startDate": "1927-12-11",
+    "endDate": null,
+    "eventType": "起义",
+    "summary": "张太雷、叶挺等领导的广州工农武装起义，建立了广州苏维埃政府",
+    "significance": "与南昌起义、秋收起义并称为三大起义"
+  },
+  {
+    "graph_id": "event-jinggangshanhuishi",
+    "name": "井冈山会师",
+    "startDate": "1928-04-28",
+    "endDate": null,
+    "eventType": "会师",
+    "summary": "朱德、陈毅率领的南昌起义余部和湘南起义农军与毛泽东领导的秋收起义部队在井冈山会师",
+    "significance": "壮大了井冈山革命根据地的武装力量，成立红四军"
+  },
+  {
+    "graph_id": "event-gutianhuiyi",
+    "name": "古田会议",
+    "startDate": "1929-12",
+    "endDate": null,
+    "eventType": "会议",
+    "summary": "红四军第九次党的代表大会在福建上杭古田召开，确立了思想建党、政治建军原则",
+    "significance": "解决了长期处于农村游击战争环境中如何建设新型人民军队的根本问题"
+  },
+  {
+    "graph_id": "event-zunyihuiyi",
+    "name": "遵义会议",
+    "startDate": "1935-01",
+    "endDate": null,
+    "eventType": "会议",
+    "summary": "中共中央在贵州遵义召开的政治局扩大会议，结束了左倾错误路线在中央的统治",
+    "significance": "确立了毛泽东在红军和中共中央的领导地位，挽救了党、挽救了红军、挽救了中国革命"
+  },
+  {
+    "graph_id": "event-changzheng",
+    "name": "长征",
+    "startDate": "1934-10",
+    "endDate": "1936-10",
+    "eventType": "战略转移",
+    "summary": "红军主力从江西瑞金出发，历经二万五千里，途经十一个省，最终到达陕北",
+    "significance": "锻炼了党和军队的骨干，为抗日战争和中国革命的最后胜利奠定了基础"
+  },
+  {
+    "graph_id": "event-xianshibian",
+    "name": "西安事变",
+    "startDate": "1936-12-12",
+    "endDate": null,
+    "eventType": "事件",
+    "summary": "张学良、杨虎城在西安扣留蒋介石，逼其停止内战一致抗日",
+    "significance": "促成国共第二次合作，推动抗日民族统一战线的形成"
+  },
+  {
+    "graph_id": "event-qiqishibian",
+    "name": "七七事变",
+    "startDate": "1937-07-07",
+    "endDate": null,
+    "eventType": "事件",
+    "summary": "日军在卢沟桥附近挑衅引发中日全面战争",
+    "significance": "标志着日本帝国主义全面侵华战争的开始，也是中国全民族抗战的起点"
+  },
+  {
+    "graph_id": "event-luochuanhuiyi",
+    "name": "洛川会议",
+    "startDate": "1937-08",
+    "endDate": null,
+    "eventType": "会议",
+    "summary": "中共中央在陕北洛川召开的政治局扩大会议，决定实行全面抗战路线",
+    "significance": "通过《抗日救国十大纲领》，确立了独立自主的游击战争方针"
+  },
+  {
+    "graph_id": "event-baituandazhan",
+    "name": "百团大战",
+    "startDate": "1940-08",
+    "endDate": "1940-12",
+    "eventType": "战役",
+    "summary": "八路军在华北地区对日军发动的大规模破袭战，参战兵力达105个团",
+    "significance": "中国抗日战争中规模最大、持续时间最长的正面进攻战役"
+  },
+  {
+    "graph_id": "event-yananzhengfeng",
+    "name": "延安整风",
+    "startDate": "1941-05",
+    "endDate": "1945-04",
+    "eventType": "运动",
+    "summary": "中国共产党在全党范围内开展的马克思主义思想教育运动",
+    "significance": "使全党达到空前的团结和统一，为夺取抗日战争和解放战争的胜利奠定了思想基础"
+  },
+  {
+    "graph_id": "event-zhonggongqida",
+    "name": "中共七大",
+    "startDate": "1945-04",
+    "endDate": "1945-06",
+    "eventType": "会议",
+    "summary": "在延安召开，确立毛泽东思想为党的指导思想并写入党章",
+    "significance": "总结了历史经验，为中国革命的胜利指明了方向"
+  },
+  {
+    "graph_id": "event-chongqingtanpan",
+    "name": "重庆谈判",
+    "startDate": "1945-08",
+    "endDate": "1945-10",
+    "eventType": "谈判",
+    "summary": "毛泽东亲赴重庆与国民党进行和平谈判，签订《双十协定》",
+    "significance": "揭露了国民党的内战阴谋，赢得了政治上的主动权"
+  },
+  {
+    "graph_id": "event-sandazhanyi",
+    "name": "三大战役",
+    "startDate": "1948-09",
+    "endDate": "1949-01",
+    "eventType": "战役",
+    "summary": "辽沈战役、淮海战役、平津战役的战略决战，歼灭国民党军队154万余人",
+    "significance": "基本上消灭了国民党军队主力，为解放全中国奠定了军事基础"
+  },
+  {
+    "graph_id": "event-qijieerzhongquanhui",
+    "name": "七届二中全会",
+    "startDate": "1949-03",
+    "endDate": null,
+    "eventType": "会议",
+    "summary": "在西柏坡召开，决定党的工作重心从乡村转移到城市",
+    "significance": "毛泽东提出两个务必，为建立新中国做了政治和思想准备"
+  },
+  {
+    "graph_id": "event-kaiguodadian",
+    "name": "开国大典",
+    "startDate": "1949-10-01",
+    "endDate": null,
+    "eventType": "典礼",
+    "summary": "毛泽东在天安门城楼宣告中华人民共和国中央人民政府成立",
+    "significance": "标志着新民主主义革命取得伟大胜利，中国人民从此站起来了"
+  },
+  {
+    "graph_id": "event-kangmeiyuanchao",
+    "name": "抗美援朝",
+    "startDate": "1950-10",
+    "endDate": "1953-07",
+    "eventType": "战争",
+    "summary": "中国人民志愿军赴朝抗击美国侵略，保家卫国",
+    "significance": "打破了美帝国主义不可战胜的神话，保卫了新中国的安全"
+  },
+  {
+    "graph_id": "event-sandagaizao",
+    "name": "三大改造",
+    "startDate": "1953",
+    "endDate": "1956",
+    "eventType": "运动",
+    "summary": "对农业、手工业和资本主义工商业的社会主义改造",
+    "significance": "基本完成生产资料私有制的社会主义改造，确立了社会主义基本制度"
+  },
+  {
+    "graph_id": "event-bada",
+    "name": "中共八大",
+    "startDate": "1956-09",
+    "endDate": null,
+    "eventType": "会议",
+    "summary": "新中国成立后的首次全国代表大会，正确分析了社会主要矛盾的变化",
+    "significance": "制定了社会主义建设时期的基本方针，是探索社会主义建设道路的良好开端"
+  },
+  {
+    "graph_id": "event-shiyijiesanzhongquanhui",
+    "name": "中共十一届三中全会",
+    "startDate": "1978-12",
+    "endDate": null,
+    "eventType": "会议",
+    "summary": "纠正了文化大革命及其以前的左倾错误，确立了解放思想、实事求是的思想路线",
+    "significance": "实现了建国以来党的历史上具有深远意义的伟大转折，开启了改革开放新时期"
+  },
+  {
+    "graph_id": "event-gaigekaifang",
+    "name": "改革开放",
+    "startDate": "1978-12",
+    "endDate": null,
+    "eventType": "政策",
+    "summary": "中国共产党领导下的对内改革、对外开放的历史性决策与实践",
+    "significance": "使中国经济持续快速发展，人民生活水平显著提高，综合国力不断增强"
+  },
+  {
+    "graph_id": "event-nanfangtanhua",
+    "name": "南方谈话",
+    "startDate": "1992-01",
+    "endDate": "1992-02",
+    "eventType": "讲话",
+    "summary": "邓小平在武昌、深圳、珠海、上海等地发表的重要谈话",
+    "significance": "深刻回答了长期束缚人们思想的许多重大认识问题，推动了改革开放的深入发展"
+  },
+  {
+    "graph_id": "event-xiangganghuigui",
+    "name": "香港回归",
+    "startDate": "1997-07-01",
+    "endDate": null,
+    "eventType": "回归",
+    "summary": "中华人民共和国政府恢复对香港行使主权",
+    "significance": "标志着英国对香港一个半世纪的殖民统治结束，一国两制方针成功实践"
+  },
+  {
+    "graph_id": "event-aomenhuigui",
+    "name": "澳门回归",
+    "startDate": "1999-12-20",
+    "endDate": null,
+    "eventType": "回归",
+    "summary": "中华人民共和国政府恢复对澳门行使主权",
+    "significance": "标志着葡萄牙对澳门四百多年的殖民统治结束，一国两制实践取得重大成果"
+  },
+  {
+    "graph_id": "event-shibada",
+    "name": "中共十八大",
+    "startDate": "2012-11",
+    "endDate": null,
+    "eventType": "会议",
+    "summary": "选举产生了以习近平为总书记的新一届中央领导集体",
+    "significance": "开启了中国特色社会主义新时代，确立了两个一百年奋斗目标"
+  },
+  {
+    "graph_id": "event-shijiuda",
+    "name": "中共十九大",
+    "startDate": "2017-10",
+    "endDate": null,
+    "eventType": "会议",
+    "summary": "确立习近平新时代中国特色社会主义思想为党的指导思想并写入党章",
+    "significance": "明确了新时代坚持和发展中国特色社会主义的总目标、总任务和战略部署"
+  },
+  {
+    "graph_id": "event-ershida",
+    "name": "中共二十大",
+    "startDate": "2022-10",
+    "endDate": null,
+    "eventType": "会议",
+    "summary": "全面总结了过去五年的工作和新时代十年的伟大变革",
+    "significance": "明确了以中国式现代化全面推进中华民族伟大复兴的使命任务"
+  }
+]
