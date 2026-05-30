@@ -169,6 +169,12 @@ jobs:
     needs: [ release ]
     if: github.ref_type == 'tag'
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync compose file
+        working-directory: /www/server/panel/data/compose/test
+        run: cp -f ${{ github.workspace }}/docker-compose.yml .
+
       - name: Deploy via docker-compose
         working-directory: /www/server/panel/data/compose/test
         run: |
