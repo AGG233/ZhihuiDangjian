@@ -171,6 +171,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Replace image registry with NJU mirror
+        run: sed -i 's|ghcr.io|ghcr.nju.edu.cn|g' docker-compose.yml
+
       - name: Sync compose file
         working-directory: /www/server/panel/data/compose/test
         run: cp -f ${{ github.workspace }}/docker-compose.yml .
