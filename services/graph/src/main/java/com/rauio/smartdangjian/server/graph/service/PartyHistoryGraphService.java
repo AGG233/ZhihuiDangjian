@@ -13,8 +13,10 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.graph.constants.GraphErrorConstants;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class PartyHistoryGraphService {
 
@@ -100,9 +102,28 @@ public class PartyHistoryGraphService {
     }
 
     public void batchAddRelationships(List<Map<String, Object>> relationships) {
+        // 标准化 JSON 键名: source → sourceId, target → targetId, type → relType
+        for (Map<String, Object> rel : relationships) {
+            if (rel.containsKey("source")) {
+                rel.putIfAbsent("sourceId", rel.get("source"));
+            }
+            if (rel.containsKey("target")) {
+                rel.putIfAbsent("targetId", rel.get("target"));
+            }
+            if (rel.containsKey("type")) {
+                rel.putIfAbsent("relType", rel.get("type"));
+            }
+        }
+        // 过滤 relType 为 null 的无效条目
+        List<Map<String, Object>> validRows = relationships.stream()
+                .filter(r -> r.get("relType") != null)
+                .toList();
+        if (validRows.size() < relationships.size()) {
+            log.warn("跳过了 {} 个缺少 relType 的关系记录", relationships.size() - validRows.size());
+        }
         // 按 relType 分组，每组用一次 UNWIND
         Map<String, List<Map<String, Object>>> grouped =
-                relationships.stream().collect(Collectors.groupingBy(r -> (String) r.get("relType")));
+                validRows.stream().collect(Collectors.groupingBy(r -> (String) r.get("relType")));
 
         for (var entry : grouped.entrySet()) {
             String relType = entry.getKey();
