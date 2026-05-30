@@ -20,15 +20,15 @@ class RedisConfigTest {
     private final RedisConfig redisConfig = new RedisConfig();
 
     @Test
-    @DisplayName("redisObjectMapper 不包含 @class 多态类型信息（已禁用 activateDefaultTyping 防 RCE）")
-    void shouldNotIncludeTypeInfo() throws JsonProcessingException {
+    @DisplayName("redisObjectMapper 包含 @class 多态类型信息（启用 activateDefaultTyping 修复缓存反序列化 ClassCastException）")
+    void shouldIncludeTypeInfoForPolymorphicDeserialization() throws JsonProcessingException {
         ObjectMapper mapper = redisConfig.createObjectMapper();
 
         Map<String, Object> data = new HashMap<>();
         data.put("id", "10001");
 
         String json = mapper.writeValueAsString(data);
-        assertThat(json).doesNotContain("java.util.HashMap");
+        assertThat(json).contains("java.util.HashMap");
     }
 
     @Test

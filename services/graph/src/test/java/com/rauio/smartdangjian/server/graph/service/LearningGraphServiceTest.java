@@ -44,7 +44,7 @@ import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class KnowledgeGraphServiceTest {
+class LearningGraphServiceTest {
 
     @Mock
     private Neo4jClient neo4jClient;
@@ -59,7 +59,7 @@ class KnowledgeGraphServiceTest {
     private ChapterService chapterService;
 
     @InjectMocks
-    private KnowledgeGraphService knowledgeGraphService;
+    private LearningGraphService learningGraphService;
 
     private static final Long USER_ID = 1L;
     private static final Long USER_ID_NO_REAL_NAME = 2L;
@@ -240,7 +240,7 @@ class KnowledgeGraphServiceTest {
 
             Neo4jClient.UnboundRunnableSpec spec = setupQueryChain();
 
-            knowledgeGraphService.upsertLearningGraph(USER_ID, CHAPTER_ID);
+            learningGraphService.upsertLearningGraph(USER_ID, CHAPTER_ID);
 
             verify(neo4jClient).query(anyString());
             verify(spec, atLeast(5)).bind(any());
@@ -254,7 +254,7 @@ class KnowledgeGraphServiceTest {
             List<Map<String, Object>> rows = List.of(fullRow("1", "张三", "1", "测试课程", "1", "第一章"));
             when(fetchSpec.all()).thenReturn((Collection) rows);
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getUserGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getUserGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(3);
@@ -287,7 +287,7 @@ class KnowledgeGraphServiceTest {
             List<Map<String, Object>> rows = List.of(row);
             when(fetchSpec.all()).thenReturn((Collection) rows);
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getCourseGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getCourseGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(3);
@@ -316,7 +316,7 @@ class KnowledgeGraphServiceTest {
             row.put("r3", mockRelationship("LEARNED_CHAPTER"));
             when(fetchSpec.all()).thenReturn((Collection) List.of(row));
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getUserGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getUserGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(3);
@@ -349,7 +349,7 @@ class KnowledgeGraphServiceTest {
 
             Neo4jClient.UnboundRunnableSpec spec = setupQueryChain();
 
-            knowledgeGraphService.upsertLearningGraph(USER_ID_NO_REAL_NAME, CHAPTER_ID);
+            learningGraphService.upsertLearningGraph(USER_ID_NO_REAL_NAME, CHAPTER_ID);
 
             verify(spec).run();
         }
@@ -366,7 +366,7 @@ class KnowledgeGraphServiceTest {
         void upsertLearningGraphUserNotFound() {
             when(userService.getById(USER_ID)).thenReturn(null);
 
-            assertThatThrownBy(() -> knowledgeGraphService.upsertLearningGraph(USER_ID, CHAPTER_ID))
+            assertThatThrownBy(() -> learningGraphService.upsertLearningGraph(USER_ID, CHAPTER_ID))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("用户不存在");
 
@@ -380,7 +380,7 @@ class KnowledgeGraphServiceTest {
                     .thenReturn(User.builder().id(USER_ID).username("test").build());
             when(chapterService.getById(CHAPTER_ID)).thenReturn(null);
 
-            assertThatThrownBy(() -> knowledgeGraphService.upsertLearningGraph(USER_ID, CHAPTER_ID))
+            assertThatThrownBy(() -> learningGraphService.upsertLearningGraph(USER_ID, CHAPTER_ID))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("章节不存在");
 
@@ -397,7 +397,7 @@ class KnowledgeGraphServiceTest {
                             Chapter.builder().id(CHAPTER_ID).courseId(COURSE_ID).build());
             when(courseService.getById(COURSE_ID)).thenReturn(null);
 
-            assertThatThrownBy(() -> knowledgeGraphService.upsertLearningGraph(USER_ID, CHAPTER_ID))
+            assertThatThrownBy(() -> learningGraphService.upsertLearningGraph(USER_ID, CHAPTER_ID))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("课程不存在");
 
@@ -417,7 +417,7 @@ class KnowledgeGraphServiceTest {
             Neo4jClient.RecordFetchSpec<Map<String, Object>> fetchSpec = setupFetchChain();
             when(fetchSpec.all()).thenReturn(List.of());
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getUserGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getUserGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).isEmpty();
@@ -430,7 +430,7 @@ class KnowledgeGraphServiceTest {
             Neo4jClient.RecordFetchSpec<Map<String, Object>> fetchSpec = setupFetchChain();
             when(fetchSpec.all()).thenReturn(List.of());
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getCourseGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getCourseGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).isEmpty();
@@ -444,7 +444,7 @@ class KnowledgeGraphServiceTest {
             List<Map<String, Object>> rows = List.of(userOnlyRow("1", "张三"));
             when(fetchSpec.all()).thenReturn((Collection) rows);
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getUserGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getUserGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(1);
@@ -465,7 +465,7 @@ class KnowledgeGraphServiceTest {
             Map<String, Object> row2 = fullRow("1", "张三", "1", "测试课程", "2", "第二章");
             when(fetchSpec.all()).thenReturn((Collection) List.of(row1, row2));
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getUserGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getUserGraph("1");
 
             assertThat(result).isNotNull();
             // 3 distinct nodes: User:1, Course:1, Chapter:1, Chapter:2
@@ -499,7 +499,7 @@ class KnowledgeGraphServiceTest {
             row.put("r3", null);
             when(fetchSpec.all()).thenReturn((Collection) List.of(row));
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getUserGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getUserGraph("1");
 
             assertThat(result).isNotNull();
             // Key should be "User:100" (internal id fallback)
@@ -533,7 +533,7 @@ class KnowledgeGraphServiceTest {
             row.put("r3", null);
             when(fetchSpec.all()).thenReturn((Collection) List.of(row));
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getUserGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getUserGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(1);
@@ -563,7 +563,7 @@ class KnowledgeGraphServiceTest {
             row.put("r3", null);
             when(fetchSpec.all()).thenReturn((Collection) List.of(row));
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getUserGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getUserGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(1);
@@ -588,7 +588,7 @@ class KnowledgeGraphServiceTest {
             row.put("r3", mockRelationship("LEARNED_CHAPTER"));
             when(fetchSpec.all()).thenReturn((Collection) List.of(row));
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getUserGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getUserGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(3);
@@ -618,7 +618,7 @@ class KnowledgeGraphServiceTest {
             row.put("r3", null);
             when(fetchSpec.all()).thenReturn((Collection) List.of(row));
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getUserGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getUserGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(1);
@@ -641,7 +641,7 @@ class KnowledgeGraphServiceTest {
             emptyRow.put("r3", null);
             when(fetchSpec.all()).thenReturn((Collection) List.of(emptyRow));
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getUserGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getUserGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).isEmpty();
@@ -676,7 +676,7 @@ class KnowledgeGraphServiceTest {
             row.put("r3", null);
             lenient().when(fetchSpec.all()).thenReturn((Collection) List.of(row));
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getCourseGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getCourseGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(1);
@@ -712,7 +712,7 @@ class KnowledgeGraphServiceTest {
             row.put("r3", null);
             lenient().when(fetchSpec.all()).thenReturn((Collection) List.of(row));
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getCourseGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getCourseGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(1);
@@ -736,7 +736,7 @@ class KnowledgeGraphServiceTest {
             row.put("r3", mockRelationship("LEARNED_CHAPTER"));
             when(fetchSpec.all()).thenReturn((Collection) List.of(row));
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getUserGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getUserGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(3);
@@ -760,7 +760,7 @@ class KnowledgeGraphServiceTest {
             row.put("r3", mockRelationship("LEARNED_CHAPTER"));
             when(fetchSpec.all()).thenReturn((Collection) List.of(row));
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getUserGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getUserGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(3);
@@ -784,7 +784,7 @@ class KnowledgeGraphServiceTest {
             row.put("r3", "still-not-a-rel");
             when(fetchSpec.all()).thenReturn((Collection) List.of(row));
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getUserGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getUserGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(3);
@@ -804,7 +804,7 @@ class KnowledgeGraphServiceTest {
             row.put("r3", mockRelationship("LEARNED_CHAPTER"));
             when(fetchSpec.all()).thenReturn((Collection) List.of(row));
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getUserGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getUserGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(3);
@@ -837,7 +837,7 @@ class KnowledgeGraphServiceTest {
             row.put("r3", null);
             when(fetchSpec.all()).thenReturn((Collection) List.of(row));
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getUserGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getUserGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(1);
@@ -870,7 +870,7 @@ class KnowledgeGraphServiceTest {
             row.put("r3", null);
             when(fetchSpec.all()).thenReturn((Collection) List.of(row));
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getUserGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getUserGraph("1");
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(1);
@@ -915,7 +915,7 @@ class KnowledgeGraphServiceTest {
 
             when(fetchSpec.all()).thenReturn((Collection) List.of(row1, row2, row3));
 
-            KnowledgeGraphResponse result = knowledgeGraphService.getUserGraph("1");
+            KnowledgeGraphResponse result = learningGraphService.getUserGraph("1");
 
             assertThat(result).isNotNull();
             // row1: ch adds Chapter:1 node

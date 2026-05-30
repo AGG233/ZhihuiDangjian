@@ -14,4 +14,6 @@ public class RedisConstants {
     public static final String AI_PROMPT_SEQ_KEY = "ai:prompt:seq";
 
     public static final String USER_PROFILE_CACHE_PREFIX = "user:profile:";
+    public static final String LEARNING_HOTSPOT_CACHE_PREFIX = "learning:hotspot:";
+    public static final String AI_FAQ_CACHE_PREFIX = "ai:faq:";
 }

@@ -9,4 +9,5 @@ public class AiErrorConstants {
     public static final int SKILL_NOT_FOUND = 8002;
     public static final int SKILL_NOT_IN_CACHE = 8003;
     public static final int PROMPT_NOT_FOUND = 8004;
+    public static final int FAQ_NOT_FOUND = 8005;
 }

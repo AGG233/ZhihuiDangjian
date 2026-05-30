@@ -23,8 +23,7 @@ mapstruct = "1.6.3"
 
 tika = "3.2.2"
 hutool = "5.8.40"
-
-
+sensitive-word = "0.29.5"
 
 springdoc = "2.8.13"
 
@@ -75,7 +74,7 @@ hutool-all = { module = "cn.hutool:hutool-all", version.ref = "hutool" }
 mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
 mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
 tika-core = { module = "org.apache.tika:tika-core", version.ref = "tika" }
-
+sensitive-word = { module = "com.github.houbb:sensitive-word", version.ref = "sensitive-word" }
 
 # File Storage
 qcloud-cos = { module = "com.qcloud:cos_api", version.ref = "qcloud-cos" }

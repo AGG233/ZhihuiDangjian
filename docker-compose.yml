@@ -1,0 +1,91 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: zhihuidangjian-redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+
+  neo4j:
+    image: neo4j:5-community
+    container_name: zhihuidangjian-neo4j
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "${NEO4J_USERNAME:-neo4j}", "-p", "${NEO4J_PASSWORD:-password}", "RETURN 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
+    ports:
+      - "127.0.0.1:7474:7474"
+      - "127.0.0.1:7687:7687"
+    environment:
+      NEO4J_AUTH: ${NEO4J_USERNAME:-neo4j}/${NEO4J_PASSWORD:-password}
+    volumes:
+      - neo4j-data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "2.0"
+
+  app:
+    image: ghcr.io/agg233/zhihuidangjian:${APP_VERSION:-latest}
+    container_name: zhihuidangjian
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT:-9000}:9000"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_DATABASE: ${REDIS_DATABASE:-0}
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USERNAME: ${NEO4J_USERNAME:-neo4j}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD:-password}
+      AI_KEY: ${AI_KEY}
+      AI_MODEL: ${AI_MODEL:-deepseek-chat}
+      COS_SECRET_ID: ${COS_SECRET_ID}
+      COS_SECRET_KEY: ${COS_SECRET_KEY}
+      COS_REGION: ${COS_REGION:-ap-guangzhou}
+      COS_BUCKET: ${COS_BUCKET}
+      COS_LINK: ${COS_LINK}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+    volumes:
+      - ./logs:/app/logs
+    labels:
+      - "com.rauio.zhihuidangjian=true"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "2.0"
+
+volumes:
+  redis-data:
+  neo4j-data:

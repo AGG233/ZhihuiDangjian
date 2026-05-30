@@ -60,4 +60,8 @@ public class Course {
 
     @Schema(description = "更新时间")
     private LocalDateTime updatedAt;
+
+    @TableField("like_count")
+    @Schema(description = "点赞数")
+    private Integer likeCount;
 }

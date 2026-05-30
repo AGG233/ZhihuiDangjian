@@ -22,6 +22,7 @@ dependencies {
     api(libs.hutool.all)
     api(libs.redisson)
     api(libs.springdoc.openapi.starter.webmvc.ui)
+    api(libs.sensitive.word)
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
 

@@ -1,0 +1,110 @@
+[
+  {
+    "graph_id": "document-shijianlun",
+    "name": "实践论",
+    "author": "毛泽东",
+    "year": 1937,
+    "documentType": "哲学著作",
+    "summary": "论述认识和实践辩证关系的重要哲学著作，强调实践是认识的基础和检验真理的标准",
+    "keywords": ["实践", "认识论", "辩证唯物主义", "真理"]
+  },
+  {
+    "graph_id": "document-maodunlun",
+    "name": "矛盾论",
+    "author": "毛泽东",
+    "year": 1937,
+    "documentType": "哲学著作",
+    "summary": "系统论述唯物辩证法对立统一规律的著作，阐述矛盾的普遍性和特殊性",
+    "keywords": ["矛盾", "辩证法", "对立统一", "矛盾特殊性"]
+  },
+  {
+    "graph_id": "document-lunchijiuzhan",
+    "name": "论持久战",
+    "author": "毛泽东",
+    "year": 1938,
+    "documentType": "军事著作",
+    "summary": "全面分析中日战争形势，科学预见了抗日战争的发展阶段和最终结果",
+    "keywords": ["持久战", "抗日战争", "战略防御", "战略反攻"]
+  },
+  {
+    "graph_id": "document-xinminzhuzhuyilun",
+    "name": "新民主主义论",
+    "author": "毛泽东",
+    "year": 1940,
+    "documentType": "政治著作",
+    "summary": "系统阐述了新民主主义革命的理论、纲领和路线，构建了新民主主义社会蓝图",
+    "keywords": ["新民主主义", "革命理论", "政治纲领", "文化方针"]
+  },
+  {
+    "graph_id": "document-lunlianhezhengfu",
+    "name": "论联合政府",
+    "author": "毛泽东",
+    "year": 1945,
+    "documentType": "政治报告",
+    "summary": "毛泽东在中共七大上的政治报告，提出建立民主联合政府的政治主张",
+    "keywords": ["联合政府", "七大", "民主建国", "政治路线"]
+  },
+  {
+    "graph_id": "document-lunshidaguanxi",
+    "name": "论十大关系",
+    "author": "毛泽东",
+    "year": 1956,
+    "documentType": "政策文献",
+    "summary": "系统总结社会主义建设经验，提出处理好经济社会发展中十个方面的重要关系",
+    "keywords": ["十大关系", "社会主义建设", "经济方针", "协调发展"]
+  },
+  {
+    "graph_id": "document-neibumaodun",
+    "name": "关于正确处理人民内部矛盾的问题",
+    "author": "毛泽东",
+    "year": 1957,
+    "documentType": "政治著作",
+    "summary": "区分敌我矛盾和人民内部矛盾两类不同性质的矛盾，提出正确处理人民内部矛盾的方针",
+    "keywords": ["人民内部矛盾", "敌我矛盾", "民主方法", "团结批评团结"]
+  },
+  {
+    "graph_id": "document-jiefangsixiang",
+    "name": "解放思想实事求是团结一致向前看",
+    "author": "邓小平",
+    "year": 1978,
+    "documentType": "讲话",
+    "summary": "邓小平在中央工作会议闭幕会上的讲话，实际上是十一届三中全会的主题报告",
+    "keywords": ["解放思想", "实事求是", "团结一致", "改革开放"]
+  },
+  {
+    "graph_id": "document-dangheguojia",
+    "name": "党和国家领导制度的改革",
+    "author": "邓小平",
+    "year": 1980,
+    "documentType": "讲话",
+    "summary": "系统论述党和国家领导制度改革问题的纲领性文献",
+    "keywords": ["领导制度", "政治体制改革", "官僚主义", "权力过分集中"]
+  },
+  {
+    "graph_id": "document-nanfangtanhua",
+    "name": "南方谈话",
+    "author": "邓小平",
+    "year": 1992,
+    "documentType": "讲话",
+    "summary": "视察南方期间发表的重要谈话，深刻回答了改革开放中的重大理论和实践问题",
+    "keywords": ["改革开放", "社会主义市场经济", "发展才是硬道理", "三个有利于"]
+  },
+  {
+    "graph_id": "document-gongchandangxuanyan",
+    "name": "共产党宣言（中文译本）",
+    "author": "马克思、恩格斯",
+    "year": 1848,
+    "documentType": "经典著作",
+    "summary": "马克思主义诞生的标志性文献，陈望道1920年完成首个中文全译本",
+    "keywords": ["马克思主义", "阶级斗争", "无产阶级革命", "共产主义"]
+  },
+  {
+    "graph_id": "document-gongchandangyuanxiuyang",
+    "name": "论共产党员的修养",
+    "author": "刘少奇",
+    "year": 1939,
+    "documentType": "党建文献",
+    "summary": "系统论述共产党员修养的重要著作，被誉为中国共产党人的道德经",
+    "keywords": ["党性修养", "党内生活", "思想改造", "自我修养"]
+  }
+]
