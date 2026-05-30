@@ -7,7 +7,7 @@ dependencies {
     implementation(project(":services:content"))
     implementation(project(":services:user"))
     implementation(libs.mapstruct)
-    implementation(libs.xfile)
+    implementation(libs.bundles.file.storage)
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
