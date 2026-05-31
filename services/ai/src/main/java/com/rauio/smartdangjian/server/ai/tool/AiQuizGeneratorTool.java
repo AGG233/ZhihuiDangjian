@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.server.ai.tool;
 
 import static com.rauio.smartdangjian.constants.ErrorConstants.RESOURCE_NOT_EXISTS;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +43,7 @@ public class AiQuizGeneratorTool {
     private final QuizService quizService;
     private final QuizOptionService quizOptionService;
     private final ObjectMapper objectMapper;
+    private final Clock clock;
 
     @Tool(name = "generateMiniQuiz", description = "根据章节ID或主题，自动生成一道小问答并保存到数据库。AI会提取章节内容或主题要点生成题目、选项和解析。")
     public Map<String, Object> generateMiniQuiz(
@@ -127,8 +129,8 @@ public class AiQuizGeneratorTool {
                 .difficulty(effectiveDifficulty)
                 .explanation(explanation)
                 .isActive(true)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now(clock))
+                .updatedAt(LocalDateTime.now(clock))
                 .build();
 
         Boolean saved = quizService.create(quiz);

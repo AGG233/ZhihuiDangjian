@@ -3,12 +3,16 @@ package com.rauio.smartdangjian.server.quiz.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.reset;
 
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -27,6 +31,11 @@ class QuizServiceTest {
     @Spy
     @InjectMocks
     private QuizService quizService;
+
+    @BeforeEach
+    void resetSpy() {
+        reset(quizService);
+    }
 
     // ==================== get ====================
 
@@ -89,6 +98,7 @@ class QuizServiceTest {
         Boolean result = quizService.update(quiz);
 
         assertThat(result).isTrue();
+        verify(quizService).updateById(quiz);
     }
 
     @Test
@@ -113,6 +123,10 @@ class QuizServiceTest {
         Boolean result = quizService.create(quiz);
 
         assertThat(result).isTrue();
+        ArgumentCaptor<Quiz> quizCaptor = ArgumentCaptor.forClass(Quiz.class);
+        verify(quizService).save(quizCaptor.capture());
+        assertThat(quizCaptor.getValue().getChapterId()).isEqualTo(1L);
+        assertThat(quizCaptor.getValue().getQuestion()).isEqualTo("新题目");
     }
 
     @Test
@@ -136,6 +150,7 @@ class QuizServiceTest {
         Boolean result = quizService.delete(1L);
 
         assertThat(result).isTrue();
+        verify(quizService).removeById(1L);
     }
 
     @Test

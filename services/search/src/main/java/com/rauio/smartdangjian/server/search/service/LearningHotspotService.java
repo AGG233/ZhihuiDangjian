@@ -1,5 +1,6 @@
 package com.rauio.smartdangjian.server.search.service;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -32,6 +33,7 @@ public class LearningHotspotService {
 
     private final UserLearningRecordMapper userLearningRecordMapper;
     private final CourseMapper courseMapper;
+    private final Clock clock;
 
     @Cacheable(value = RedisConstants.LEARNING_HOTSPOT_CACHE_PREFIX, key = "'courses:' + #limit")
     public List<HotCourseResponse> getHotCourses(int limit) {
@@ -72,13 +74,13 @@ public class LearningHotspotService {
 
     @Cacheable(value = RedisConstants.LEARNING_HOTSPOT_CACHE_PREFIX, key = "'trends:' + #days")
     public LearningTrendResponse getTrends(int days) {
-        LocalDateTime since = LocalDateTime.now().minusDays(days);
+        LocalDateTime since = LocalDateTime.now(clock).minusDays(days);
         List<TrendRaw> rawList = userLearningRecordMapper.selectDailyTrend(since);
         Map<String, Integer> dateCountMap =
                 rawList.stream().collect(Collectors.toMap(TrendRaw::getDate, TrendRaw::getCount));
         int totalCount = rawList.stream().mapToInt(TrendRaw::getCount).sum();
         List<LearningTrendResponse.DailyCount> dailyData = new ArrayList<>();
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
         for (int i = days - 1; i >= 0; i--) {
             String dateStr = today.minusDays(i).toString();
             int count = dateCountMap.getOrDefault(dateStr, 0);

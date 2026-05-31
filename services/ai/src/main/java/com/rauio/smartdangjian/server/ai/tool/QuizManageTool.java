@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.server.ai.tool;
 
 import static com.rauio.smartdangjian.constants.ErrorConstants.RESOURCE_NOT_EXISTS;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ public class QuizManageTool {
 
     private final QuizService quizService;
     private final QuizOptionService quizOptionService;
+    private final Clock clock;
 
     @Tool(name = "getQuiz", description = "根据测验ID获取测验详情及其选项")
     public Quiz getQuiz(@ToolParam(description = "测验ID") String quizId) {
@@ -53,8 +55,8 @@ public class QuizManageTool {
                 .difficulty(difficulty)
                 .explanation(explanation)
                 .isActive(true)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now(clock))
+                .updatedAt(LocalDateTime.now(clock))
                 .build();
         Boolean saved = quizService.create(quiz);
         if (!Boolean.TRUE.equals(saved) || quiz.getId() == null) {
@@ -109,7 +111,7 @@ public class QuizManageTool {
         if (isActive != null) {
             existing.setIsActive(isActive);
         }
-        existing.setUpdatedAt(LocalDateTime.now());
+        existing.setUpdatedAt(LocalDateTime.now(clock));
         return Boolean.TRUE.equals(quizService.update(existing));
     }
 

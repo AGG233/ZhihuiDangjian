@@ -143,6 +143,24 @@ class AdminCourseControllerTest extends BaseControllerTest {
                             .content("{invalid json"))
                     .andExpect(status().isBadRequest());
         }
+
+        @Test
+        @DisplayName("创建课程 - 空请求体返回 400")
+        void createWithEmptyBody() throws Exception {
+            mockMvc.perform(post("/api/admin/content/courses")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(""))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("更新课程 - 非数字路径参数返回 400")
+        void updateWithNonNumericId() throws Exception {
+            mockMvc.perform(put("/api/admin/content/courses/not-a-number")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createCourseRequest())))
+                    .andExpect(status().isBadRequest());
+        }
     }
 
     @Nested

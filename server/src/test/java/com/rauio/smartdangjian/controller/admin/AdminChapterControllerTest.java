@@ -53,7 +53,9 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterRequest())))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").value(true));
         }
 
         @Test
@@ -64,7 +66,9 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(put("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterRequest())))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").value(true));
         }
 
         @Test
@@ -132,7 +136,9 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterRequest())))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.message").value("课程至少需要一个章节"));
         }
 
         @Test
@@ -155,7 +161,10 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(put("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterRequest())))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").value(false))
+                    .andExpect(jsonPath("$.message").value("OK"));
         }
 
         @Test
@@ -177,6 +186,21 @@ class AdminChapterControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{invalid json"))
                     .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("创建章节 - 空请求体返回 400")
+        void createWithEmptyBody() throws Exception {
+            mockMvc.perform(post("/api/admin/content/chapters")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(""))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("删除章节 - 非数字路径参数返回 400")
+        void deleteWithNonNumericId() throws Exception {
+            mockMvc.perform(delete("/api/admin/content/chapters/not-a-number")).andExpect(status().isBadRequest());
         }
     }
 
@@ -200,7 +224,9 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").value(true));
         }
 
         @Test
@@ -219,7 +245,9 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").value(true));
         }
 
         @Test
@@ -238,7 +266,9 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").value(true));
         }
 
         private com.rauio.smartdangjian.server.content.pojo.dto.ContentBlockDto createSimpleContentBlock() {
@@ -269,7 +299,9 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").value(true));
         }
 
         @Test
@@ -288,7 +320,9 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").value(true));
         }
 
         @Test

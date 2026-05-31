@@ -1,21 +1,26 @@
 package com.rauio.smartdangjian.server.search.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.reset;
 
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.ibatis.builder.MapperBuilderAssistant;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -63,6 +68,11 @@ class SearchServiceTest {
     @Spy
     @InjectMocks
     private SearchService searchService;
+
+    @BeforeEach
+    void resetSpy() {
+        reset(searchService);
+    }
 
     // ==================== searchCourses ====================
 
@@ -145,6 +155,34 @@ class SearchServiceTest {
         Page<CourseResponse> result = searchService.searchCourses(null, null, null, 1, 10);
 
         assertThat(result.getRecords()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("空白关键词不触发全文检索但仍查询已发布课程")
+    void searchCoursesWithBlankKeywordQueriesPublishedCourses() {
+        Page<Course> coursePage = new Page<>(1, 10, 0);
+        coursePage.setRecords(Collections.emptyList());
+        doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+
+        Page<CourseResponse> result = searchService.searchCourses("   ", null, null, 1, 10);
+
+        assertThat(result.getRecords()).isEmpty();
+        verify(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+    }
+
+    @Test
+    @DisplayName("非法分页参数由 MyBatis-Plus Page 规范化")
+    void searchCoursesNormalizesInvalidPaginationValues() {
+        Page<Course> coursePage = new Page<>(0, -1, 0);
+        coursePage.setRecords(Collections.emptyList());
+        doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+
+        searchService.searchCourses(null, null, null, 0, -1);
+
+        ArgumentCaptor<Page<Course>> pageCaptor = ArgumentCaptor.forClass(Page.class);
+        verify(courseMapper).selectPage(pageCaptor.capture(), any(LambdaQueryWrapper.class));
+        assertThat(pageCaptor.getValue().getCurrent()).isEqualTo(1);
+        assertThat(pageCaptor.getValue().getSize()).isEqualTo(-1);
     }
 
     @Test
@@ -245,6 +283,46 @@ class SearchServiceTest {
         Page<CourseResponse> result = searchService.hybridSearch("关键词", 1, 10);
 
         assertThat(result.getRecords()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("混合搜索当前用户 ID 为 null 时透传解析异常")
+    void hybridSearchWithNullCurrentUserIdPropagatesParseFailure() {
+        Page<Course> coursePage = new Page<>(1, 10, 0);
+        coursePage.setRecords(Collections.emptyList());
+        doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+        doReturn(null).when(userService).getCurrentUserId();
+
+        assertThatThrownBy(() -> searchService.hybridSearch("关键词", 1, 10)).isInstanceOf(RuntimeException.class);
+        verify(recommendService, never()).recommend(anyLong(), anyInt(), anyInt());
+    }
+
+    @Test
+    @DisplayName("混合搜索当前用户 ID 非数字时透传解析异常")
+    void hybridSearchWithInvalidCurrentUserIdPropagatesParseFailure() {
+        Page<Course> coursePage = new Page<>(1, 10, 0);
+        coursePage.setRecords(Collections.emptyList());
+        doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+        doReturn("not-a-number").when(userService).getCurrentUserId();
+
+        assertThatThrownBy(() -> searchService.hybridSearch("关键词", 1, 10)).isInstanceOf(RuntimeException.class);
+        verify(recommendService, never()).recommend(anyLong(), anyInt(), anyInt());
+    }
+
+    @Test
+    @DisplayName("推荐服务异常时混合搜索透传异常")
+    void hybridSearchPropagatesRecommendServiceException() {
+        Page<Course> coursePage = new Page<>(1, 10, 0);
+        coursePage.setRecords(Collections.emptyList());
+        doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+        doReturn("1").when(userService).getCurrentUserId();
+        doThrow(new IllegalStateException("recommend failed"))
+                .when(recommendService)
+                .recommend(1L, 1, 10);
+
+        assertThatThrownBy(() -> searchService.hybridSearch("关键词", 1, 10))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("recommend failed");
     }
 
     @Test

@@ -267,15 +267,13 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("PUT / - Service 处理空请求体（缺失字段）")
+        @DisplayName("PUT / - 缺少必填字段返回 400")
         void updateWithPartialBody() throws Exception {
-            when(progressService.update(any(UserChapterProgressRequest.class))).thenReturn(true);
-
             mockMvc.perform(put("/api/learning/progress")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"id\":1}"))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"));
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("400"));
         }
     }
 

@@ -1,5 +1,6 @@
 package com.rauio.smartdangjian.server.learning.service;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class UserChapterProgressService extends ServiceImpl<UserChapterProgressMapper, UserChapterProgress> {
 
     private final UserChapterProgressConvertor convertor;
+    private final Clock clock;
 
     /**
      * 根据进度记录 ID 获取详情。
@@ -99,10 +101,10 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
         }
 
         UserChapterProgress progress = convertor.toEntity(dto);
-        progress.setUpdatedAt(LocalDateTime.now());
+        progress.setUpdatedAt(LocalDateTime.now(clock));
 
         if (progress.getFirstViewedAt() == null) {
-            progress.setFirstViewedAt(LocalDateTime.now());
+            progress.setFirstViewedAt(LocalDateTime.now(clock));
         }
 
         if (!this.save(progress)) {
@@ -128,10 +130,10 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
         }
 
         UserChapterProgress progress = convertor.toEntity(dto);
-        progress.setUpdatedAt(LocalDateTime.now());
+        progress.setUpdatedAt(LocalDateTime.now(clock));
 
         if (progress.getProgress() != null && progress.getProgress() >= 100 && existing.getCompletedAt() == null) {
-            progress.setCompletedAt(LocalDateTime.now());
+            progress.setCompletedAt(LocalDateTime.now(clock));
             progress.setStatus("completed");
         }
 

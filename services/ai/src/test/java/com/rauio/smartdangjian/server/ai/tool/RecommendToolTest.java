@@ -90,4 +90,34 @@ class RecommendToolTest {
 
         assertThat(result).contains("暂无推荐课程");
     }
+
+    @Test
+    @DisplayName("getRecommendedCourses 当前用户缺失时以 null userId 推荐")
+    void getRecommendedCoursesWithMissingCurrentUser() {
+        ToolContext toolContext = mock(ToolContext.class);
+        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn(null);
+
+        Page<Long> page = new Page<>();
+        page.setRecords(List.of(9L));
+        when(recommendService.recommend(null, 1, 3)).thenReturn(page);
+
+        String result = recommendTool.getRecommendedCourses(3, toolContext);
+
+        assertThat(result).contains("9");
+    }
+
+    @Test
+    @DisplayName("getRecommendedCourses 负数 limit 回退到默认 10")
+    void getRecommendedCoursesNegativeLimit() {
+        ToolContext toolContext = mock(ToolContext.class);
+        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
+
+        Page<Long> page = new Page<>();
+        page.setRecords(List.of(1L));
+        when(recommendService.recommend(1L, 1, 10)).thenReturn(page);
+
+        String result = recommendTool.getRecommendedCourses(-1, toolContext);
+
+        assertThat(result).contains("1");
+    }
 }

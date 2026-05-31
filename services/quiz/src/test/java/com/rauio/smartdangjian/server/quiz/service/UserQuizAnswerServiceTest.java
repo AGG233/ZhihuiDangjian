@@ -2,12 +2,16 @@ package com.rauio.smartdangjian.server.quiz.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.reset;
 
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +33,11 @@ class UserQuizAnswerServiceTest {
     @Spy
     @InjectMocks
     private UserQuizAnswerService userQuizAnswerService;
+
+    @BeforeEach
+    void resetSpy() {
+        reset(userQuizAnswerService);
+    }
 
     // ==================== create ====================
 
@@ -120,6 +129,7 @@ class UserQuizAnswerServiceTest {
         Boolean result = userQuizAnswerService.updateByUserIdAndQuizIdAndOptionId(input);
 
         assertThat(result).isFalse();
+        verify(userQuizAnswerService, never()).updateById(any(UserQuizAnswer.class));
     }
 
     // ==================== delete ====================
@@ -173,6 +183,7 @@ class UserQuizAnswerServiceTest {
         Boolean result = userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(1L, 1L, 1L);
 
         assertThat(result).isFalse();
+        verify(userQuizAnswerService, never()).removeById(anyLong());
     }
 
     // ==================== getByQuizId ====================
@@ -187,6 +198,7 @@ class UserQuizAnswerServiceTest {
         List<UserQuizAnswer> result = userQuizAnswerService.getByQuizId(1L);
 
         assertThat(result).hasSize(2);
+        assertThat(result).extracting(UserQuizAnswer::getQuizId).containsOnly(1L);
     }
 
     @Test

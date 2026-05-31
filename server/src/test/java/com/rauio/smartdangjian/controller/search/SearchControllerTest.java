@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -16,6 +17,9 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
@@ -217,38 +221,25 @@ class SearchControllerTest extends BaseControllerTest {
     @DisplayName("安全场景")
     class SecurityTests {
 
-        @Test
-        @DisplayName("XSS 注入在 keyword 参数")
-        void xssInKeyword() throws Exception {
+        @ParameterizedTest(name = "keyword={0}")
+        @ValueSource(strings = {"<script>alert('xss')</script>", "' OR '1'='1"})
+        @DisplayName("特殊 keyword 参数作为字面量透传给搜索服务")
+        void specialKeywordIsPassedAsLiteral(String keyword) throws Exception {
             when(searchService.searchCourses(anyString(), any(), any(), anyInt(), anyInt()))
                     .thenReturn(createCoursePage(0));
 
-            mockMvc.perform(get("/api/search/courses").param("keyword", "<script>alert('xss')</script>"))
+            mockMvc.perform(get("/api/search/courses").param("keyword", keyword))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));
+
+            verify(searchService).searchCourses(eq(keyword), any(), any(), eq(1), eq(10));
         }
 
-        @Test
-        @DisplayName("SQL 注入在 keyword 参数")
-        void sqlInjectionInKeyword() throws Exception {
-            when(searchService.searchCourses(anyString(), any(), any(), anyInt(), anyInt()))
-                    .thenReturn(createCoursePage(0));
-
-            mockMvc.perform(get("/api/search/courses").param("keyword", "' OR '1'='1"))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"));
-        }
-
-        @Test
-        @DisplayName("POST 请求搜索接口返回 405")
-        void searchWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/search/courses")).andExpect(status().isMethodNotAllowed());
-        }
-
-        @Test
-        @DisplayName("POST 请求推荐接口返回 405")
-        void recommendWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/search/recommend")).andExpect(status().isMethodNotAllowed());
+        @ParameterizedTest(name = "POST {0}")
+        @CsvSource({"/api/search/courses", "/api/search/recommend"})
+        @DisplayName("POST 请求 GET-only 接口返回 405")
+        void postToGetOnlyEndpointReturns405(String path) throws Exception {
+            mockMvc.perform(post(path)).andExpect(status().isMethodNotAllowed());
         }
     }
 }

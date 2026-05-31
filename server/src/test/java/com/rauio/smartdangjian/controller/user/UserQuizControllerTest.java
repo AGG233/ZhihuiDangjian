@@ -1,6 +1,8 @@
 package com.rauio.smartdangjian.controller.user;
 
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -11,10 +13,14 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.QuizTestDataFactory;
@@ -196,22 +202,32 @@ class UserQuizControllerTest extends BaseControllerTest {
                     .andExpect(jsonPath("$.data.length()").value(0));
         }
 
-        @Test
-        @DisplayName("GET /{id} - 非数字 ID 返回 400（Spring 类型转换失败）")
-        void getWithNonNumericId() throws Exception {
-            mockMvc.perform(get("/api/quiz/quizzes/试题")).andExpect(status().isBadRequest());
+        @ParameterizedTest(name = "quiz id={0}")
+        @ValueSource(strings = {"试题", "test@#$%", "3.14", "<script>alert('xss')", "' OR '1'='1"})
+        @DisplayName("GET /{id} - 非法试题 ID 返回 400 且不调用业务服务")
+        void getWithInvalidQuizId(String id) throws Exception {
+            mockMvc.perform(get("/api/quiz/quizzes/{id}", id)).andExpect(status().isBadRequest());
+
+            verify(quizService, never()).get(anyLong());
         }
 
-        @Test
-        @DisplayName("GET /{id} - 路径含特殊字符返回 400（Spring 类型转换失败）")
-        void getWithSpecialCharsInPath() throws Exception {
-            mockMvc.perform(get("/api/quiz/quizzes/{id}", "test@#$%")).andExpect(status().isBadRequest());
+        @ParameterizedTest(name = "chapter id={0}")
+        @ValueSource(strings = {"章节", "test@#$%", "3.14", "<script>alert('xss')", "' OR '1'='1"})
+        @DisplayName("GET /by-chapter/{chapterId} - 非法章节 ID 返回 400 且不调用业务服务")
+        void getByChapterWithInvalidId(String chapterId) throws Exception {
+            mockMvc.perform(get("/api/quiz/quizzes/by-chapter/{chapterId}", chapterId))
+                    .andExpect(status().isBadRequest());
+
+            verify(quizService, never()).getByChapterId(anyLong());
         }
 
-        @Test
-        @DisplayName("GET /by-chapter/{chapterId} - Float ID 路径返回 400（Spring 类型转换失败）")
-        void getByChapterWithInvalidId() throws Exception {
-            mockMvc.perform(get("/api/quiz/quizzes/by-chapter/3.14")).andExpect(status().isBadRequest());
+        @ParameterizedTest(name = "quiz id={0}")
+        @ValueSource(strings = {"选项", "test@#$%", "3.14", "<script>alert('xss')", "' OR '1'='1"})
+        @DisplayName("GET /{id}/options - 非法试题 ID 返回 400 且不查询选项")
+        void getOptionsWithInvalidQuizId(String id) throws Exception {
+            mockMvc.perform(get("/api/quiz/quizzes/{id}/options", id)).andExpect(status().isBadRequest());
+
+            verify(quizOptionService, never()).getByQuizId(anyLong());
         }
     }
 
@@ -219,35 +235,26 @@ class UserQuizControllerTest extends BaseControllerTest {
     @DisplayName("安全场景")
     class SecurityTests {
 
-        @Test
-        @DisplayName("XSS 尝试在路径参数中返回 400（类型转换失败）")
-        void xssInPath() throws Exception {
-            mockMvc.perform(get("/api/quiz/quizzes/%3Cscript%3Ealert('xss')%3E"))
-                    .andExpect(status().isBadRequest());
+        @ParameterizedTest(name = "{0} {1}")
+        @CsvSource({
+            "POST,/api/quiz/quizzes/1",
+            "DELETE,/api/quiz/quizzes/by-chapter/1",
+            "PUT,/api/quiz/quizzes/1/options",
+            "PATCH,/api/quiz/quizzes/1/options/1"
+        })
+        @DisplayName("只读接口使用错误 HTTP 方法返回 405")
+        void readEndpointsWithWrongMethod(String method, String path) throws Exception {
+            mockMvc.perform(request(method, path)).andExpect(status().isMethodNotAllowed());
         }
 
-        @Test
-        @DisplayName("SQL 注入尝试在路径参数中返回 400（类型转换失败）")
-        void sqlInjectionInPath() throws Exception {
-            mockMvc.perform(get("/api/quiz/quizzes/{id}", "' OR '1'='1")).andExpect(status().isBadRequest());
-        }
-
-        @Test
-        @DisplayName("POST 请求获取试题详情接口返回 405")
-        void getWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/quiz/quizzes/1")).andExpect(status().isMethodNotAllowed());
-        }
-
-        @Test
-        @DisplayName("DELETE 请求获取章节试题接口返回 405")
-        void getByChapterWithWrongMethod() throws Exception {
-            mockMvc.perform(delete("/api/quiz/quizzes/by-chapter/1")).andExpect(status().isMethodNotAllowed());
-        }
-
-        @Test
-        @DisplayName("PUT 请求获取选项列表接口返回 405")
-        void getOptionsWithWrongMethod() throws Exception {
-            mockMvc.perform(put("/api/quiz/quizzes/1/options")).andExpect(status().isMethodNotAllowed());
+        private MockHttpServletRequestBuilder request(String method, String path) {
+            return switch (method) {
+                case "POST" -> post(path);
+                case "DELETE" -> delete(path);
+                case "PUT" -> put(path);
+                case "PATCH" -> patch(path);
+                default -> throw new IllegalArgumentException("Unsupported method: " + method);
+            };
         }
     }
 }

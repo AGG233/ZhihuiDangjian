@@ -23,6 +23,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -31,6 +32,7 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 import com.rauio.smartdangjian.server.resource.constants.ResourceStatusConstants;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
+import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaCreateRequest;
 import com.rauio.smartdangjian.server.resource.pojo.request.UploadFileRequest;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
@@ -125,6 +127,14 @@ class FileServiceTest {
             assertThat(response.getUploadUrl()).isEqualTo(COS_URL);
             assertThat(response.getObjectKey()).startsWith("image/").endsWith(".png");
             assertThat(response.getExpiration()).isPositive();
+
+            ArgumentCaptor<ResourceMetaCreateRequest> requestCaptor =
+                    ArgumentCaptor.forClass(ResourceMetaCreateRequest.class);
+            verify(resourceMetaService).create(requestCaptor.capture());
+            assertThat(requestCaptor.getValue().getUploaderId()).isEqualTo("1");
+            assertThat(requestCaptor.getValue().getOriginalName()).isEqualTo(FILE_NAME);
+            assertThat(requestCaptor.getValue().getResourceType()).isZero();
+            assertThat(requestCaptor.getValue().getStatus()).isEqualTo(ResourceStatusConstants.UPLOADING);
         }
 
         @Test
@@ -144,7 +154,17 @@ class FileServiceTest {
             assertThat(response.getUploadUrl()).startsWith("/api/resource/files/upload/callback/");
             assertThat(response.getUploadUrl()).endsWith("1");
             assertThat(response.getExpiration()).isEqualTo(-1L);
+            assertThat(response.getObjectKey()).startsWith("image/").endsWith(".png");
 
+            ArgumentCaptor<ResourceMetaCreateRequest> requestCaptor =
+                    ArgumentCaptor.forClass(ResourceMetaCreateRequest.class);
+            verify(resourceMetaService).create(requestCaptor.capture());
+            assertThat(response.getObjectKey())
+                    .isEqualTo(requestCaptor.getValue().getObjectKey());
+            assertThat(requestCaptor.getValue().getUploaderId()).isEqualTo("1");
+            assertThat(requestCaptor.getValue().getOriginalName()).isEqualTo(FILE_NAME);
+            assertThat(requestCaptor.getValue().getResourceType()).isZero();
+            assertThat(requestCaptor.getValue().getStatus()).isEqualTo(ResourceStatusConstants.UPLOADING);
             verify(resourceMetaService, never()).delete(any());
         }
 
@@ -168,6 +188,11 @@ class FileServiceTest {
             FileUploadResponse response = fileService.upload(request);
 
             assertThat(response).isNotNull();
+            assertThat(response.getResourceId()).isEqualTo("1");
+            ArgumentCaptor<ResourceMetaCreateRequest> requestCaptor =
+                    ArgumentCaptor.forClass(ResourceMetaCreateRequest.class);
+            verify(resourceMetaService).create(requestCaptor.capture());
+            assertThat(requestCaptor.getValue().getUploaderId()).isEqualTo("2");
             verify(userService).getCurrentUserId();
         }
 
@@ -194,7 +219,13 @@ class FileServiceTest {
 
             FileUploadResponse response = fileService.upload(request);
             assertThat(response).isNotNull();
+            assertThat(response.getResourceId()).isEqualTo("2");
             assertThat(response.getObjectKey()).startsWith("video/");
+            ArgumentCaptor<ResourceMetaCreateRequest> requestCaptor =
+                    ArgumentCaptor.forClass(ResourceMetaCreateRequest.class);
+            verify(resourceMetaService).create(requestCaptor.capture());
+            assertThat(requestCaptor.getValue().getResourceType()).isEqualTo(1);
+            assertThat(requestCaptor.getValue().getOriginalName()).isEqualTo("test.mp4");
         }
     }
 

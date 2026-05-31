@@ -226,6 +226,39 @@ class AdminQuizControllerTest extends BaseControllerTest {
                             .content("{invalid json"))
                     .andExpect(status().isBadRequest());
         }
+
+        @Test
+        @DisplayName("创建试题 - 空请求体返回 400")
+        void createWithEmptyBody() throws Exception {
+            mockMvc.perform(post("/api/admin/quiz/quizzes")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(""))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("更新试题 - 非数字路径参数返回 400")
+        void updateWithNonNumericId() throws Exception {
+            mockMvc.perform(put("/api/admin/quiz/quizzes/not-a-number")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(QuizTestDataFactory.toJson(QuizTestDataFactory.createQuiz())))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("删除试题 - 非数字路径参数返回 400")
+        void deleteWithNonNumericId() throws Exception {
+            mockMvc.perform(delete("/api/admin/quiz/quizzes/not-a-number")).andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("创建选项 - 空请求体返回 400")
+        void createOptionWithEmptyBody() throws Exception {
+            mockMvc.perform(post("/api/admin/quiz/quizzes/1/options")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(""))
+                    .andExpect(status().isBadRequest());
+        }
     }
 
     @Nested

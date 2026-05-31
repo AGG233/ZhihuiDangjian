@@ -1,24 +1,30 @@
 package com.rauio.smartdangjian.server.quiz.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.reset;
 
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
 import com.rauio.smartdangjian.server.quiz.mapper.QuizOptionMapper;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
@@ -41,6 +47,11 @@ class QuizOptionServiceTest {
     @Spy
     @InjectMocks
     private QuizOptionService quizOptionService;
+
+    @BeforeEach
+    void resetSpy() {
+        reset(quizOptionService);
+    }
 
     // ==================== update ====================
 
@@ -81,6 +92,10 @@ class QuizOptionServiceTest {
 
         assertThat(result).isTrue();
         assertThat(option.getQuizId()).isEqualTo(1L);
+        ArgumentCaptor<QuizOption> optionCaptor = ArgumentCaptor.forClass(QuizOption.class);
+        verify(quizOptionService).save(optionCaptor.capture());
+        assertThat(optionCaptor.getValue().getQuizId()).isEqualTo(1L);
+        assertThat(optionCaptor.getValue().getOptionText()).isEqualTo("新选项");
     }
 
     @Test
@@ -194,6 +209,8 @@ class QuizOptionServiceTest {
 
         assertThat(result).isNotNull();
         assertThat(result.getIsCorrect()).isNull();
+        assertThat(result.getOptionText()).isEqualTo("正确答案");
+        verify(userQuizAnswerService).getByUserIdAndQuizId(1L, 1L);
     }
 
     @Test
@@ -221,6 +238,24 @@ class QuizOptionServiceTest {
 
         assertThat(result).isNotNull();
         assertThat(result.getIsCorrect()).isTrue();
+        verify(userQuizAnswerService).getByUserIdAndQuizId(1L, 1L);
+    }
+
+    @Test
+    @DisplayName("get 选项不存在时抛出 BusinessException")
+    void getThrowsBusinessExceptionWhenOptionNotFound() {
+        User studentUser = User.builder()
+                .id(1L)
+                .username("student")
+                .userType(UserType.STUDENT)
+                .build();
+        when(userService.getCurrentUser()).thenReturn(studentUser);
+        doReturn(null).when(quizOptionService).getById(999L);
+
+        assertThatThrownBy(() -> quizOptionService.get(999L))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", QuizErrorConstants.QUIZ_OPTION_NOT_FOUND);
+        verify(userQuizAnswerService, never()).getByUserIdAndQuizId(any(), any());
     }
 
     // ==================== delete ====================

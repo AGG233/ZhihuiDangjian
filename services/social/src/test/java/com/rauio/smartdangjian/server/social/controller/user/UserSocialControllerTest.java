@@ -1,5 +1,6 @@
 package com.rauio.smartdangjian.server.social.controller.user;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -65,7 +66,7 @@ class UserSocialControllerTest {
 
             var result = controller.getComments("article", 1L, null, 1, 10, "latest");
 
-            assert result.getData().getRecords().size() == 1;
+            assertThat(result.getData().getRecords()).hasSize(1);
         }
     }
 
@@ -87,7 +88,7 @@ class UserSocialControllerTest {
 
             var result = controller.getLikeStatus("comment", 1L);
 
-            assert result.getData().getLikeCount() == 5;
+            assertThat(result.getData().getLikeCount()).isEqualTo(5);
         }
     }
 }

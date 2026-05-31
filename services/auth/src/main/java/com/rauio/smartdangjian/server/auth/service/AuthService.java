@@ -1,5 +1,6 @@
 package com.rauio.smartdangjian.server.auth.service;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ public class AuthService {
     private final CaptchaService captchaService;
     private final UserMapper userMapper;
     private final UserService userService;
+    private final Clock clock;
 
     public LoginResponse login(LoginRequest loginRequest) {
         if (!captchaService.validate(loginRequest.getCaptchaUUID(), loginRequest.getCaptchaCode())) {
@@ -90,8 +92,8 @@ public class AuthService {
                 .joinPartyDate(registerRequest.getJoinPartyDate())
                 .userType(registerRequest.getType())
                 .status(AccountStatus.ACTIVE)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now(clock))
+                .updatedAt(LocalDateTime.now(clock))
                 .build();
 
         userMapper.insert(user);
@@ -114,7 +116,7 @@ public class AuthService {
         }
 
         user.setPassword(BCrypt.hashpw(request.getNewPassword()));
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setUpdatedAt(LocalDateTime.now(clock));
         if (userMapper.updateById(user) <= 0) {
             throw new BusinessException(AuthErrorConstants.PASSWORD_CHANGE_ERROR, "密码修改失败");
         }

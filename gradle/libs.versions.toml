@@ -29,6 +29,7 @@ springdoc = "2.8.13"
 
 logback = "1.5.8"
 lombok = "1.18.38"
+testcontainers = "2.0.3"
 
 [libraries]
 # BOMs
@@ -87,6 +88,12 @@ springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openap
 # Flyway
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 flyway-mysql = { module = "org.flywaydb:flyway-mysql", version.ref = "flyway" }
+
+# Testcontainers
+spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:testcontainers-junit-jupiter", version.ref = "testcontainers" }
+testcontainers-mysql = { module = "org.testcontainers:testcontainers-mysql", version.ref = "testcontainers" }
+testcontainers-neo4j = { module = "org.testcontainers:testcontainers-neo4j", version.ref = "testcontainers" }
 
 # Build and tooling
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }

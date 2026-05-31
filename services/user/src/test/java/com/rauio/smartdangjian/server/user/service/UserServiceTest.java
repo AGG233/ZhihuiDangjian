@@ -11,9 +11,11 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.reset;
 
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,6 +50,11 @@ class UserServiceTest {
     @Spy
     @InjectMocks
     private UserService userService;
+
+    @BeforeEach
+    void resetSpy() {
+        reset(userService);
+    }
 
     // ---------- helpers ----------
 
@@ -406,6 +413,15 @@ class UserServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .extracting("code")
                 .isEqualTo(UserErrorConstants.EMAIL_EXISTS);
+    }
+
+    @Test
+    @DisplayName("register 用户为 null 时抛出BusinessException(EMPTY_ARGS)")
+    void registerThrowsWhenUserIsNull() {
+        assertThatThrownBy(() -> userService.register(null))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(UserErrorConstants.EMPTY_ARGS);
     }
 
     @Test

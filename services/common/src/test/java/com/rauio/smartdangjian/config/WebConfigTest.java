@@ -6,9 +6,7 @@ import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.servlet.config.annotation.CorsRegistration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistration;
@@ -16,13 +14,10 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 
 import com.rauio.smartdangjian.exception.GlobalExceptionHandler;
 
-@SpringBootTest(classes = WebConfig.class)
-@TestPropertySource(properties = {"app.cors.allowed-origins=http://localhost:*,http://127.0.0.1:*,"})
 @DisplayName("WebConfig 配置测试")
 class WebConfigTest {
 
-    @Autowired
-    private WebConfig webConfig;
+    private final WebConfig webConfig = new WebConfig();
 
     @Test
     @DisplayName("GlobalExceptionHandler Bean 正确创建")
@@ -41,6 +36,7 @@ class WebConfigTest {
         when(corsRegistration.allowedMethods(any(String[].class))).thenReturn(corsRegistration);
         when(corsRegistration.allowCredentials(true)).thenReturn(corsRegistration);
         when(corsRegistration.maxAge(any(Long.class))).thenReturn(corsRegistration);
+        ReflectionTestUtils.setField(webConfig, "allowedOrigins", "http://localhost:*,http://127.0.0.1:*,");
 
         webConfig.addCorsMappings(registry);
 

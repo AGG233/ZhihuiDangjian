@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 
@@ -69,7 +70,13 @@ class AiQuizGeneratorToolTest {
     @BeforeEach
     void setUp() {
         aiQuizGeneratorTool = new AiQuizGeneratorTool(
-                chatModelProvider, chapterService, contentBlockService, quizService, quizOptionService, objectMapper);
+                chatModelProvider,
+                chapterService,
+                contentBlockService,
+                quizService,
+                quizOptionService,
+                objectMapper,
+                Clock.systemUTC());
     }
 
     @Test

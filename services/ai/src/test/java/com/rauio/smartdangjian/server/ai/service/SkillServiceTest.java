@@ -5,9 +5,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.reset;
 
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +34,11 @@ class SkillServiceTest {
     @Spy
     @InjectMocks
     private SkillService skillService;
+
+    @BeforeEach
+    void resetSpy() {
+        reset(skillService);
+    }
 
     @Test
     @DisplayName("create 构建 AiSkill 并保存")

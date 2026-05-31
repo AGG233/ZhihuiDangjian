@@ -81,7 +81,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /carousel - 添加轮播图成功")
         void addCarouselSuccess() throws Exception {
-            when(chapterChapterContentBlockService.saveBatch(any(List.class))).thenReturn(true);
+            when(chapterChapterContentBlockService.createBatch(any(List.class))).thenReturn(true);
 
             List<ChapterContentBlock> blocks = List.of(
                     ContentTestDataFactory.createCarouselBlock(1L, BlockType.Image),
@@ -132,7 +132,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /carousel - Service 抛出 BusinessException 返回 400")
         void addThrowsBusinessException() throws Exception {
-            when(chapterChapterContentBlockService.saveBatch(any(List.class)))
+            when(chapterChapterContentBlockService.createBatch(any(List.class)))
                     .thenThrow(new BusinessException(4000, "添加轮播图失败"));
 
             List<ChapterContentBlock> blocks = List.of(ContentTestDataFactory.createCarouselBlock(1L, BlockType.Image));
@@ -172,7 +172,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /carousel - Service 抛出 RuntimeException 返回 500")
         void addThrowsRuntimeException() throws Exception {
-            when(chapterChapterContentBlockService.saveBatch(any(List.class)))
+            when(chapterChapterContentBlockService.createBatch(any(List.class)))
                     .thenThrow(new RuntimeException("数据库连接失败"));
 
             List<ChapterContentBlock> blocks = List.of(ContentTestDataFactory.createCarouselBlock(1L, BlockType.Image));
@@ -219,6 +219,21 @@ class AdminContentControllerTest extends BaseControllerTest {
                             .content(""))
                     .andExpect(status().isBadRequest());
         }
+
+        @Test
+        @DisplayName("POST /carousel - 空请求体返回 400")
+        void emptyBodyOnPost() throws Exception {
+            mockMvc.perform(post(CAROUSEL_URL)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(""))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("DELETE /carousel/{id} - 非数字路径参数返回 400")
+        void deleteWithNonNumericId() throws Exception {
+            mockMvc.perform(delete(CAROUSEL_URL + "/not-a-number")).andExpect(status().isBadRequest());
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -232,7 +247,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /carousel - 空列表正常处理")
         void addCarouselWithEmptyList() throws Exception {
-            when(chapterChapterContentBlockService.saveBatch(any(List.class))).thenReturn(true);
+            when(chapterChapterContentBlockService.createBatch(any(List.class))).thenReturn(true);
 
             mockMvc.perform(post(CAROUSEL_URL)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -261,7 +276,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /carousel - 内容块包含中文正常处理")
         void addWithChineseContent() throws Exception {
-            when(chapterChapterContentBlockService.saveBatch(any(List.class))).thenReturn(true);
+            when(chapterChapterContentBlockService.createBatch(any(List.class))).thenReturn(true);
 
             ChapterContentBlock block = ContentTestDataFactory.createCarouselBlock(1L, BlockType.Image);
             block.setTextContent("习近平新时代中国特色社会主义思想");

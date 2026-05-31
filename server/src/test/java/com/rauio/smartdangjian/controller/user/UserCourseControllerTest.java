@@ -11,6 +11,9 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
@@ -199,28 +202,24 @@ class UserCourseControllerTest extends BaseControllerTest {
     @DisplayName("安全场景")
     class SecurityTests {
 
-        @Test
-        @DisplayName("XSS 尝试在路径参数中")
-        void xssInPath() throws Exception {
-            mockMvc.perform(get("/api/content/courses/1")).andExpect(status().isOk());
+        @ParameterizedTest(name = "course id={0}")
+        @ValueSource(strings = {"<script>alert('xss')", "' OR '1'='1", "3.14", "课程"})
+        @DisplayName("非法课程 ID 路径参数返回 400")
+        void invalidCourseIdInPathReturns400(String id) throws Exception {
+            mockMvc.perform(get("/api/content/courses/{id}", id)).andExpect(status().isBadRequest());
         }
 
-        @Test
-        @DisplayName("SQL 注入尝试在路径参数中")
-        void sqlInjectionInPath() throws Exception {
-            mockMvc.perform(get("/api/content/courses/1")).andExpect(status().isOk());
-        }
-
-        @Test
-        @DisplayName("POST 请求获取接口返回 405")
-        void getWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/content/courses/course-1")).andExpect(status().isMethodNotAllowed());
-        }
-
-        @Test
-        @DisplayName("DELETE 请求分页接口返回 405")
-        void getPageWithWrongMethod() throws Exception {
-            mockMvc.perform(delete("/api/content/courses")).andExpect(status().isMethodNotAllowed());
+        @ParameterizedTest(name = "{0} {1}")
+        @CsvSource({"POST,/api/content/courses/course-1", "DELETE,/api/content/courses"})
+        @DisplayName("错误 HTTP 方法返回 405")
+        void wrongMethodReturns405(String method, String path) throws Exception {
+            if ("POST".equals(method)) {
+                mockMvc.perform(post(path)).andExpect(status().isMethodNotAllowed());
+            } else if ("DELETE".equals(method)) {
+                mockMvc.perform(delete(path)).andExpect(status().isMethodNotAllowed());
+            } else {
+                throw new IllegalArgumentException("Unsupported method: " + method);
+            }
         }
 
         @Test

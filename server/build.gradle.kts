@@ -24,6 +24,9 @@ dependencies {
     annotationProcessor(libs.lombok)
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("com.h2database:h2")
+    testImplementation(libs.spring.boot.testcontainers)
+    testImplementation(libs.testcontainers.junit.jupiter)
+    testImplementation(libs.testcontainers.mysql)
+    testImplementation(libs.testcontainers.neo4j)
     testImplementation(libs.mybatis.plus.join.starter)
 }

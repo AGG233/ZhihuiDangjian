@@ -11,9 +11,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
@@ -29,6 +34,7 @@ import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.RegisterRequest;
 import com.rauio.smartdangjian.server.auth.service.AuthService;
 import com.rauio.smartdangjian.server.auth.service.CaptchaService;
+import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = AuthControllerTest.TestConfig.class)
 @DisplayName("认证接口测试")
@@ -349,6 +355,154 @@ class AuthControllerTest extends BaseControllerTest {
         @DisplayName("DELETE 请求验证码接口返回 405")
         void captchaWithWrongMethod() throws Exception {
             mockMvc.perform(delete("/api/auth/captcha")).andExpect(status().isMethodNotAllowed());
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // 参数校验场景
+    // ═══════════════════════════════════════════════════════════════
+
+    @Nested
+    @DisplayName("参数校验场景")
+    class ValidationTests {
+
+        private RegisterRequest createValidRequest() {
+            RegisterRequest req = new RegisterRequest();
+            req.setUsername("testuser");
+            req.setPassword("Test1234!");
+            req.setRealName("张三");
+            req.setIdCard("110101199001011234");
+            req.setPhone("13800138000");
+            req.setCaptchaUUID("uuid");
+            req.setCaptchaCode("8888");
+            req.setUniversityId("uni-1");
+            req.setPartyStatus(PartyStatus.FORMAL_MEMBER);
+            return req;
+        }
+
+        @ParameterizedTest
+        @MethodSource("invalidUsernameProvider")
+        @DisplayName("用户名非法参数返回400")
+        void invalidUsername(String username) throws Exception {
+            RegisterRequest req = createValidRequest();
+            req.setUsername(username);
+            mockMvc.perform(post("/api/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(AuthTestDataFactory.toJson(req)))
+                    .andExpect(status().isBadRequest());
+        }
+
+        static Stream<Arguments> invalidUsernameProvider() {
+            return Stream.of(
+                    Arguments.of((Object) null), Arguments.of(""), Arguments.of("a"), Arguments.of("a".repeat(17)));
+        }
+
+        @ParameterizedTest
+        @MethodSource("invalidPasswordProvider")
+        @DisplayName("密码非法参数返回400")
+        void invalidPassword(String password) throws Exception {
+            RegisterRequest req = createValidRequest();
+            req.setPassword(password);
+            mockMvc.perform(post("/api/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(AuthTestDataFactory.toJson(req)))
+                    .andExpect(status().isBadRequest());
+        }
+
+        static Stream<Arguments> invalidPasswordProvider() {
+            return Stream.of(
+                    Arguments.of((Object) null),
+                    Arguments.of(""),
+                    Arguments.of("short1"),
+                    Arguments.of("noupper123!"),
+                    Arguments.of("NoSpecial123"),
+                    Arguments.of("a".repeat(21)));
+        }
+
+        @ParameterizedTest
+        @MethodSource("invalidRealNameProvider")
+        @DisplayName("真实姓名非法参数返回400")
+        void invalidRealName(String realName) throws Exception {
+            RegisterRequest req = createValidRequest();
+            req.setRealName(realName);
+            mockMvc.perform(post("/api/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(AuthTestDataFactory.toJson(req)))
+                    .andExpect(status().isBadRequest());
+        }
+
+        static Stream<Arguments> invalidRealNameProvider() {
+            return Stream.of(
+                    Arguments.of((Object) null), Arguments.of(""), Arguments.of("a"), Arguments.of("a".repeat(17)));
+        }
+
+        @ParameterizedTest
+        @MethodSource("invalidIdCardProvider")
+        @DisplayName("身份证号非法参数返回400")
+        void invalidIdCard(String idCard) throws Exception {
+            RegisterRequest req = createValidRequest();
+            req.setIdCard(idCard);
+            mockMvc.perform(post("/api/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(AuthTestDataFactory.toJson(req)))
+                    .andExpect(status().isBadRequest());
+        }
+
+        static Stream<Arguments> invalidIdCardProvider() {
+            return Stream.of(
+                    Arguments.of((Object) null),
+                    Arguments.of(""),
+                    Arguments.of("123"),
+                    Arguments.of("1234567890123456"));
+        }
+
+        @ParameterizedTest
+        @MethodSource("invalidPhoneProvider")
+        @DisplayName("手机号非法参数返回400")
+        void invalidPhone(String phone) throws Exception {
+            RegisterRequest req = createValidRequest();
+            req.setPhone(phone);
+            mockMvc.perform(post("/api/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(AuthTestDataFactory.toJson(req)))
+                    .andExpect(status().isBadRequest());
+        }
+
+        static Stream<Arguments> invalidPhoneProvider() {
+            return Stream.of(
+                    Arguments.of((Object) null), Arguments.of(""), Arguments.of("123"), Arguments.of("12345678901"));
+        }
+
+        @ParameterizedTest
+        @MethodSource("invalidEmailProvider")
+        @DisplayName("邮箱非法参数返回400")
+        void invalidEmail(String email) throws Exception {
+            RegisterRequest req = createValidRequest();
+            req.setEmail(email);
+            mockMvc.perform(post("/api/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(AuthTestDataFactory.toJson(req)))
+                    .andExpect(status().isBadRequest());
+        }
+
+        static Stream<Arguments> invalidEmailProvider() {
+            return Stream.of(Arguments.of("not-email"), Arguments.of("@example.com"), Arguments.of("user@"));
+        }
+
+        @ParameterizedTest
+        @MethodSource("invalidPartyMemberIdProvider")
+        @DisplayName("党员编号非法参数返回400")
+        void invalidPartyMemberId(String partyMemberId) throws Exception {
+            RegisterRequest req = createValidRequest();
+            req.setPartyMemberId(partyMemberId);
+            mockMvc.perform(post("/api/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(AuthTestDataFactory.toJson(req)))
+                    .andExpect(status().isBadRequest());
+        }
+
+        static Stream<Arguments> invalidPartyMemberIdProvider() {
+            return Stream.of(Arguments.of("a".repeat(19)), Arguments.of("a".repeat(21)));
         }
     }
 }

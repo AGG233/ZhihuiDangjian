@@ -103,7 +103,9 @@ class BannerServiceTest {
 
         ResourceMeta result = bannerService.get(0);
 
-        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getHash()).isEqualTo(HASH);
+        verify(resourceMetaService).getByHash(HASH);
     }
 
     @SuppressWarnings("unchecked")
@@ -129,7 +131,8 @@ class BannerServiceTest {
 
         ResourceMeta result = bannerService.get(HASH);
 
-        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getHash()).isEqualTo(HASH);
     }
 
     @SuppressWarnings("unchecked")
@@ -220,7 +223,9 @@ class BannerServiceTest {
 
         ResourceMeta result = bannerService.createByHash(HASH);
 
-        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getHash()).isEqualTo(HASH);
+        verify(listOperations).rightPush(ResourceConstant.BANNER_PREFIX, HASH);
     }
 
     @SuppressWarnings("unchecked")
@@ -235,6 +240,7 @@ class BannerServiceTest {
         assertThatThrownBy(() -> bannerService.create("1"))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("数量已达上限");
+        verify(listOperations, never()).rightPush(anyString(), any());
     }
 
     @SuppressWarnings("unchecked")
@@ -251,6 +257,7 @@ class BannerServiceTest {
         assertThatThrownBy(() -> bannerService.create("1"))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("该资源已存在于轮播图中");
+        verify(listOperations, never()).rightPush(anyString(), any());
     }
 
     @SuppressWarnings("unchecked")
@@ -267,7 +274,8 @@ class BannerServiceTest {
 
         ResourceMeta result = bannerService.update(2, "1");
 
-        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getHash()).isEqualTo(HASH);
         verify(listOperations).set(ResourceConstant.BANNER_PREFIX, 2, HASH);
     }
 
@@ -375,7 +383,8 @@ class BannerServiceTest {
 
         ResourceMeta result = bannerService.updateByHash(2, HASH);
 
-        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getHash()).isEqualTo(HASH);
         verify(listOperations).set(ResourceConstant.BANNER_PREFIX, 2, HASH);
     }
 
@@ -395,6 +404,7 @@ class BannerServiceTest {
         assertThatThrownBy(() -> bannerService.update(2, "1"))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("该资源已存在于轮播图中");
+        verify(listOperations, never()).set(anyString(), anyLong(), any());
     }
 
     // ==================== getUserList empty ====================

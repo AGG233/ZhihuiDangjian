@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +37,11 @@ class ResourceMetaServiceTest {
     @Spy
     @InjectMocks
     private ResourceMetaService resourceMetaService;
+
+    @BeforeEach
+    void resetSpy() {
+        reset(resourceMetaService);
+    }
 
     private static final Long RESOURCE_ID = 1L;
     private static final String HASH = "abc123";

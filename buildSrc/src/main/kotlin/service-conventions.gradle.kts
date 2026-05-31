@@ -75,6 +75,12 @@ val integrationTest = tasks.register<Test>("integrationTest") {
     useJUnitPlatform()
 }
 
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+    maxParallelForks = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
+    forkEvery = 100
+}
+
 tasks.check {
     dependsOn(integrationTest)
 }

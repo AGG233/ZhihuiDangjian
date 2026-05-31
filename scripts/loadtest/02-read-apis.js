@@ -1,12 +1,14 @@
 import http from 'k6/http';
 import { sleep, group } from 'k6';
-import { BASE_URL, TEST_USERS, login, getAuthParams, checkOk } from './shared.js';
+import { BASE_URL, loginWithPreset, registerAndLogin, getAuthParams, checkOk, handleSummary } from './shared.js';
+
+export { handleSummary };
 
 export const options = {
   stages: [
-    { duration: '30s', target: 50 },
-    { duration: '30s', target: 100 },
-    { duration: '30s', target: 200 },
+    { duration: '30s', target: 500 },
+    { duration: '1m', target: 1000 },
+    { duration: '2m', target: 2000 },
     { duration: '30s', target: 0 },
   ],
   thresholds: {
@@ -24,16 +26,19 @@ const ENDPOINTS = [
 ];
 
 export function setup() {
-  return TEST_USERS.map(function (u) { return login(u); }).filter(Boolean);
+  var token = loginWithPreset();
+  if (!token) {
+    token = registerAndLogin();
+  }
+  return { token: token };
 }
 
-export default function (tokens) {
-  let token = tokens[Math.floor(Math.random() * tokens.length)];
-  if (!token) return;
+export default function (data) {
+  if (!data.token) return;
 
-  let endpoint = ENDPOINTS[Math.floor(Math.random() * ENDPOINTS.length)];
+  var endpoint = ENDPOINTS[Math.floor(Math.random() * ENDPOINTS.length)];
   group(endpoint.name, function () {
-    let res = http.get(endpoint.url, getAuthParams(token));
+    var res = http.get(endpoint.url, getAuthParams(data.token));
     checkOk(res, endpoint.name);
   });
   sleep(Math.random() * 0.5 + 0.1);

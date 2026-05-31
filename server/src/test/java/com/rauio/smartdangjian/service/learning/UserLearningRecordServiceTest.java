@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
 import java.util.List;
 
 import org.apache.ibatis.builder.MapperBuilderAssistant;
@@ -32,7 +33,7 @@ class UserLearningRecordServiceTest {
         TableInfoHelper.initTableInfo(new MapperBuilderAssistant(new Configuration(), ""), UserLearningRecord.class);
         UserLearningRecordMapper mapper = mock(UserLearningRecordMapper.class);
         UserLearningRecordService service = new UserLearningRecordService(
-                mock(UserLearningRecordConvertor.class), mock(KnowledgeGraphService.class));
+                mock(UserLearningRecordConvertor.class), mock(KnowledgeGraphService.class), Clock.systemUTC());
         ReflectionTestUtils.setField(service, "baseMapper", mapper);
 
         when(mapper.selectPage(any(Page.class), any(Wrapper.class))).thenAnswer(invocation -> {

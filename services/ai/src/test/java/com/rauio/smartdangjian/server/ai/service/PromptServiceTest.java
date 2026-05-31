@@ -5,10 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.reset;
 
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +42,11 @@ class PromptServiceTest {
     @Spy
     @InjectMocks
     private PromptService promptService;
+
+    @BeforeEach
+    void resetSpy() {
+        reset(promptService);
+    }
 
     @Captor
     private ArgumentCaptor<AiPrompts> promptCaptor;

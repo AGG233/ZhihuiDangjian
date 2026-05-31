@@ -38,6 +38,7 @@ class SaTokenConfigureTest {
 
         verify(registry).addInterceptor(interceptorCaptor.capture());
         assertThat(interceptorCaptor.getValue()).isInstanceOf(SaInterceptor.class);
+        assertThat(interceptorCaptor.getValue().isAnnotation).isTrue();
         verify(registration).addPathPatterns("/**");
         verify(registration)
                 .excludePathPatterns(

@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
 import com.rauio.smartdangjian.server.quiz.mapper.QuizOptionMapper;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
@@ -68,6 +70,9 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
     public QuizOption get(Long id) {
         User user = userService.getCurrentUser();
         QuizOption quizOption = this.getById(id);
+        if (quizOption == null) {
+            throw new BusinessException(QuizErrorConstants.QUIZ_OPTION_NOT_FOUND, "选项不存在");
+        }
 
         if (user.getUserType() == UserType.STUDENT
                 && userQuizAnswerService

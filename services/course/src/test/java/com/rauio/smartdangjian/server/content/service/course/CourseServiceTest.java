@@ -7,11 +7,13 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.reset;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,6 +64,11 @@ class CourseServiceTest {
     @Spy
     @InjectMocks
     private CourseService courseService;
+
+    @BeforeEach
+    void resetSpy() {
+        reset(courseService);
+    }
 
     // ================================================================
     // get
@@ -317,6 +324,22 @@ class CourseServiceTest {
         assertThatThrownBy(() -> courseService.delete(999L))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("code", CourseErrorConstants.COURSE_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("delete removeById 失败时抛出 COURSE_DELETE_FAILED")
+    void deleteThrowsExceptionWhenRemoveByIdFails() {
+        Course target = Course.builder().id(1L).creatorId(1L).build();
+        User creator = User.builder().id(1L).universityId("1").build();
+
+        doReturn(target).when(courseService).getById(1L);
+        when(userMapper.selectById(1L)).thenReturn(creator);
+        when(categoryCourseMapper.delete(any(LambdaQueryWrapper.class))).thenReturn(1);
+        doReturn(false).when(courseService).removeById(1L);
+
+        assertThatThrownBy(() -> courseService.delete(1L))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", CourseErrorConstants.COURSE_DELETE_FAILED);
     }
 
     // ================================================================

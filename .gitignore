@@ -49,3 +49,5 @@ out/
 /TODO.md
 /CLAUDE.md
 .codegraph/
+scripts/loadtest/credentials.json
+.env

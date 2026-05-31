@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -14,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -41,17 +43,7 @@ import com.rauio.smartdangjian.server.resource.service.FileService;
 @AutoConfigureMockMvc(addFilters = false)
 @TestPropertySource(
         locations = "classpath:application-test.yaml",
-        properties = {
-            "REDIS_HOST=localhost",
-            "REDIS_PORT=6379",
-            "REDIS_DATABASE=0",
-            "DATABASE_URL=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
-            "DATABASE_USERNAME=sa",
-            "DATABASE_PASSWORD=",
-            "NEO4J_URI=bolt://localhost:7687",
-            "NEO4J_USERNAME=neo4j",
-            "NEO4J_PASSWORD=password"
-        })
+        properties = {"REDIS_HOST=localhost", "REDIS_PORT=6379", "REDIS_DATABASE=0"})
 @DisplayName("文件资源接口测试 (FileController)")
 class FileControllerTest {
 
@@ -60,6 +52,15 @@ class FileControllerTest {
             exclude = {
                 DataSourceAutoConfiguration.class,
                 HibernateJpaAutoConfiguration.class,
+                org.redisson.spring.starter.RedissonAutoConfigurationV2.class,
+                org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.neo4j.Neo4jAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.neo4j.Neo4jDataAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
+                cn.dev33.satoken.dao.SaTokenDaoForRedisTemplate.class,
+                com.rauio.smartdangjian.config.RedisConfig.class,
                 com.rauio.smartdangjian.config.TransactionConfig.class
             })
     @EnableWebMvc
@@ -75,6 +76,11 @@ class FileControllerTest {
 
     @MockitoBean
     private FileService fileService;
+
+    @BeforeEach
+    void resetMocks() {
+        reset(fileService);
+    }
 
     // ═══════════════════════════════════════════════════════════════
     // NormalUploadFlowTests

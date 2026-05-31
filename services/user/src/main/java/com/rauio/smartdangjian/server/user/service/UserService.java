@@ -170,6 +170,9 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @throws BusinessException 如果注册失败
      */
     public void register(User user) {
+        if (user == null) {
+            throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "有空参数");
+        }
         checkEmailRegistered(user.getEmail());
         checkPhoneRegistered(user.getPhone());
         checkUsernameOccupied(user.getUsername());

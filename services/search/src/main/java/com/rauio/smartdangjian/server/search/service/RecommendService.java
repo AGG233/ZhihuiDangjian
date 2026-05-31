@@ -1,6 +1,8 @@
 package com.rauio.smartdangjian.server.search.service;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -47,6 +49,7 @@ public class RecommendService {
     private final UserSimilarityService userSimilarityService;
     private final Neo4jClient neo4jClient;
     private final UserProfileService userProfileService;
+    private final Clock clock;
 
     // ==================== 综合推荐 ====================
 
@@ -295,7 +298,7 @@ public class RecommendService {
                         .userId2(relatedUserId)
                         .similarityScore(similarityScore)
                         .isValid(true)
-                        .calculatedAt(java.time.LocalDateTime.now())
+                        .calculatedAt(LocalDateTime.now(clock))
                         .build();
 
                 if (topQueue.size() < TOP_N_NEIGHBORS) {

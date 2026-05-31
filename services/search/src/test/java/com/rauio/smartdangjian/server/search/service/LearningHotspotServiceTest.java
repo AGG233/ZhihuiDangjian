@@ -6,15 +6,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -38,8 +41,15 @@ class LearningHotspotServiceTest {
     @Mock
     private CourseMapper courseMapper;
 
-    @InjectMocks
     private LearningHotspotService learningHotspotService;
+
+    private static final Clock FIXED_CLOCK =
+            Clock.fixed(Instant.parse("2026-05-31T10:15:30Z"), ZoneId.of("UTC"));
+
+    @BeforeEach
+    void setUp() {
+        learningHotspotService = new LearningHotspotService(userLearningRecordMapper, courseMapper, FIXED_CLOCK);
+    }
 
     // ==================== getHotCourses ====================
 
@@ -199,8 +209,8 @@ class LearningHotspotServiceTest {
     @Test
     @DisplayName("正常返回趋势数据")
     void getTrendsReturnsDailyData() {
-        String today = LocalDate.now().toString();
-        String yesterday = LocalDate.now().minusDays(1).toString();
+        String today = LocalDate.now(FIXED_CLOCK).toString();
+        String yesterday = LocalDate.now(FIXED_CLOCK).minusDays(1).toString();
 
         TrendRaw trend1 = new TrendRaw();
         trend1.setDate(yesterday);
@@ -228,9 +238,9 @@ class LearningHotspotServiceTest {
     @Test
     @DisplayName("缺失日期自动补 0")
     void getTrendsMissingDatesFilledWithZero() {
-        String today = LocalDate.now().toString();
-        String yesterday = LocalDate.now().minusDays(1).toString();
-        String twoDaysAgo = LocalDate.now().minusDays(2).toString();
+        String today = LocalDate.now(FIXED_CLOCK).toString();
+        String yesterday = LocalDate.now(FIXED_CLOCK).minusDays(1).toString();
+        String twoDaysAgo = LocalDate.now(FIXED_CLOCK).minusDays(2).toString();
 
         TrendRaw trend = new TrendRaw();
         trend.setDate(today);

@@ -38,7 +38,7 @@ public class AdminContentController {
         for (ChapterContentBlock block : chapterContentBlocks) {
             block.setChapterId(CAROUSEL_PARENT_ID);
         }
-        return Result.ok(chapterContentBlockService.saveBatch(chapterContentBlocks));
+        return Result.ok(chapterContentBlockService.createBatch(chapterContentBlocks));
     }
 
     @Operation(summary = "删除轮播图")

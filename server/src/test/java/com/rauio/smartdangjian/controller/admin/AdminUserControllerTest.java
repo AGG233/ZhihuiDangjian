@@ -46,17 +46,7 @@ import com.rauio.smartdangjian.utils.spec.UserType;
 @AutoConfigureMockMvc(addFilters = false)
 @TestPropertySource(
         locations = "classpath:application-test.yaml",
-        properties = {
-            "REDIS_HOST=localhost",
-            "REDIS_PORT=6379",
-            "REDIS_DATABASE=0",
-            "DATABASE_URL=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
-            "DATABASE_USERNAME=sa",
-            "DATABASE_PASSWORD=",
-            "NEO4J_URI=bolt://localhost:7687",
-            "NEO4J_USERNAME=neo4j",
-            "NEO4J_PASSWORD=password"
-        })
+        properties = {"REDIS_HOST=localhost", "REDIS_PORT=6379", "REDIS_DATABASE=0"})
 @DisplayName("管理员用户接口测试")
 class AdminUserControllerTest extends BaseControllerTest {
 
@@ -65,6 +55,15 @@ class AdminUserControllerTest extends BaseControllerTest {
             exclude = {
                 DataSourceAutoConfiguration.class,
                 HibernateJpaAutoConfiguration.class,
+                org.redisson.spring.starter.RedissonAutoConfigurationV2.class,
+                org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.neo4j.Neo4jAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.neo4j.Neo4jDataAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
+                cn.dev33.satoken.dao.SaTokenDaoForRedisTemplate.class,
+                com.rauio.smartdangjian.config.RedisConfig.class,
                 com.rauio.smartdangjian.config.TransactionConfig.class
             })
     @EnableWebMvc

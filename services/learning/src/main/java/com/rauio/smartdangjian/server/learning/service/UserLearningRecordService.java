@@ -1,5 +1,6 @@
 package com.rauio.smartdangjian.server.learning.service;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -30,6 +31,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
 
     private final UserLearningRecordConvertor convertor;
     private final KnowledgeGraphService knowledgeGraphService;
+    private final Clock clock;
 
     /**
      * 根据学习记录 ID 获取详情。
@@ -88,7 +90,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      */
     public List<UserLearningRecord> getRecentByUserId(String userId, Integer recentDays) {
         int days = recentDays == null || recentDays <= 0 ? 7 : recentDays;
-        LocalDateTime threshold = LocalDateTime.now().minusDays(days);
+        LocalDateTime threshold = LocalDateTime.now(clock).minusDays(days);
 
         return this.list(new LambdaQueryWrapper<UserLearningRecord>()
                 .eq(UserLearningRecord::getUserId, userId)
@@ -185,7 +187,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
         UserLearningRecord record = convertor.toEntity(dto);
 
         if (record.getCreatedAt() == null) {
-            record.setCreatedAt(LocalDateTime.now());
+            record.setCreatedAt(LocalDateTime.now(clock));
         }
 
         if (record.getStartTime() != null && record.getEndTime() != null) {

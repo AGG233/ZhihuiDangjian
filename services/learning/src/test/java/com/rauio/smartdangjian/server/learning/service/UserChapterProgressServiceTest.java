@@ -5,15 +5,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -33,9 +35,14 @@ class UserChapterProgressServiceTest {
     @Mock
     private UserChapterProgressConvertor convertor;
 
-    @Spy
-    @InjectMocks
     private UserChapterProgressService progressService;
+
+    @BeforeEach
+    void resetSpy() {
+        progressService = spy(new UserChapterProgressService(
+                convertor,
+                Clock.fixed(Instant.parse("2026-05-31T10:15:30Z"), ZoneId.of("UTC"))));
+    }
 
     private static final Long PROGRESS_ID = 1L;
     private static final Long USER_ID = 1L;

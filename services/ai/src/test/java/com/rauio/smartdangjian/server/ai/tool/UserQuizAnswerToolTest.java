@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -104,5 +105,27 @@ class UserQuizAnswerToolTest {
         List<UserQuizAnswer> result = userQuizAnswerTool.getQuizAnswersByQuizId("1", toolContext);
 
         assertThat(result).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("getQuizAnswersByQuizId quizId 非数字时抛出参数异常")
+    void getQuizAnswersByQuizIdInvalidQuizId() {
+        ToolContext toolContext = mock(ToolContext.class);
+        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
+
+        assertThatThrownBy(() -> userQuizAnswerTool.getQuizAnswersByQuizId("not-a-number", toolContext))
+                .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    @DisplayName("getRecentQuizAnswers 当前用户缺失时以 null userId 查询")
+    void getRecentQuizAnswersWithMissingCurrentUser() {
+        ToolContext toolContext = mock(ToolContext.class);
+        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn(null);
+        when(userQuizAnswerService.getByUserId(null)).thenReturn(List.of());
+
+        List<UserQuizAnswer> result = userQuizAnswerTool.getRecentQuizAnswers(5, toolContext);
+
+        assertThat(result).isEmpty();
     }
 }

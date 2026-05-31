@@ -6,15 +6,21 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -40,9 +46,15 @@ class UserLearningRecordServiceTest {
     @Mock
     private KnowledgeGraphService knowledgeGraphService;
 
-    @Spy
-    @InjectMocks
     private UserLearningRecordService recordService;
+
+    @BeforeEach
+    void resetSpy() {
+        recordService = spy(new UserLearningRecordService(
+                convertor,
+                knowledgeGraphService,
+                Clock.fixed(Instant.parse("2026-05-31T10:15:30Z"), ZoneId.of("UTC"))));
+    }
 
     private static final Long RECORD_ID = 1L;
     private static final Long USER_ID = 1L;
@@ -166,14 +178,29 @@ class UserLearningRecordServiceTest {
         assertThat(result).isEmpty();
     }
 
-    @Test
-    @DisplayName("getRecentByUserId 天数小于等于0时默认为7天")
-    void getRecentByUserIdNonPositiveDays() {
+    @ParameterizedTest(name = "days={0}")
+    @NullSource
+    @ValueSource(ints = {0, -1, -30})
+    @DisplayName("getRecentByUserId 天数为空或小于等于0时默认为7天")
+    void getRecentByUserIdNonPositiveDays(Integer days) {
         doReturn(List.of()).when(recordService).list(any(LambdaQueryWrapper.class));
 
-        List<UserLearningRecord> result = recordService.getRecentByUserId("1", 0);
+        List<UserLearningRecord> result = recordService.getRecentByUserId("1", days);
 
         assertThat(result).isEmpty();
+    }
+
+    @ParameterizedTest(name = "userId=''{0}''")
+    @NullAndEmptySource
+    @ValueSource(strings = {" ", "\t"})
+    @DisplayName("getRecentByUserId 用户 ID 为空白时仍按条件查询并返回查询结果")
+    void getRecentByUserIdBlankUserId(String userId) {
+        doReturn(List.of()).when(recordService).list(any(LambdaQueryWrapper.class));
+
+        List<UserLearningRecord> result = recordService.getRecentByUserId(userId, 7);
+
+        assertThat(result).isEmpty();
+        verify(recordService).list(any(LambdaQueryWrapper.class));
     }
 
     // ==================== getByChapterId ====================

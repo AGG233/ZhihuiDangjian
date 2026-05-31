@@ -9,12 +9,15 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -49,8 +52,16 @@ class AuthServiceTest {
     @Mock
     private UserService userService;
 
-    @InjectMocks
     private AuthService authService;
+
+    @org.junit.jupiter.api.BeforeEach
+    void setUp() {
+        authService = new AuthService(
+                captchaService,
+                userMapper,
+                userService,
+                Clock.fixed(Instant.parse("2026-05-31T10:15:30Z"), ZoneId.of("UTC")));
+    }
 
     // ================================================================
     // login
@@ -331,6 +342,10 @@ class AuthServiceTest {
 
             assertThat(result).isNotNull();
             assertThat(result.getCode()).isEqualTo("200");
+            assertThat(result.getMessage()).isEqualTo("OK");
+            ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+            verify(userMapper).insert(userCaptor.capture());
+            assertThat(userCaptor.getValue().getEmail()).isNull();
         }
     }
 
@@ -512,6 +527,10 @@ class AuthServiceTest {
 
             assertThat(result).isNotNull();
             assertThat(result.getCode()).isEqualTo("200");
+            assertThat(result.getMessage()).isEqualTo("OK");
+            ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+            verify(userMapper).insert(userCaptor.capture());
+            assertThat(userCaptor.getValue().getEmail()).isEmpty();
         }
     }
 
@@ -531,6 +550,10 @@ class AuthServiceTest {
 
             assertThat(result).isNotNull();
             assertThat(result.getCode()).isEqualTo("200");
+            assertThat(result.getMessage()).isEqualTo("OK");
+            ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+            verify(userMapper).insert(userCaptor.capture());
+            assertThat(userCaptor.getValue().getPartyMemberId()).isNull();
         }
     }
 
@@ -550,6 +573,10 @@ class AuthServiceTest {
 
             assertThat(result).isNotNull();
             assertThat(result.getCode()).isEqualTo("200");
+            assertThat(result.getMessage()).isEqualTo("OK");
+            ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+            verify(userMapper).insert(userCaptor.capture());
+            assertThat(userCaptor.getValue().getPartyMemberId()).isEmpty();
         }
     }
 }

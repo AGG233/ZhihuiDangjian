@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.reset;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,6 +54,11 @@ class CategoryServiceTest {
     @Spy
     @InjectMocks
     private CategoryService categoryService;
+
+    @BeforeEach
+    void resetSpy() {
+        reset(categoryService);
+    }
 
     private MockedStatic<SecurityUtils> securityUtilsMock;
 

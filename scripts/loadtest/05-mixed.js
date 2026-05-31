@@ -1,12 +1,14 @@
 import http from 'k6/http';
 import { sleep } from 'k6';
-import { BASE_URL, TEST_USERS, login, getAuthParams, checkOk } from './shared.js';
+import { BASE_URL, loginWithPreset, registerAndLogin, getAuthParams, checkOk, handleSummary } from './shared.js';
+
+export { handleSummary };
 
 export const options = {
   stages: [
-    { duration: '30s', target: 20 },
-    { duration: '2m', target: 50 },
-    { duration: '2m', target: 80 },
+    { duration: '30s', target: 200 },
+    { duration: '2m', target: 500 },
+    { duration: '2m', target: 800 },
     { duration: '1m', target: 0 },
   ],
   thresholds: {
@@ -24,32 +26,32 @@ const READ_ENDPOINTS = [
 ];
 
 export function setup() {
-  return TEST_USERS.map(function (u) { return login(u); }).filter(Boolean);
+  var token = loginWithPreset();
+  if (!token) {
+    token = registerAndLogin();
+  }
+  return { token: token };
 }
 
-export default function (tokens) {
-  const rand = Math.random();
+export default function (data) {
+  if (!data.token) return;
+
+  var rand = Math.random();
 
   if (rand < 0.6) {
-    const token = tokens[Math.floor(Math.random() * tokens.length)];
-    if (!token) return;
-    const ep = READ_ENDPOINTS[Math.floor(Math.random() * READ_ENDPOINTS.length)];
-    const res = http.get(ep.url, getAuthParams(token));
+    var ep = READ_ENDPOINTS[Math.floor(Math.random() * READ_ENDPOINTS.length)];
+    var res = http.get(ep.url, getAuthParams(data.token));
     checkOk(res, ep.name);
   } else if (rand < 0.85) {
-    const token3 = tokens[Math.floor(Math.random() * tokens.length)];
-    if (!token3) return;
-    const res3 = http.post(
+    var res2 = http.post(
       BASE_URL + '/api/user/users/search',
       JSON.stringify({}),
-      getAuthParams(token3),
+      getAuthParams(data.token),
     );
-    checkOk(res3, 'user-search');
+    checkOk(res2, 'user-search');
   } else {
-    const token4 = tokens[Math.floor(Math.random() * tokens.length)];
-    if (!token4) return;
-    const res4 = http.get(BASE_URL + '/api/graph/knowledge-graphs/users/1', getAuthParams(token4));
-    checkOk(res4, 'knowledge-graph');
+    var res3 = http.get(BASE_URL + '/api/graph/knowledge-graphs/users/1', getAuthParams(data.token));
+    checkOk(res3, 'knowledge-graph');
   }
 
   sleep(Math.random() * 1 + 0.5);

@@ -4,9 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.reset;
 
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +35,11 @@ class ChapterContentBlockServiceTest {
     @Spy
     @InjectMocks
     private ChapterContentBlockService service;
+
+    @BeforeEach
+    void resetSpy() {
+        reset(service);
+    }
 
     private static final Long BLOCK_ID = 1L;
     private static final Long CHAPTER_ID = 100L;
@@ -125,6 +132,20 @@ class ChapterContentBlockServiceTest {
         Boolean result = service.update(entity);
 
         assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("update 更新内容块失败返回 false")
+    void updateFailed() {
+        ChapterContentBlock entity = ChapterContentBlock.builder()
+                .id(BLOCK_ID)
+                .textContent("updated")
+                .build();
+        doReturn(false).when(service).updateById(any(ChapterContentBlock.class));
+
+        Boolean result = service.update(entity);
+
+        assertThat(result).isFalse();
     }
 
     // ==================== get ====================

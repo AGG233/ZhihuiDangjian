@@ -10,9 +10,13 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 
@@ -22,9 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -94,9 +96,22 @@ class RecommendServiceTest {
     @Mock
     private UserProfileService userProfileService;
 
-    @Spy
-    @InjectMocks
     private RecommendService recommendService;
+
+    @BeforeEach
+    void resetSpy() {
+        recommendService = spy(new RecommendService(
+                userLearningRecordMapper,
+                userChapterProgressMapper,
+                userSimilarityMapper,
+                chapterMapper,
+                categoryCourseMapper,
+                courseMapper,
+                userSimilarityService,
+                neo4jClient,
+                userProfileService,
+                Clock.fixed(Instant.parse("2026-05-31T10:15:30Z"), ZoneId.of("UTC"))));
+    }
 
     @Mock
     private Neo4jClient.UnboundRunnableSpec unboundRunnableSpec;

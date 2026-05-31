@@ -9,6 +9,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +20,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -36,8 +41,15 @@ class QuizManageToolTest {
     @Mock
     private QuizOptionService quizOptionService;
 
-    @InjectMocks
     private QuizManageTool quizManageTool;
+
+    @org.junit.jupiter.api.BeforeEach
+    void setUp() {
+        quizManageTool = new QuizManageTool(
+                quizService,
+                quizOptionService,
+                Clock.fixed(Instant.parse("2026-05-31T10:15:30Z"), ZoneId.of("UTC")));
+    }
 
     @Test
     @DisplayName("getQuiz 返回存在的测验")
@@ -346,6 +358,15 @@ class QuizManageToolTest {
             assertThat(result).hasSize(2);
             assertThat(result.get(0).getQuestion()).isEqualTo("题1");
             assertThat(result.get(1).getQuestion()).isEqualTo("题2");
+        }
+
+        @ParameterizedTest(name = "chapterId=''{0}''")
+        @NullSource
+        @EmptySource
+        @DisplayName("null/empty chapter id throws BusinessException")
+        void throwsWhenChapterIdIsNullOrEmpty(String chapterId) {
+            assertThatThrownBy(() -> quizManageTool.searchQuizzesByChapter(chapterId))
+                    .isInstanceOf(BusinessException.class);
         }
 
         @Test
