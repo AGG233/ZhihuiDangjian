@@ -22,11 +22,11 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(transactionManager = "dataSourceTransactionManager")
 public class AiMemoryService {
 
     private final AiChatMessageService aiChatMessageService;
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", rollbackFor = Exception.class)
     public void saveConversation(String userId, String sessionId, String agentType, String input, String output) {
         if (userId == null || sessionId == null || userId.isBlank() || sessionId.isBlank()) {
             return;
@@ -39,6 +39,7 @@ public class AiMemoryService {
                 buildMessage(userId, sessionId, agentType, SENDER_ASSISTANT, MESSAGE_OUTPUT, safeOutput, metadata));
     }
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", readOnly = true)
     public String buildLongTermMemory(String userId, String sessionId, int limit) {
         if (userId == null || userId.isBlank()) {
             return "";
@@ -68,6 +69,7 @@ public class AiMemoryService {
         return builder.toString().trim();
     }
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", readOnly = true)
     public List<AiChatMessageResponse> listSessionMessages(String userId, String sessionId) {
         return aiChatMessageService
                 .list(new LambdaQueryWrapper<AiChatMessage>()

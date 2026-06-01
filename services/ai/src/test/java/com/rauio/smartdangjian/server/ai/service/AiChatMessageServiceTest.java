@@ -17,6 +17,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -50,6 +51,18 @@ class AiChatMessageServiceTest {
         baseMapperField.set(realService, mapper);
 
         aiChatMessageService = Mockito.spy(realService);
+    }
+
+    @Test
+    @DisplayName("AiChatMessageService 类级无 @Transactional；无自定义方法无需方法级事务")
+    void transactionalBoundariesAreMethodLevel() throws NoSuchMethodException {
+        assertThat(AiChatMessageService.class.getAnnotation(Transactional.class))
+                .isNull();
+        // AiChatMessageService has no custom methods; inherited ServiceImpl methods
+        // rely on caller's transaction context.
+        assertThat(AiChatMessageService.class.getDeclaredMethods())
+                .filteredOn(m -> !m.isSynthetic())
+                .allMatch(m -> m.getAnnotation(Transactional.class) == null);
     }
 
     @Test

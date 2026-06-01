@@ -116,8 +116,7 @@ class SecurityPermissionAuthorizationIntegrationTest extends AbstractSecurityAut
     private void verifyServiceNotCalled(String requiredPermission) {
         switch (requiredPermission) {
             case "file:write" ->
-                verify(fileService, org.mockito.Mockito.never())
-                        .confirmUpload(org.mockito.ArgumentMatchers.anyLong());
+                verify(fileService, org.mockito.Mockito.never()).confirmUpload(org.mockito.ArgumentMatchers.anyLong());
             case "file:delete" ->
                 verify(fileService, org.mockito.Mockito.never()).delete(org.mockito.ArgumentMatchers.anyLong());
             case "graph:read" ->
@@ -125,21 +124,15 @@ class SecurityPermissionAuthorizationIntegrationTest extends AbstractSecurityAut
                         .getUserGraph(org.mockito.ArgumentMatchers.anyString());
             case "user:update" ->
                 verify(userService, org.mockito.Mockito.never())
-                        .update(
-                                org.mockito.ArgumentMatchers.anyLong(),
-                                org.mockito.ArgumentMatchers.any());
+                        .update(org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.any());
             case "course:read" ->
-                verify(courseService, org.mockito.Mockito.never())
-                        .getByUserId(org.mockito.ArgumentMatchers.anyLong());
+                verify(courseService, org.mockito.Mockito.never()).getByUserId(org.mockito.ArgumentMatchers.anyLong());
             case "quiz:read" ->
                 verify(userQuizAnswerService, org.mockito.Mockito.never())
                         .getByUserId(org.mockito.ArgumentMatchers.anyLong());
             case "quiz:answer" ->
-                verify(userQuizAnswerService, org.mockito.Mockito.never())
-                        .create(org.mockito.ArgumentMatchers.any());
+                verify(userQuizAnswerService, org.mockito.Mockito.never()).create(org.mockito.ArgumentMatchers.any());
             default -> throw new IllegalArgumentException("Unsupported permission: " + requiredPermission);
         }
     }
-
-
 }
