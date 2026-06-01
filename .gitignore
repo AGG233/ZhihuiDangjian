@@ -51,3 +51,4 @@ out/
 .codegraph/
 scripts/loadtest/credentials.json
 .env
+workflow-*.html
