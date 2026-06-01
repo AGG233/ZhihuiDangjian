@@ -1,20 +1,19 @@
 package com.rauio.smartdangjian.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+
+import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.servlet.config.annotation.CorsRegistration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistration;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import com.rauio.smartdangjian.aop.resolver.ResourceOwnerResolver;
 import com.rauio.smartdangjian.exception.GlobalExceptionHandler;
 
-@DisplayName("WebConfig 配置测试")
+import jakarta.servlet.ServletContext;
+
 class WebConfigTest {
 
     private final WebConfig webConfig = new WebConfig();
@@ -57,5 +56,26 @@ class WebConfigTest {
 
         verify(registry).addResourceHandler("/uploads/**");
         verify(resourceHandlerRegistration).addResourceLocations("file:./uploads/");
+    }
+
+    @Test
+    @DisplayName("addResourceHandlers 可安全调用")
+    void addResourceHandlers() {
+        var appContext = mock(org.springframework.context.ApplicationContext.class);
+        var servletContext = mock(ServletContext.class);
+        var registry = new org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry(appContext, servletContext);
+
+        config.addResourceHandlers(registry);
+
+        assertThat(config).isInstanceOf(WebMvcConfigurer.class);
+    }
+
+    @Test
+    @DisplayName("resourceAccessAspect 创建 ResourceAccessAspect 实例")
+    void resourceAccessAspect() {
+        var resolvers = List.<ResourceOwnerResolver>of();
+        var aspect = config.resourceAccessAspect(resolvers);
+
+        assertThat(aspect).isNotNull();
     }
 }

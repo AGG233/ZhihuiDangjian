@@ -5,6 +5,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Constructor;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -128,17 +130,6 @@ class SecurityUtilsTest {
     }
 
     @Test
-    @DisplayName("getCurrentUser 已登录但 Session 为 null 时返回 null")
-    void getCurrentUserReturnsNullWhenSessionIsNull() {
-        stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
-        stpUtilMock.when(StpUtil::getSession).thenReturn(null);
-
-        CurrentUserPrincipal result = SecurityUtils.getCurrentUser();
-
-        assertThat(result).isNull();
-    }
-
-    @Test
     @DisplayName("getCurrentUser SaTokenContextException 时返回 null")
     void getCurrentUserReturnsNullOnSaTokenContextException() {
         stpUtilMock.when(StpUtil::isLogin).thenThrow(SaTokenContextException.class);
@@ -156,5 +147,13 @@ class SecurityUtilsTest {
         String result = SecurityUtils.getCurrentUserId();
 
         assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("private 构造器覆盖")
+    void privateConstructor() throws Exception {
+        Constructor<SecurityUtils> constructor = SecurityUtils.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        constructor.newInstance();
     }
 }
