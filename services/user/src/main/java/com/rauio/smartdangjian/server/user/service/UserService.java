@@ -241,14 +241,14 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     /**
      * 按条件分页查询用户（管理员侧，返回完整信息）。
      *
-     * @param dto 查询条件
+     * @param request 查询条件
      * @param pageNum 页码
      * @param pageSize 每页条数
      * @return 用户完整信息分页结果
      */
     public Page<User> getAdminPage(UserRequest request, int pageNum, int pageSize) {
         Page<User> pageInfo = new Page<>(pageNum, pageSize);
-        LambdaQueryWrapper<User> wrapper = buildQueryWrapper(request);
+        LambdaQueryWrapper<User> wrapper = buildAdminQueryWrapper(request);
         return this.page(pageInfo, wrapper);
     }
 
@@ -261,8 +261,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
                         StringUtils.isNotBlank(request.getPartyMemberId()),
                         User::getPartyMemberId,
                         request.getPartyMemberId())
-                .like(StringUtils.isNotBlank(request.getEmail()), User::getEmail, request.getEmail())
-                .like(StringUtils.isNotBlank(request.getPhone()), User::getPhone, request.getPhone())
                 .eq(request.getUserType() != null, User::getUserType, request.getUserType())
                 .eq(request.getPartyStatus() != null, User::getPartyStatus, request.getPartyStatus())
                 .eq(StringUtils.isNotBlank(request.getUniversityId()), User::getUniversityId, request.getUniversityId())
@@ -317,5 +315,22 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         if (this.exists(queryWrapper)) {
             throw new BusinessException(UserErrorConstants.PARTY_MEMBER_ID_EXISTS, "党员编号已存在");
         }
+    }
+
+    private LambdaQueryWrapper<User> buildAdminQueryWrapper(UserRequest request) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(StringUtils.isNotBlank(request.getUsername()), User::getUsername, request.getUsername())
+                .like(StringUtils.isNotBlank(request.getRealName()), User::getRealName, request.getRealName())
+                .like(
+                        StringUtils.isNotBlank(request.getPartyMemberId()),
+                        User::getPartyMemberId,
+                        request.getPartyMemberId())
+                .eq(StringUtils.isNotBlank(request.getEmail()), User::getEmail, request.getEmail())
+                .eq(StringUtils.isNotBlank(request.getPhone()), User::getPhone, request.getPhone())
+                .eq(request.getUserType() != null, User::getUserType, request.getUserType())
+                .eq(request.getPartyStatus() != null, User::getPartyStatus, request.getPartyStatus())
+                .eq(StringUtils.isNotBlank(request.getUniversityId()), User::getUniversityId, request.getUniversityId())
+                .like(StringUtils.isNotBlank(request.getBranchName()), User::getBranchName, request.getBranchName());
+        return wrapper;
     }
 }

@@ -12,4 +12,5 @@ public class UserErrorConstants {
     public static final int USER_NOT_EXISTS = 2005;
     public static final int EMPTY_ARGS = 2006;
     public static final int PASSWORD_CHANGE_ERROR = 2007;
+    public static final int PASSWORD_WEAK = 2008;
 }
