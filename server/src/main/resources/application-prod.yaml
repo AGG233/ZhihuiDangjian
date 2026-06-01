@@ -1,4 +1,7 @@
 spring:
+  data:
+    redis:
+      password: ${REDIS_PASSWORD}
   ai:
     openai:
       api-key: ${AI_KEY}

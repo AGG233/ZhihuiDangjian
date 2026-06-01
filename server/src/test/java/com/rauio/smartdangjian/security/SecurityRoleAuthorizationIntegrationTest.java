@@ -2,7 +2,6 @@ package com.rauio.smartdangjian.security;
 
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -147,6 +146,4 @@ class SecurityRoleAuthorizationIntegrationTest extends AbstractSecurityAuthoriza
                 Arguments.of("/api/content/chapters/1", "GET", "STUDENT"),
                 Arguments.of("/api/learning/graph/users/1/sync", "POST", "STUDENT"));
     }
-
-
 }

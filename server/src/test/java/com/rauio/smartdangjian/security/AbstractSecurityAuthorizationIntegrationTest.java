@@ -45,7 +45,6 @@ import com.rauio.smartdangjian.server.content.controller.admin.AdminCourseContro
 import com.rauio.smartdangjian.server.content.controller.user.UserCategoryController;
 import com.rauio.smartdangjian.server.content.controller.user.UserChapterController;
 import com.rauio.smartdangjian.server.content.controller.user.UserCourseController;
-import com.rauio.smartdangjian.server.content.pojo.response.CategoryResponse;
 import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
 import com.rauio.smartdangjian.server.content.service.article.ArticleService;
 import com.rauio.smartdangjian.server.content.service.category.CategoryService;
@@ -54,7 +53,6 @@ import com.rauio.smartdangjian.server.content.service.course.CourseService;
 import com.rauio.smartdangjian.server.graph.controller.admin.AdminPartyHistoryController;
 import com.rauio.smartdangjian.server.graph.controller.user.UserKnowledgeGraphController;
 import com.rauio.smartdangjian.server.graph.controller.user.UserPartyHistoryController;
-import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
 import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 import com.rauio.smartdangjian.server.graph.service.PartyHistoryGraphService;
 import com.rauio.smartdangjian.server.graph.service.PartyHistoryImportService;
@@ -64,7 +62,6 @@ import com.rauio.smartdangjian.server.learning.controller.admin.AdminLearningRec
 import com.rauio.smartdangjian.server.learning.controller.user.UserChapterProgressController;
 import com.rauio.smartdangjian.server.learning.controller.user.UserLearningGraphSyncController;
 import com.rauio.smartdangjian.server.learning.controller.user.UserLearningRecordController;
-import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
 import com.rauio.smartdangjian.server.quiz.controller.admin.AdminQuizAnswerController;
@@ -77,15 +74,12 @@ import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
 import com.rauio.smartdangjian.server.resource.controller.admin.AdminBannerController;
 import com.rauio.smartdangjian.server.resource.controller.admin.AdminResourceMetaController;
 import com.rauio.smartdangjian.server.resource.controller.user.FileController;
-import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.service.BannerService;
 import com.rauio.smartdangjian.server.resource.service.FileService;
 import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
 import com.rauio.smartdangjian.server.search.controller.LearningHotspotController;
 import com.rauio.smartdangjian.server.search.controller.SearchController;
-import com.rauio.smartdangjian.server.search.pojo.response.LearningTrendResponse;
 import com.rauio.smartdangjian.server.search.service.LearningHotspotService;
-import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 import com.rauio.smartdangjian.server.search.service.RecommendService;
 import com.rauio.smartdangjian.server.search.service.SearchService;
 import com.rauio.smartdangjian.server.search.service.UserProfileService;
@@ -99,7 +93,6 @@ import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.handler.SaAnnotationHandlerInterface;
 import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.exception.NotRoleException;
-import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.strategy.SaAnnotationStrategy;
 
 @SpringBootTest(

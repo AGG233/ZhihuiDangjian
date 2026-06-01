@@ -46,9 +46,7 @@ class QuizManageToolTest {
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
         quizManageTool = new QuizManageTool(
-                quizService,
-                quizOptionService,
-                Clock.fixed(Instant.parse("2026-05-31T10:15:30Z"), ZoneId.of("UTC")));
+                quizService, quizOptionService, Clock.fixed(Instant.parse("2026-05-31T10:15:30Z"), ZoneId.of("UTC")));
     }
 
     @Test

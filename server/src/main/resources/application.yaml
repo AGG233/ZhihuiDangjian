@@ -20,6 +20,15 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       database: ${REDIS_DATABASE}
+      password: ${REDIS_PASSWORD:}
+      timeout: 5s
+      connect-timeout: 2s
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 4
+          max-wait: 2s
   neo4j:
     uri: ${NEO4J_URI:bolt://localhost:7687}
     authentication:
