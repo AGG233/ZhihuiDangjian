@@ -28,6 +28,4 @@ class SecurityLoginAuthorizationIntegrationTest extends AbstractSecurityAuthoriz
                     .andExpect(jsonPath("$.message").value("未登录或登录已过期，请重新登录"));
         }
     }
-
-
 }

@@ -207,7 +207,8 @@ class UserSocialAuthorizationIntegrationTest {
 
         @Override
         public void addInterceptors(InterceptorRegistry registry) {
-            registry.addInterceptor(new SaInterceptor(handle -> StpUtil.checkLogin())).addPathPatterns("/**");
+            registry.addInterceptor(new SaInterceptor(handle -> StpUtil.checkLogin()))
+                    .addPathPatterns("/**");
         }
 
         @Bean

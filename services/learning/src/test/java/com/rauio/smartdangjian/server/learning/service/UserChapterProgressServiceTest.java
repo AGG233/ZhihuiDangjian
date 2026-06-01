@@ -40,8 +40,7 @@ class UserChapterProgressServiceTest {
     @BeforeEach
     void resetSpy() {
         progressService = spy(new UserChapterProgressService(
-                convertor,
-                Clock.fixed(Instant.parse("2026-05-31T10:15:30Z"), ZoneId.of("UTC"))));
+                convertor, Clock.fixed(Instant.parse("2026-05-31T10:15:30Z"), ZoneId.of("UTC"))));
     }
 
     private static final Long PROGRESS_ID = 1L;

@@ -21,11 +21,11 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(transactionManager = "dataSourceTransactionManager")
 public class PromptService extends ServiceImpl<AiPromptsMapper, AiPrompts> {
 
     private final PromptConvertor convertor;
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", rollbackFor = Exception.class)
     public AiPromptResponse create(AiPromptCreateRequest request) {
         AiPrompts prompt = AiPrompts.builder()
                 .agentType(request.getAgentType().toUpperCase())
@@ -39,6 +39,7 @@ public class PromptService extends ServiceImpl<AiPromptsMapper, AiPrompts> {
         return convertor.toResponse(prompt);
     }
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", rollbackFor = Exception.class)
     public AiPromptResponse update(String id, AiPromptUpdateRequest request) {
         AiPrompts prompt = this.getById(id);
         if (prompt == null) {
@@ -66,14 +67,17 @@ public class PromptService extends ServiceImpl<AiPromptsMapper, AiPrompts> {
         return convertor.toResponse(prompt);
     }
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", readOnly = true)
     public AiPromptResponse getByIdResponse(String id) {
         return convertor.toResponse(this.getById(id));
     }
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", readOnly = true)
     public List<AiPromptResponse> listResponses() {
         return convertor.toResponseList(this.list());
     }
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", readOnly = true)
     public List<AiPrompts> listEnabledSystemPrompts(String agentType) {
         return this.list(new LambdaQueryWrapper<AiPrompts>()
                 .eq(AiPrompts::getEnabled, true)
@@ -91,6 +95,7 @@ public class PromptService extends ServiceImpl<AiPromptsMapper, AiPrompts> {
         }
     }
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", readOnly = true)
     public String buildSystemPrompt(String agentType) {
         List<AiPrompts> prompts = listEnabledSystemPrompts(agentType);
         if (prompts.isEmpty()) {

@@ -19,9 +19,9 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(transactionManager = "dataSourceTransactionManager")
 public class SkillService extends ServiceImpl<AiSkillMapper, AiSkill> {
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", rollbackFor = Exception.class)
     public AiSkill create(AiSkillCreateRequest request) {
         AiSkill skill = AiSkill.builder()
                 .id(UUID.randomUUID().toString())
@@ -37,6 +37,7 @@ public class SkillService extends ServiceImpl<AiSkillMapper, AiSkill> {
         return skill;
     }
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", rollbackFor = Exception.class)
     public AiSkill update(String id, AiSkillUpdateRequest request) {
         AiSkill skill = this.getById(id);
         if (skill == null) {
@@ -67,6 +68,7 @@ public class SkillService extends ServiceImpl<AiSkillMapper, AiSkill> {
         return skill;
     }
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", readOnly = true)
     public List<AiSkill> listEnabledSkills() {
         return this.list(new LambdaQueryWrapper<AiSkill>()
                 .eq(AiSkill::getEnabled, true)

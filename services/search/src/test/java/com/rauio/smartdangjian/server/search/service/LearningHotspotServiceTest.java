@@ -43,8 +43,7 @@ class LearningHotspotServiceTest {
 
     private LearningHotspotService learningHotspotService;
 
-    private static final Clock FIXED_CLOCK =
-            Clock.fixed(Instant.parse("2026-05-31T10:15:30Z"), ZoneId.of("UTC"));
+    private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2026-05-31T10:15:30Z"), ZoneId.of("UTC"));
 
     @BeforeEach
     void setUp() {

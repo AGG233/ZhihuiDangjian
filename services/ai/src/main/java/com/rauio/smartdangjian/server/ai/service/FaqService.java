@@ -27,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-@Transactional(transactionManager = "dataSourceTransactionManager")
 public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
 
     /**
@@ -36,6 +35,7 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
      * @param input 用户输入文本（已通过安全过滤）
      * @return 匹配到的FAQ，无匹配返回Optional.empty()
      */
+    @Transactional(transactionManager = "dataSourceTransactionManager", readOnly = true)
     public Optional<AiFaq> match(String input) {
         if (input == null || input.isBlank()) {
             return Optional.empty();
@@ -60,6 +60,7 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
                 .anyMatch(k -> normalized.contains(normalize(k)));
     }
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", readOnly = true)
     @Cacheable(value = RedisConstants.AI_FAQ_CACHE_PREFIX, unless = "#result.isEmpty()")
     public List<AiFaq> getAllEnabledFaqs() {
         return lambdaQuery()
@@ -68,6 +69,7 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
                 .list();
     }
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", rollbackFor = Exception.class)
     @CacheEvict(value = RedisConstants.AI_FAQ_CACHE_PREFIX, allEntries = true)
     public AiFaqResponse createFaq(FaqCreateRequest request) {
         AiFaq faq = AiFaq.builder()
@@ -82,6 +84,7 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
         return toResponse(faq);
     }
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", rollbackFor = Exception.class)
     @CacheEvict(value = RedisConstants.AI_FAQ_CACHE_PREFIX, allEntries = true)
     public AiFaqResponse updateFaq(FaqUpdateRequest request) {
         AiFaq faq = this.getById(request.getId());
@@ -108,6 +111,7 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
         return toResponse(faq);
     }
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", rollbackFor = Exception.class)
     @CacheEvict(value = RedisConstants.AI_FAQ_CACHE_PREFIX, allEntries = true)
     public void deleteFaq(Long id) {
         boolean removed = this.removeById(id);
@@ -117,6 +121,7 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
         log.info("FAQ删除成功 id={}", id);
     }
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", readOnly = true)
     public AiFaqResponse getFaqResponse(Long id) {
         AiFaq faq = this.getById(id);
         if (faq == null) {
@@ -125,6 +130,7 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
         return toResponse(faq);
     }
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", readOnly = true)
     public IPage<AiFaqResponse> pageFaqs(int pageNum, int pageSize) {
         Page<AiFaq> page = new Page<>(pageNum, pageSize);
         IPage<AiFaq> result = this.page(page, new LambdaQueryWrapper<AiFaq>().orderByAsc(AiFaq::getSort));
