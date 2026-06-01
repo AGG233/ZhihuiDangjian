@@ -23,6 +23,7 @@ dependencies {
     api(libs.redisson)
     api(libs.springdoc.openapi.starter.webmvc.ui)
     api(libs.sensitive.word)
+    api("io.micrometer:micrometer-core")
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
 

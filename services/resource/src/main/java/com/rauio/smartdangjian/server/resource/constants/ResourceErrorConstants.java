@@ -12,6 +12,8 @@ public class ResourceErrorConstants {
     public static final int RESOURCE_DELETE_FAILED = 5004;
     public static final int RESOURCE_HASH_EXISTS = 5005;
     public static final int RESOURCE_OBJECT_KEY_EXISTS = 5006;
+    public static final int RESOURCE_INVALID_FILE = 5007;
+    public static final int RESOURCE_SERVICE_UNAVAILABLE = 5008;
 
     // 轮播图
     public static final int BANNER_NOT_FOUND = 5011;

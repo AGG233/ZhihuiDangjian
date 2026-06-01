@@ -2,10 +2,15 @@ package com.rauio.smartdangjian.server.resource.service;
 
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -13,8 +18,10 @@ import org.dromara.x.file.storage.core.FileInfo;
 import org.dromara.x.file.storage.core.FileStorageService;
 import org.dromara.x.file.storage.core.constant.Constant;
 import org.dromara.x.file.storage.core.presigned.GeneratePresignedUrlResult;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.resource.constants.ResourceConstant;
 import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
@@ -26,8 +33,10 @@ import com.rauio.smartdangjian.server.resource.pojo.request.UploadFileRequest;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
 import com.rauio.smartdangjian.server.user.service.UserService;
+import com.rauio.smartdangjian.service.PermissionValidator;
 
 import cn.hutool.core.date.DateUtil;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,11 +45,26 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class FileService {
 
+    private static final Map<String, Set<String>> ALLOWED_EXTENSIONS_BY_MIME = Map.of(
+            "image/jpeg", Set.of(".jpg", ".jpeg"),
+            "image/png", Set.of(".png"),
+            "image/gif", Set.of(".gif"),
+            "image/webp", Set.of(".webp"),
+            "video/mp4", Set.of(".mp4"),
+            "video/webm", Set.of(".webm"),
+            "application/pdf", Set.of(".pdf"));
+
     private final FileStorageService fileStorageService;
     private final UserService userService;
     private final ResourceMetaService resourceMetaService;
+    private final PermissionValidator permissionValidator;
 
+    @Value("${app.storage.local-root:./uploads}")
+    private String localStorageRoot;
+
+    @CircuitBreaker(name = "cosService", fallbackMethod = "uploadFallback")
     public FileUploadResponse upload(UploadFileRequest request) {
+        validateUploadRequest(request);
         String extension = extractExtension(request.getFileName());
         String uuid = UUID.randomUUID().toString().replace("-", "");
         String path = resolvePath(request.getMimeType());
@@ -85,8 +109,10 @@ public class FileService {
                 .build();
     }
 
+    @CircuitBreaker(name = "cosService", fallbackMethod = "confirmUploadFallback")
     public ResourceMeta confirmUpload(Long resourceId) {
         ResourceMeta meta = resourceMetaService.get(resourceId);
+        permissionValidator.requireResourceAccess(meta.getUploaderId(), "无权确认该文件");
         if (meta.getStatus() != null && meta.getStatus() == ResourceStatusConstants.PUBLIC) {
             return meta;
         }
@@ -96,21 +122,22 @@ public class FileService {
             exists = fileStorageService.exists(buildFileInfo(meta.getObjectKey()));
         } catch (Exception e) {
             log.warn("COS 文件检查失败，尝试检查本地文件", e);
-            exists = Files.exists(Path.of("./uploads", meta.getObjectKey()));
+            exists = Files.exists(resolveLocalPath(meta.getObjectKey()));
         }
 
         if (!exists) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "文件尚未上传到存储服务器，请先上传");
         }
+        resourceMetaService.markPublic(resourceId);
         meta.setStatus(ResourceStatusConstants.PUBLIC);
-        resourceMetaService.updateById(meta);
         return meta;
     }
 
     public void handleUploadCallback(Long resourceId, InputStream inputStream) {
         ResourceMeta meta = resourceMetaService.get(resourceId);
+        permissionValidator.requireResourceAccess(meta.getUploaderId(), "无权上传该文件");
         try {
-            Path filePath = Path.of("./uploads", meta.getObjectKey());
+            Path filePath = resolveLocalPath(meta.getObjectKey());
             Files.createDirectories(filePath.getParent());
             Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
         } catch (Exception e) {
@@ -119,11 +146,13 @@ public class FileService {
         }
     }
 
+    @CircuitBreaker(name = "cosService", fallbackMethod = "getFileInfoFallback")
     public FileInfoResponse getFileInfo(Long resourceId) {
         ResourceMeta meta = resourceMetaService.get(resourceId);
         return buildFileInfoResponse(meta);
     }
 
+    @CircuitBreaker(name = "cosService", fallbackMethod = "getFileInfoFallback")
     public FileInfoResponse getFileInfoByHash(String hash) {
         ResourceMeta meta = resourceMetaService.getByHash(hash);
         return buildFileInfoResponse(meta);
@@ -147,8 +176,10 @@ public class FileService {
         return generateDownloadUrl(meta.getObjectKey());
     }
 
+    @CircuitBreaker(name = "cosService", fallbackMethod = "deleteFallback")
     public void delete(Long resourceId) {
         ResourceMeta meta = resourceMetaService.get(resourceId);
+        permissionValidator.requireResourceAccess(meta.getUploaderId(), "无权删除该文件");
         try {
             FileInfo fileInfo = buildFileInfo(meta.getObjectKey());
             fileStorageService.delete(fileInfo);
@@ -160,11 +191,26 @@ public class FileService {
     }
 
     public List<String> getBatchByIds(List<Long> ids) {
-        return ids.stream().map(this::getDownloadUrl).collect(Collectors.toList());
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Long> distinctIds = ids.stream().distinct().collect(Collectors.toList());
+        List<ResourceMeta> metas = resourceMetaService.listByIds(distinctIds);
+        Map<Long, String> urlMap = metas.stream()
+                .collect(Collectors.toMap(ResourceMeta::getId, meta -> generateDownloadUrl(meta.getObjectKey())));
+        return ids.stream().map(id -> urlMap.get(id)).collect(Collectors.toList());
     }
 
     public List<String> getBatchByHashes(List<String> hashes) {
-        return hashes.stream().map(this::getByHash).collect(Collectors.toList());
+        if (hashes == null || hashes.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<String> distinctHashes = hashes.stream().distinct().collect(Collectors.toList());
+        List<ResourceMeta> metas = resourceMetaService.list(
+                new LambdaQueryWrapper<ResourceMeta>().in(ResourceMeta::getHash, distinctHashes));
+        Map<String, String> urlMap = metas.stream()
+                .collect(Collectors.toMap(ResourceMeta::getHash, meta -> generateDownloadUrl(meta.getObjectKey())));
+        return hashes.stream().map(hash -> urlMap.get(hash)).collect(Collectors.toList());
     }
 
     public String getByHash(String hash) {
@@ -209,7 +255,7 @@ public class FileService {
             return "";
         }
         int lastDot = fileName.lastIndexOf('.');
-        return lastDot >= 0 ? fileName.substring(lastDot) : "";
+        return lastDot >= 0 ? fileName.substring(lastDot).toLowerCase(Locale.ROOT) : "";
     }
 
     private String extractPath(String objectKey) {
@@ -250,5 +296,76 @@ public class FileService {
             }
         }
         return ResourceTypeConstants.IMAGE;
+    }
+
+    private void validateUploadRequest(UploadFileRequest request) {
+        String mimeType = normalizeMimeType(request.getMimeType());
+        String extension = extractExtension(request.getFileName());
+        Set<String> allowedExtensions = ALLOWED_EXTENSIONS_BY_MIME.get(mimeType);
+        if (allowedExtensions == null || !allowedExtensions.contains(extension)) {
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_INVALID_FILE, "不支持的文件类型");
+        }
+    }
+
+    private String normalizeMimeType(String mimeType) {
+        return mimeType == null ? "" : mimeType.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private Path resolveLocalPath(String objectKey) {
+        try {
+            Path root = Path.of(localStorageRoot).toAbsolutePath().normalize();
+            Path resolved = root.resolve(objectKey).normalize();
+            if (!resolved.startsWith(root)) {
+                throw new BusinessException(ResourceErrorConstants.RESOURCE_INVALID_FILE, "非法文件路径");
+            }
+            return resolved;
+        } catch (InvalidPathException e) {
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_INVALID_FILE, "非法文件路径");
+        }
+    }
+
+    /**
+     * COS 上传熔断降级回退方法。
+     */
+    @SuppressWarnings("unused")
+    private FileUploadResponse uploadFallback(UploadFileRequest request, Throwable t) {
+        log.error("COS 服务熔断降级，文件上传失败: fileName={}", request.getFileName(), t);
+        throw new BusinessException(ResourceErrorConstants.RESOURCE_SERVICE_UNAVAILABLE, "文件存储服务暂时不可用，请稍后重试");
+    }
+
+    /**
+     * COS 确认上传熔断降级回退方法。
+     */
+    @SuppressWarnings("unused")
+    private ResourceMeta confirmUploadFallback(Long resourceId, Throwable t) {
+        log.error("COS 服务熔断降级，确认上传失败: resourceId={}", resourceId, t);
+        throw new BusinessException(ResourceErrorConstants.RESOURCE_SERVICE_UNAVAILABLE, "文件存储服务暂时不可用，请稍后重试");
+    }
+
+    /**
+     * COS 文件查询熔断降级回退方法。
+     */
+    @SuppressWarnings("unused")
+    private FileInfoResponse getFileInfoFallback(Long resourceId, Throwable t) {
+        log.error("COS 服务熔断降级，文件查询失败: resourceId={}", resourceId, t);
+        throw new BusinessException(ResourceErrorConstants.RESOURCE_SERVICE_UNAVAILABLE, "文件存储服务暂时不可用，请稍后重试");
+    }
+
+    /**
+     * COS 文件查询（by hash）熔断降级回退方法。
+     */
+    @SuppressWarnings("unused")
+    private FileInfoResponse getFileInfoFallback(String hash, Throwable t) {
+        log.error("COS 服务熔断降级，文件查询失败: hash={}", hash, t);
+        throw new BusinessException(ResourceErrorConstants.RESOURCE_SERVICE_UNAVAILABLE, "文件存储服务暂时不可用，请稍后重试");
+    }
+
+    /**
+     * COS 文件删除熔断降级回退方法。
+     */
+    @SuppressWarnings("unused")
+    private void deleteFallback(Long resourceId, Throwable t) {
+        log.error("COS 服务熔断降级，文件删除失败: resourceId={}", resourceId, t);
+        throw new BusinessException(ResourceErrorConstants.RESOURCE_SERVICE_UNAVAILABLE, "文件存储服务暂时不可用，请稍后重试");
     }
 }

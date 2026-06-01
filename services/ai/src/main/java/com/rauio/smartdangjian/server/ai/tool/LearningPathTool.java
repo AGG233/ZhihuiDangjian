@@ -3,7 +3,6 @@ package com.rauio.smartdangjian.server.ai.tool;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Component;
 
@@ -22,8 +21,8 @@ public class LearningPathTool {
     private final UserService userService;
 
     @Tool(name = "getLearningProfile", description = "获取当前用户的学习画像数据（包含学习统计、知识掌握情况、答题统计等）")
-    public Map<String, Object> getLearningProfile(ToolContext toolContext) {
-        String userId = ToolContextUtil.getUserId(toolContext, userService);
+    public Map<String, Object> getLearningProfile() {
+        String userId = ToolContextUtil.resolveUserId(userService);
         UserProfileResponse profile = userProfileService.getProfile(userId);
 
         Map<String, Object> result = new HashMap<>();

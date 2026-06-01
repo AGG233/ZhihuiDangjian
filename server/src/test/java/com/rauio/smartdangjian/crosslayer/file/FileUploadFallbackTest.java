@@ -24,6 +24,7 @@ import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.service.FileService;
 import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
 import com.rauio.smartdangjian.server.user.service.UserService;
+import com.rauio.smartdangjian.service.PermissionValidator;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
 @SpringBootTest(classes = FileUploadFallbackTest.TestConfig.class)
@@ -47,8 +48,14 @@ class FileUploadFallbackTest extends CrossLayerTestBase {
         }
 
         @Bean
-        FileService fileService(FileStorageService fss, UserService us, ResourceMetaService rms) {
-            return new FileService(fss, us, rms);
+        PermissionValidator permissionValidator() {
+            return mock(PermissionValidator.class);
+        }
+
+        @Bean
+        FileService fileService(
+                FileStorageService fss, UserService us, ResourceMetaService rms, PermissionValidator pv) {
+            return new FileService(fss, us, rms, pv);
         }
     }
 

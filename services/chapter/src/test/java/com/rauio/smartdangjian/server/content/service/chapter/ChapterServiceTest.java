@@ -8,6 +8,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
@@ -50,6 +52,34 @@ class ChapterServiceTest {
     @BeforeEach
     void resetSpy() {
         reset(chapterService);
+    }
+
+    @Test
+    @DisplayName("事务边界按方法声明：读方法只读，写方法显式回滚")
+    void transactionalBoundariesAreMethodLevel() throws NoSuchMethodException {
+        assertThat(ChapterService.class.getAnnotation(Transactional.class)).isNull();
+        assertReadOnlyTransaction("get", Long.class);
+        assertReadOnlyTransaction("getByCourseId", Long.class);
+        assertWriteTransaction("create", ChapterRequest.class);
+        assertWriteTransaction("update", ChapterRequest.class);
+        assertWriteTransaction("delete", Long.class);
+    }
+
+    private void assertReadOnlyTransaction(String methodName, Class<?>... parameterTypes) throws NoSuchMethodException {
+        Method method = ChapterService.class.getMethod(methodName, parameterTypes);
+        Transactional transactional = method.getAnnotation(Transactional.class);
+
+        assertThat(transactional).isNotNull();
+        assertThat(transactional.readOnly()).isTrue();
+    }
+
+    private void assertWriteTransaction(String methodName, Class<?>... parameterTypes) throws NoSuchMethodException {
+        Method method = ChapterService.class.getMethod(methodName, parameterTypes);
+        Transactional transactional = method.getAnnotation(Transactional.class);
+
+        assertThat(transactional).isNotNull();
+        assertThat(transactional.readOnly()).isFalse();
+        assertThat(transactional.rollbackFor()).contains(Exception.class);
     }
 
     // ================================================================

@@ -1,8 +1,11 @@
 package com.rauio.smartdangjian.crosslayer.content;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -47,15 +50,18 @@ class ContentControllerRealServiceIntegrationTest extends CrossLayerTestBase {
     @Autowired
     private ChapterContentBlockConvertor convertor;
 
+    @Autowired
+    private ChapterContentBlockService blockService;
+
     @BeforeEach
     void resetMocks() {
-        reset(blockMapper, convertor);
+        reset(blockMapper, convertor, blockService);
     }
 
     @Test
     @DisplayName("POST /admin/content/content-blocks/carousel 为每个轮播图补齐固定 chapterId 后真实批量保存")
     void addCarouselUsesRealServiceAndSetsCarouselParentId() throws Exception {
-        when(blockMapper.insert(any(ChapterContentBlock.class))).thenReturn(1);
+        doReturn(true).when(blockService).saveBatch(anyList());
 
         mockMvc.perform(post("/api/admin/content/content-blocks/carousel")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -65,17 +71,21 @@ class ContentControllerRealServiceIntegrationTest extends CrossLayerTestBase {
                 .andExpect(jsonPath("$.code").value("200"))
                 .andExpect(jsonPath("$.data").value(true));
 
-        ArgumentCaptor<ChapterContentBlock> captor = ArgumentCaptor.forClass(ChapterContentBlock.class);
-        verify(blockMapper, org.mockito.Mockito.times(2)).insert(captor.capture());
-        org.assertj.core.api.Assertions.assertThat(captor.getAllValues())
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<ChapterContentBlock>> captor = ArgumentCaptor.forClass(List.class);
+        verify(blockService).saveBatch(captor.capture());
+        List<ChapterContentBlock> savedBlocks = captor.getValue();
+        org.assertj.core.api.Assertions.assertThat(savedBlocks)
+                .hasSize(2)
                 .allSatisfy(block -> org.assertj.core.api.Assertions.assertThat(block.getChapterId())
                         .isEqualTo(CAROUSEL_PARENT_ID));
+        verify(blockMapper, org.mockito.Mockito.never()).insert(any(ChapterContentBlock.class));
     }
 
     @Test
-    @DisplayName("POST /admin/content/content-blocks/carousel 第二条保存失败时真实批量保存返回 false")
+    @DisplayName("POST /admin/content/content-blocks/carousel 批量保存失败时返回 false")
     void addCarouselReturnsFalseWhenBatchInsertFails() throws Exception {
-        when(blockMapper.insert(any(ChapterContentBlock.class))).thenReturn(1, 0);
+        doReturn(false).when(blockService).saveBatch(anyList());
 
         mockMvc.perform(
                         post("/api/admin/content/content-blocks/carousel")
@@ -85,6 +95,8 @@ class ContentControllerRealServiceIntegrationTest extends CrossLayerTestBase {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("200"))
                 .andExpect(jsonPath("$.data").value(false));
+        verify(blockService).saveBatch(anyList());
+        verify(blockMapper, org.mockito.Mockito.never()).insert(any(ChapterContentBlock.class));
     }
 
     @Test
@@ -161,7 +173,7 @@ class ContentControllerRealServiceIntegrationTest extends CrossLayerTestBase {
         @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
         ChapterContentBlockService chapterContentBlockService(
                 ChapterContentBlockMapper blockMapper, ChapterContentBlockConvertor convertor) {
-            ChapterContentBlockService service = new ChapterContentBlockService(convertor);
+            ChapterContentBlockService service = spy(new ChapterContentBlockService(convertor));
             try {
                 Field field = findBaseMapperField(service.getClass());
                 field.setAccessible(true);

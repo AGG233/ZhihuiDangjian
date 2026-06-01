@@ -259,42 +259,75 @@ dev 专属的多阶段构建和本地编排使用 `.dev` 后缀，合并到 prod
 
 通过 Workflow 工具按名称调用，例如 `Workflow({name: "dev-to-prod"})` 或 `/dev-to-prod`。
 
+### 主编排器
+
 | 工作流 | 用途 | 阶段 |
 |--------|------|------|
-| `dev-to-prod` | **全生命周期编排** | 需求分析 → **需求确认** → **任务拆分** → 编码 → 测试 → QA检查 → **审查-发版循环**。通过 `startPhase` 从任意阶段进入，支持全自动模式（autoMerge+autoTag） |
-| `requirements-confirm` | **需求确认** | 审查 → 决策 → 修订。对需求文档进行多维度评审，驳回时自动修订并重新提交，最多 3 轮 |
-| `task-splitter` | **任务拆分** | 分析 → 拆解 → 验证 → 输出。将复杂功能拆分为并行子任务，支持按 wave 分批执行，默认最多 100 个子任务 |
-| `ship-to-product` | **PR 创建与监控** | 创建 PR → 轮询远程 CI → 检查 PR review → 报告结果。发现问题时返回结构化 issues 供 review-diff 处理 |
-| `qa-check` | 快速质量检查 | 编译 → 单元测试+JaCoCo → 集成测试 → 格式检查。支持 `{ module: "ai" }` 按模块过滤，`{ skipIntegration: true }` 跳过集成测试 |
-| `review-diff` | **多维代码审查** | 发现变更 → 3 维度并行审查(bugs/security/patterns) → 3票对抗验证 → 报告。发现问题时返回结构化 findings 列表，支持迭代修复后重新审查 |
+| `dev-to-prod` | **全生命周期编排 (v2)** | Plan确认 → 拆分+派发 → 并行编码/测试 → 本地门控 → 智能PR → 等待CI → 核查Bot → 汇报/修复循环。远程CI驱动，智能PR拆分，支持 `startPhase` 从任意阶段进入 |
+
+### 子工作流（被主编排器调用）
+
+| 工作流 | 用途 | 阶段 |
+|--------|------|------|
+| `nl-parser` | **自然语言解析** | 解析 → 确认。将自由文本功能描述解析为结构化参数，自动推断模块和意图 |
+| `task-splitter` | **任务拆分（含需求分析）** | 分析 → 拆解 → 验证 → 输出。分析范围+生成需求文档→拆分为并行子任务→验证完整性。支持 feature/refactor/bugfix 三种拆分策略 |
+| `dependency-scheduler` | **依赖驱动并行调度** | 构建依赖图 → 并发调度(上限16) → 收集结果。按依赖关系动态调度，任务完成立即释放下游，支持死锁检测 |
+| `ship-to-product` | **PR创建+CI监控+Bot检查** | 创建PR → 轮询CI → 检查Review → 核查Bot(Codacy/Sourcery/CodeRabbit/SonarQube) → 报告。支持 `action` 模式分阶段调用 |
+
+### 独立可用工作流（不在主编排流程中）
+
+| 工作流 | 用途 | 阶段 |
+|--------|------|------|
+| `qa-check` | 快速质量检查 | 编译 → 单元测试+JaCoCo → 集成测试 → 格式检查。支持 `{ module: "ai" }` 按模块过滤 |
+| `review-diff` | 本地多维代码审查 | 发现变更 → 3维度并行审查(bugs/security/patterns) → 3票对抗验证 → 报告 |
+| `requirements-confirm` | 独立需求确认 | 审查 → 决策 → 修订。对需求文档多维度评审，驳回时自动修订，最多3轮 |
+| `deep-ci-eval` | CI/CD深度评估 | 安全 → 性能 → 可靠性 → 综合。对 GitHub Actions 工作流多维审计 |
 
 ### 典型使用方式
 
 ```bash
-# 从零构建功能（需求→确认→拆分→编码→测试→QA→审查-发版循环）
-/dev-to-prod { feature: "导出用户资料", module: "user", startPhase: "requirements" }
+# 自然语言入口：自动解析→拆分→并行执行→PR→CI→Bot核查
+/dev-to-prod { text: "给 user 模块加一个导出功能，支持 Excel 和 CSV 格式" }
 
-# 日常：默认从 QA检查 开始（验证+审查-发版循环）
+# Plan Mode 入口：先在 Plan Mode 中规划，工作流自动检测 .claude/plans/ 下最新计划文件
 /dev-to-prod
 
-# 已有代码，补测试后发布
-/dev-to-prod { module: "ai", startPhase: "testing" }
+# 结构化参数入口
+/dev-to-prod { feature: "导出用户资料", module: "user" }
 
-# 仅审查当前分支
+# 从特定阶段开始（跳过前面的阶段）
+/dev-to-prod { startPhase: "execute" }     # 从并行编码开始
+/dev-to-prod { startPhase: "pr" }          # 从创建PR开始
+/dev-to-prod { startPhase: "ci" }          # 从等待CI开始
+
+# 全自动模式（自动合并+打标签）
+/dev-to-prod { feature: "修复登录bug", module: "auth", autoMerge: true, autoTag: true }
+
+# 只拆分任务（不执行后续阶段）
+/task-splitter { feature: "实现课程推荐系统", module: "course" }
+
+# 只创建PR
+/ship-to-product { action: "create-pr", head: "dev", base: "product" }
+
+# 只检查Bot Comment
+/ship-to-product { action: "check-bots", prNumber: 123 }
+
+# 本地代码审查（独立使用）
 /review-diff { base: "product" }
 
-# 审查-发版循环（自动修复 review/ship 发现的问题）
-/dev-to-prod { startPhase: "reviewship", autoMerge: true, autoTag: true }
-
-# 单独拆分任务（不执行后续阶段）
-/task-splitter { feature: "实现课程推荐系统", module: "course", maxSubtasks: 100 }
+# 本地QA检查（独立使用）
+/qa-check { module: "ai" }
 ```
 
 ### 可用技能
 
 | 技能 | 用途 |
 |------|------|
-| `release-checklist` | 发布前验证清单（代码质量、API稳定性、数据库、配置、Docker、版本号）。autoTag 前的最后门控 |
+| `spring-boot-coding` | Spring Boot 编码规范。Controller/Service/Mapper/Entity/Config 的项目级约定 |
+| `test-coding` | 测试规范。JUnit 5 + Mockito + AssertJ + 跨层回归测试要求 |
+| `code-review` | 代码审查清单。错误处理、安全、并发、可观测性、AI 模块专项检查 |
+| `plan-execute` | Plan 模式 → dev-to-prod v2 入口。支持自然语言和计划文件自动检测 |
+| `release-checklist` | 发布前验证清单。代码质量、API稳定性、数据库、配置、Docker、版本号 |
 
 ## 依赖管理
 

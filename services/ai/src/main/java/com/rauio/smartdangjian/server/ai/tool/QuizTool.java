@@ -1,6 +1,5 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
-import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
@@ -20,13 +19,14 @@ public class QuizTool {
     private final UserService userService;
 
     @Tool(name = "getQuizReasoning", description = "获取当前会话中保存的出题思路")
-    public Object getQuizReasoning(@ToolParam(description = "会话ID，可为空") String sessionId, ToolContext toolContext) {
-        String targetSessionId =
-                (sessionId == null || sessionId.isBlank()) ? ToolContextUtil.getSessionId(toolContext) : sessionId;
-        String userId = ToolContextUtil.getUserId(toolContext, userService);
+    public Object getQuizReasoning(@ToolParam(description = "会话ID") String sessionId) {
+        if (sessionId == null || sessionId.isBlank()) {
+            return null;
+        }
+        String userId = ToolContextUtil.resolveUserId(userService);
         AiChatMessage message = messageService
                 .lambdaQuery()
-                .eq(AiChatMessage::getSessionId, targetSessionId)
+                .eq(AiChatMessage::getSessionId, sessionId)
                 .eq(AiChatMessage::getUserId, userId)
                 .orderByDesc(AiChatMessage::getCreatedAt)
                 .last("limit 1")

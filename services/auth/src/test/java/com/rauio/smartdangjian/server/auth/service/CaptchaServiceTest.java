@@ -83,7 +83,7 @@ class CaptchaServiceTest {
     }
 
     @Test
-    @DisplayName("validate testCode 配置不为空且匹配时直接返回 true")
+    @DisplayName("validate dev profile 下 testCode 配置不为空且匹配时直接返回 true")
     void validateReturnsTrueWhenTestCodeMatches() {
         ReflectionTestUtils.setField(captchaService, "testCode", "9999");
         when(env.getActiveProfiles()).thenReturn(new String[] {"dev"});
@@ -146,15 +146,26 @@ class CaptchaServiceTest {
     }
 
     @Test
-    @DisplayName("validate testCode 匹配但非 dev/prod profile 时不走旁路且 Redis 不符则返回 false")
-    void validateTestCodeBypassBlockedWhenNotDevOrProdProfile() {
+    @DisplayName("validate prod profile 下 testCode 匹配也不走旁路且 Redis 不符则返回 false")
+    void validateTestCodeBypassBlockedWhenProdProfile() {
         ReflectionTestUtils.setField(captchaService, "testCode", "9999");
-        when(env.getActiveProfiles()).thenReturn(new String[] {"test"});
+        when(env.getActiveProfiles()).thenReturn(new String[] {"prod"});
         when(valueOps.get(eq("captcha:any-uuid"))).thenReturn("0000");
 
         Boolean result = captchaService.validate("any-uuid", "9999");
 
         assertThat(result).isFalse();
+    }
+
+    @Test
+    @DisplayName("validate test profile 下允许使用测试码")
+    void validateTestCodeBypassAllowedWhenTestProfile() {
+        ReflectionTestUtils.setField(captchaService, "testCode", "9999");
+        when(env.getActiveProfiles()).thenReturn(new String[] {"test"});
+
+        Boolean result = captchaService.validate("any-uuid", "9999");
+
+        assertThat(result).isTrue();
     }
 
     @Test

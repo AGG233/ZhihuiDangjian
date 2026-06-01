@@ -22,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
 
     private final ChapterContentBlockService chapterContentService;
@@ -35,6 +34,7 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
      * @param chapterId 章节ID
      * @return 章节
      */
+    @Transactional(readOnly = true)
     public ChapterResponse get(Long chapterId) {
         Chapter chapter = this.getById(chapterId);
         if (chapter == null) {
@@ -50,6 +50,7 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
      * @param dto 创建的新章节
      * @return 创建结果
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean create(ChapterRequest dto) {
         if (this.getOne(new LambdaQueryWrapper<Chapter>()
                         .eq(Chapter::getCourseId, dto.getCourseId())
@@ -82,6 +83,7 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
      * @param dto 前端传入的章节
      * @return 修改结果
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean update(ChapterRequest dto) {
         return this.updateById(chapterConvertor.toEntity(dto));
     }
@@ -92,6 +94,7 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
      * @param courseId 课程 ID
      * @return 课程所有章节
      */
+    @Transactional(readOnly = true)
     public List<ChapterResponse> getByCourseId(Long courseId) {
         List<Chapter> chapters = this.list(new LambdaQueryWrapper<Chapter>().eq(Chapter::getCourseId, courseId));
         return chapterConvertor.toResponseList(chapters);
@@ -103,6 +106,7 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
      * @param chapterId 章节ID
      * @return 删除结果
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean delete(Long chapterId) {
         return this.removeById(chapterId);
     }

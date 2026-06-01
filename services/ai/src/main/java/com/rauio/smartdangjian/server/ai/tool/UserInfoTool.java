@@ -1,6 +1,5 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
-import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Component;
 
@@ -19,8 +18,8 @@ public class UserInfoTool {
     private final UserConvertor userConvertor;
 
     @Tool(description = "获取用户基本信息")
-    public UserResponse getUserInfo(ToolContext toolContext) {
-        String userId = ToolContextUtil.getUserId(toolContext, userService);
+    public UserResponse getUserInfo() {
+        String userId = ToolContextUtil.resolveUserId(userService);
         return userConvertor.toResponse(userService.getById(userId));
     }
 }

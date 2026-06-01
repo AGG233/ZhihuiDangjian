@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":services:user"))
     implementation(libs.mapstruct)
     implementation(libs.bundles.file.storage)
+    implementation(libs.resilience4j.annotations)
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)

@@ -64,8 +64,6 @@ class SecurityRoleAuthorizationIntegrationTest extends AbstractSecurityAuthoriza
                 Arguments.of("/api/ai/chat/session-1/messages", "GET", "STUDENT"),
                 Arguments.of("/api/admin/content/categories/root", "POST", "SCHOOL"),
                 Arguments.of("/api/content/categories/1", "GET", "STUDENT"),
-                Arguments.of("/api/learning/hotspots/trends", "GET", "STUDENT"),
-                Arguments.of("/api/graph/party-history/admin/entities/person-1", "DELETE", "MANAGER"),
                 Arguments.of("/api/graph/party-history/search?keyword=history", "GET", "STUDENT"),
                 Arguments.of("/api/learning/records/1", "GET", "STUDENT"),
                 Arguments.of("/api/content/chapters/1", "GET", "STUDENT"),
@@ -96,6 +94,8 @@ class SecurityRoleAuthorizationIntegrationTest extends AbstractSecurityAuthoriza
                         .days(7)
                         .dailyData(java.util.List.of())
                         .build());
+        when(chapterContentBlockService.getByChapterId(1145141919810L)).thenReturn(java.util.List.of());
+        when(bannerService.getUserList()).thenReturn(java.util.List.of());
         when(partyHistoryQueryService.searchEntities(
                         org.mockito.ArgumentMatchers.anyString(),
                         org.mockito.ArgumentMatchers.any(),
@@ -138,7 +138,9 @@ class SecurityRoleAuthorizationIntegrationTest extends AbstractSecurityAuthoriza
                 Arguments.of("/api/ai/chat/session-1/messages", "GET", "STUDENT"),
                 Arguments.of("/api/learning/records/1", "GET", "STUDENT"),
                 Arguments.of("/api/content/categories/1", "GET", "STUDENT"),
+                Arguments.of("/api/content/content-blocks/carousel", "GET", "STUDENT"),
                 Arguments.of("/api/learning/hotspots/trends", "GET", "STUDENT"),
+                Arguments.of("/api/resource/banners", "GET", "STUDENT"),
                 Arguments.of("/api/content/categories/1/children", "GET", "STUDENT"),
                 Arguments.of("/api/graph/party-history/search?keyword=history", "GET", "STUDENT"),
                 Arguments.of("/api/learning/records/users/1", "GET", "STUDENT"),

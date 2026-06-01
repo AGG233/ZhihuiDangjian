@@ -24,6 +24,7 @@ import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.user.controller.user.UserController;
 import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
+import com.rauio.smartdangjian.server.user.pojo.request.UserUpdateRequest;
 import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 import com.rauio.smartdangjian.server.user.service.UserService;
@@ -99,7 +100,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - 更新用户成功")
         void updateSuccess() throws Exception {
-            when(userService.update(eq(1L), any()))
+            when(userService.update(eq(1L), any(UserUpdateRequest.class)))
                     .thenReturn(new com.rauio.smartdangjian.server.user.pojo.entity.User());
             ;
 
@@ -180,7 +181,9 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - Service 抛出 BusinessException 返回 400")
         void updateThrowsBusinessException() throws Exception {
-            doThrow(new BusinessException(4000, "更新用户失败")).when(userService).update(eq(1L), any());
+            doThrow(new BusinessException(4000, "更新用户失败"))
+                    .when(userService)
+                    .update(eq(1L), any(UserUpdateRequest.class));
 
             mockMvc.perform(put("/api/user/users/1")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -193,7 +196,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - Service 抛出 RuntimeException 返回 500")
         void updateThrowsRuntimeException() throws Exception {
-            doThrow(new RuntimeException("数据库异常")).when(userService).update(eq(1L), any());
+            doThrow(new RuntimeException("数据库异常")).when(userService).update(eq(1L), any(UserUpdateRequest.class));
 
             mockMvc.perform(put("/api/user/users/1")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -205,7 +208,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - Service 正常返回 200 OK")
         void updateNormalSuccess() throws Exception {
-            when(userService.update(eq(1L), any()))
+            when(userService.update(eq(1L), any(UserUpdateRequest.class)))
                     .thenReturn(new com.rauio.smartdangjian.server.user.pojo.entity.User());
             ;
 

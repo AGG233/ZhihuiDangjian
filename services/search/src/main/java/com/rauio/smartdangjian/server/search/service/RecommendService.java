@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -221,7 +220,7 @@ public class RecommendService {
         // 根据答题正确率推荐适合难度
         if (profile.getQuiz() != null && profile.getQuiz().getCorrectRate() > 0) {
             double rate = profile.getQuiz().getCorrectRate();
-            String suitableDifficulty = rate > 0.8 ? "hard" : rate > 0.5 ? "medium" : "easy";
+            String suitableDifficulty = rate > 0.8 ? "advanced" : rate > 0.5 ? "intermediate" : "beginner";
             wrapper.eq(Course::getDifficulty, suitableDifficulty);
         }
 
@@ -240,7 +239,6 @@ public class RecommendService {
     // ==================== 相似度计算（定时任务） ====================
 
     @Scheduled(cron = "0 0 2 * * ?")
-    @Transactional
     protected void calculateSimilarity() {
         List<UserBehaviorDto> allBehaviors = userLearningRecordMapper.getAllUserBehaviors();
         if (allBehaviors.isEmpty()) return;

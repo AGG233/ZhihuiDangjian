@@ -1,7 +1,6 @@
 package com.rauio.smartdangjian.server.content.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -37,12 +36,10 @@ public class ArticleContentBlockService extends ServiceImpl<ArticleContentBlockM
      * @return 保存结果
      */
     public Boolean createBatch(List<ArticleContentBlock> blocks) {
-        for (ArticleContentBlock block : blocks) {
-            if (!create(block)) {
-                return false;
-            }
+        if (blocks == null || blocks.isEmpty()) {
+            return true;
         }
-        return true;
+        return this.saveBatch(blocks);
     }
 
     /**
@@ -93,6 +90,9 @@ public class ArticleContentBlockService extends ServiceImpl<ArticleContentBlockM
      * @return 所有内容块
      */
     public List<ContentBlockResponse> getByResourceIds(List<Long> ids) {
-        return convertor.toResponseList(ids.stream().map(this::getById).collect(Collectors.toList()));
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return convertor.toResponseList(this.listByIds(ids));
     }
 }

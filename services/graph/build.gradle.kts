@@ -9,6 +9,7 @@ dependencies {
     implementation(project(":services:user"))
     implementation(libs.mybatis.plus.join.starter)
     implementation(libs.spring.boot.starter.data.neo4j)
+    implementation(libs.resilience4j.annotations)
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)

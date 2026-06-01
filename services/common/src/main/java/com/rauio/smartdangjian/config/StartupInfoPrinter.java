@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.config;
 
 import java.net.InetAddress;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 public class StartupInfoPrinter implements ApplicationRunner {
 
     private final Environment env;
+    private final Clock clock;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -43,7 +45,7 @@ public class StartupInfoPrinter implements ApplicationRunner {
         } catch (Exception ignored) {
         }
 
-        String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String now = LocalDateTime.now(clock).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
         StringBuilder sb = new StringBuilder();
         sb.append("\n");

@@ -22,4 +22,12 @@ public class ChangePasswordRequest {
             regexp = "^(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,20}$",
             message = "密码必须包含大写字母、数字和特殊符号")
     private String newPassword;
+
+    @Schema(description = "验证码唯一标识")
+    @NotBlank(message = "验证码标识不能为空")
+    private String captchaUUID;
+
+    @Schema(description = "验证码")
+    @NotBlank(message = "验证码不能为空")
+    private String captchaCode;
 }

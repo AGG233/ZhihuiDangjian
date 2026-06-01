@@ -3,9 +3,18 @@ app:
     default-user-id: 1987026098687483905
   cors:
     allowed-origins: http://localhost:*,http://127.0.0.1:*
+  storage:
+    local-root: ./uploads
 
 server:
   port: 9000
+
+spring:
+  neo4j:
+    uri: ${NEO4J_URI:bolt://localhost:7687}
+    authentication:
+      username: ${NEO4J_USERNAME:neo4j}
+      password: ${NEO4J_PASSWORD:password}
   ai:
     openai:
       api-key: ${AI_KEY:dummy-key}
@@ -25,5 +34,3 @@ logging:
   level:
     root: INFO
     com.rauio.smartdangjian: DEBUG
-
-

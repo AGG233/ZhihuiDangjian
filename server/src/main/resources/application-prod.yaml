@@ -6,6 +6,15 @@ spring:
     openai:
       api-key: ${AI_KEY}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
 logging:
   level:
     root: WARN

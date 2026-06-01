@@ -1,11 +1,13 @@
 package com.rauio.smartdangjian.server.user.controller.user;
 
+import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
+import com.rauio.smartdangjian.server.user.pojo.request.UserUpdateRequest;
 import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 import com.rauio.smartdangjian.server.user.service.UserService;
@@ -44,8 +46,8 @@ public class UserController {
     @Operation(summary = "更新用户信息", description = "通过ID更新用户信息")
     @PutMapping("/{id}")
     @SaCheckPermission("user:update")
-    public Result<Void> update(@PathVariable Long id, @RequestBody User user) {
-        userService.update(id, user);
+    public Result<Void> update(@PathVariable Long id, @RequestBody @Valid UserUpdateRequest request) {
+        userService.update(id, request);
         return Result.ok(null);
     }
 

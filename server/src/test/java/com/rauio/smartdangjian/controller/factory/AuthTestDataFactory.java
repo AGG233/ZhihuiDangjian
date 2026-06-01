@@ -65,6 +65,8 @@ public final class AuthTestDataFactory {
         ChangePasswordRequest request = new ChangePasswordRequest();
         request.setOldPassword("oldPass123");
         request.setNewPassword("NewPass456!");
+        request.setCaptchaUUID("captcha-uuid-001");
+        request.setCaptchaCode("valid-code");
         return request;
     }
 

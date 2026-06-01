@@ -33,6 +33,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rauio.smartdangjian.exception.GlobalExceptionHandler;
+import com.rauio.smartdangjian.security.SessionUserPrincipal;
 import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
 import com.rauio.smartdangjian.server.auth.controller.AuthController;
 import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
@@ -110,7 +111,10 @@ class AuthControllerRealServiceIntegrationTest {
                     .andExpect(jsonPath("$.data.accessToken").value("sa-token-real-service"));
 
             stpUtil.verify(() -> StpUtil.login(org.mockito.ArgumentMatchers.eq(1L), any(SaLoginParameter.class)));
-            verify(session).set("user", user);
+            ArgumentCaptor<SessionUserPrincipal> principalCaptor = ArgumentCaptor.forClass(SessionUserPrincipal.class);
+            verify(session).set(org.mockito.ArgumentMatchers.eq("user"), principalCaptor.capture());
+            assertThat(principalCaptor.getValue().getId()).isEqualTo(user.getId());
+            assertThat(principalCaptor.getValue().getUserType()).isEqualTo(user.getUserType());
         }
     }
 

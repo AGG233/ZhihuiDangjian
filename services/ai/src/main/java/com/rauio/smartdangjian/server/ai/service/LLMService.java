@@ -21,6 +21,7 @@ import com.rauio.smartdangjian.server.ai.pojo.response.AiChatResponse;
 import com.rauio.smartdangjian.server.ai.util.PromptSanitizer;
 import com.rauio.smartdangjian.server.user.service.UserService;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
@@ -40,8 +41,10 @@ public class LLMService {
     }
 
     /**
-     * 统一入口：用户消息通过 Coordinator 自动路由到合适的专业 Agent
+     * 统一入口：用户消息通过 Coordinator 自动路由到合适的专业 Agent。
+     * 熔断保护 AI 外部模型调用。
      */
+    @CircuitBreaker(name = "aiService", fallbackMethod = "chatFallback")
     public Flux<AiChatResponse> chat(AiChatRequest request) {
         return stream(request.sessionId(), userService.getCurrentUserId(), request.message());
     }
@@ -151,5 +154,14 @@ public class LLMService {
             return UUID.randomUUID().toString();
         }
         return requestedSessionId;
+    }
+
+    /**
+     * AI 服务熔断降级回退方法。当 {@link #chat(AiChatRequest)} 被熔断或超时时返回明确错误消息。
+     */
+    @SuppressWarnings("unused")
+    private Flux<AiChatResponse> chatFallback(AiChatRequest request, Throwable t) {
+        log.error("AI 服务调用失败，触发熔断降级", t);
+        return Flux.just(new AiChatResponse(AiChatResponseType.ERROR, "", "AI 服务暂时不可用，请稍后重试", "error", "coordinator"));
     }
 }

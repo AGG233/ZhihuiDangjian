@@ -331,7 +331,7 @@ class RecommendServiceTest {
         CategoryCourse cc = CategoryCourse.builder().courseId(1L).categoryId(1L).build();
         doReturn(List.of(cc)).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
 
-        Course course = Course.builder().id(1L).difficulty("hard").build();
+        Course course = Course.builder().id(1L).difficulty("advanced").build();
         Page<Course> coursePage = new Page<>(1, 10, 1);
         coursePage.setRecords(List.of(course));
         doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
@@ -357,7 +357,7 @@ class RecommendServiceTest {
         CategoryCourse cc = CategoryCourse.builder().courseId(1L).categoryId(1L).build();
         doReturn(List.of(cc)).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
 
-        Course course = Course.builder().id(1L).difficulty("medium").build();
+        Course course = Course.builder().id(1L).difficulty("intermediate").build();
         Page<Course> coursePage = new Page<>(1, 10, 1);
         coursePage.setRecords(List.of(course));
         doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
@@ -383,7 +383,7 @@ class RecommendServiceTest {
         CategoryCourse cc = CategoryCourse.builder().courseId(1L).categoryId(1L).build();
         doReturn(List.of(cc)).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
 
-        Course course = Course.builder().id(1L).difficulty("easy").build();
+        Course course = Course.builder().id(1L).difficulty("beginner").build();
         Page<Course> coursePage = new Page<>(1, 10, 1);
         coursePage.setRecords(List.of(course));
         doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));

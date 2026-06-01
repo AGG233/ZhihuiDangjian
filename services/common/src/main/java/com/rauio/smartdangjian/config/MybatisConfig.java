@@ -1,5 +1,6 @@
 package com.rauio.smartdangjian.config;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -18,6 +19,12 @@ import lombok.extern.slf4j.Slf4j;
 @AutoConfiguration
 public class MybatisConfig implements MetaObjectHandler {
 
+    private final Clock clock;
+
+    public MybatisConfig(Clock clock) {
+        this.clock = clock;
+    }
+
     /**
      * 添加分页插件
      */
@@ -35,8 +42,8 @@ public class MybatisConfig implements MetaObjectHandler {
      */
     @Override
     public void insertFill(MetaObject metaObject) {
-        this.strictInsertFill(metaObject, "createdAt", LocalDateTime::now, LocalDateTime.class);
-        this.strictInsertFill(metaObject, "updatedAt", LocalDateTime::now, LocalDateTime.class);
+        this.strictInsertFill(metaObject, "createdAt", this::now, LocalDateTime.class);
+        this.strictInsertFill(metaObject, "updatedAt", this::now, LocalDateTime.class);
         this.strictInsertFill(
                 metaObject, "sessionId", () -> UUID.randomUUID().toString().replace("-", ""), String.class);
     }
@@ -46,6 +53,10 @@ public class MybatisConfig implements MetaObjectHandler {
      */
     @Override
     public void updateFill(MetaObject metaObject) {
-        this.strictUpdateFill(metaObject, "updatedAt", LocalDateTime::now, LocalDateTime.class);
+        this.strictUpdateFill(metaObject, "updatedAt", this::now, LocalDateTime.class);
+    }
+
+    private LocalDateTime now() {
+        return LocalDateTime.now(clock);
     }
 }

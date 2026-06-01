@@ -2,7 +2,10 @@ package com.rauio.smartdangjian.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.apache.ibatis.reflection.DefaultReflectorFactory;
@@ -23,7 +26,11 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
 
 class MybatisConfigTest {
 
-    private final MybatisConfig config = new MybatisConfig();
+    private static final Clock FIXED_CLOCK =
+            Clock.fixed(Instant.parse("2026-06-01T08:15:30Z"), ZoneId.of("Asia/Shanghai"));
+    private static final LocalDateTime FIXED_TIME = LocalDateTime.now(FIXED_CLOCK);
+
+    private final MybatisConfig config = new MybatisConfig(FIXED_CLOCK);
 
     @BeforeAll
     static void initTableInfo() {
@@ -59,8 +66,8 @@ class MybatisConfigTest {
                 pojo, new DefaultObjectFactory(), new DefaultObjectWrapperFactory(), new DefaultReflectorFactory());
         config.insertFill(metaObject);
 
-        assertThat(pojo.getCreatedAt()).isNotNull();
-        assertThat(pojo.getUpdatedAt()).isNotNull();
+        assertThat(pojo.getCreatedAt()).isEqualTo(FIXED_TIME);
+        assertThat(pojo.getUpdatedAt()).isEqualTo(FIXED_TIME);
         assertThat(pojo.getSessionId()).isNotNull();
     }
 
@@ -68,12 +75,12 @@ class MybatisConfigTest {
     @DisplayName("updateFill 调用 strictUpdateFill 填充更新时间")
     void updateFill() {
         var pojo = new FillEntity();
-        pojo.setCreatedAt(LocalDateTime.now());
+        pojo.setCreatedAt(FIXED_TIME.minusDays(1));
         var metaObject = MetaObject.forObject(
                 pojo, new DefaultObjectFactory(), new DefaultObjectWrapperFactory(), new DefaultReflectorFactory());
         config.updateFill(metaObject);
 
-        assertThat(pojo.getUpdatedAt()).isNotNull();
+        assertThat(pojo.getUpdatedAt()).isEqualTo(FIXED_TIME);
     }
 
     @TableName("test_fill")

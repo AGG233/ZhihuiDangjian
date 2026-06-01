@@ -35,7 +35,7 @@ public class LearningHotspotService {
     private final CourseMapper courseMapper;
     private final Clock clock;
 
-    @Cacheable(value = RedisConstants.LEARNING_HOTSPOT_CACHE_PREFIX, key = "'courses:' + #limit")
+    @Cacheable(value = RedisConstants.LEARNING_HOTSPOT_CACHE_PREFIX, key = "'courses:' + #limit", sync = true)
     public List<HotCourseResponse> getHotCourses(int limit) {
         int clampedLimit = clampLimit(limit);
         List<HotCourseRaw> rawList = userLearningRecordMapper.selectHotCourses(clampedLimit);
@@ -58,7 +58,7 @@ public class LearningHotspotService {
                 .toList();
     }
 
-    @Cacheable(value = RedisConstants.LEARNING_HOTSPOT_CACHE_PREFIX, key = "'categories:' + #limit")
+    @Cacheable(value = RedisConstants.LEARNING_HOTSPOT_CACHE_PREFIX, key = "'categories:' + #limit", sync = true)
     public List<HotCategoryResponse> getHotCategories(int limit) {
         int clampedLimit = clampLimit(limit);
         List<HotCategoryRaw> rawList = userLearningRecordMapper.selectHotCategories(clampedLimit);
@@ -72,7 +72,7 @@ public class LearningHotspotService {
                 .toList();
     }
 
-    @Cacheable(value = RedisConstants.LEARNING_HOTSPOT_CACHE_PREFIX, key = "'trends:' + #days")
+    @Cacheable(value = RedisConstants.LEARNING_HOTSPOT_CACHE_PREFIX, key = "'trends:' + #days", sync = true)
     public LearningTrendResponse getTrends(int days) {
         LocalDateTime since = LocalDateTime.now(clock).minusDays(days);
         List<TrendRaw> rawList = userLearningRecordMapper.selectDailyTrend(since);

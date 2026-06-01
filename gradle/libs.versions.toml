@@ -28,6 +28,7 @@ sensitive-word = "0.29.5"
 springdoc = "2.8.13"
 
 logback = "1.5.8"
+resilience4j = "2.2.0"
 lombok = "1.18.38"
 testcontainers = "2.0.3"
 
@@ -99,6 +100,10 @@ testcontainers-neo4j = { module = "org.testcontainers:testcontainers-neo4j", ver
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logback-core = { module = "ch.qos.logback:logback-core", version.ref = "logback" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+
+# Observability & Resilience
+resilience4j-spring-boot3 = { module = "io.github.resilience4j:resilience4j-spring-boot3", version.ref = "resilience4j" }
+resilience4j-annotations = { module = "io.github.resilience4j:resilience4j-annotations", version.ref = "resilience4j" }
 
 
 [bundles]

@@ -1,5 +1,6 @@
 package com.rauio.smartdangjian.server.ai.config;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,17 +36,32 @@ public class RateLimitConfig implements WebMvcConfigurer {
     @Value("${ai.rate-limit.requests-per-minute:10}")
     private int requestsPerMinute;
 
+    @Value("${ai.rate-limit.path-patterns:"
+            + "/api/ai/chat/**,"
+            + "/api/auth/login,"
+            + "/api/auth/register,"
+            + "/api/auth/captcha/**,"
+            + "/api/auth/changePassword,"
+            + "/api/resource/files/upload,"
+            + "/api/resource/files/upload/callback/**,"
+            + "/api/resource/files/confirm/**,"
+            + "/api/user/users/search,"
+            + "/api/admin/users/search,"
+            + "/api/search/recommend,"
+            + "/api/search/profile}")
+    private List<String> pathPatterns;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         if (!enabled) {
             return;
         }
-        registry.addInterceptor(new RateLimitInterceptor()).addPathPatterns("/api/ai/chat/**");
+        registry.addInterceptor(new RateLimitInterceptor()).addPathPatterns(pathPatterns);
     }
 
     private class RateLimitInterceptor implements HandlerInterceptor {
 
-        private final Map<String, ConcurrentHashMap<Long, AtomicInteger>> userCounters = new ConcurrentHashMap<>();
+        private final Map<String, WindowCounter> userCounters = new ConcurrentHashMap<>();
 
         @Override
         public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
@@ -61,13 +77,14 @@ public class RateLimitConfig implements WebMvcConfigurer {
             }
 
             long windowKey = System.currentTimeMillis() / 60_000;
-            ConcurrentHashMap<Long, AtomicInteger> counters =
-                    userCounters.computeIfAbsent(userId, k -> new ConcurrentHashMap<>());
-
-            counters.entrySet().removeIf(e -> e.getKey() < windowKey - 1);
-
-            AtomicInteger counter = counters.computeIfAbsent(windowKey, k -> new AtomicInteger(0));
-            int count = counter.incrementAndGet();
+            WindowCounter counter = userCounters.compute(userId, (key, current) -> {
+                if (current == null || current.windowKey() != windowKey) {
+                    return new WindowCounter(windowKey, new AtomicInteger(1));
+                }
+                current.counter().incrementAndGet();
+                return current;
+            });
+            int count = counter.counter().get();
 
             if (count > requestsPerMinute) {
                 log.warn("AI请求限流触发 userId={} count={}", userId, count);
@@ -79,4 +96,6 @@ public class RateLimitConfig implements WebMvcConfigurer {
             return true;
         }
     }
+
+    private record WindowCounter(long windowKey, AtomicInteger counter) {}
 }

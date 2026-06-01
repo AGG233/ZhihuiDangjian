@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.Method;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -20,8 +21,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -60,6 +63,42 @@ class UserLearningRecordServiceTest {
     private static final Long USER_ID = 1L;
     private static final Long CHAPTER_ID = 1L;
     private static final Long COURSE_ID = 1L;
+
+    @Test
+    @DisplayName("事务边界按方法声明：读方法只读，写方法显式回滚")
+    void transactionalBoundariesAreMethodLevel() throws NoSuchMethodException {
+        assertThat(UserLearningRecordService.class.getAnnotation(Transactional.class))
+                .isNull();
+        assertReadOnlyTransaction("get", Long.class);
+        assertReadOnlyTransaction("getPage", UserLearningRecordRequest.class, int.class, int.class);
+        assertReadOnlyTransaction("getByUserId", Long.class);
+        assertReadOnlyTransaction("getRecentByUserId", String.class, Integer.class);
+        assertReadOnlyTransaction("getByChapterId", Long.class);
+        assertReadOnlyTransaction("getByUserIdAndChapterId", Long.class, Long.class);
+        assertReadOnlyTransaction("getByUserIdAndCourseId", Long.class, Long.class);
+        assertReadOnlyTransaction("getByUserIdAndCourseIdAndChapterId", Long.class, Long.class, Long.class);
+        assertWriteTransaction("syncUserLearningGraph", Long.class);
+        assertWriteTransaction("create", UserLearningRecordRequest.class);
+        assertWriteTransaction("update", UserLearningRecordRequest.class);
+        assertWriteTransaction("delete", Long.class);
+    }
+
+    private void assertReadOnlyTransaction(String methodName, Class<?>... parameterTypes) throws NoSuchMethodException {
+        Method method = UserLearningRecordService.class.getMethod(methodName, parameterTypes);
+        Transactional transactional = method.getAnnotation(Transactional.class);
+
+        assertThat(transactional).isNotNull();
+        assertThat(transactional.readOnly()).isTrue();
+    }
+
+    private void assertWriteTransaction(String methodName, Class<?>... parameterTypes) throws NoSuchMethodException {
+        Method method = UserLearningRecordService.class.getMethod(methodName, parameterTypes);
+        Transactional transactional = method.getAnnotation(Transactional.class);
+
+        assertThat(transactional).isNotNull();
+        assertThat(transactional.readOnly()).isFalse();
+        assertThat(transactional.rollbackFor()).contains(Exception.class);
+    }
 
     // ==================== get ====================
 
@@ -260,6 +299,11 @@ class UserLearningRecordServiceTest {
         List<UserLearningRecord> result = recordService.getByUserIdAndCourseId(USER_ID, COURSE_ID);
 
         assertThat(result).hasSize(1);
+        ArgumentCaptor<QueryWrapper<UserLearningRecord>> wrapperCaptor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(recordService).list(wrapperCaptor.capture());
+        String sqlSegment = wrapperCaptor.getValue().getSqlSegment();
+        assertThat(sqlSegment).contains("course_id = #{");
+        assertThat(sqlSegment).doesNotContain("course_id = " + COURSE_ID);
     }
 
     @Test
@@ -286,6 +330,11 @@ class UserLearningRecordServiceTest {
                 recordService.getByUserIdAndCourseIdAndChapterId(USER_ID, COURSE_ID, CHAPTER_ID);
 
         assertThat(result).hasSize(1);
+        ArgumentCaptor<QueryWrapper<UserLearningRecord>> wrapperCaptor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(recordService).list(wrapperCaptor.capture());
+        String sqlSegment = wrapperCaptor.getValue().getSqlSegment();
+        assertThat(sqlSegment).contains("course_id = #{");
+        assertThat(sqlSegment).doesNotContain("course_id = " + COURSE_ID);
     }
 
     @Test

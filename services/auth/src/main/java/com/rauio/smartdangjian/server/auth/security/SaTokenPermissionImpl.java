@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 
 import cn.dev33.satoken.stp.StpInterface;
 import cn.dev33.satoken.stp.StpUtil;
@@ -15,7 +15,7 @@ public class SaTokenPermissionImpl implements StpInterface {
     @Override
     public List<String> getRoleList(Object loginId, String loginType) {
         Object userObj = StpUtil.getSession().get("user");
-        if (userObj instanceof User user && user.getUserType() != null) {
+        if (userObj instanceof CurrentUserPrincipal user && user.getUserType() != null) {
             return switch (user.getUserType()) {
                 case MANAGER -> List.of("STUDENT", "SCHOOL", "MANAGER");
                 case SCHOOL -> List.of("STUDENT", "SCHOOL");
@@ -28,7 +28,7 @@ public class SaTokenPermissionImpl implements StpInterface {
     @Override
     public List<String> getPermissionList(Object loginId, String loginType) {
         Object userObj = StpUtil.getSession().get("user");
-        if (userObj instanceof User user && user.getUserType() != null) {
+        if (userObj instanceof CurrentUserPrincipal user && user.getUserType() != null) {
             return switch (user.getUserType()) {
                 case MANAGER -> List.of("*");
                 case SCHOOL ->

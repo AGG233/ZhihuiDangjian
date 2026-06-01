@@ -2,7 +2,6 @@ package com.rauio.smartdangjian.server.ai.tool;
 
 import java.util.stream.Collectors;
 
-import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
@@ -23,9 +22,8 @@ public class RecommendTool {
     private final UserService userService;
 
     @Tool(description = "为当前用户获取个性化推荐课程ID列表，基于协同过滤、知识图谱和用户画像综合推荐")
-    public String getRecommendedCourses(
-            @ToolParam(description = "返回推荐数量，默认10") Integer limit, ToolContext toolContext) {
-        Long userId = IdUtil.parseNullable(ToolContextUtil.getUserId(toolContext, userService));
+    public String getRecommendedCourses(@ToolParam(description = "返回推荐数量，默认10") Integer limit) {
+        Long userId = IdUtil.parseNullable(ToolContextUtil.resolveUserId(userService));
         int size = limit != null && limit > 0 ? limit : 10;
         Page<Long> result = recommendService.recommend(userId, 1, size);
         if (result.getRecords().isEmpty()) {

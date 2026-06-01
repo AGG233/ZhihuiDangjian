@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新工作流架构 v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #080c14;
+    --surface: #0f1624;
+    --surface-2: #162032;
+    --border: #1e3050;
+    --border-hi: #2a4a70;
+    --text: #d8dfe8;
+    --text-dim: #6b7d95;
+    --text-subtle: #455670;
+
+    --blue: #5b9cf5;
+    --blue-glow: rgba(91,156,245,0.08);
+    --purple: #a78bfa;
+    --purple-glow: rgba(167,139,250,0.08);
+    --green: #34d399;
+    --green-glow: rgba(52,211,153,0.08);
+    --amber: #fbbf24;
+    --amber-glow: rgba(251,191,36,0.08);
+    --pink: #f472b6;
+    --pink-glow: rgba(244,114,182,0.08);
+    --red: #f87171;
+    --red-glow: rgba(248,113,113,0.08);
+    --cyan: #22d3ee;
+    --cyan-glow: rgba(34,211,238,0.08);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans SC', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 15%, rgba(91,156,245,0.03) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 55%, rgba(167,139,250,0.03) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 90%, rgba(52,211,153,0.02) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ==================== HEADER ==================== */
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .header .badge {
+    display: inline-block;
+    background: rgba(52,211,153,0.1);
+    border: 1px solid rgba(52,211,153,0.2);
+    color: var(--green);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.8rem;
+  }
+
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+  }
+
+  .header h1 .c1 { color: var(--cyan); }
+  .header h1 .c2 { color: var(--purple); }
+  .header h1 .c3 { color: var(--blue); }
+  .header h1 .c4 { color: var(--pink); }
+
+  .header .sub {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-top: 0.4rem;
+  }
+
+  /* ==================== MAIN FLOW ==================== */
+  .main-flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* Phase group */
+  .phase-group {
+    width: 100%;
+    max-width: 680px;
+    position: relative;
+  }
+
+  .phase-group-label {
+    position: absolute;
+    left: -140px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-subtle);
+    text-align: right;
+    width: 125px;
+    letter-spacing: 0.05em;
+    line-height: 1.4;
+  }
+
+  @media (max-width: 860px) {
+    .phase-group-label {
+      position: static;
+      transform: none;
+      text-align: left;
+      width: 100%;
+      margin-bottom: 0.3rem;
+      padding-left: 0.5rem;
+    }
+  }
+
+  /* Nodes */
+  .flow-node {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1.2rem;
+    width: 100%;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .flow-node:hover {
+    border-color: var(--border-hi);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    transform: translateY(-1px);
+  }
+
+  .flow-node.accent-cyan { border-left: 3px solid var(--cyan); }
+  .flow-node.accent-purple { border-left: 3px solid var(--purple); }
+  .flow-node.accent-blue { border-left: 3px solid var(--blue); }
+  .flow-node.accent-green { border-left: 3px solid var(--green); }
+  .flow-node.accent-amber { border-left: 3px solid var(--amber); }
+  .flow-node.accent-pink { border-left: 3px solid var(--pink); }
+  .flow-node.accent-red { border-left: 3px solid var(--red); }
+
+  .flow-node .node-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .flow-node .node-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  .flow-node .node-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .flow-node .node-desc {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+    padding-left: 2.1rem;
+  }
+
+  .flow-node .node-desc code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    background: rgba(255,255,255,0.04);
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+  }
+
+  .flow-node .node-tags {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    padding-left: 2.1rem;
+    margin-top: 0.4rem;
+  }
+
+  .mini-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem;
+    padding: 0.12rem 0.4rem;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+
+  .mini-tag.wf  { background: rgba(167,139,250,0.12); color: var(--purple); }
+  .mini-tag.ag  { background: rgba(91,156,245,0.12); color: var(--blue); }
+  .mini-tag.pl  { background: rgba(52,211,153,0.12); color: var(--green); }
+  .mini-tag.gt  { background: rgba(248,113,113,0.12); color: var(--red); }
+  .mini-tag.ci  { background: rgba(251,191,36,0.12); color: var(--amber); }
+  .mini-tag.gh  { background: rgba(34,211,238,0.12); color: var(--cyan); }
+  .mini-tag.bot { background: rgba(244,114,182,0.12); color: var(--pink); }
+
+  /* Connectors */
+  .connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.3rem 0;
+    width: 100%;
+    max-width: 680px;
+  }
+
+  .connector .line {
+    width: 2px;
+    height: 26px;
+    background: linear-gradient(to bottom, var(--border), var(--border-hi));
+    position: relative;
+  }
+
+  .connector .line.dashed {
+    background: none;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      var(--border-hi) 0px,
+      var(--border-hi) 3px,
+      transparent 3px,
+      transparent 6px
+    );
+  }
+
+  .connector .line::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid var(--border-hi);
+  }
+
+  .connector .line.dashed::after { display: none; }
+
+  .connector .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.58rem;
+    color: var(--text-subtle);
+    margin-top: 0.15rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* Branch / merge */
+  .branch-row {
+    display: flex;
+    width: 100%;
+    max-width: 680px;
+    gap: 1.5rem;
+  }
+
+  .branch-row .branch {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .branch-row .branch-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-subtle);
+    margin-bottom: 0.3rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* ==================== LOOP BOX ==================== */
+  .loop-box {
+    border: 2px dashed rgba(248,113,113,0.25);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    background: var(--red-glow);
+    position: relative;
+    width: 100%;
+    max-width: 680px;
+  }
+
+  .loop-box.fix-loop {
+    border-color: rgba(251,191,36,0.3);
+    background: var(--amber-glow);
+  }
+
+  .loop-box .loop-label {
+    position: absolute;
+    top: -10px;
+    left: 1rem;
+    background: var(--bg);
+    padding: 0 0.6rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+
+  .loop-box.fix-loop .loop-label { color: var(--amber); }
+  .loop-box.error .loop-label { color: var(--red); }
+
+  /* ==================== SCHEDULER INSIDE ==================== */
+  .scheduler-inner {
+    border: 1px solid rgba(91,156,245,0.2);
+    border-radius: 8px;
+    padding: 0.7rem;
+    margin-top: 0.5rem;
+    background: var(--blue-glow);
+  }
+
+  .scheduler-inner .si-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--blue);
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+
+  .si-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+
+  .si-step {
+    background: var(--surface);
+    border: 1px solid rgba(91,156,245,0.15);
+    border-radius: 4px;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.6rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    text-align: center;
+  }
+
+  .si-arrow { color: var(--blue); font-size: 0.6rem; }
+
+  /* ==================== PR SPLIT LOGIC ==================== */
+  .pr-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    margin-top: 0.5rem;
+  }
+
+  .pr-split-item {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.5rem 0.7rem;
+    text-align: center;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+  }
+
+  .pr-split-item .condition {
+    font-weight: 700;
+    color: var(--amber);
+  }
+
+  /* ==================== BOT CHECK ==================== */
+  .bot-list {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.4rem;
+    padding-left: 0;
+  }
+
+  .bot-item {
+    font-size: 0.62rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ==================== FEEDBACK ARROW ==================== */
+  .feedback-arrow-container {
+    width: 100%;
+    max-width: 680px;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+  }
+
+  .feedback-line {
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--amber), var(--amber), transparent);
+    position: relative;
+  }
+
+  .feedback-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.58rem;
+    color: var(--amber);
+    padding: 0 0.8rem;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  .feedback-line-left {
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(270deg, transparent, var(--amber), var(--amber), transparent);
+  }
+
+  /* ==================== RESULT ==================== */
+  .result-box {
+    border: 2px solid rgba(52,211,153,0.2);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    background: var(--green-glow);
+    text-align: center;
+    width: 100%;
+    max-width: 680px;
+  }
+
+  .result-box .icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .result-box .title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--green);
+  }
+
+  .result-box .detail {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-top: 0.3rem;
+    line-height: 1.6;
+  }
+
+  .result-box .detail code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    background: rgba(255,255,255,0.04);
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+  }
+
+  /* ==================== COMPARISON TABLE ==================== */
+  .comparison {
+    margin-top: 3rem;
+    width: 100%;
+    max-width: 680px;
+  }
+
+  .comparison h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  .comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.7rem;
+  }
+
+  .comp-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.5rem 0.8rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .comp-table td {
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .comp-table .old { color: var(--text-subtle); }
+  .comp-table .new { color: var(--green); }
+
+  .comp-table .arrow-cell {
+    color: var(--text-subtle);
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ==================== LEGEND ==================== */
+  .legend {
+    display: flex;
+    gap: 1.2rem;
+    justify-content: center;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+  }
+
+  .legend-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+  }
+
+  /* Responsive */
+  @media (max-width: 860px) {
+    .branch-row { flex-direction: column; gap: 0.5rem; }
+    .pr-split { grid-template-columns: 1fr; }
+    .header h1 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header class="header">
+    <div class="badge">WORKFLOW v2</div>
+    <h1>
+      <span class="c1">Plan确认</span>
+      <span style="color:var(--text-subtle);"> → </span>
+      <span class="c2">拆分派发</span>
+      <span style="color:var(--text-subtle);"> → </span>
+      <span class="c3">并行编码/测试</span>
+      <span style="color:var(--text-subtle);"> → </span>
+      <span class="c4">PR→CI→Bot→汇报</span>
+    </h1>
+    <p class="sub">远程CI驱动 · 智能PR拆分 · 自动修复循环</p>
+  </header>
+
+  <!-- ==================== MAIN FLOW ==================== -->
+  <div class="main-flow">
+
+    <!-- ═══ PHASE 1: Plan 确认 ═══ -->
+    <div class="phase-group">
+      <div class="phase-group-label">Phase 1<br>Plan 确认</div>
+
+      <div class="flow-node accent-cyan">
+        <div class="node-header">
+          <div class="node-icon" style="background:rgba(34,211,238,0.1);">📋</div>
+          <div class="node-title">Plan Mode 规划确认</div>
+        </div>
+        <div class="node-desc">
+          用户手动在 Plan Mode 中规划 <strong>或</strong> 工作流辅助生成计划。<br>
+          确认后输出结构化需求文档 + 验收标准。
+        </div>
+        <div class="node-tags">
+          <span class="mini-tag ag">Agent 辅助生成</span>
+          <span class="mini-tag gh">读取 .claude/plans/</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector">
+      <div class="line"></div>
+      <div class="label">结构化计划</div>
+    </div>
+
+    <!-- ═══ PHASE 2: 拆分 + 派发 ═══ -->
+    <div class="phase-group">
+      <div class="phase-group-label">Phase 2<br>拆分 + 派发</div>
+
+      <div class="flow-node accent-purple">
+        <div class="node-header">
+          <div class="node-icon" style="background:rgba(167,139,250,0.1);">🔀</div>
+          <div class="node-title">任务拆分 → 依赖图 → 派发</div>
+        </div>
+        <div class="node-desc">
+          分析计划 → 拆分为可并行子任务 → 构建依赖图 → 检测循环依赖 → 生成执行波次。<br>
+          合并了原 <code>Requirements</code> 的需求分析职责（不再需要独立的 requirements-confirm 循环）。
+        </div>
+        <div class="node-tags">
+          <span class="mini-tag wf">task-splitter (增强)</span>
+          <span class="mini-tag ag">含需求分析</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector">
+      <div class="line"></div>
+      <div class="label">subtasks[] + waves[]</div>
+    </div>
+
+    <!-- ═══ PHASE 3: 并行编码/测试 ═══ -->
+    <div class="phase-group">
+      <div class="phase-group-label">Phase 3<br>并行执行</div>
+
+      <div class="flow-node accent-blue">
+        <div class="node-header">
+          <div class="node-icon" style="background:rgba(91,156,245,0.1);">⚡</div>
+          <div class="node-title">多 Agent 并行编码 + 测试</div>
+        </div>
+        <div class="node-desc">
+          每个子 agent 同时负责 <strong>编码实现 + 编写测试</strong>，不再分离 Coding/Testing 两个阶段。<br>
+          dependency-scheduler 依赖驱动调度，并发上限 16。
+        </div>
+        <div class="scheduler-inner">
+          <div class="si-title">dependency-scheduler 调度循环</div>
+          <div class="si-steps">
+            <div class="si-step">找就绪任务<br>(inDegree=0)</div>
+            <div class="si-arrow">→</div>
+            <div class="si-step">并发启动<br>(上限16)</div>
+            <div class="si-arrow">→</div>
+            <div class="si-step">Promise.race<br>等任一完成</div>
+            <div class="si-arrow">→</div>
+            <div class="si-step">释放下游<br>依赖-1</div>
+            <div class="si-arrow">→</div>
+            <div class="si-step">死锁检测</div>
+          </div>
+        </div>
+        <div class="node-tags">
+          <span class="mini-tag ag">spring-boot-coder</span>
+          <span class="mini-tag ag">test-coder (合并)</span>
+          <span class="mini-tag wf">dependency-scheduler</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector">
+      <div class="line"></div>
+      <div class="label">所有子任务完成</div>
+    </div>
+
+    <!-- ═══ GATE: 本地编译+测试 ═══ -->
+    <div class="flow-node accent-red" style="max-width:680px;">
+      <div class="node-header">
+        <div class="node-icon" style="background:rgba(248,113,113,0.1);">🛡️</div>
+        <div class="node-title">本地门控：编译 + 测试</div>
+      </div>
+      <div class="node-desc">
+        <code>./gradlew compileJava</code> + <code>./gradlew test --continue</code><br>
+        确保基本质量过关再推送。失败则打回修复。
+      </div>
+      <div class="node-tags">
+        <span class="mini-tag gt">门控</span>
+        <span class="mini-tag ag">haiku agent 执行</span>
+      </div>
+    </div>
+
+    <div class="connector">
+      <div class="line"></div>
+      <div class="label">门控通过</div>
+    </div>
+
+    <!-- ═══ PHASE 4: 智能创建PR ═══ -->
+    <div class="phase-group">
+      <div class="phase-group-label">Phase 4<br>创建 PR</div>
+
+      <div class="flow-node accent-green">
+        <div class="node-header">
+          <div class="node-icon" style="background:rgba(52,211,153,0.1);">📤</div>
+          <div class="node-title">智能拆分 PR → 推送远程</div>
+        </div>
+        <div class="pr-split">
+          <div class="pr-split-item">
+            <span class="condition">≤5 子任务 & ≤3 模块</span><br>
+            → 合并为 <strong>单个 PR</strong>
+          </div>
+          <div class="pr-split-item">
+            <span class="condition">>5 子任务 或 >3 模块</span><br>
+            → 按模块/功能 <strong>拆分为多个 PR</strong>
+          </div>
+        </div>
+        <div class="node-tags">
+          <span class="mini-tag gh">gh pr create</span>
+          <span class="mini-tag wf">ship-to-product (改造)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector">
+      <div class="line"></div>
+      <div class="label">PR 已创建</div>
+    </div>
+
+    <!-- ═══ PHASE 5: 等待远程CI ═══ -->
+    <div class="phase-group">
+      <div class="phase-group-label">Phase 5<br>远程验证</div>
+
+      <div class="flow-node accent-amber">
+        <div class="node-header">
+          <div class="node-icon" style="background:rgba(251,191,36,0.1);">⏳</div>
+          <div class="node-title">等待远程 CI Checks 通过</div>
+        </div>
+        <div class="node-desc">
+          轮询 <code>gh pr checks</code>，监控编译、测试、JaCoCo、Codacy、bootJar、API 烟雾测试。<br>
+          超时时间可配置（默认 30 分钟）。
+        </div>
+        <div class="node-tags">
+          <span class="mini-tag ci">CI 监控</span>
+          <span class="mini-tag gh">gh pr checks</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector">
+      <div class="line"></div>
+      <div class="label">CI 完成</div>
+    </div>
+
+    <!-- ═══ PHASE 6: 核查 Bot Comment ═══ -->
+    <div class="phase-group">
+      <div class="phase-group-label">Phase 6<br>Bot 核查</div>
+
+      <div class="flow-node accent-pink">
+        <div class="node-header">
+          <div class="node-icon" style="background:rgba(244,114,182,0.1);">🔍</div>
+          <div class="node-title">核查 PR Bot Comment</div>
+        </div>
+        <div class="node-desc">
+          读取 PR 的所有评论和 Review，识别 bot 反馈：
+        </div>
+        <div class="bot-list">
+          <span class="bot-item">Codacy</span>
+          <span class="bot-item">Sourcery</span>
+          <span class="bot-item">CodeRabbit</span>
+          <span class="bot-item">SonarQube</span>
+          <span class="bot-item">人工 Review</span>
+        </div>
+        <div class="node-tags" style="padding-left:0;">
+          <span class="mini-tag gh">gh pr view --comments</span>
+          <span class="mini-tag bot">Bot 分析</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector">
+      <div class="line"></div>
+      <div class="label">核查结果</div>
+    </div>
+
+    <!-- ═══ BRANCH: 成功 vs 失败 ═══ -->
+    <div class="branch-row">
+      <div class="branch">
+        <div class="branch-label" style="color:var(--green);">✓ 全部通过</div>
+
+        <!-- ═══ PHASE 7a: 汇报结果 ═══ -->
+        <div class="result-box" style="margin-top:0.3rem;">
+          <div class="icon">✅</div>
+          <div class="title">汇报结果</div>
+          <div class="detail">
+            生成结构化报告：<br>
+            <code>任务完成数 / 审查通过数 / CI状态 / 修复轮次</code><br>
+            控制台输出 + 可选 PR Comment<br>
+            可选：<code>autoMerge</code> 自动合并<br>
+            可选：<code>autoTag</code> 自动打版本标签
+          </div>
+        </div>
+      </div>
+
+      <div class="branch">
+        <div class="branch-label" style="color:var(--red);">✗ CI失败 / Bot有问题</div>
+
+        <!-- ═══ PHASE 7b: 修复循环 ═══ -->
+        <div class="loop-box fix-loop" style="margin-top:0.3rem;">
+          <div class="loop-label">AUTO-FIX LOOP</div>
+
+          <div class="flow-node accent-amber" style="margin-bottom:0.6rem;">
+            <div class="node-header">
+              <div class="node-icon" style="background:rgba(251,191,36,0.1);">📊</div>
+              <div class="node-title">汇总问题</div>
+            </div>
+            <div class="node-desc" style="padding-left:0;">
+              聚合 CI 失败信息 + Bot Comment → 分类：<br>
+              · 编译错误 / 测试失败 → 自动修复<br>
+              · 代码规范 / 安全警告 → 自动修复<br>
+              · 架构建议 / 设计问题 → 标记需人工确认
+            </div>
+          </div>
+
+          <div class="connector" style="width:100%;max-width:100%;">
+            <div class="line" style="height:18px;"></div>
+          </div>
+
+          <div class="flow-node accent-purple" style="margin-bottom:0.6rem;">
+            <div class="node-header">
+              <div class="node-icon" style="background:rgba(167,139,250,0.1);">🎯</div>
+              <div class="node-title">定位问题 → 拆分修复任务</div>
+            </div>
+            <div class="node-desc" style="padding-left:0;">
+              将每个问题映射到具体文件和子任务 → <br>
+              拆分为修复子任务（含依赖关系）
+            </div>
+            <div class="node-tags" style="padding-left:0;">
+              <span class="mini-tag wf">task-splitter (复用)</span>
+            </div>
+          </div>
+
+          <div class="connector" style="width:100%;max-width:100%;">
+            <div class="line" style="height:18px;"></div>
+          </div>
+
+          <div class="flow-node accent-blue">
+            <div class="node-header">
+              <div class="node-icon" style="background:rgba(91,156,245,0.1);">🔧</div>
+              <div class="node-title">派发 Agent 修复</div>
+            </div>
+            <div class="node-desc" style="padding-left:0;">
+              dependency-scheduler 调度修复 agent → 本地门控 → 推送
+            </div>
+            <div class="node-tags" style="padding-left:0;">
+              <span class="mini-tag ag">fix agent × N</span>
+              <span class="mini-tag wf">dependency-scheduler</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ FEEDBACK ARROW ═══ -->
+    <div class="feedback-arrow-container">
+      <div class="feedback-line-left"></div>
+      <div class="feedback-label">失败 → 循环回到「等待CI」</div>
+      <div class="feedback-line"></div>
+    </div>
+
+  </div>
+
+  <!-- ==================== COMPARISON ==================== -->
+  <div class="comparison">
+    <h3>新旧对比</h3>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>维度</th>
+          <th>旧架构 (v1)</th>
+          <th class="arrow-cell"></th>
+          <th>新架构 (v2)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>阶段数</td>
+          <td class="old">7 阶段线性</td>
+          <td class="arrow-cell">→</td>
+          <td class="new">6 阶段 + 修复循环</td>
+        </tr>
+        <tr>
+          <td>需求分析</td>
+          <td class="old">独立阶段 + confirm 循环(3轮)</td>
+          <td class="arrow-cell">→</td>
+          <td class="new">合并到 Plan 确认 / 任务拆分</td>
+        </tr>
+        <tr>
+          <td>编码与测试</td>
+          <td class="old">分离的两个阶段</td>
+          <td class="arrow-cell">→</td>
+          <td class="new">合并为一个阶段，agent 同时完成</td>
+        </tr>
+        <tr>
+          <td>质量验证</td>
+          <td class="old">本地 QA(编译+测试+JaCoCo+Spotless)<br>+ 本地 review-diff</td>
+          <td class="arrow-cell">→</td>
+          <td class="new">本地编译+测试门控<br>+ 远程 CI + Bot Comment</td>
+        </tr>
+        <tr>
+          <td>审查方式</td>
+          <td class="old">本地 3 维度审查 + 对抗性验证</td>
+          <td class="arrow-cell">→</td>
+          <td class="new">远程 Bot (Codacy/Sourcery/CodeRabbit)<br>+ 人工 PR Review</td>
+        </tr>
+        <tr>
+          <td>修复循环</td>
+          <td class="old">Review-Ship Loop 内 parallel() 修复</td>
+          <td class="arrow-cell">→</td>
+          <td class="new">自动汇总 → task-splitter 拆分 →<br>dependency-scheduler 调度修复</td>
+        </tr>
+        <tr>
+          <td>PR 粒度</td>
+          <td class="old">固定单个 PR</td>
+          <td class="arrow-cell">→</td>
+          <td class="new">智能拆分：规模大时自动拆多 PR</td>
+        </tr>
+        <tr>
+          <td>终止条件</td>
+          <td class="old">Review 通过 + Ship 成功</td>
+          <td class="arrow-cell">→</td>
+          <td class="new">远程 CI ✓ + Bot 无阻塞问题</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--cyan);"></div> Plan</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--purple);"></div> 拆分</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue);"></div> 执行</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green);"></div> PR</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--amber);"></div> CI</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--pink);"></div> Bot</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red);"></div> 门控</div>
+  </div>
+
+</div>
+</body>
+</html>

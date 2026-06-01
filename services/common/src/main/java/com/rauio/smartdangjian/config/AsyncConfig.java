@@ -6,13 +6,22 @@ import java.util.concurrent.ThreadPoolExecutor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
+import lombok.RequiredArgsConstructor;
+
 @AutoConfiguration
 @EnableAsync
+@EnableScheduling
+@RequiredArgsConstructor
 public class AsyncConfig implements WebMvcConfigurer {
+
+    private final MeterRegistry meterRegistry;
 
     @Override
     public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
@@ -30,9 +39,10 @@ public class AsyncConfig implements WebMvcConfigurer {
         executor.setMaxPoolSize(processors * 4);
         executor.setQueueCapacity(64);
         executor.setThreadNamePrefix("IO-Task-");
-        executor.setRejectedExecutionHandler(new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy());
+        configureResilientExecutor(executor);
 
         executor.initialize();
+        ExecutorServiceMetrics.monitor(meterRegistry, executor.getThreadPoolExecutor(), "io-task-executor");
         return executor;
     }
 
@@ -45,8 +55,10 @@ public class AsyncConfig implements WebMvcConfigurer {
         executor.setMaxPoolSize(processors + 1);
         executor.setQueueCapacity(128);
         executor.setThreadNamePrefix("CPU-Task-");
+        configureResilientExecutor(executor);
 
         executor.initialize();
+        ExecutorServiceMetrics.monitor(meterRegistry, executor.getThreadPoolExecutor(), "cpu-task-executor");
         return executor;
     }
 
@@ -58,9 +70,9 @@ public class AsyncConfig implements WebMvcConfigurer {
         executor.setQueueCapacity(10);
         executor.setKeepAliveSeconds(300);
         executor.setThreadNamePrefix("Long-Task-");
-        // DiscardOldestPolicy: 长时间运行的任务超载时，丢弃最旧任务以保证新任务能及时执行
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
+        configureResilientExecutor(executor);
         executor.initialize();
+        ExecutorServiceMetrics.monitor(meterRegistry, executor.getThreadPoolExecutor(), "long-task-executor");
         return executor;
     }
 
@@ -71,7 +83,15 @@ public class AsyncConfig implements WebMvcConfigurer {
         executor.setMaxPoolSize(16);
         executor.setQueueCapacity(10);
         executor.setThreadNamePrefix("mvc-async-");
+        configureResilientExecutor(executor);
         executor.initialize();
+        ExecutorServiceMetrics.monitor(meterRegistry, executor.getThreadPoolExecutor(), "mvc-async-executor");
         return executor;
+    }
+
+    private void configureResilientExecutor(ThreadPoolTaskExecutor executor) {
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(30);
     }
 }

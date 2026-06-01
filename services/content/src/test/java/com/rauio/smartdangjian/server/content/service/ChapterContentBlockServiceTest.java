@@ -4,7 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 
 import java.util.List;
 
@@ -73,27 +75,43 @@ class ChapterContentBlockServiceTest {
     // ==================== createBatch ====================
 
     @Test
-    @DisplayName("createBatch 批量创建全部成功")
-    void createBatchAllSuccess() {
+    @DisplayName("createBatch 使用批量保存创建内容块")
+    void createBatchUsesSaveBatch() {
         ChapterContentBlock b1 = ChapterContentBlock.builder().build();
         ChapterContentBlock b2 = ChapterContentBlock.builder().build();
-        doReturn(true).when(service).save(any(ChapterContentBlock.class));
+        List<ChapterContentBlock> blocks = List.of(b1, b2);
+        doReturn(true).when(service).saveBatch(blocks);
 
-        Boolean result = service.createBatch(List.of(b1, b2));
+        Boolean result = service.createBatch(blocks);
 
         assertThat(result).isTrue();
+        verify(service).saveBatch(blocks);
+        verify(service, never()).save(any(ChapterContentBlock.class));
     }
 
     @Test
-    @DisplayName("createBatch 中途创建失败返回false")
-    void createBatchPartialFailure() {
+    @DisplayName("createBatch 批量保存失败返回 false")
+    void createBatchFailure() {
         ChapterContentBlock b1 = ChapterContentBlock.builder().build();
         ChapterContentBlock b2 = ChapterContentBlock.builder().build();
-        doReturn(true).doReturn(false).when(service).save(any(ChapterContentBlock.class));
+        List<ChapterContentBlock> blocks = List.of(b1, b2);
+        doReturn(false).when(service).saveBatch(blocks);
 
-        Boolean result = service.createBatch(List.of(b1, b2));
+        Boolean result = service.createBatch(blocks);
 
         assertThat(result).isFalse();
+        verify(service).saveBatch(blocks);
+        verify(service, never()).save(any(ChapterContentBlock.class));
+    }
+
+    @Test
+    @DisplayName("createBatch 空列表直接返回 true 且不访问数据库")
+    void createBatchEmptyList() {
+        Boolean result = service.createBatch(List.of());
+
+        assertThat(result).isTrue();
+        verify(service, never()).saveBatch(anyList());
+        verify(service, never()).save(any(ChapterContentBlock.class));
     }
 
     // ==================== delete ====================
@@ -210,25 +228,29 @@ class ChapterContentBlockServiceTest {
     void getByResourceIds() {
         ChapterContentBlock b1 = ChapterContentBlock.builder().id(1L).build();
         ChapterContentBlock b2 = ChapterContentBlock.builder().id(2L).build();
-        doReturn(b1).when(service).getById(1L);
-        doReturn(b2).when(service).getById(2L);
+        List<ChapterContentBlock> entities = List.of(b1, b2);
+        List<Long> ids = List.of(1L, 2L);
+        doReturn(entities).when(service).listByIds(ids);
 
         ContentBlockResponse r1 = new ContentBlockResponse();
         ContentBlockResponse r2 = new ContentBlockResponse();
-        doReturn(List.of(r1, r2)).when(convertor).toResponseList(anyList());
+        doReturn(List.of(r1, r2)).when(convertor).toResponseList(entities);
 
-        List<ContentBlockResponse> result = service.getByResourceIds(List.of(1L, 2L));
+        List<ContentBlockResponse> result = service.getByResourceIds(ids);
 
         assertThat(result).hasSize(2);
+        verify(service).listByIds(ids);
+        verify(service, never()).getById(1L);
+        verify(service, never()).getById(2L);
     }
 
     @Test
     @DisplayName("getByResourceIds 空ID列表返回空列表")
     void getByResourceIdsEmpty() {
-        doReturn(List.of()).when(convertor).toResponseList(anyList());
-
         List<ContentBlockResponse> result = service.getByResourceIds(List.of());
 
         assertThat(result).isEmpty();
+        verify(service, never()).listByIds(anyList());
+        verify(convertor, never()).toResponseList(anyList());
     }
 }

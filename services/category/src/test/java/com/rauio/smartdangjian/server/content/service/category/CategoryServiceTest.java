@@ -12,6 +12,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
@@ -73,6 +75,37 @@ class CategoryServiceTest {
     @AfterEach
     void tearDown() {
         securityUtilsMock.close();
+    }
+
+    @Test
+    @DisplayName("事务边界按方法声明：读方法只读，写方法显式回滚")
+    void transactionalBoundariesAreMethodLevel() throws NoSuchMethodException {
+        assertThat(CategoryService.class.getAnnotation(Transactional.class)).isNull();
+        assertReadOnlyTransaction("get", Long.class);
+        assertReadOnlyTransaction("getRootList");
+        assertReadOnlyTransaction("getByParentId", Long.class);
+        assertWriteTransaction("create", CategoryRequest.class);
+        assertWriteTransaction("createByParentId", List.class, Long.class);
+        assertWriteTransaction("delete", Long.class);
+        assertWriteTransaction("deleteByIdWithChildren", Long.class);
+        assertWriteTransaction("update", CategoryRequest.class, Long.class);
+    }
+
+    private void assertReadOnlyTransaction(String methodName, Class<?>... parameterTypes) throws NoSuchMethodException {
+        Method method = CategoryService.class.getMethod(methodName, parameterTypes);
+        Transactional transactional = method.getAnnotation(Transactional.class);
+
+        assertThat(transactional).isNotNull();
+        assertThat(transactional.readOnly()).isTrue();
+    }
+
+    private void assertWriteTransaction(String methodName, Class<?>... parameterTypes) throws NoSuchMethodException {
+        Method method = CategoryService.class.getMethod(methodName, parameterTypes);
+        Transactional transactional = method.getAnnotation(Transactional.class);
+
+        assertThat(transactional).isNotNull();
+        assertThat(transactional.readOnly()).isFalse();
+        assertThat(transactional.rollbackFor()).contains(Exception.class);
     }
 
     // ==================== get ====================

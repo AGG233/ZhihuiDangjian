@@ -2,7 +2,6 @@ package com.rauio.smartdangjian.server.ai.tool;
 
 import java.util.List;
 
-import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
@@ -24,25 +23,21 @@ public class LearningTool {
 
     @Tool(description = "获取用户最近N天的学习记录")
     public List<UserLearningRecord> getRecentLearningRecord(
-            @ToolParam(description = "最近几天，默认 7 天") Integer recentDays, ToolContext toolContext) {
-        return userLearningRecordService.getRecentByUserId(
-                ToolContextUtil.getUserId(toolContext, userService), recentDays);
+            @ToolParam(description = "最近几天，默认 7 天") Integer recentDays) {
+        return userLearningRecordService.getRecentByUserId(ToolContextUtil.resolveUserId(userService), recentDays);
     }
 
     @Tool(description = "获取用户某一课程的学习记录")
-    public List<UserLearningRecord> getLearningRecordOfCourse(
-            @ToolParam(description = "课程 ID") String courseId, ToolContext toolContext) {
+    public List<UserLearningRecord> getLearningRecordOfCourse(@ToolParam(description = "课程 ID") String courseId) {
         return userLearningRecordService.getByUserIdAndCourseId(
-                IdUtil.parseNullable(ToolContextUtil.getUserId(toolContext, userService)), IdUtil.parse(courseId));
+                IdUtil.parseNullable(ToolContextUtil.resolveUserId(userService)), IdUtil.parse(courseId));
     }
 
     @Tool(description = "获取用户某一课程的章节学习情况")
     public List<UserLearningRecord> getLearningRecordOfCourseChapter(
-            @ToolParam(description = "课程 ID") String courseId,
-            @ToolParam(description = "章节 ID") String chapterId,
-            ToolContext toolContext) {
+            @ToolParam(description = "课程 ID") String courseId, @ToolParam(description = "章节 ID") String chapterId) {
         return userLearningRecordService.getByUserIdAndCourseIdAndChapterId(
-                IdUtil.parseNullable(ToolContextUtil.getUserId(toolContext, userService)),
+                IdUtil.parseNullable(ToolContextUtil.resolveUserId(userService)),
                 IdUtil.parse(courseId),
                 IdUtil.parse(chapterId));
     }

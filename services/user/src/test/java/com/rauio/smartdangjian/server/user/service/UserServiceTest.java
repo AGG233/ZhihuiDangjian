@@ -13,25 +13,34 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
+import org.apache.ibatis.builder.MapperBuilderAssistant;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 
+import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
+import com.rauio.smartdangjian.server.user.pojo.request.UserUpdateRequest;
 import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
@@ -44,6 +53,13 @@ import cn.hutool.crypto.digest.BCrypt;
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
+    @BeforeAll
+    static void initTableInfo() {
+        MybatisConfiguration config = new MybatisConfiguration();
+        MapperBuilderAssistant assistant = new MapperBuilderAssistant(config, "");
+        TableInfoHelper.initTableInfo(assistant, User.class);
+    }
+
     @Mock
     private UserConvertor convertor;
 
@@ -54,6 +70,32 @@ class UserServiceTest {
     @BeforeEach
     void resetSpy() {
         reset(userService);
+    }
+
+    @Test
+    @DisplayName("get 缓存启用 sync，避免用户视图并发击穿")
+    void getCacheUsesSync() throws NoSuchMethodException {
+        Method method = UserService.class.getMethod("get", Long.class);
+
+        assertThat(method.getAnnotation(Cacheable.class).sync()).isTrue();
+    }
+
+    @Test
+    @DisplayName("用户写操作按ID精确驱逐缓存，避免全量清空用户视图缓存")
+    void userWriteMethodsEvictUserCacheById() throws NoSuchMethodException {
+        assertUserCacheEvictedById("update", Long.class, User.class);
+        assertUserCacheEvictedById("update", Long.class, UserUpdateRequest.class);
+        assertUserCacheEvictedById("delete", Long.class);
+    }
+
+    private void assertUserCacheEvictedById(String methodName, Class<?>... parameterTypes)
+            throws NoSuchMethodException {
+        Method method = UserService.class.getMethod(methodName, parameterTypes);
+        CacheEvict cacheEvict = method.getAnnotation(CacheEvict.class);
+
+        assertThat(cacheEvict).isNotNull();
+        assertThat(cacheEvict.allEntries()).isFalse();
+        assertThat(cacheEvict.key()).isEqualTo("#id");
     }
 
     // ---------- helpers ----------
@@ -648,6 +690,8 @@ class UserServiceTest {
     void getPageCallsConvertor() {
         UserRequest request = new UserRequest();
         request.setUsername("test");
+        request.setEmail("test@example.com");
+        request.setPhone("13800138000");
 
         List<User> userList = List.of(createUser(1L, "testuser", "test@example.com", "13800138000"));
         Page<User> userPage = new Page<>(1, 10, 1);
@@ -662,6 +706,20 @@ class UserServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getRecords()).isEqualTo(responseList);
         verify(convertor).toPublicResponse(userList);
+        ArgumentCaptor<LambdaQueryWrapper<User>> wrapperCaptor = ArgumentCaptor.forClass(LambdaQueryWrapper.class);
+        verify(userService).page(any(Page.class), wrapperCaptor.capture());
+        assertThat(wrapperCaptor.getValue().getSqlSegment())
+                .contains("username LIKE")
+                .contains("email =")
+                .contains("phone =")
+                .doesNotContain("email LIKE")
+                .doesNotContain("phone LIKE");
+        assertThat(wrapperCaptor.getValue().getParamNameValuePairs())
+                .containsValue("%test%")
+                .containsValue("test@example.com")
+                .containsValue("13800138000")
+                .doesNotContainValue("%test@example.com%")
+                .doesNotContainValue("%13800138000%");
     }
 
     @Test

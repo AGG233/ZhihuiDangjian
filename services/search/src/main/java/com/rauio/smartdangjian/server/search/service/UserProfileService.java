@@ -43,7 +43,7 @@ public class UserProfileService {
     private final CategoryCourseMapper categoryCourseMapper;
     private final UserService userService;
 
-    @Cacheable(value = USER_PROFILE_CACHE_PREFIX, key = "#userId")
+    @Cacheable(value = USER_PROFILE_CACHE_PREFIX, key = "#userId", sync = true)
     public UserProfileResponse getProfile(String userId) {
         return UserProfileResponse.builder()
                 .userId(userId)

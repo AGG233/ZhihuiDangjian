@@ -20,6 +20,7 @@ dependencies {
     implementation(libs.spring.boot.starter.data.redis)
     implementation(libs.springdoc.openapi.starter.webmvc.ui)
     implementation(libs.mapstruct)
+    implementation(libs.resilience4j.annotations)
 
     compileOnly(libs.lombok)
 

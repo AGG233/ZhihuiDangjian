@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>dev-to-prod 工作流编排</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #080c14;
+    --surface: #0f1624;
+    --surface-2: #162032;
+    --border: #1e3050;
+    --border-hi: #2a4a70;
+    --text: #d8dfe8;
+    --text-dim: #6b7d95;
+    --text-subtle: #455670;
+    --blue: #5b9cf5;
+    --blue-dim: rgba(91, 156, 245, 0.12);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167, 139, 250, 0.12);
+    --green: #34d399;
+    --green-dim: rgba(52, 211, 153, 0.12);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251, 191, 36, 0.12);
+    --pink: #f472b6;
+    --pink-dim: rgba(244, 114, 182, 0.12);
+    --cyan: #22d3ee;
+    --red: #f87171;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans SC', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 15% 20%, rgba(91, 156, 245, 0.03) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 60%, rgba(167, 139, 250, 0.03) 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 85%, rgba(52, 211, 153, 0.02) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1200px;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.3rem;
+  }
+
+  .header h1 span { color: var(--blue); }
+  .header h1 span.purple { color: var(--purple); }
+  .header h1 span.green { color: var(--green); }
+
+  .header .sub {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ==================== TOP-LEVEL FLOW ==================== */
+  .flow-section {
+    margin-bottom: 2.5rem;
+  }
+
+  .flow-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 1rem;
+    padding-left: 0.3rem;
+    border-left: 2px solid var(--border);
+  }
+
+  /* Phase pipeline - horizontal */
+  .phase-pipeline {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .phase-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    min-width: 100px;
+    max-width: 130px;
+    text-align: center;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .phase-card:hover {
+    border-color: var(--border-hi);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+
+  .phase-card .phase-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 0.2rem;
+  }
+
+  .phase-card .phase-num.p0 { color: var(--text-subtle); }
+  .phase-card .phase-num.p1 { color: var(--cyan); }
+  .phase-card .phase-num.p2 { color: var(--purple); }
+  .phase-card .phase-num.p3 { color: var(--blue); }
+  .phase-card .phase-num.p4 { color: var(--green); }
+  .phase-card .phase-num.p5 { color: var(--amber); }
+  .phase-card .phase-num.p6 { color: var(--pink); }
+
+  .phase-card .phase-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    margin-bottom: 0.15rem;
+  }
+
+  .phase-card .phase-hint {
+    font-size: 0.6rem;
+    color: var(--text-subtle);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .phase-arrow {
+    display: flex;
+    align-items: center;
+    color: var(--text-subtle);
+    font-size: 1rem;
+    padding: 0 0.2rem;
+    margin-top: 0.8rem;
+    flex-shrink: 0;
+  }
+
+  /* ==================== DETAILED FLOW ==================== */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 900px) {
+    .detail-grid { grid-template-columns: 1fr; }
+  }
+
+  .detail-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .detail-card.full {
+    grid-column: 1 / -1;
+  }
+
+  .detail-card-header {
+    padding: 0.7rem 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .detail-card-header .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .detail-card-body {
+    padding: 1rem;
+  }
+
+  /* Orchestration diagram inside card */
+  .orch-flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .orch-node {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.55rem 0.8rem;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+    font-size: 0.73rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .orch-node:hover {
+    border-color: var(--border-hi);
+  }
+
+  .orch-node.entry {
+    border-color: rgba(34, 211, 238, 0.2);
+    background: rgba(34, 211, 238, 0.04);
+  }
+
+  .orch-node.decision {
+    border-style: dashed;
+    border-color: rgba(251, 191, 36, 0.25);
+    background: rgba(251, 191, 36, 0.03);
+  }
+
+  .orch-node.subflow {
+    border-color: rgba(139, 92, 246, 0.15);
+    background: rgba(139, 92, 246, 0.04);
+  }
+
+  .orch-node.gate {
+    border-color: rgba(248, 113, 113, 0.2);
+    background: rgba(248, 113, 113, 0.03);
+  }
+
+  .orch-node .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    margin-right: 0.3rem;
+    vertical-align: middle;
+  }
+
+  .tag.wf { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .tag.ag { background: rgba(91,156,245,0.15); color: var(--blue); }
+  .tag.pl { background: rgba(52,211,153,0.15); color: var(--green); }
+  .tag.ga { background: rgba(248,113,113,0.15); color: var(--red); }
+  .tag.lo { background: rgba(251,191,36,0.15); color: var(--amber); }
+
+  .orch-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.2rem 0;
+  }
+
+  .orch-arrow .vline {
+    width: 1.5px;
+    height: 18px;
+    background: linear-gradient(to bottom, var(--border), var(--border-hi));
+  }
+
+  .orch-arrow .vline::after {
+    content: '';
+    display: block;
+    margin-top: -2px;
+    width: 0; height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid var(--border-hi);
+  }
+
+  .orch-arrow .label {
+    font-size: 0.58rem;
+    color: var(--text-subtle);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 0.1rem;
+  }
+
+  .orch-split {
+    display: flex;
+    width: 100%;
+    max-width: 380px;
+    gap: 0.5rem;
+  }
+
+  .orch-split .branch {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  .orch-split .branch-label {
+    font-size: 0.55rem;
+    color: var(--text-subtle);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 0.1rem;
+  }
+
+  .orch-merge {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 380px;
+    gap: 0.5rem;
+  }
+
+  .orch-merge .h-line {
+    flex: 1;
+    height: 1.5px;
+    background: linear-gradient(90deg, transparent, var(--border-hi), transparent);
+  }
+
+  .orch-merge .merge-label {
+    font-size: 0.58rem;
+    color: var(--text-subtle);
+    font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap;
+  }
+
+  /* Scheduler loop visualization */
+  .scheduler-loop {
+    border: 1.5px dashed var(--blue);
+    border-radius: 8px;
+    padding: 0.6rem;
+    margin-top: 0.6rem;
+    background: var(--blue-dim);
+  }
+
+  .scheduler-loop .loop-title {
+    font-size: 0.65rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--blue);
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+
+  .loop-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+  }
+
+  .loop-step {
+    background: var(--surface);
+    border: 1px solid rgba(91,156,245,0.2);
+    border-radius: 4px;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.6rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    text-align: center;
+  }
+
+  .loop-arrow {
+    color: var(--blue);
+    font-size: 0.65rem;
+  }
+
+  /* Review-ship loop */
+  .review-loop {
+    border: 1.5px dashed var(--pink);
+    border-radius: 8px;
+    padding: 0.6rem;
+    margin-top: 0.6rem;
+    background: var(--pink-dim);
+  }
+
+  .review-loop .loop-title {
+    font-size: 0.65rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--pink);
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-top: 2rem;
+    padding: 0.8rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+  }
+
+  .legend-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+  }
+
+  .legend-tag.wf { background: rgba(167,139,250,0.12); color: var(--purple); }
+  .legend-tag.ag { background: rgba(91,156,245,0.12); color: var(--blue); }
+  .legend-tag.pl { background: rgba(52,211,153,0.12); color: var(--green); }
+  .legend-tag.ga { background: rgba(248,113,113,0.12); color: var(--red); }
+
+  /* Data flow arrows between phases */
+  .dataflow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    margin: 0.6rem 0;
+    font-size: 0.58rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-subtle);
+  }
+
+  .dataflow .flow-item {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0.15rem 0.4rem;
+  }
+
+  .dataflow .flow-arrow {
+    color: var(--text-subtle);
+  }
+
+  /* Tooltip-style annotations */
+  .annotation {
+    font-size: 0.62rem;
+    color: var(--text-subtle);
+    font-style: italic;
+    text-align: center;
+    margin-top: 0.3rem;
+  }
+
+  .brace {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-subtle);
+  }
+
+  /* Responsive phase pipeline */
+  @media (max-width: 700px) {
+    .phase-pipeline {
+      flex-direction: column;
+      align-items: center;
+    }
+    .phase-arrow {
+      transform: rotate(90deg);
+      margin: 0.2rem 0;
+    }
+    .phase-card {
+      max-width: 100%;
+      width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header class="header">
+    <h1><span>dev</span><span class="purple">-to-</span><span class="green">prod</span> 工作流编排</h1>
+    <p class="sub">主编排器 · 7 阶段 · 3 种分发策略 · 内部循环</p>
+  </header>
+
+  <!-- ==================== PHASE PIPELINE OVERVIEW ==================== -->
+  <div class="flow-section">
+    <div class="flow-section-title">阶段总览</div>
+    <div class="phase-pipeline">
+      <div class="phase-card">
+        <div class="phase-num p0">0</div>
+        <div class="phase-label">解析检测</div>
+        <div class="phase-hint">nl-parser</div>
+      </div>
+      <div class="phase-arrow">→</div>
+      <div class="phase-card">
+        <div class="phase-num p1">1</div>
+        <div class="phase-label">计划读取</div>
+        <div class="phase-hint">Plan</div>
+      </div>
+      <div class="phase-arrow">→</div>
+      <div class="phase-card">
+        <div class="phase-num p2">2</div>
+        <div class="phase-label">需求分析</div>
+        <div class="phase-hint">Requirements</div>
+      </div>
+      <div class="phase-arrow">→</div>
+      <div class="phase-card">
+        <div class="phase-num p3">3</div>
+        <div class="phase-label">任务拆分</div>
+        <div class="phase-hint">Splitting</div>
+      </div>
+      <div class="phase-arrow">→</div>
+      <div class="phase-card">
+        <div class="phase-num p4">4</div>
+        <div class="phase-label">并行编码</div>
+        <div class="phase-hint">Coding</div>
+      </div>
+      <div class="phase-arrow">→</div>
+      <div class="phase-card">
+        <div class="phase-num p5">5</div>
+        <div class="phase-label">并行测试</div>
+        <div class="phase-hint">Testing</div>
+      </div>
+      <div class="phase-arrow">→</div>
+      <div class="phase-card">
+        <div class="phase-num p6">6</div>
+        <div class="phase-label">QA 检查</div>
+        <div class="phase-hint">QA Check</div>
+      </div>
+      <div class="phase-arrow">→</div>
+      <div class="phase-card">
+        <div class="phase-num p6" style="color: var(--pink);">7</div>
+        <div class="phase-label">审查发版</div>
+        <div class="phase-hint">Review-Ship</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== DATA FLOW ==================== -->
+  <div class="flow-section">
+    <div class="flow-section-title">状态传递</div>
+    <div class="dataflow">
+      <span class="flow-item">feature</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-item">requirements</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-item">subtasks[]</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-item">waves[]</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-item">codingResult</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-item">compiled</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-item">testingResult</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-item">tested</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-item">qaPassed</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-item">reviewReport</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-item">shipResult</span>
+    </div>
+    <div class="annotation">phaseOutput 对象在各阶段间传递，每个阶段读取上一阶段的输出，写入本阶段的结果</div>
+  </div>
+
+  <!-- ==================== DETAILED ORCHESTRATION ==================== -->
+  <div class="detail-grid">
+
+    <!-- COLUMN 1: Phase 0-3 -->
+    <div>
+      <div class="detail-card">
+        <div class="detail-card-header">
+          <div class="dot" style="background: var(--cyan);"></div>
+          阶段 0-2 · 入口与需求
+        </div>
+        <div class="detail-card-body">
+          <div class="orch-flow">
+
+            <div class="orch-node entry">
+              <span class="tag ag">输入</span> 用户触发 /plan-execute
+            </div>
+
+            <div class="orch-arrow"><div class="vline"></div></div>
+
+            <div class="orch-node decision">
+              <span class="tag lo">判断</span> 有自然语言 text?
+            </div>
+
+            <div class="orch-split">
+              <div class="branch">
+                <div class="branch-label">是</div>
+                <div class="orch-node subflow">
+                  <span class="tag wf">WF</span> nl-parser
+                </div>
+              </div>
+              <div class="branch">
+                <div class="branch-label">否</div>
+                <div class="orch-node" style="opacity:0.5;">跳过</div>
+              </div>
+            </div>
+
+            <div class="orch-merge">
+              <div class="h-line"></div>
+              <div class="merge-label">合并</div>
+              <div class="h-line"></div>
+            </div>
+
+            <div class="orch-node decision">
+              <span class="tag lo">判断</span> .claude/plans/ 下有最近 30min 的计划文件?
+            </div>
+
+            <div class="orch-split">
+              <div class="branch">
+                <div class="branch-label">是</div>
+                <div class="orch-node subflow">
+                  <span class="tag ag">Agent</span> 解析 plan.md → subtasks
+                </div>
+              </div>
+              <div class="branch">
+                <div class="branch-label">否</div>
+                <div class="orch-node">走旧路径：需求 → 拆分</div>
+              </div>
+            </div>
+
+            <div class="orch-merge">
+              <div class="h-line"></div>
+              <div class="merge-label">phaseOutput.planParsed</div>
+              <div class="h-line"></div>
+            </div>
+
+            <div class="orch-arrow"><div class="vline"></div></div>
+
+            <div class="orch-node">
+              <span class="tag ag">Agent</span> 需求分析 → requirements 文档
+            </div>
+
+            <div class="orch-arrow"><div class="vline"></div></div>
+
+            <div class="orch-node subflow">
+              <span class="tag wf">WF</span> requirements-confirm
+            </div>
+            <div class="annotation">最多 3 轮 approve/reject/revise 循环</div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 3: Splitting -->
+      <div class="detail-card" style="margin-top: 1.5rem;">
+        <div class="detail-card-header">
+          <div class="dot" style="background: var(--purple);"></div>
+          阶段 3 · 任务拆分 (task-splitter)
+        </div>
+        <div class="detail-card-body">
+          <div class="orch-flow">
+
+            <div class="orch-node">
+              <span class="tag ag">Agent</span> 分析范围：受影响模块、复杂度
+            </div>
+            <div class="orch-arrow"><div class="vline"></div></div>
+
+            <div class="orch-node">
+              <span class="tag ag">Agent</span> 拆分子任务 (垂直切片原则)
+            </div>
+            <div class="orch-arrow"><div class="vline"></div></div>
+
+            <div class="orch-node">
+              <span class="tag ag">Agent</span> 验证：循环依赖、覆盖完整性
+            </div>
+            <div class="orch-arrow"><div class="vline"></div></div>
+
+            <div class="orch-node subflow">
+              <span class="tag lo">输出</span> subtasks[] + waves[]
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUMN 2: Phase 4-7 -->
+    <div>
+      <!-- Phase 4: Coding via dependency-scheduler -->
+      <div class="detail-card">
+        <div class="detail-card-header">
+          <div class="dot" style="background: var(--blue);"></div>
+          阶段 4 · 编码 (dependency-scheduler)
+        </div>
+        <div class="detail-card-body">
+          <div class="orch-flow">
+
+            <div class="orch-node">
+              <span class="tag wf">WF</span> dependency-scheduler
+            </div>
+
+            <div class="scheduler-loop">
+              <div class="loop-title">┌─ 调度循环 (内部) ─┐</div>
+              <div class="loop-steps">
+                <div class="loop-step">构建依赖图<br>(邻接表+入度)</div>
+                <div class="loop-arrow">→</div>
+                <div class="loop-step">检测循环依赖<br>(DFS+打破)</div>
+                <div class="loop-arrow">→</div>
+                <div class="loop-step">找出就绪任务<br>(inDegree=0)</div>
+              </div>
+              <div style="text-align:center;margin:0.4rem 0;">
+                <span style="font-size:0.58rem;color:var(--text-subtle);font-family:'JetBrains Mono',monospace;">▼ while 循环 ▼</span>
+              </div>
+              <div class="loop-steps">
+                <div class="loop-step">启动就绪任务<br>(并发上限16)</div>
+                <div class="loop-arrow">→</div>
+                <div class="loop-step">Promise.race()<br>等任一完成</div>
+                <div class="loop-arrow">→</div>
+                <div class="loop-step">递减依赖者入度<br>释放新任务</div>
+                <div class="loop-arrow">→</div>
+                <div class="loop-step">死锁检测<br>(无就绪+有pending)</div>
+              </div>
+            </div>
+
+            <div class="orch-arrow"><div class="vline"><div class="label">编码完成</div></div></div>
+
+            <div class="orch-node gate">
+              <span class="tag ga">门控</span> 编译检查: ./gradlew compileJava
+            </div>
+            <div class="annotation">失败 → 立即终止整个工作流</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 5: Testing -->
+      <div class="detail-card" style="margin-top: 1.5rem;">
+        <div class="detail-card-header">
+          <div class="dot" style="background: var(--green);"></div>
+          阶段 5 · 测试 (智能分组 + dependency-scheduler)
+        </div>
+        <div class="detail-card-body">
+
+          <div class="orch-node decision" style="max-width:100%;">
+            <span class="tag lo">智能分组</span> ≤3 子任务/模块 → 合并测试组 | >3 → 拆分为独立测试组
+          </div>
+
+          <div class="orch-arrow"><div class="vline"></div></div>
+
+          <div class="orch-node">
+            <span class="tag wf">WF</span> dependency-scheduler (复用)
+          </div>
+
+          <div class="orch-arrow"><div class="vline"></div></div>
+
+          <div class="orch-node gate">
+            <span class="tag ga">门控</span> 测试检查: ./gradlew test --continue
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 6: QA -->
+      <div class="detail-card" style="margin-top: 1.5rem;">
+        <div class="detail-card-header">
+          <div class="dot" style="background: var(--amber);"></div>
+          阶段 6 · QA Check
+        </div>
+        <div class="detail-card-body">
+          <div class="loop-steps" style="margin-bottom:0.3rem;">
+            <div class="loop-step">compileJava</div>
+            <div class="loop-arrow">→</div>
+            <div class="loop-step">test + JaCoCo</div>
+            <div class="loop-arrow">→</div>
+            <div class="loop-step">integrationTest</div>
+            <div class="loop-arrow">→</div>
+            <div class="loop-step">spotlessCheck</div>
+          </div>
+          <div class="annotation">每步失败即中止，不继续后续步骤</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 7: Review-Ship Loop (full width) -->
+    <div class="detail-card full">
+      <div class="detail-card-header">
+        <div class="dot" style="background: var(--pink);"></div>
+        阶段 7 · 审查-发版循环 (最多 3 轮)
+      </div>
+      <div class="detail-card-body">
+
+        <div class="review-loop">
+          <div class="loop-title">while (未通过 && 轮次 < 3)</div>
+
+          <div class="orch-flow">
+
+            <div class="orch-node subflow" style="max-width:100%;">
+              <span class="tag wf">WF</span> review-diff
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin:0.5rem 0;width:100%;max-width:380px;">
+              <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:4px;padding:0.3rem;text-align:center;font-size:0.58rem;">
+                <div style="font-weight:700;color:var(--red);">bugs</div>
+                <div style="color:var(--text-subtle);">NPE/并发/事务</div>
+              </div>
+              <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:4px;padding:0.3rem;text-align:center;font-size:0.58rem;">
+                <div style="font-weight:700;color:var(--amber);">security</div>
+                <div style="color:var(--text-subtle);">权限/注入/密钥</div>
+              </div>
+              <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:4px;padding:0.3rem;text-align:center;font-size:0.58rem;">
+                <div style="font-weight:700;color:var(--purple);">patterns</div>
+                <div style="color:var(--text-subtle);">Result<T>/异常规范</div>
+              </div>
+            </div>
+
+            <div class="annotation">3 票对抗性验证：≥2/3 票 REAL 才确认</div>
+
+            <div class="orch-arrow"><div class="vline"></div></div>
+
+            <div class="orch-node decision" style="max-width:100%;">
+              <span class="tag lo">判断</span> 有 HIGH severity 发现?
+            </div>
+
+            <div class="orch-split">
+              <div class="branch">
+                <div class="branch-label">是</div>
+                <div class="orch-node subflow">
+                  <span class="tag pl">parallel()</span> 并发修复 agent × N
+                </div>
+                <div class="annotation" style="color:var(--pink);">→ continue (重新审查)</div>
+              </div>
+              <div class="branch">
+                <div class="branch-label">否 ✓</div>
+                <div class="orch-node" style="border-color:rgba(52,211,153,0.2);">
+                  reviewPassed = true
+                </div>
+              </div>
+            </div>
+
+            <div class="orch-merge">
+              <div class="h-line"></div>
+              <div class="merge-label">审查通过</div>
+              <div class="h-line"></div>
+            </div>
+
+            <div class="orch-node subflow" style="max-width:100%;">
+              <span class="tag wf">WF</span> ship-to-product
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.4rem;margin:0.3rem 0;width:100%;max-width:380px;">
+              <div style="font-size:0.58rem;color:var(--text-subtle);text-align:center;background:var(--surface-2);border-radius:3px;padding:0.2rem;">创建 PR</div>
+              <div style="font-size:0.58rem;color:var(--text-subtle);text-align:center;background:var(--surface-2);border-radius:3px;padding:0.2rem;">监控 CI</div>
+              <div style="font-size:0.58rem;color:var(--text-subtle);text-align:center;background:var(--surface-2);border-radius:3px;padding:0.2rem;">检查 Review</div>
+            </div>
+
+            <div class="orch-arrow"><div class="vline"></div></div>
+
+            <div class="orch-node decision" style="max-width:100%;">
+              <span class="tag lo">判断</span> CI 失败或有审查驳回?
+            </div>
+
+            <div class="orch-split">
+              <div class="branch">
+                <div class="branch-label">是</div>
+                <div class="orch-node subflow">
+                  <span class="tag pl">parallel()</span> 修复 issue → reviewPassed=false
+                </div>
+                <div class="annotation" style="color:var(--pink);">→ continue (回到审查)</div>
+              </div>
+              <div class="branch">
+                <div class="branch-label">否 ✓</div>
+                <div class="orch-node" style="border-color:rgba(52,211,153,0.2);">
+                  shipPassed = true
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="orch-flow" style="margin-top:1rem;">
+          <div class="orch-node decision" style="max-width:100%;">
+            <span class="tag lo">可选</span> autoTag → git tag vX.Y.Z && git push
+          </div>
+          <div class="orch-arrow"><div class="vline"></div></div>
+          <div class="orch-node" style="max-width:100%;border-color:rgba(52,211,153,0.3);background:rgba(52,211,153,0.04);">
+            ✅ 工作流完成
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ==================== THREE DISPATCH PATTERNS ==================== -->
+  <div class="flow-section" style="margin-top: 2.5rem;">
+    <div class="flow-section-title">三种分发策略对比</div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
+
+      <div style="background:var(--surface);border:1px solid rgba(167,139,250,0.2);border-radius:8px;padding:1rem;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--purple);margin-bottom:0.5rem;">
+          <span class="tag wf">workflow()</span> 同步子编排
+        </div>
+        <div style="font-size:0.65rem;color:var(--text-dim);line-height:1.7;">
+          等待子工作流完整执行<br>
+          返回结构化结果<br>
+          <br>
+          用于：<br>
+          · task-splitter<br>
+          · qa-check<br>
+          · review-diff<br>
+          · ship-to-product
+        </div>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid rgba(91,156,245,0.2);border-radius:8px;padding:1rem;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--blue);margin-bottom:0.5rem;">
+          <span class="tag ag">agent()</span> 独立 Agent
+        </div>
+        <div style="font-size:0.65rem;color:var(--text-dim);line-height:1.7;">
+          启动单个 agent 执行<br>
+          异步等待结果<br>
+          <br>
+          用于：<br>
+          · 需求分析<br>
+          · 编译/测试门控<br>
+          · 单 agent 模式编码
+        </div>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid rgba(52,211,153,0.2);border-radius:8px;padding:1rem;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--green);margin-bottom:0.5rem;">
+          <span class="tag pl">parallel()</span> 并发屏障
+        </div>
+        <div style="font-size:0.65rem;color:var(--text-dim);line-height:1.7;">
+          全部启动后等全部完成<br>
+          结果汇聚再继续<br>
+          <br>
+          用于：<br>
+          · Review 修复 HIGH 问题<br>
+          · Ship 问题修复
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== KEY INSIGHT ==================== -->
+  <div class="flow-section" style="margin-top: 2.5rem;">
+    <div class="flow-section-title">编排层次</div>
+
+    <div style="text-align:center;font-size:0.75rem;color:var(--text-dim);line-height:2.2;">
+      <strong style="color:var(--text);">主编排器</strong> dev-to-prod
+      <span style="color:var(--text-subtle);">→ 决定<strong style="color:var(--blue);">什么时候</strong>做什么</span><br>
+      <strong style="color:var(--text);">子工作流</strong> task-splitter / qa-check / review-diff / ship-to-product
+      <span style="color:var(--text-subtle);">→ 决定<strong style="color:var(--purple);">怎么做</strong></span><br>
+      <strong style="color:var(--text);">调度器</strong> dependency-scheduler
+      <span style="color:var(--text-subtle);">→ 决定<strong style="color:var(--green);">并发跑几个</strong>、谁先跑</span><br>
+      <strong style="color:var(--text);">Agent</strong> spring-boot-coder / test-coder / code-reviewer
+      <span style="color:var(--text-subtle);">→ 实际执行<strong style="color:var(--amber);">具体工作</strong></span>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item">
+      <span class="legend-tag wf">WF</span> workflow() 调用
+    </div>
+    <div class="legend-item">
+      <span class="legend-tag ag">AG</span> agent() 调用
+    </div>
+    <div class="legend-item">
+      <span class="legend-tag pl">PL</span> parallel() 并发
+    </div>
+    <div class="legend-item">
+      <span class="legend-tag ga">GT</span> 门控检查
+    </div>
+    <div class="legend-item">
+      <span class="legend-tag lo">?</span> 条件分支
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

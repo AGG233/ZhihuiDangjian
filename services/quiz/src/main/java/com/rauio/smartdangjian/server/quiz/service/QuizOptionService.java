@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption> {
 
     private final UserQuizAnswerService userQuizAnswerService;
@@ -32,6 +31,7 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
      * @param quizOption 选项实体
      * @return 是否更新成功
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean update(Long id, QuizOption quizOption) {
         quizOption.setId(id);
         return this.updateById(quizOption);
@@ -44,6 +44,7 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
      * @param option 选项实体
      * @return 是否创建成功
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean create(Long quizId, QuizOption option) {
         option.setQuizId(quizId);
         return this.save(option);
@@ -55,6 +56,7 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
      * @param quizId 测验 ID
      * @return 选项列表
      */
+    @Transactional(readOnly = true)
     public List<QuizOption> getByQuizId(Long quizId) {
         LambdaQueryWrapper<QuizOption> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(QuizOption::getQuizId, quizId);
@@ -67,6 +69,7 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
      * @param id 选项 ID
      * @return 选项实体；学生未答题时会隐藏正确答案字段
      */
+    @Transactional(readOnly = true)
     public QuizOption get(Long id) {
         User user = userService.getCurrentUser();
         QuizOption quizOption = this.getById(id);
@@ -89,6 +92,7 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
      * @param optionId 选项 ID
      * @return 是否删除成功
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean delete(Long optionId) {
         return this.removeById(optionId);
     }

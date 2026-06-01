@@ -20,7 +20,6 @@ import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgress
 import lombok.RequiredArgsConstructor;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class UserChapterProgressService extends ServiceImpl<UserChapterProgressMapper, UserChapterProgress> {
 
@@ -33,6 +32,7 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      * @param id 进度记录 ID
      * @return 进度记录视图对象
      */
+    @Transactional(readOnly = true)
     public UserChapterProgressResponse get(Long id) {
         UserChapterProgress progress = this.getById(id);
         if (progress == null) {
@@ -47,6 +47,7 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      * @param userId 用户 ID
      * @return 进度记录列表
      */
+    @Transactional(readOnly = true)
     public List<UserChapterProgressResponse> getByUserId(Long userId) {
         QueryWrapper<UserChapterProgress> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId);
@@ -60,6 +61,7 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      * @param chapterId 章节 ID
      * @return 进度记录列表
      */
+    @Transactional(readOnly = true)
     public List<UserChapterProgressResponse> getByChapterId(Long chapterId) {
         QueryWrapper<UserChapterProgress> wrapper = new QueryWrapper<>();
         wrapper.eq("chapter_id", chapterId);
@@ -74,6 +76,7 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      * @param chapterId 章节 ID
      * @return 进度记录视图对象
      */
+    @Transactional(readOnly = true)
     public UserChapterProgressResponse getByUserIdAndChapterId(Long userId, Long chapterId) {
         QueryWrapper<UserChapterProgress> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId).eq("chapter_id", chapterId);
@@ -90,6 +93,7 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      * @param dto 进度记录创建参数
      * @return 是否创建成功
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean create(UserChapterProgressRequest dto) {
 
         QueryWrapper<UserChapterProgress> wrapper = new QueryWrapper<>();
@@ -119,6 +123,7 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      * @param dto 进度记录更新参数
      * @return 是否更新成功
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean update(UserChapterProgressRequest dto) {
         if (dto.getId() == null) {
             throw new BusinessException(LearningErrorConstants.PROGRESS_ID_REQUIRED, "更新时必须提供进度ID");
@@ -150,6 +155,7 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
      * @param id 进度记录 ID
      * @return 是否删除成功
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean delete(Long id) {
         UserChapterProgress existing = this.getById(id);
         if (existing == null) {

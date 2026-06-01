@@ -3,6 +3,7 @@ package com.rauio.smartdangjian.server.auth.service;
 import static com.rauio.smartdangjian.constants.SecurityConstants.CAPTCHA_EXPIRATION;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -68,14 +69,15 @@ public class CaptchaService {
      * @return 是否校验通过
      */
     public Boolean validate(String uuid, String code) {
-        if (env != null
-                && (Arrays.asList(env.getActiveProfiles()).contains("dev")
-                        || Arrays.asList(env.getActiveProfiles()).contains("prod"))
-                && testCode != null
-                && !testCode.isBlank()
-                && testCode.equals(code)) {
+        if (env != null && isTestCodeProfile() && testCode != null && !testCode.isBlank() && testCode.equals(code)) {
             return true;
         }
         return code != null && code.equals(redisTemplate.opsForValue().get("captcha:" + uuid));
+    }
+
+    private boolean isTestCodeProfile() {
+        List<String> profiles = Arrays.asList(env.getActiveProfiles());
+        return !profiles.contains("prod")
+                && (profiles.contains("dev") || profiles.contains("test") || profiles.contains("local"));
     }
 }

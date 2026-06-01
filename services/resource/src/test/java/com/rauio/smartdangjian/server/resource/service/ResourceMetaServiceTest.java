@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
@@ -34,6 +38,9 @@ class ResourceMetaServiceTest {
     @Mock
     private PermissionValidator permissionValidator;
 
+    @Mock
+    private CacheManager cacheManager;
+
     @Spy
     @InjectMocks
     private ResourceMetaService resourceMetaService;
@@ -41,6 +48,47 @@ class ResourceMetaServiceTest {
     @BeforeEach
     void resetSpy() {
         reset(resourceMetaService);
+    }
+
+    @Test
+    @DisplayName("getByHash 缓存启用 sync，避免资源元数据并发击穿")
+    void getByHashCacheUsesSync() throws NoSuchMethodException {
+        Method method = ResourceMetaService.class.getMethod("getByHash", String.class);
+
+        assertThat(method.getAnnotation(Cacheable.class).sync()).isTrue();
+    }
+
+    @Test
+    @DisplayName("事务边界按方法声明：读方法只读，写方法显式回滚")
+    void transactionalBoundariesAreMethodLevel() throws NoSuchMethodException {
+        assertThat(ResourceMetaService.class.getAnnotation(Transactional.class)).isNull();
+        assertReadOnlyTransaction("get", Long.class);
+        assertReadOnlyTransaction("getByHash", String.class);
+        assertReadOnlyTransaction("existsByHash", String.class);
+        assertReadOnlyTransaction("list", Long.class, String.class, String.class, Integer.class, Integer.class);
+        assertWriteTransaction("create", ResourceMetaCreateRequest.class);
+        assertWriteTransaction("update", Long.class, ResourceMetaUpdateRequest.class);
+        assertWriteTransaction("delete", Long.class);
+        assertWriteTransaction("deleteByHash", String.class);
+        assertWriteTransaction("deleteByHashes", List.class);
+        assertWriteTransaction("markPublic", Long.class);
+    }
+
+    private void assertReadOnlyTransaction(String methodName, Class<?>... parameterTypes) throws NoSuchMethodException {
+        Method method = ResourceMetaService.class.getMethod(methodName, parameterTypes);
+        Transactional transactional = method.getAnnotation(Transactional.class);
+
+        assertThat(transactional).isNotNull();
+        assertThat(transactional.readOnly()).isTrue();
+    }
+
+    private void assertWriteTransaction(String methodName, Class<?>... parameterTypes) throws NoSuchMethodException {
+        Method method = ResourceMetaService.class.getMethod(methodName, parameterTypes);
+        Transactional transactional = method.getAnnotation(Transactional.class);
+
+        assertThat(transactional).isNotNull();
+        assertThat(transactional.readOnly()).isFalse();
+        assertThat(transactional.rollbackFor()).contains(Exception.class);
     }
 
     private static final Long RESOURCE_ID = 1L;
@@ -234,7 +282,11 @@ class ResourceMetaServiceTest {
     @Test
     @DisplayName("delete 删除资源成功")
     void deleteSuccess() {
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).uploaderId(1L).build())
+        doReturn(ResourceMeta.builder()
+                        .id(RESOURCE_ID)
+                        .hash(HASH)
+                        .uploaderId(1L)
+                        .build())
                 .when(resourceMetaService)
                 .getById(RESOURCE_ID);
         doReturn(true).when(resourceMetaService).removeById(RESOURCE_ID);
@@ -271,9 +323,6 @@ class ResourceMetaServiceTest {
                         .build())
                 .when(resourceMetaService)
                 .getOne(any(LambdaQueryWrapper.class));
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).uploaderId(1L).build())
-                .when(resourceMetaService)
-                .getById(RESOURCE_ID);
         doReturn(true).when(resourceMetaService).removeById(RESOURCE_ID);
         doNothing().when(permissionValidator).requireResourceAccess(any());
 
@@ -294,9 +343,6 @@ class ResourceMetaServiceTest {
                         .build())
                 .when(resourceMetaService)
                 .getOne(any(LambdaQueryWrapper.class));
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).uploaderId(1L).build())
-                .when(resourceMetaService)
-                .getById(RESOURCE_ID);
         doReturn(true).when(resourceMetaService).removeById(RESOURCE_ID);
         doNothing().when(permissionValidator).requireResourceAccess(any());
 
@@ -409,9 +455,6 @@ class ResourceMetaServiceTest {
                         .build())
                 .when(resourceMetaService)
                 .getOne(any(LambdaQueryWrapper.class));
-        doReturn(ResourceMeta.builder().id(RESOURCE_ID).uploaderId(1L).build())
-                .when(resourceMetaService)
-                .getById(RESOURCE_ID);
         doReturn(false).when(resourceMetaService).removeById(RESOURCE_ID);
         doNothing().when(permissionValidator).requireResourceAccess(any());
 

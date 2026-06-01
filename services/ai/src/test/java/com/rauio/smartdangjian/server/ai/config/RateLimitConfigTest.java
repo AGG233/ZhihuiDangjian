@@ -7,6 +7,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -31,13 +33,23 @@ class RateLimitConfigTest {
     private ArgumentCaptor<HandlerInterceptor> interceptorCaptor;
 
     @Test
-    @DisplayName("启用限流时注册拦截器到 /api/ai/chat/** 路径")
+    @DisplayName("启用限流时注册拦截器到关键敏感接口路径")
     void addInterceptorsWhenEnabled() {
         var userService = mock(UserService.class);
         var objectMapper = mock(ObjectMapper.class);
         var config = new RateLimitConfig(userService, objectMapper);
         ReflectionTestUtils.setField(config, "enabled", true);
         ReflectionTestUtils.setField(config, "requestsPerMinute", 10);
+        ReflectionTestUtils.setField(
+                config,
+                "pathPatterns",
+                List.of(
+                        "/api/ai/chat/**",
+                        "/api/auth/login",
+                        "/api/auth/register",
+                        "/api/auth/captcha/**",
+                        "/api/resource/files/upload",
+                        "/api/user/users/search"));
 
         var registry = mock(InterceptorRegistry.class);
         var registration = mock(InterceptorRegistration.class);
@@ -47,7 +59,14 @@ class RateLimitConfigTest {
 
         verify(registry).addInterceptor(interceptorCaptor.capture());
         assertThat(interceptorCaptor.getValue()).isInstanceOf(HandlerInterceptor.class);
-        verify(registration).addPathPatterns("/api/ai/chat/**");
+        verify(registration)
+                .addPathPatterns(List.of(
+                        "/api/ai/chat/**",
+                        "/api/auth/login",
+                        "/api/auth/register",
+                        "/api/auth/captcha/**",
+                        "/api/resource/files/upload",
+                        "/api/user/users/search"));
     }
 
     @Test
@@ -69,6 +88,7 @@ class RateLimitConfigTest {
         var config = new RateLimitConfig(userService, objectMapper);
         ReflectionTestUtils.setField(config, "enabled", true);
         ReflectionTestUtils.setField(config, "requestsPerMinute", 10);
+        ReflectionTestUtils.setField(config, "pathPatterns", List.of("/api/ai/chat/**"));
 
         var registry = mock(InterceptorRegistry.class);
         var registration = mock(InterceptorRegistration.class);

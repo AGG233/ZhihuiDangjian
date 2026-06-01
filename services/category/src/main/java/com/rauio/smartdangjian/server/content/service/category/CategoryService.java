@@ -23,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
 
     private final CategoryConvertor convertor;
@@ -31,12 +30,16 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
 
     public final int MAX_LEVEL = 3;
 
+    /** 单次创建允许的最大目录节点数，防止大事务 */
+    public final int MAX_NODES_PER_CREATE = 100;
+
     /**
      * 根据目录 ID 获取目录树详情。
      *
      * @param id 目录id
      * @return  目录以及它的子目录
      */
+    @Transactional(readOnly = true)
     public CategoryResponse get(Long id) {
         Category category = super.getById(id);
         List<CategoryResponse> children;
@@ -64,6 +67,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      *
      * @return 所有顶级目录
      */
+    @Transactional(readOnly = true)
     public List<CategoryResponse> getRootList() {
         LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<Category>().eq(Category::getLevel, 0);
         CurrentUserPrincipal currentUser = SecurityUtils.getCurrentUser();
@@ -81,6 +85,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      * @param categoryId 父目录Id
      * @return 父目录的子目录
      * */
+    @Transactional(readOnly = true)
     public List<CategoryResponse> getByParentId(Long categoryId) {
         Category parent = super.getById(categoryId);
         if (parent == null) {
@@ -104,6 +109,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      * @param dto 前端传入的目录
      * @return 添加结果
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean create(CategoryRequest dto) {
         if (dto == null) {
             throw new BusinessException(CategoryErrorConstants.CATEGORY_ARGS_ERROR, "参数错误");
@@ -141,6 +147,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      * @param parentId    子目录列表所属的父目录的ID
      * @return 添加结构
      * */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean createByParentId(List<CategoryRequest> children, Long parentId) {
         Category parent = super.getById(parentId);
         if (parent == null || children == null) {
@@ -148,6 +155,13 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
         }
         if (parent.getLevel() >= MAX_LEVEL) {
             throw new BusinessException(CategoryErrorConstants.CATEGORY_MAX_LEVEL, "目录层级不能超过3级");
+        }
+
+        // Pre-validate total node count to prevent large transactions
+        int totalNodes = countTreeNodes(children);
+        if (totalNodes > MAX_NODES_PER_CREATE) {
+            throw new BusinessException(
+                    CategoryErrorConstants.CATEGORY_MAX_LEVEL, "单次创建目录数量不能超过" + MAX_NODES_PER_CREATE + "个");
         }
 
         for (CategoryRequest dto : children) {
@@ -163,11 +177,31 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
             }
 
             List<CategoryRequest> nodeChildren = dto.getChildrenNode();
-            if (!nodeChildren.isEmpty()) {
+            if (nodeChildren != null && !nodeChildren.isEmpty()) {
                 createByParentId(nodeChildren, node.getId());
             }
         }
         return true;
+    }
+
+    /**
+     * 递归统计目录树节点总数。
+     *
+     * @param children 子目录列表
+     * @return 节点总数
+     */
+    private int countTreeNodes(List<CategoryRequest> children) {
+        if (children == null || children.isEmpty()) {
+            return 0;
+        }
+        int count = 0;
+        for (CategoryRequest child : children) {
+            count++;
+            if (child.getChildrenNode() != null) {
+                count += countTreeNodes(child.getChildrenNode());
+            }
+        }
+        return count;
     }
 
     /**
@@ -176,6 +210,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      * @param categoryId 目录id
      * @return 删除结果
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean delete(Long categoryId) {
         if (!this.list(new LambdaQueryWrapper<Category>().eq(Category::getParentId, categoryId))
                 .isEmpty()) {
@@ -190,6 +225,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      * @param categoryId 目录id
      * @return 删除结果
      * */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean deleteByIdWithChildren(Long categoryId) {
         Category category = super.getById(categoryId);
         if (category == null) {
@@ -212,6 +248,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      * @param dto 前端传入的目录
      * @return 修改结果
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean update(CategoryRequest dto, Long id) {
         if (dto == null) {
             throw new BusinessException(CategoryErrorConstants.CATEGORY_ARGS_ERROR, "参数错误");

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.rauio.smartdangjian.server.quiz.mapper.UserQuizAnswerMapper;
@@ -37,6 +39,40 @@ class UserQuizAnswerServiceTest {
     @BeforeEach
     void resetSpy() {
         reset(userQuizAnswerService);
+    }
+
+    @Test
+    @DisplayName("事务边界按方法声明：读方法只读，写方法显式回滚")
+    void transactionalBoundariesAreMethodLevel() throws NoSuchMethodException {
+        assertThat(UserQuizAnswerService.class.getAnnotation(Transactional.class))
+                .isNull();
+        assertReadOnlyTransaction("getByQuizId", Long.class);
+        assertReadOnlyTransaction("getByOptionId", Long.class);
+        assertReadOnlyTransaction("getByUserId", Long.class);
+        assertReadOnlyTransaction("getByUserIdAndQuizId", Long.class, Long.class);
+        assertReadOnlyTransaction("getByUserIdAndQuizIdAndOptionId", Long.class, Long.class, Long.class);
+        assertWriteTransaction("create", UserQuizAnswer.class);
+        assertWriteTransaction("update", UserQuizAnswer.class);
+        assertWriteTransaction("updateByUserIdAndQuizIdAndOptionId", UserQuizAnswer.class);
+        assertWriteTransaction("delete", Long.class);
+        assertWriteTransaction("deleteByUserIdAndQuizIdAndOptionId", Long.class, Long.class, Long.class);
+    }
+
+    private void assertReadOnlyTransaction(String methodName, Class<?>... parameterTypes) throws NoSuchMethodException {
+        Method method = UserQuizAnswerService.class.getMethod(methodName, parameterTypes);
+        Transactional transactional = method.getAnnotation(Transactional.class);
+
+        assertThat(transactional).isNotNull();
+        assertThat(transactional.readOnly()).isTrue();
+    }
+
+    private void assertWriteTransaction(String methodName, Class<?>... parameterTypes) throws NoSuchMethodException {
+        Method method = UserQuizAnswerService.class.getMethod(methodName, parameterTypes);
+        Transactional transactional = method.getAnnotation(Transactional.class);
+
+        assertThat(transactional).isNotNull();
+        assertThat(transactional.readOnly()).isFalse();
+        assertThat(transactional.rollbackFor()).contains(Exception.class);
     }
 
     // ==================== create ====================
