@@ -20,6 +20,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.constants.ChapterErrorConstants;
 import com.rauio.smartdangjian.server.content.controller.admin.AdminChapterController;
 import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
 import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
@@ -131,13 +132,14 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 500")
         void createThrowsBusinessException() throws Exception {
-            when(chapterService.create(any(ChapterRequest.class))).thenThrow(new BusinessException(4000, "课程至少需要一个章节"));
+            when(chapterService.create(any(ChapterRequest.class)))
+                    .thenThrow(new BusinessException(ChapterErrorConstants.CHAPTER_MIN_REQUIRED, "课程至少需要一个章节"));
 
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterRequest())))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("3104"))
                     .andExpect(jsonPath("$.message").value("课程至少需要一个章节"));
         }
 

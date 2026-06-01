@@ -124,7 +124,10 @@ class SecurityPermissionAuthorizationIntegrationTest extends AbstractSecurityAut
                         .getUserGraph(org.mockito.ArgumentMatchers.anyString());
             case "user:update" ->
                 verify(userService, org.mockito.Mockito.never())
-                        .update(org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.any());
+                        .update(
+                                org.mockito.ArgumentMatchers.anyLong(),
+                                org.mockito.ArgumentMatchers.any(
+                                        com.rauio.smartdangjian.server.user.pojo.entity.User.class));
             case "course:read" ->
                 verify(courseService, org.mockito.Mockito.never()).getByUserId(org.mockito.ArgumentMatchers.anyLong());
             case "quiz:read" ->

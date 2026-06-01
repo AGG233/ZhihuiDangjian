@@ -44,6 +44,7 @@ import com.rauio.smartdangjian.server.content.controller.admin.AdminContentContr
 import com.rauio.smartdangjian.server.content.controller.admin.AdminCourseController;
 import com.rauio.smartdangjian.server.content.controller.user.UserCategoryController;
 import com.rauio.smartdangjian.server.content.controller.user.UserChapterController;
+import com.rauio.smartdangjian.server.content.controller.user.UserContentController;
 import com.rauio.smartdangjian.server.content.controller.user.UserCourseController;
 import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
 import com.rauio.smartdangjian.server.content.service.article.ArticleService;
@@ -74,6 +75,7 @@ import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
 import com.rauio.smartdangjian.server.resource.controller.admin.AdminBannerController;
 import com.rauio.smartdangjian.server.resource.controller.admin.AdminResourceMetaController;
 import com.rauio.smartdangjian.server.resource.controller.user.FileController;
+import com.rauio.smartdangjian.server.resource.controller.user.UserBannerController;
 import com.rauio.smartdangjian.server.resource.service.BannerService;
 import com.rauio.smartdangjian.server.resource.service.FileService;
 import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
@@ -396,6 +398,16 @@ abstract class AbstractSecurityAuthorizationIntegrationTest {
         UserCategoryController userCategoryController(
                 CategoryService categoryService, CourseService courseService, ArticleService articleService) {
             return new UserCategoryController(categoryService, courseService, articleService);
+        }
+
+        @Bean
+        UserContentController userContentController(ChapterContentBlockService blockService) {
+            return new UserContentController(blockService);
+        }
+
+        @Bean
+        UserBannerController userBannerController(BannerService bannerService) {
+            return new UserBannerController(bannerService);
         }
 
         @Bean

@@ -161,6 +161,8 @@ class DtoFieldConstraintMatrixTest {
         notBlank(cases, validChangePassword(), "newPassword", "", "新密码不能为空");
         invalid(cases, validChangePassword(), "newPassword", "Aa1!aaa", "密码长度必须在8-20个字符之间");
         invalid(cases, validChangePassword(), "newPassword", "aaaaaaaa", "密码必须包含大写字母、数字和特殊符号");
+        notBlank(cases, validChangePassword(), "captchaUUID", "", "验证码标识不能为空");
+        notBlank(cases, validChangePassword(), "captchaCode", "", "验证码不能为空");
 
         notBlank(cases, validCategory(), "name", "", "分类名称不能为空");
         invalid(cases, validCategory(), "name", repeat("中", 65), "分类名称长度不能超过64个字符");

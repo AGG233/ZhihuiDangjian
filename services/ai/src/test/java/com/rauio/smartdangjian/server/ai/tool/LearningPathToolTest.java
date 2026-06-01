@@ -1,7 +1,6 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -13,9 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.ai.chat.model.ToolContext;
 
-import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 import com.rauio.smartdangjian.server.search.service.UserProfileService;
 import com.rauio.smartdangjian.server.user.service.UserService;
@@ -35,9 +32,6 @@ class LearningPathToolTest {
     @Test
     @DisplayName("getLearningProfile 返回用户学习画像数据")
     void getLearningProfile() {
-        ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
-
         UserProfileResponse.LearningStats learning = UserProfileResponse.LearningStats.builder()
                 .totalDuration(3600)
                 .totalRecords(12)
@@ -65,7 +59,7 @@ class LearningPathToolTest {
 
         when(userProfileService.getProfile("1")).thenReturn(profile);
 
-        Map<String, Object> result = learningPathTool.getLearningProfile(toolContext);
+        Map<String, Object> result = learningPathTool.getLearningProfile();
 
         assertThat(result).containsKey("learningStats");
         assertThat(result).containsKey("knowledgeStats");
@@ -76,11 +70,9 @@ class LearningPathToolTest {
     @Test
     @DisplayName("getLearningProfile profile 为 null 时返回空 Map")
     void getLearningProfileNull() {
-        ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
         when(userProfileService.getProfile("1")).thenReturn(null);
 
-        Map<String, Object> result = learningPathTool.getLearningProfile(toolContext);
+        Map<String, Object> result = learningPathTool.getLearningProfile();
 
         assertThat(result).isEmpty();
     }

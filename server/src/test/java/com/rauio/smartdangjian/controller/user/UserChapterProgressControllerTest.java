@@ -22,6 +22,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.LearningTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.learning.constants.LearningErrorConstants;
 import com.rauio.smartdangjian.server.learning.controller.user.UserChapterProgressController;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserChapterProgressRequest;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
@@ -130,11 +131,12 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 BusinessException 返回 400")
         void getThrowsBusinessException() throws Exception {
-            when(progressService.get(1L)).thenThrow(new BusinessException(4000, "进度记录不存在"));
+            when(progressService.get(1L))
+                    .thenThrow(new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在"));
 
             mockMvc.perform(get("/api/learning/progress/1"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("4011"))
                     .andExpect(jsonPath("$.message").value("进度记录不存在"));
         }
 
@@ -152,14 +154,14 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @DisplayName("POST / - Service 抛出 BusinessException 返回 400")
         void createThrowsBusinessException() throws Exception {
             when(progressService.create(any(UserChapterProgressRequest.class)))
-                    .thenThrow(new BusinessException(4000, "该用户的章节进度记录已存在"));
+                    .thenThrow(new BusinessException(LearningErrorConstants.PROGRESS_ALREADY_EXISTS, "该用户的章节进度记录已存在"));
 
             mockMvc.perform(post("/api/learning/progress")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(
                                     LearningTestDataFactory.toJson(LearningTestDataFactory.createChapterProgressDto())))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("4012"))
                     .andExpect(jsonPath("$.message").value("该用户的章节进度记录已存在"));
         }
 
@@ -196,14 +198,14 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @DisplayName("PUT / - Service 抛出 BusinessException 返回 400")
         void updateThrowsBusinessException() throws Exception {
             when(progressService.update(any(UserChapterProgressRequest.class)))
-                    .thenThrow(new BusinessException(4000, "进度记录不存在"));
+                    .thenThrow(new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在"));
 
             mockMvc.perform(put("/api/learning/progress")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(LearningTestDataFactory.toJson(
                                     LearningTestDataFactory.createChapterProgressUpdateDto(9999L))))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("4011"))
                     .andExpect(jsonPath("$.message").value("进度记录不存在"));
         }
 
@@ -288,7 +290,8 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 注入在路径参数中")
         void xssInPath() throws Exception {
-            when(progressService.get(anyLong())).thenThrow(new BusinessException(4000, "进度记录不存在"));
+            when(progressService.get(anyLong()))
+                    .thenThrow(new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在"));
 
             mockMvc.perform(get(URI.create("/api/learning/progress/%3Cscript%3Ealert('xss')%3E")))
                     .andExpect(status().isBadRequest());
@@ -297,7 +300,8 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入在路径参数中")
         void sqlInjectionInPath() throws Exception {
-            when(progressService.get(anyLong())).thenThrow(new BusinessException(4000, "进度记录不存在"));
+            when(progressService.get(anyLong()))
+                    .thenThrow(new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在"));
 
             mockMvc.perform(get("/api/learning/progress/{id}", "' OR '1'='1")).andExpect(status().isBadRequest());
         }

@@ -2,7 +2,6 @@ package com.rauio.smartdangjian.server.ai.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.DisplayName;
@@ -11,9 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.ai.chat.model.ToolContext;
 
-import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
 import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
@@ -34,9 +31,6 @@ class UserInfoToolTest {
     @Test
     @DisplayName("getUserInfo 返回用户基本信息")
     void getUserInfo() {
-        ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
-
         User user = new User();
         user.setId(1L);
         user.setUsername("testuser");
@@ -48,7 +42,7 @@ class UserInfoToolTest {
         when(userService.getById(any())).thenReturn(user);
         when(userConvertor.toResponse(user)).thenReturn(userVO);
 
-        UserResponse result = userInfoTool.getUserInfo(toolContext);
+        UserResponse result = userInfoTool.getUserInfo();
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(1L);

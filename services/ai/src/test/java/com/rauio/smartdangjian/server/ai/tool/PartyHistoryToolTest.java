@@ -53,7 +53,7 @@ class PartyHistoryToolTest {
                 .thenReturn(graph);
         when(objectMapper.writeValueAsString(graph)).thenReturn("{\"nodes\":[{\"name\":\"毛泽东\"}]}");
 
-        String result = tool.searchPartyHistory("毛泽东", List.of(), 10, null);
+        String result = tool.searchPartyHistory("毛泽东", List.of(), 10);
 
         assertThat(result).contains("毛泽东");
     }
@@ -66,7 +66,7 @@ class PartyHistoryToolTest {
                 .thenReturn(graph);
         when(objectMapper.writeValueAsString(any())).thenReturn("{}");
 
-        String result = tool.searchPartyHistory("测试", List.of(), null, null);
+        String result = tool.searchPartyHistory("测试", List.of(), null);
 
         assertThat(result).isNotNull();
     }
@@ -79,7 +79,7 @@ class PartyHistoryToolTest {
                 .thenReturn(graph);
         when(objectMapper.writeValueAsString(any())).thenReturn("{}");
 
-        String result = tool.searchPartyHistory("长征", null, 5, null);
+        String result = tool.searchPartyHistory("长征", null, 5);
 
         assertThat(result).isNotNull();
     }
@@ -93,7 +93,7 @@ class PartyHistoryToolTest {
         when(queryService.getEntityDetail("person-1")).thenReturn(detail);
         when(objectMapper.writeValueAsString(detail)).thenReturn("{\"nodes\":[{\"name\":\"邓小平\"}]}");
 
-        String result = tool.getPersonDetail("邓小平", null);
+        String result = tool.getPersonDetail("邓小平");
 
         assertThat(result).contains("邓小平");
     }
@@ -108,7 +108,7 @@ class PartyHistoryToolTest {
         when(queryService.searchEntities(anyString(), anyList(), anyInt(), anyInt()))
                 .thenReturn(empty);
 
-        String result = tool.getPersonDetail("不存在", null);
+        String result = tool.getPersonDetail("不存在");
 
         assertThat(result).contains("未找到人物");
     }
@@ -122,7 +122,7 @@ class PartyHistoryToolTest {
         when(queryService.getTheoryEvolution("theory-1")).thenReturn(evolution);
         when(objectMapper.writeValueAsString(evolution)).thenReturn("{\"nodes\":[{\"name\":\"邓小平理论\"}]}");
 
-        String result = tool.traceTheoryEvolution("邓小平理论", null);
+        String result = tool.traceTheoryEvolution("邓小平理论");
 
         assertThat(result).contains("邓小平理论");
     }
@@ -136,7 +136,7 @@ class PartyHistoryToolTest {
         when(queryService.getEventTimeline("event-1", 3)).thenReturn(timeline);
         when(objectMapper.writeValueAsString(timeline)).thenReturn("{\"nodes\":[{\"name\":\"十一届三中全会\"}]}");
 
-        String result = tool.getEventTimeline("十一届三中全会", null);
+        String result = tool.getEventTimeline("十一届三中全会");
 
         assertThat(result).contains("十一届三中全会");
     }
@@ -149,7 +149,7 @@ class PartyHistoryToolTest {
                 .thenReturn(graph);
         when(objectMapper.writeValueAsString(any())).thenThrow(new JsonProcessingException("error") {});
 
-        String result = tool.searchPartyHistory("测试", List.of(), 10, null);
+        String result = tool.searchPartyHistory("测试", List.of(), 10);
 
         assertThat(result).isEqualTo("{}");
     }

@@ -78,3 +78,5 @@ logging:
   level:
     root: INFO
     com.rauio.smartdangjian: DEBUG
+  pattern:
+    level: "%5p [%X{traceId:-} %X{spanId:-}]"

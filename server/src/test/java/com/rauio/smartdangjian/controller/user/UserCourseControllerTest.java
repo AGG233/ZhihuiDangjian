@@ -27,6 +27,7 @@ import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.content.pojo.response.PageResponse;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
@@ -148,11 +149,12 @@ class UserCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /learned/{id} - Service 抛出 BusinessException 返回 400")
         void getLearnedThrowsBusinessException() throws Exception {
-            when(courseService.getByUserId(1L)).thenThrow(new BusinessException(4000, "用户不存在"));
+            when(courseService.getByUserId(1L))
+                    .thenThrow(new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户不存在"));
 
             mockMvc.perform(get("/api/content/courses/learned/1"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("2005"))
                     .andExpect(jsonPath("$.message").value("用户不存在"));
         }
     }

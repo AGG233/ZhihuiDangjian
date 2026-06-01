@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZhihuiDangjian 工作流</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0e17;
+    --surface: #111827;
+    --surface-2: #1a2236;
+    --border: #1e2d4a;
+    --text: #e2e8f0;
+    --text-dim: #8899b4;
+    --accent-1: #60a5fa;
+    --accent-2: #a78bfa;
+    --accent-3: #34d399;
+    --accent-4: #fbbf24;
+    --accent-5: #f472b6;
+    --glow-1: rgba(96, 165, 250, 0.12);
+    --glow-2: rgba(167, 139, 250, 0.08);
+    --gradient-1: linear-gradient(135deg, #60a5fa, #a78bfa);
+    --gradient-2: linear-gradient(135deg, #34d399, #60a5fa);
+    --gradient-3: linear-gradient(135deg, #fbbf24, #f472b6);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+    overflow-x: hidden;
+  }
+
+  /* Background pattern */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(96, 165, 250, 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 50%, rgba(167, 139, 250, 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 0%, rgba(52, 211, 153, 0.03) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 3rem;
+    position: relative;
+  }
+
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 2px;
+    background: var(--gradient-1);
+    border-radius: 2px;
+  }
+
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 800;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+  }
+
+  .header .sub {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Grid layout */
+  .flow-grid {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  /* Main flow column */
+  .main-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    align-items: center;
+  }
+
+  /* Flow node */
+  .flow-node {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    width: 100%;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .flow-node.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .flow-node:hover {
+    border-color: rgba(96, 165, 250, 0.3);
+    box-shadow: 0 0 30px var(--glow-1);
+    transform: translateY(-2px);
+  }
+
+  .flow-node .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+  }
+
+  .flow-node .tag.dev { background: rgba(96, 165, 250, 0.15); color: #60a5fa; }
+  .flow-node .tag.ci { background: rgba(52, 211, 153, 0.15); color: #34d399; }
+  .flow-node .tag.release { background: rgba(244, 114, 182, 0.15); color: #f472b6; }
+  .flow-node .tag.pr { background: rgba(167, 139, 250, 0.15); color: #a78bfa; }
+
+  .flow-node .title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+
+  .flow-node .desc {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  .flow-node .desc code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    background: rgba(255,255,255,0.05);
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    color: var(--accent-1);
+  }
+
+  /* Connector arrow */
+  .connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.4rem 0;
+    position: relative;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+
+  .connector.visible {
+    opacity: 1;
+  }
+
+  .connector .line {
+    width: 2px;
+    height: 28px;
+    background: linear-gradient(to bottom, var(--border), var(--accent-1));
+    position: relative;
+  }
+
+  .connector .line::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid var(--accent-1);
+  }
+
+  .connector .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    margin-top: 0.2rem;
+    text-transform: uppercase;
+  }
+
+  /* CI sub-steps */
+  .ci-steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .ci-step {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    padding: 0.5rem 0.6rem;
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ci-step .step-icon {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .ci-step.pass {
+    color: var(--accent-3);
+    border-color: rgba(52, 211, 153, 0.2);
+  }
+
+  .ci-step.pass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(52, 211, 153, 0.05), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .ci-step.pass:hover::before { opacity: 1; }
+
+  /* Release sub-steps */
+  .release-steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+  }
+
+  .release-step {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    padding: 0.5rem 0.4rem;
+    text-align: center;
+    font-size: 0.65rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    transition: all 0.3s ease;
+  }
+
+  .release-step .step-icon {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 0.15rem;
+  }
+
+  .release-step.pass {
+    color: var(--accent-5);
+    border-color: rgba(244, 114, 182, 0.2);
+  }
+
+  /* Side panel - Emergency fix */
+  .side-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    position: sticky;
+    top: 1rem;
+    opacity: 0;
+    transform: translateX(20px);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .side-panel.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .side-panel .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .side-panel .panel-header .icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(251, 191, 36, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+  }
+
+  .side-panel .panel-header h3 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fbbf24;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .side-flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .side-node {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid rgba(251, 191, 36, 0.12);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .side-node:hover {
+    border-color: rgba(251, 191, 36, 0.25);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.06);
+  }
+
+  .side-node .title {
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .side-node .desc {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-top: 0.15rem;
+  }
+
+  .side-node .desc code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: #fbbf24;
+  }
+
+  .side-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.2rem 0;
+  }
+
+  .side-connector .line {
+    width: 2px;
+    height: 20px;
+    background: linear-gradient(to bottom, rgba(251, 191, 36, 0.3), rgba(251, 191, 36, 0.6));
+  }
+
+  .side-connector .line::after {
+    content: '';
+    display: block;
+    margin-top: -1px;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid rgba(251, 191, 36, 0.7);
+  }
+
+  /* Merge indicator */
+  .merge-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    margin: 0.3rem 0;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+
+  .merge-indicator.visible { opacity: 1; }
+
+  .merge-indicator .line {
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, var(--border), var(--accent-3), var(--border));
+  }
+
+  .merge-indicator .label {
+    font-size: 0.65rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent-3);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-top: 2.5rem;
+    padding: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    flex-wrap: wrap;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+
+  .legend.visible { opacity: 1; }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .legend-dot.dev { background: #60a5fa; }
+  .legend-dot.ci { background: #34d399; }
+  .legend-dot.release { background: #f472b6; }
+  .legend-dot.pr { background: #a78bfa; }
+  .legend-dot.hotfix { background: #fbbf24; }
+
+  /* Branches indicator */
+  .branch-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .branch-badge.dev { color: #60a5fa; border-color: rgba(96, 165, 250, 0.2); }
+  .branch-badge.product { color: #f472b6; border-color: rgba(244, 114, 182, 0.2); }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .flow-grid {
+      grid-template-columns: 1fr;
+    }
+    .side-panel {
+      position: static;
+    }
+    .ci-steps { grid-template-columns: repeat(3, 1fr); }
+    .release-steps { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 500px) {
+    .header h1 { font-size: 1.6rem; }
+    .ci-steps { grid-template-columns: 1fr; }
+    .release-steps { grid-template-columns: 1fr; }
+    .flow-node { padding: 1rem; }
+  }
+
+  /* Particles */
+  .particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: var(--accent-1);
+    border-radius: 50%;
+    opacity: 0;
+  }
+
+  /* Glow dots on connectors */
+  .glow-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-1);
+    box-shadow: 0 0 8px var(--accent-1), 0 0 20px var(--glow-1);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.3); }
+  }
+
+  /* Decorative diverge lines */
+  .diverge {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.2rem 0;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+
+  .diverge.visible { opacity: 1; }
+
+  .diverge .arm {
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, var(--border) 0%, transparent 100%);
+  }
+
+  .diverge .arm.right {
+    background: linear-gradient(90deg, transparent 0%, var(--border) 100%);
+  }
+
+  .diverge .label {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  /* Checkmark animation */
+  .check-fade {
+    display: inline-block;
+    color: var(--accent-3);
+    font-size: 0.9rem;
+    margin-left: 0.3rem;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+
+  .check-fade.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<div class="container">
+  <header class="header">
+    <h1>工作流架构</h1>
+    <p class="sub">ZhihuiDangjian · 双分支开发流水线</p>
+  </header>
+
+  <div class="flow-grid">
+    <!-- Main Column -->
+    <div class="main-flow">
+
+      <!-- Node 1: Dev -->
+      <div class="flow-node visible" style="transition-delay: 0.1s;">
+        <div class="tag dev">DEV</div>
+        <div class="title">
+          <span class="branch-badge dev">dev</span> 日常开发
+        </div>
+        <div class="desc">
+          在 <code>dev</code> 分支上进行日常开发，随时提交和推送
+        </div>
+      </div>
+
+      <div class="connector visible" style="transition-delay: 0.2s;">
+        <div class="line"></div>
+        <div class="label">git push</div>
+      </div>
+
+      <!-- Node 2: PR -->
+      <div class="flow-node visible" style="transition-delay: 0.3s;">
+        <div class="tag pr">PR</div>
+        <div class="title">
+          创建 Pull Request · <span class="branch-badge dev">dev</span> → <span class="branch-badge product">product</span>
+        </div>
+        <div class="desc">
+          <code>gh pr create --base product --head dev</code> &nbsp; 触发 CI 流水线
+        </div>
+      </div>
+
+      <div class="connector visible" style="transition-delay: 0.4s;">
+        <div class="line"></div>
+        <div class="label">触发 CI</div>
+      </div>
+
+      <!-- Node 3: CI -->
+      <div class="flow-node visible" style="transition-delay: 0.5s;">
+        <div class="tag ci">CI</div>
+        <div class="title">持续集成流水线</div>
+        <div class="desc">
+          每次 PR 自动执行全部检查步骤
+        </div>
+        <div class="ci-steps">
+          <div class="ci-step pass">
+            <span class="step-icon">☕</span>
+            compileJava
+          </div>
+          <div class="ci-step pass">
+            <span class="step-icon">🧪</span>
+            test + integrationTest
+          </div>
+          <div class="ci-step pass">
+            <span class="step-icon">📊</span>
+            JaCoCo ≥85%
+          </div>
+          <div class="ci-step pass">
+            <span class="step-icon">🔍</span>
+            Codacy
+          </div>
+          <div class="ci-step pass">
+            <span class="step-icon">📦</span>
+            bootJar
+          </div>
+          <div class="ci-step pass">
+            <span class="step-icon">🚀</span>
+            API Smoke Test
+          </div>
+        </div>
+      </div>
+
+      <!-- Merge indicator -->
+      <div class="diverge visible" style="transition-delay: 0.6s;">
+        <div class="arm"></div>
+        <div class="label">✅ 全部通过</div>
+        <div class="arm right"></div>
+      </div>
+
+      <!-- Node 4: Merge -->
+      <div class="flow-node visible" style="transition-delay: 0.65s;">
+        <div class="tag ci">MERGE</div>
+        <div class="title">
+          合并到 <span class="branch-badge product">product</span>
+        </div>
+        <div class="desc">
+          在 GitHub 上合并 PR，<code>product</code> 分支更新
+        </div>
+      </div>
+
+      <div class="connector visible" style="transition-delay: 0.7s;">
+        <div class="line"></div>
+        <div class="label">git tag v*</div>
+      </div>
+
+      <!-- Node 5: Release -->
+      <div class="flow-node visible" style="transition-delay: 0.8s;">
+        <div class="tag release">CD</div>
+        <div class="title">发布流水线</div>
+        <div class="desc">
+          推送版本标签触发自动发布
+        </div>
+        <div class="release-steps">
+          <div class="release-step pass">
+            <span class="step-icon">📦</span>
+            bootJar
+          </div>
+          <div class="release-step pass">
+            <span class="step-icon">🐳</span>
+            Docker 多架构镜像
+          </div>
+          <div class="release-step pass">
+            <span class="step-icon">⬆️</span>
+            Push GHCR
+          </div>
+          <div class="release-step pass">
+            <span class="step-icon">🌐</span>
+            自托管部署
+          </div>
+        </div>
+      </div>
+
+      <!-- Deploy info -->
+      <div style="display:flex;gap:0.5rem;margin-top:0.8rem;flex-wrap:wrap;opacity:0;transition:opacity 0.6s" id="deployInfo">
+        <span style="font-size:0.7rem;padding:0.3rem 0.7rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text-dim);font-family:'JetBrains Mono',monospace">
+          linux/amd64 + linux/arm64
+        </span>
+        <span style="font-size:0.7rem;padding:0.3rem 0.7rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text-dim);font-family:'JetBrains Mono',monospace">
+          Docker + watchtower 自更新
+        </span>
+      </div>
+
+    </div>
+
+    <!-- Side Panel: Emergency Fix -->
+    <div class="side-panel visible" style="transition-delay: 1s;">
+      <div class="panel-header">
+        <div class="icon">🔧</div>
+        <h3>紧急修复流程</h3>
+      </div>
+
+      <div class="side-flow">
+        <div class="side-node">
+          <div class="title">从 product 分支修复</div>
+          <div class="desc"><code>git checkout product</code></div>
+        </div>
+        <div class="side-connector">
+          <div class="line"></div>
+        </div>
+        <div class="side-node">
+          <div class="title">修复并推送</div>
+          <div class="desc"><code>git commit + git push</code></div>
+        </div>
+        <div class="side-connector">
+          <div class="line"></div>
+        </div>
+        <div class="side-node">
+          <div class="title">打标签发布</div>
+          <div class="desc"><code>git tag v0.x.y<br>git push origin v0.x.y</code></div>
+        </div>
+        <div class="side-connector">
+          <div class="line"></div>
+        </div>
+        <div class="side-node">
+          <div class="title">同步回 dev</div>
+          <div class="desc"><code>git checkout dev<br>git merge product</code></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend visible" style="transition-delay: 1.2s;">
+    <div class="legend-item">
+      <div class="legend-dot dev"></div>
+      日常开发
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot ci"></div>
+      CI 检查
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot release"></div>
+      发布部署
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot hotfix"></div>
+      紧急修复
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot pr"></div>
+      Pull Request
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Animate elements on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.flow-node, .connector, .side-panel, .legend, .diverge, .merge-indicator').forEach(el => {
+    if (!el.classList.contains('visible')) {
+      observer.observe(el);
+    }
+  });
+
+  // Deploy info fade in
+  setTimeout(() => {
+    document.getElementById('deployInfo').style.opacity = '1';
+  }, 1800);
+
+  // Particles
+  const particlesContainer = document.getElementById('particles');
+  const colors = ['#60a5fa', '#a78bfa', '#34d399', '#f472b6', '#fbbf24'];
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.top = Math.random() * 100 + '%';
+    p.style.width = (1 + Math.random() * 3) + 'px';
+    p.style.height = p.style.width;
+    p.style.background = colors[i % colors.length];
+    p.style.opacity = 0.1 + Math.random() * 0.3;
+    p.style.animation = `float ${8 + Math.random() * 12}s linear infinite`;
+    p.style.animationDelay = Math.random() * 10 + 's';
+    particlesContainer.appendChild(p);
+  }
+
+  // Keyframes for particles (injected via style)
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes float {
+      0% { transform: translateY(0) translateX(0); opacity: 0; }
+      10% { opacity: 0.3; }
+      90% { opacity: 0.2; }
+      100% { transform: translateY(-100vh) translateX(${Math.random() > 0.5 ? '' : '-'}50px); opacity: 0; }
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Hover glow tracking on CI steps
+  document.querySelectorAll('.ci-step').forEach(el => {
+    el.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-2px)';
+      this.style.boxShadow = '0 4px 20px rgba(52, 211, 153, 0.1)';
+    });
+    el.addEventListener('mouseleave', function() {
+      this.style.transform = 'none';
+      this.style.boxShadow = 'none';
+    });
+  });
+</script>
+
+</body>
+</html>

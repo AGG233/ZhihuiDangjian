@@ -708,16 +708,13 @@ class UserServiceTest {
         verify(convertor).toPublicResponse(userList);
         ArgumentCaptor<LambdaQueryWrapper<User>> wrapperCaptor = ArgumentCaptor.forClass(LambdaQueryWrapper.class);
         verify(userService).page(any(Page.class), wrapperCaptor.capture());
+        assertThat(wrapperCaptor.getValue().getSqlSegment()).contains("username LIKE");
+        // PII 保护：user-facing 查询不包含 email/phone LIKE 或 = 条件
         assertThat(wrapperCaptor.getValue().getSqlSegment())
-                .contains("username LIKE")
-                .contains("email =")
-                .contains("phone =")
-                .doesNotContain("email LIKE")
-                .doesNotContain("phone LIKE");
+                .doesNotContain("email")
+                .doesNotContain("phone");
         assertThat(wrapperCaptor.getValue().getParamNameValuePairs())
                 .containsValue("%test%")
-                .containsValue("test@example.com")
-                .containsValue("13800138000")
                 .doesNotContainValue("%test@example.com%")
                 .doesNotContainValue("%13800138000%");
     }

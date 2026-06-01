@@ -22,6 +22,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.LearningTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.learning.constants.LearningErrorConstants;
 import com.rauio.smartdangjian.server.learning.controller.user.UserLearningRecordController;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserLearningRecordRequest;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
@@ -129,11 +130,12 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 BusinessException 返回 400")
         void getThrowsBusinessException() throws Exception {
-            when(recordService.get(1L)).thenThrow(new BusinessException(4000, "学习记录不存在"));
+            when(recordService.get(1L))
+                    .thenThrow(new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "学习记录不存在"));
 
             mockMvc.perform(get("/api/learning/records/1"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("4001"))
                     .andExpect(jsonPath("$.message").value("学习记录不存在"));
         }
 
@@ -151,13 +153,13 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
         @DisplayName("POST / - Service 抛出 BusinessException 返回 400")
         void createThrowsBusinessException() throws Exception {
             when(recordService.create(any(UserLearningRecordRequest.class)))
-                    .thenThrow(new BusinessException(4000, "创建学习记录失败"));
+                    .thenThrow(new BusinessException(LearningErrorConstants.RECORD_CREATE_FAILED, "创建学习记录失败"));
 
             mockMvc.perform(post("/api/learning/records")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(LearningTestDataFactory.toJson(LearningTestDataFactory.createLearningRecordDto())))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("4002"))
                     .andExpect(jsonPath("$.message").value("创建学习记录失败"));
         }
 
@@ -192,14 +194,14 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
         @DisplayName("PUT / - Service 抛出 BusinessException 返回 400")
         void updateThrowsBusinessException() throws Exception {
             when(recordService.update(any(UserLearningRecordRequest.class)))
-                    .thenThrow(new BusinessException(4000, "学习记录不存在"));
+                    .thenThrow(new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "学习记录不存在"));
 
             mockMvc.perform(put("/api/learning/records")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(LearningTestDataFactory.toJson(
                                     LearningTestDataFactory.createLearningRecordUpdateDto(9999L))))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("4001"))
                     .andExpect(jsonPath("$.message").value("学习记录不存在"));
         }
 
@@ -298,7 +300,8 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 注入在路径参数中")
         void xssInPath() throws Exception {
-            when(recordService.get(anyLong())).thenThrow(new BusinessException(4000, "学习记录不存在"));
+            when(recordService.get(anyLong()))
+                    .thenThrow(new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "学习记录不存在"));
 
             mockMvc.perform(get(URI.create("/api/learning/records/%3Cscript%3Ealert('xss')%3E")))
                     .andExpect(status().isBadRequest());
@@ -307,7 +310,8 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入在路径参数中")
         void sqlInjectionInPath() throws Exception {
-            when(recordService.get(anyLong())).thenThrow(new BusinessException(4000, "学习记录不存在"));
+            when(recordService.get(anyLong()))
+                    .thenThrow(new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "学习记录不存在"));
 
             mockMvc.perform(get("/api/learning/records/{id}", "' OR '1'='1")).andExpect(status().isBadRequest());
         }

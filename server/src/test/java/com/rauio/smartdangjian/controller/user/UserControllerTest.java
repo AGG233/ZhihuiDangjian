@@ -22,6 +22,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.controller.user.UserController;
 import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.request.UserUpdateRequest;
@@ -133,11 +134,11 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 BusinessException 返回 400")
         void getThrowsBusinessException() throws Exception {
-            when(userService.get(1L)).thenThrow(new BusinessException(4000, "用户不存在"));
+            when(userService.get(1L)).thenThrow(new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户不存在"));
 
             mockMvc.perform(get("/api/user/users/1"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("2005"))
                     .andExpect(jsonPath("$.message").value("用户不存在"));
         }
 

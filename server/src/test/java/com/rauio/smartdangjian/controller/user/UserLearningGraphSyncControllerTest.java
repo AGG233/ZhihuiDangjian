@@ -18,6 +18,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.graph.constants.GraphErrorConstants;
 import com.rauio.smartdangjian.server.learning.controller.user.UserLearningGraphSyncController;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
 
@@ -81,11 +82,12 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /user/{userId}/sync - Service 抛出 BusinessException 返回 400")
         void syncThrowsBusinessException() throws Exception {
-            when(userLearningRecordService.syncUserLearningGraph(1L)).thenThrow(new BusinessException(4000, "用户不存在"));
+            when(userLearningRecordService.syncUserLearningGraph(1L))
+                    .thenThrow(new BusinessException(GraphErrorConstants.USER_NOT_FOUND, "用户不存在"));
 
             mockMvc.perform(post("/api/learning/graph/users/1/sync"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("7001"))
                     .andExpect(jsonPath("$.message").value("用户不存在"));
         }
 
@@ -141,7 +143,8 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 注入在路径参数中")
         void xssInPath() throws Exception {
-            when(userLearningRecordService.syncUserLearningGraph(999L)).thenThrow(new BusinessException(4000, "用户不存在"));
+            when(userLearningRecordService.syncUserLearningGraph(999L))
+                    .thenThrow(new BusinessException(GraphErrorConstants.USER_NOT_FOUND, "用户不存在"));
 
             mockMvc.perform(post(URI.create("/api/learning/graph/users/999/sync")))
                     .andExpect(status().isBadRequest());
@@ -151,7 +154,7 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
         @DisplayName("SQL 注入在路径参数中")
         void sqlInjectionInPath() throws Exception {
             when(userLearningRecordService.syncUserLearningGraph(9999L))
-                    .thenThrow(new BusinessException(4000, "用户不存在"));
+                    .thenThrow(new BusinessException(GraphErrorConstants.USER_NOT_FOUND, "用户不存在"));
 
             mockMvc.perform(post("/api/learning/graph/users/9999/sync")).andExpect(status().isBadRequest());
         }

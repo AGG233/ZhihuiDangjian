@@ -10,8 +10,7 @@ class InitMultipartUploadRequestTest {
     @Test
     @DisplayName("request 的 getter 返回正确值")
     void getters() {
-        var request = new InitMultipartUploadRequest(
-                "hash123", "test.mp4", "mp4", "video/mp4", 104857600L, 5242880L);
+        var request = new InitMultipartUploadRequest("hash123", "test.mp4", "mp4", "video/mp4", 104857600L, 5242880L);
 
         assertThat(request.fileHash()).isEqualTo("hash123");
         assertThat(request.fileName()).isEqualTo("test.mp4");
@@ -24,8 +23,7 @@ class InitMultipartUploadRequestTest {
     @Test
     @DisplayName("request toString 包含关键字段")
     void toStringContainsFields() {
-        var request = new InitMultipartUploadRequest(
-                "hash123", "test.mp4", "mp4", "video/mp4", 104857600L, 5242880L);
+        var request = new InitMultipartUploadRequest("hash123", "test.mp4", "mp4", "video/mp4", 104857600L, 5242880L);
         assertThat(request.toString()).contains("hash123", "test.mp4");
     }
 }

@@ -21,6 +21,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.constants.ChapterErrorConstants;
 import com.rauio.smartdangjian.server.content.controller.user.UserChapterController;
 import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
@@ -85,11 +86,12 @@ class UserChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 章节不存在返回 BusinessException（4000）")
         void getChapterNotExists() throws Exception {
-            when(chapterService.get(999L)).thenThrow(new BusinessException(4000, "章节不存在"));
+            when(chapterService.get(999L))
+                    .thenThrow(new BusinessException(ChapterErrorConstants.CHAPTER_NOT_FOUND, "章节不存在"));
 
             mockMvc.perform(get("/api/content/chapters/999"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("3101"))
                     .andExpect(jsonPath("$.message").value("章节不存在"));
         }
 

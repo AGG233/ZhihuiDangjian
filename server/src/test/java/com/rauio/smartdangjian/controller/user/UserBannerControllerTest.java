@@ -18,6 +18,7 @@ import com.rauio.smartdangjian.BannerControllerTestConfig;
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.BannerTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 import com.rauio.smartdangjian.server.resource.pojo.response.BannerResourceResponse;
 import com.rauio.smartdangjian.server.resource.service.BannerService;
 
@@ -65,11 +66,12 @@ class UserBannerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 400")
         void serviceThrowsBusinessException() throws Exception {
-            when(bannerService.getUser(999)).thenThrow(new BusinessException(4000, "轮播图不存在"));
+            when(bannerService.getUser(999))
+                    .thenThrow(new BusinessException(ResourceErrorConstants.BANNER_NOT_FOUND, "轮播图不存在"));
 
             mockMvc.perform(get("/api/resource/banners/999"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("5011"))
                     .andExpect(jsonPath("$.message").value("轮播图不存在"));
         }
 
@@ -102,11 +104,12 @@ class UserBannerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{order} - 负数 order 返回 BusinessException")
         void getBannerNegativeOrder() throws Exception {
-            when(bannerService.getUser(-1)).thenThrow(new BusinessException(4000, "轮播图不存在"));
+            when(bannerService.getUser(-1))
+                    .thenThrow(new BusinessException(ResourceErrorConstants.BANNER_NOT_FOUND, "轮播图不存在"));
 
             mockMvc.perform(get("/api/resource/banners/-1"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"));
+                    .andExpect(jsonPath("$.code").value("5011"));
         }
     }
 

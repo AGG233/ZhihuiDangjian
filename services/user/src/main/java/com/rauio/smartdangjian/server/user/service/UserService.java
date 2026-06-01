@@ -16,6 +16,7 @@ import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
+import com.rauio.smartdangjian.server.user.pojo.request.UserUpdateRequest;
 import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 
@@ -36,7 +37,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @return 用户实体
      * @throws BusinessException 如果通行凭证为空
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#passport")
+    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#passport", sync = true)
     public User getByPassport(String passport) {
         if (passport == null || passport.isEmpty()) {
             throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "通行凭证不能为空");
@@ -57,7 +58,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param id 用户 ID
      * @return 用户视图对象
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#id")
+    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#id", sync = true)
     public UserResponse get(Long id) {
         return convertor.toResponse(this.getById(id));
     }
@@ -93,7 +94,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param username 用户名
      * @return 用户实体
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#username")
+    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#username", sync = true)
     public User getByUsername(String username) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username));
     }
@@ -104,7 +105,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param email 邮箱
      * @return 用户实体
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#email")
+    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#email", sync = true)
     public User getByEmail(String email) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getEmail, email));
     }
@@ -115,7 +116,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param phone 手机号
      * @return 用户实体
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#phone")
+    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#phone", sync = true)
     public User getByPhone(String phone) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone));
     }
@@ -126,7 +127,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param partyMemberId 党员编号
      * @return 用户实体
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#partyMemberId")
+    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#partyMemberId", sync = true)
     public User getByPartyMemberId(String partyMemberId) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getPartyMemberId, partyMemberId));
     }
@@ -138,7 +139,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param user 用户实体
      * @throws BusinessException 如果更新失败
      */
-    @CacheEvict(value = USER_VO_CACHE_PREFIX, allEntries = true)
+    @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#id")
     public User update(Long id, User user) {
         user.setId(id);
         if (StringUtils.isNotBlank(user.getPassword())) {
@@ -150,13 +151,19 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         return this.getById(id);
     }
 
+    @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#id")
+    public User update(Long id, UserUpdateRequest request) {
+        User user = convertor.toEntity(request);
+        return update(id, user);
+    }
+
     /**
      * 删除用户。
      *
      * @param id 用户 ID
      * @throws BusinessException 如果删除失败
      */
-    @CacheEvict(value = USER_VO_CACHE_PREFIX, allEntries = true)
+    @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#id")
     public void delete(Long id) {
         if (!this.removeById(id)) {
             throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户删除失败");

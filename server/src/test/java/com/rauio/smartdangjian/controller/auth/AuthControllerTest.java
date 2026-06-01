@@ -29,11 +29,13 @@ import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.AuthTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
 import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.RegisterRequest;
 import com.rauio.smartdangjian.server.auth.service.AuthService;
 import com.rauio.smartdangjian.server.auth.service.CaptchaService;
+import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = AuthControllerTest.TestConfig.class)
@@ -168,13 +170,14 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/login - Service 抛出 BusinessException 返回 400")
         void loginThrowsBusinessException() throws Exception {
-            when(authService.login(any(LoginRequest.class))).thenThrow(new BusinessException(4000, "验证码错误"));
+            when(authService.login(any(LoginRequest.class)))
+                    .thenThrow(new BusinessException(AuthErrorConstants.CAPTCHA_ERROR, "验证码错误"));
 
             mockMvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(AuthTestDataFactory.toJson(AuthTestDataFactory.createLoginRequest())))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("1010"))
                     .andExpect(jsonPath("$.message").value("验证码错误"));
         }
 
@@ -193,20 +196,21 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/register - Service 抛出 BusinessException 返回 400")
         void registerThrowsBusinessException() throws Exception {
-            when(authService.register(any(RegisterRequest.class))).thenThrow(new BusinessException(4000, "该手机号已被注册"));
+            when(authService.register(any(RegisterRequest.class)))
+                    .thenThrow(new BusinessException(UserErrorConstants.PHONE_EXISTS, "该手机号已被注册"));
 
             mockMvc.perform(post("/api/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(AuthTestDataFactory.toJson(AuthTestDataFactory.createRegisterRequest())))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("2001"))
                     .andExpect(jsonPath("$.message").value("该手机号已被注册"));
         }
 
         @Test
         @DisplayName("POST /auth/changePassword - Service 抛出 BusinessException 时返回 400")
         void changePasswordThrowsBusinessException() throws Exception {
-            doThrow(new BusinessException(4000, "旧密码错误"))
+            doThrow(new BusinessException(AuthErrorConstants.OLD_PASSWORD_ERROR, "旧密码错误"))
                     .when(authService)
                     .changePassword(any(ChangePasswordRequest.class));
 
@@ -214,7 +218,7 @@ class AuthControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(AuthTestDataFactory.toJson(AuthTestDataFactory.createChangePasswordRequest())))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("1014"))
                     .andExpect(jsonPath("$.message").value("旧密码错误"));
         }
 
@@ -233,11 +237,13 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/logout - Service 抛出 BusinessException 返回 400")
         void logoutThrowsBusinessException() throws Exception {
-            doThrow(new BusinessException(4000, "令牌无效")).when(authService).logout();
+            doThrow(new BusinessException(AuthErrorConstants.TOKEN_VERIFICATION_FAILED, "令牌无效"))
+                    .when(authService)
+                    .logout();
 
             mockMvc.perform(post("/api/auth/logout"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("1004"))
                     .andExpect(jsonPath("$.message").value("令牌无效"));
         }
     }

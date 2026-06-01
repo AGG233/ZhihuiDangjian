@@ -2,7 +2,6 @@ package com.rauio.smartdangjian.server.resource.controller.admin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -19,8 +18,6 @@ import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.BannerCreateRequest;
 import com.rauio.smartdangjian.server.resource.pojo.request.BannerUpdateRequest;
 import com.rauio.smartdangjian.server.resource.service.BannerService;
-
-import com.rauio.smartdangjian.exception.BusinessException;
 
 @ExtendWith(MockitoExtension.class)
 class AdminBannerControllerTest {
