@@ -140,18 +140,18 @@ class ApplicationConfigStructureTest {
     }
 
     @Test
-    @DisplayName("ADR 001（Redis 高可用策略）存在且有内容")
-    void adr001RedisHADocumentExists() {
-        Path adrPath = projectRoot().resolve("docs/adr/001-redis-high-availability.md");
-        assertThat(adrPath).as("ADR 001 (Redis High Availability) 文档必须存在").exists();
-        assertThat(adrPath).as("ADR 001 应有内容").isNotEmptyFile();
+    @DisplayName("ADR 002（Redis 高可用策略）存在且有内容")
+    void adr002RedisHADocumentExists() {
+        Path adrPath = projectRoot().resolve("docs/adr/002-redis-high-availability.md");
+        assertThat(adrPath).as("ADR 002 (Redis High Availability) 文档必须存在").exists();
+        assertThat(adrPath).as("ADR 002 应有内容").isNotEmptyFile();
     }
 
     @Test
-    @DisplayName("ADR 002（Caffeine 二级缓存评估）存在且有内容")
-    void adr002CaffeineCacheDocumentExists() {
-        Path adrPath = projectRoot().resolve("docs/adr/002-caffeine-l2-cache.md");
-        assertThat(adrPath).as("ADR 002 (Caffeine L2 Cache) 文档必须存在").exists();
-        assertThat(adrPath).as("ADR 002 应有内容").isNotEmptyFile();
+    @DisplayName("ADR 003（Caffeine 二级缓存评估）存在且有内容")
+    void adr003CaffeineCacheDocumentExists() {
+        Path adrPath = projectRoot().resolve("docs/adr/003-caffeine-l2-cache.md");
+        assertThat(adrPath).as("ADR 003 (Caffeine L2 Cache) 文档必须存在").exists();
+        assertThat(adrPath).as("ADR 003 应有内容").isNotEmptyFile();
     }
 }

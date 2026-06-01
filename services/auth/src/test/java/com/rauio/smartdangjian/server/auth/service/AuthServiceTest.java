@@ -24,6 +24,7 @@ import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.SessionUserPrincipal;
 import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
 import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
@@ -103,6 +104,15 @@ class AuthServiceTest {
             LoginResponse result = authService.login(request);
 
             assertThat(result.getAccessToken()).isEqualTo("sa-token-abc");
+            ArgumentCaptor<Object> principalCaptor = ArgumentCaptor.forClass(Object.class);
+            verify(session).set(org.mockito.Mockito.eq("user"), principalCaptor.capture());
+            assertThat(principalCaptor.getValue()).isInstanceOf(SessionUserPrincipal.class);
+            assertThat((SessionUserPrincipal) principalCaptor.getValue())
+                    .extracting(
+                            SessionUserPrincipal::getId,
+                            SessionUserPrincipal::getUserType,
+                            SessionUserPrincipal::getUniversityId)
+                    .containsExactly(user.getId(), user.getUserType(), user.getUniversityId());
         }
     }
 
@@ -430,7 +440,9 @@ class AuthServiceTest {
 
             assertThat(user.getPassword()).isEqualTo(encodedNewPassword);
             verify(userMapper).updateById(user);
-            verify(session).set("user", user);
+            ArgumentCaptor<Object> principalCaptor = ArgumentCaptor.forClass(Object.class);
+            verify(session).set(org.mockito.Mockito.eq("user"), principalCaptor.capture());
+            assertThat(principalCaptor.getValue()).isInstanceOf(SessionUserPrincipal.class);
         }
     }
 

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.security.SessionUserPrincipal;
 import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
 import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
@@ -60,7 +61,7 @@ public class AuthService {
 
         StpUtil.login(user.getId(), SaLoginModel.create().setDevice(platform).setTimeout(timeout));
 
-        StpUtil.getSession().set("user", user);
+        StpUtil.getSession().set("user", toSessionPrincipal(user));
 
         return LoginResponse.builder().accessToken(StpUtil.getTokenValue()).build();
     }
@@ -122,7 +123,15 @@ public class AuthService {
         if (userMapper.updateById(user) <= 0) {
             throw new BusinessException(AuthErrorConstants.PASSWORD_CHANGE_ERROR, "密码修改失败");
         }
-        StpUtil.getSession().set("user", user);
+        StpUtil.getSession().set("user", toSessionPrincipal(user));
+    }
+
+    private SessionUserPrincipal toSessionPrincipal(User user) {
+        return SessionUserPrincipal.builder()
+                .id(user.getId())
+                .userType(user.getUserType())
+                .universityId(user.getUniversityId())
+                .build();
     }
 
     private void checkEmailRegistered(String email) {

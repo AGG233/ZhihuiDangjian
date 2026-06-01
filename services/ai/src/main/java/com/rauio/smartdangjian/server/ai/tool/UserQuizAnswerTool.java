@@ -3,7 +3,6 @@ package com.rauio.smartdangjian.server.ai.tool;
 import java.util.Comparator;
 import java.util.List;
 
-import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
@@ -25,9 +24,9 @@ public class UserQuizAnswerTool {
 
     @Tool(description = "获取当前用户最近的答题记录")
     public List<UserQuizAnswer> getRecentQuizAnswers(
-            @ToolParam(description = "返回记录条数，默认10条") Integer limit, ToolContext toolContext) {
+            @ToolParam(description = "返回记录条数，默认10条") Integer limit) {
         int safeLimit = limit == null || limit <= 0 ? 10 : limit;
-        Long userId = IdUtil.parseNullable(ToolContextUtil.getUserId(toolContext, userService));
+        Long userId = IdUtil.parseNullable(ToolContextUtil.resolveUserId(userService));
         return userQuizAnswerService.getByUserId(userId).stream()
                 .sorted(Comparator.comparing(
                         UserQuizAnswer::getAnswerTime, Comparator.nullsLast(Comparator.reverseOrder())))
@@ -37,8 +36,8 @@ public class UserQuizAnswerTool {
 
     @Tool(description = "获取当前用户在指定测验下的答题记录")
     public List<UserQuizAnswer> getQuizAnswersByQuizId(
-            @ToolParam(description = "测验ID") String quizId, ToolContext toolContext) {
-        Long userId = IdUtil.parseNullable(ToolContextUtil.getUserId(toolContext, userService));
+            @ToolParam(description = "测验ID") String quizId) {
+        Long userId = IdUtil.parseNullable(ToolContextUtil.resolveUserId(userService));
         return userQuizAnswerService.getByUserIdAndQuizId(userId, IdUtil.parse(quizId));
     }
 }
