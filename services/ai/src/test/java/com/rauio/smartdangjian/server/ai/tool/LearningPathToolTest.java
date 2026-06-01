@@ -32,6 +32,7 @@ class LearningPathToolTest {
     @Test
     @DisplayName("getLearningProfile 返回用户学习画像数据")
     void getLearningProfile() {
+        when(userService.getCurrentUserId()).thenReturn("1");
         UserProfileResponse.LearningStats learning = UserProfileResponse.LearningStats.builder()
                 .totalDuration(3600)
                 .totalRecords(12)
@@ -70,6 +71,7 @@ class LearningPathToolTest {
     @Test
     @DisplayName("getLearningProfile profile 为 null 时返回空 Map")
     void getLearningProfileNull() {
+        when(userService.getCurrentUserId()).thenReturn("1");
         when(userProfileService.getProfile("1")).thenReturn(null);
 
         Map<String, Object> result = learningPathTool.getLearningProfile();

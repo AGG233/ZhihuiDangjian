@@ -30,6 +30,7 @@ class UserProfileToolTest {
     @Test
     @DisplayName("getUserProfile 返回用户画像数据")
     void getUserProfile() {
+        when(userService.getCurrentUserId()).thenReturn("user-1");
         UserProfileResponse profile = mock(UserProfileResponse.class);
         when(userProfileService.getProfile("user-1")).thenReturn(profile);
 

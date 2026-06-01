@@ -34,6 +34,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 import com.rauio.smartdangjian.server.resource.controller.user.FileController;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
@@ -316,11 +317,13 @@ class FileControllerTest {
         @Test
         @DisplayName("DELETE /{id} — 删除不存在的资源返回 400")
         void deleteNonExistentResource() throws Exception {
-            doThrow(new BusinessException(4000, "资源不存在")).when(fileService).delete(999999L);
+            doThrow(new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在"))
+                    .when(fileService)
+                    .delete(999999L);
 
             mockMvc.perform(delete("/api/resource/files/999999"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("5002"))
                     .andExpect(jsonPath("$.message").value("资源不存在"));
         }
     }
@@ -356,44 +359,48 @@ class FileControllerTest {
         @Test
         @DisplayName("POST /confirm/{id} — 确认不存在的资源返回 400")
         void confirmUploadResourceNotFound() throws Exception {
-            when(fileService.confirmUpload(999999L)).thenThrow(new BusinessException(4000, "资源不存在"));
+            when(fileService.confirmUpload(999999L))
+                    .thenThrow(new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在"));
 
             mockMvc.perform(post("/api/resource/files/confirm/999999"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("5002"))
                     .andExpect(jsonPath("$.message").value("资源不存在"));
         }
 
         @Test
         @DisplayName("GET /by-id/{id} — 根据不存在的 ID 查询返回 400")
         void getByIdResourceNotFound() throws Exception {
-            when(fileService.getFileInfo(999999L)).thenThrow(new BusinessException(4000, "资源不存在"));
+            when(fileService.getFileInfo(999999L))
+                    .thenThrow(new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在"));
 
             mockMvc.perform(get("/api/resource/files/by-id/999999"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("5002"))
                     .andExpect(jsonPath("$.message").value("资源不存在"));
         }
 
         @Test
         @DisplayName("GET /by-hash/{hash} — 根据不存在的哈希查询返回 400")
         void getByHashResourceNotFound() throws Exception {
-            when(fileService.getFileInfoByHash("ghost-hash")).thenThrow(new BusinessException(4000, "资源不存在"));
+            when(fileService.getFileInfoByHash("ghost-hash"))
+                    .thenThrow(new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在"));
 
             mockMvc.perform(get("/api/resource/files/by-hash/ghost-hash"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("5002"))
                     .andExpect(jsonPath("$.message").value("资源不存在"));
         }
 
         @Test
         @DisplayName("GET /{id}/download — 不存在的资源下载返回 400")
         void getDownloadUrlResourceNotFound() throws Exception {
-            when(fileService.getDownloadUrl(999999L)).thenThrow(new BusinessException(4000, "资源不存在"));
+            when(fileService.getDownloadUrl(999999L))
+                    .thenThrow(new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在"));
 
             mockMvc.perform(get("/api/resource/files/999999/download"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("5002"))
                     .andExpect(jsonPath("$.message").value("资源不存在"));
         }
 
@@ -515,7 +522,8 @@ class FileControllerTest {
         @Test
         @DisplayName("GET /by-hash/{hash} — SQL 注入在 hash 参数中被当作字面量处理")
         void sqlInjectionInHash() throws Exception {
-            when(fileService.getFileInfoByHash(any())).thenThrow(new BusinessException(4000, "资源不存在"));
+            when(fileService.getFileInfoByHash(any()))
+                    .thenThrow(new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在"));
 
             mockMvc.perform(get("/api/resource/files/by-hash/'%20OR%20'1'='1")).andExpect(status().isBadRequest());
         }

@@ -20,6 +20,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.constants.CourseErrorConstants;
 import com.rauio.smartdangjian.server.content.controller.admin.AdminCourseController;
 import com.rauio.smartdangjian.server.content.pojo.request.CourseRequest;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
@@ -87,13 +88,15 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 400 并携带错误码")
         void createThrowsBusinessException() throws Exception {
-            doThrow(new BusinessException(4000, "课程创建失败")).when(courseService).create(any(CourseRequest.class));
+            doThrow(new BusinessException(CourseErrorConstants.COURSE_SAVE_FAILED, "课程创建失败"))
+                    .when(courseService)
+                    .create(any(CourseRequest.class));
 
             mockMvc.perform(post("/api/admin/content/courses")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createCourseRequest())))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("3202"))
                     .andExpect(jsonPath("$.message").value("课程创建失败"));
         }
 
@@ -112,7 +115,7 @@ class AdminCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("更新课程时 Service 抛出 BusinessException 返回 400")
         void updateThrowsBusinessException() throws Exception {
-            doThrow(new BusinessException(4000, "课程不存在"))
+            doThrow(new BusinessException(CourseErrorConstants.COURSE_NOT_FOUND, "课程不存在"))
                     .when(courseService)
                     .update(any(CourseRequest.class), eq(9999L));
 
@@ -120,18 +123,20 @@ class AdminCourseControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createCourseRequest())))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("3201"))
                     .andExpect(jsonPath("$.message").value("课程不存在"));
         }
 
         @Test
         @DisplayName("删除课程时 Service 抛出 BusinessException 返回 400")
         void deleteThrowsBusinessException() throws Exception {
-            doThrow(new BusinessException(4000, "课程不存在")).when(courseService).delete(9999L);
+            doThrow(new BusinessException(CourseErrorConstants.COURSE_NOT_FOUND, "课程不存在"))
+                    .when(courseService)
+                    .delete(9999L);
 
             mockMvc.perform(delete("/api/admin/content/courses/9999"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("3201"))
                     .andExpect(jsonPath("$.message").value("课程不存在"));
         }
 

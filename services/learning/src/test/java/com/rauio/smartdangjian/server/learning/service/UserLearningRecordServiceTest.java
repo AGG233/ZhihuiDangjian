@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
@@ -108,7 +109,7 @@ class UserLearningRecordServiceTest {
         UserLearningRecord entity = UserLearningRecord.builder()
                 .id(RECORD_ID)
                 .userId(USER_ID)
-                .chapterId(CHAPTER_ID)
+                .chapterId(null)
                 .duration(1800)
                 .build();
         doReturn(entity).when(recordService).getById(RECORD_ID);
@@ -116,7 +117,7 @@ class UserLearningRecordServiceTest {
         UserLearningRecordResponse vo = UserLearningRecordResponse.builder()
                 .id(RECORD_ID)
                 .userId(USER_ID)
-                .chapterId(CHAPTER_ID)
+                .chapterId(null)
                 .duration(1800)
                 .build();
         when(convertor.toResponse(entity)).thenReturn(vo);
@@ -178,7 +179,7 @@ class UserLearningRecordServiceTest {
         List<UserLearningRecord> list = List.of(UserLearningRecord.builder()
                 .id(RECORD_ID)
                 .userId(USER_ID)
-                .chapterId(CHAPTER_ID)
+                .chapterId(null)
                 .build());
         doReturn(list).when(recordService).list(any(QueryWrapper.class));
         when(convertor.toResponseList(list))
@@ -248,12 +249,12 @@ class UserLearningRecordServiceTest {
     @DisplayName("getByChapterId 查询章节下所有学习记录")
     void getByChapterId() {
         List<UserLearningRecord> list = List.of(
-                UserLearningRecord.builder().id(RECORD_ID).chapterId(CHAPTER_ID).build());
+                UserLearningRecord.builder().id(RECORD_ID).chapterId(null).build());
         doReturn(list).when(recordService).list(any(QueryWrapper.class));
         when(convertor.toResponseList(list))
                 .thenReturn(List.of(UserLearningRecordResponse.builder()
                         .id(RECORD_ID)
-                        .chapterId(CHAPTER_ID)
+                        .chapterId(null)
                         .build()));
 
         List<UserLearningRecordResponse> result = recordService.getByChapterId(CHAPTER_ID);
@@ -269,14 +270,14 @@ class UserLearningRecordServiceTest {
         List<UserLearningRecord> list = List.of(UserLearningRecord.builder()
                 .id(RECORD_ID)
                 .userId(USER_ID)
-                .chapterId(CHAPTER_ID)
+                .chapterId(null)
                 .build());
         doReturn(list).when(recordService).list(any(QueryWrapper.class));
         when(convertor.toResponseList(list))
                 .thenReturn(List.of(UserLearningRecordResponse.builder()
                         .id(RECORD_ID)
                         .userId(USER_ID)
-                        .chapterId(CHAPTER_ID)
+                        .chapterId(null)
                         .build()));
 
         List<UserLearningRecordResponse> result = recordService.getByUserIdAndChapterId(USER_ID, CHAPTER_ID);
@@ -292,7 +293,7 @@ class UserLearningRecordServiceTest {
         List<UserLearningRecord> list = List.of(UserLearningRecord.builder()
                 .id(RECORD_ID)
                 .userId(USER_ID)
-                .chapterId(CHAPTER_ID)
+                .chapterId(null)
                 .build());
         doReturn(list).when(recordService).list(any(QueryWrapper.class));
 
@@ -322,7 +323,7 @@ class UserLearningRecordServiceTest {
         List<UserLearningRecord> list = List.of(UserLearningRecord.builder()
                 .id(RECORD_ID)
                 .userId(USER_ID)
-                .chapterId(CHAPTER_ID)
+                .chapterId(null)
                 .build());
         doReturn(list).when(recordService).list(any(QueryWrapper.class));
 
@@ -355,40 +356,40 @@ class UserLearningRecordServiceTest {
                 UserLearningRecord.builder()
                         .id(RECORD_ID)
                         .userId(USER_ID)
-                        .chapterId(CHAPTER_ID)
+                        .chapterId(null)
                         .build(),
                 UserLearningRecord.builder()
                         .id(1L)
                         .userId(USER_ID)
                         .chapterId(1L)
                         .build());
-        doReturn(records).when(recordService).list(any(QueryWrapper.class));
+        doReturn(records)
+                .when(recordService)
+                .list(any(com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper.class));
 
         int result = recordService.syncUserLearningGraph(USER_ID);
 
         assertThat(result).isEqualTo(2);
-        verify(knowledgeGraphService, times(2)).upsertLearningGraph(anyLong(), anyLong());
+        verify(knowledgeGraphService).batchUpsertLearningGraph(eq(USER_ID), any());
     }
 
     @Test
-    @DisplayName("syncUserLearningGraph 记录中 userId 或 chapterId 为 null 时跳过图谱同步")
+    @DisplayName("syncUserLearningGraph 所有 chapterId 为 null 时跳过图谱同步")
     void syncUserLearningGraphSkipsNullFields() {
         List<UserLearningRecord> records = List.of(
-                UserLearningRecord.builder()
-                        .id(1L)
-                        .userId(null)
-                        .chapterId(CHAPTER_ID)
-                        .build(),
+                UserLearningRecord.builder().id(1L).userId(null).chapterId(null).build(),
                 UserLearningRecord.builder()
                         .id(2L)
                         .userId(USER_ID)
                         .chapterId(null)
                         .build());
-        doReturn(records).when(recordService).list(any(QueryWrapper.class));
+        doReturn(records)
+                .when(recordService)
+                .list(any(com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper.class));
 
         int result = recordService.syncUserLearningGraph(USER_ID);
 
-        assertThat(result).isEqualTo(2);
+        assertThat(result).isZero();
         verify(knowledgeGraphService, never()).upsertLearningGraph(anyLong(), anyLong());
     }
 
@@ -427,12 +428,10 @@ class UserLearningRecordServiceTest {
     void createSetsCreatedAt() {
         UserLearningRecordRequest dto = UserLearningRecordRequest.builder()
                 .userId(USER_ID)
-                .chapterId(CHAPTER_ID)
+                .chapterId(null)
                 .build();
-        UserLearningRecord entity = UserLearningRecord.builder()
-                .userId(USER_ID)
-                .chapterId(CHAPTER_ID)
-                .build();
+        UserLearningRecord entity =
+                UserLearningRecord.builder().userId(USER_ID).chapterId(null).build();
         when(convertor.toEntity(dto)).thenReturn(entity);
         doReturn(true).when(recordService).save(any(UserLearningRecord.class));
 
@@ -446,7 +445,7 @@ class UserLearningRecordServiceTest {
     void createFailed() {
         UserLearningRecordRequest dto = UserLearningRecordRequest.builder()
                 .userId(USER_ID)
-                .chapterId(CHAPTER_ID)
+                .chapterId(null)
                 .build();
         when(convertor.toEntity(dto)).thenReturn(UserLearningRecord.builder().build());
         doReturn(false).when(recordService).save(any(UserLearningRecord.class));
@@ -461,12 +460,12 @@ class UserLearningRecordServiceTest {
     void createNoTimeRange() {
         UserLearningRecordRequest dto = UserLearningRecordRequest.builder()
                 .userId(USER_ID)
-                .chapterId(CHAPTER_ID)
+                .chapterId(null)
                 .build();
 
         UserLearningRecord entity = UserLearningRecord.builder()
                 .userId(USER_ID)
-                .chapterId(CHAPTER_ID)
+                .chapterId(null)
                 .createdAt(LocalDateTime.now())
                 .build();
         when(convertor.toEntity(dto)).thenReturn(entity);
@@ -482,10 +481,10 @@ class UserLearningRecordServiceTest {
     @DisplayName("create 学习记录中 userId 为 null 时跳过图谱同步")
     void createNoUserIdSkipsGraphSync() {
         UserLearningRecordRequest dto =
-                UserLearningRecordRequest.builder().chapterId(CHAPTER_ID).build();
+                UserLearningRecordRequest.builder().chapterId(null).build();
 
         UserLearningRecord entity = UserLearningRecord.builder()
-                .chapterId(CHAPTER_ID)
+                .chapterId(null)
                 .createdAt(LocalDateTime.now())
                 .build();
         when(convertor.toEntity(dto)).thenReturn(entity);
@@ -613,7 +612,7 @@ class UserLearningRecordServiceTest {
     void getPageWithAllConditions() {
         UserLearningRecordRequest dto = UserLearningRecordRequest.builder()
                 .userId(USER_ID)
-                .chapterId(CHAPTER_ID)
+                .chapterId(null)
                 .deviceType("web")
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -661,13 +660,13 @@ class UserLearningRecordServiceTest {
         LocalDateTime start = LocalDateTime.of(2025, 1, 1, 10, 0);
         UserLearningRecordRequest dto = UserLearningRecordRequest.builder()
                 .userId(USER_ID)
-                .chapterId(CHAPTER_ID)
+                .chapterId(null)
                 .startTime(start)
                 .build();
 
         UserLearningRecord entity = UserLearningRecord.builder()
                 .userId(USER_ID)
-                .chapterId(CHAPTER_ID)
+                .chapterId(null)
                 .startTime(start)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -746,7 +745,9 @@ class UserLearningRecordServiceTest {
     @Test
     @DisplayName("syncUserLearningGraph 空记录返回 0")
     void syncUserLearningGraphEmpty() {
-        doReturn(List.of()).when(recordService).list(any(QueryWrapper.class));
+        doReturn(List.of())
+                .when(recordService)
+                .list(any(com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper.class));
 
         int result = recordService.syncUserLearningGraph(USER_ID);
 

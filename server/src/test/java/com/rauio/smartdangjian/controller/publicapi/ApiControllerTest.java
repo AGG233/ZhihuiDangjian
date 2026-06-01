@@ -20,6 +20,7 @@ import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.common.controller.publicapi.ApiController;
 import com.rauio.smartdangjian.common.pojo.response.SchoolResponse;
 import com.rauio.smartdangjian.common.service.UniversitiesService;
+import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ApiControllerTest.TestConfig.class)
@@ -62,11 +63,12 @@ class ApiControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 400")
         void serviceThrowsBusinessException() throws Exception {
-            when(universitiesService.getList()).thenThrow(new BusinessException(4000, "获取学校列表失败"));
+            when(universitiesService.getList())
+                    .thenThrow(new BusinessException(ErrorConstants.RESOURCE_NOT_EXISTS, "获取学校列表失败"));
 
             mockMvc.perform(get("/api/school/all"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("11"))
                     .andExpect(jsonPath("$.message").value("获取学校列表失败"));
         }
 

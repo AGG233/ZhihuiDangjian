@@ -27,6 +27,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
@@ -147,11 +148,11 @@ class SearchControllerTest extends BaseControllerTest {
         @DisplayName("Service 抛出 BusinessException 返回 400")
         void serviceThrowsBusinessException() throws Exception {
             when(searchService.searchCourses(anyString(), any(), any(), anyInt(), anyInt()))
-                    .thenThrow(new BusinessException(4000, "搜索服务异常"));
+                    .thenThrow(new BusinessException(ErrorConstants.RESOURCE_NOT_AVAILABLE, "搜索服务异常"));
 
             mockMvc.perform(get("/api/search/courses").param("keyword", "test"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("12"))
                     .andExpect(jsonPath("$.message").value("搜索服务异常"));
         }
 

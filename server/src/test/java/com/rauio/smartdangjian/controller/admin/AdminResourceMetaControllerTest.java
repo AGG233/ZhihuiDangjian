@@ -27,6 +27,7 @@ import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.BannerTestDataFactory;
 import com.rauio.smartdangjian.controller.factory.ResourceMetaTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 import com.rauio.smartdangjian.server.resource.controller.admin.AdminResourceMetaController;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
@@ -145,11 +146,12 @@ class AdminResourceMetaControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 400")
         void serviceThrowsBusinessException() throws Exception {
-            when(resourceMetaService.get(9999L)).thenThrow(new BusinessException(4000, "资源不存在"));
+            when(resourceMetaService.get(9999L))
+                    .thenThrow(new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在"));
 
             mockMvc.perform(get("/api/admin/resource/files/9999"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("5002"))
                     .andExpect(jsonPath("$.message").value("资源不存在"));
         }
 

@@ -26,6 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.controller.factory.AuthTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.pojo.response.Result;
@@ -282,7 +283,8 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/login - 登录请求含超长字段")
         void loginWithLongFields() throws Exception {
-            when(authService.login(any(LoginRequest.class))).thenThrow(new BusinessException(4000, "参数过长"));
+            when(authService.login(any(LoginRequest.class)))
+                    .thenThrow(new BusinessException(ErrorConstants.ARGS_ERROR, "参数过长"));
 
             String longPassport = "a".repeat(200);
             LoginRequest request = AuthTestDataFactory.createLoginRequest();

@@ -33,6 +33,7 @@ class LearningToolTest {
     @Test
     @DisplayName("getRecentLearningRecord 返回用户最近 N 天学习记录")
     void getRecentLearningRecord() {
+        when(userService.getCurrentUserId()).thenReturn("1");
         UserLearningRecord record = mock(UserLearningRecord.class);
         when(record.getId()).thenReturn(1L);
         when(userLearningRecordService.getRecentByUserId("1", 7)).thenReturn(List.of(record));
@@ -46,6 +47,7 @@ class LearningToolTest {
     @Test
     @DisplayName("getLearningRecordOfCourse 返回用户某课程的学习记录")
     void getLearningRecordOfCourse() {
+        when(userService.getCurrentUserId()).thenReturn("1");
         UserLearningRecord record = mock(UserLearningRecord.class);
         when(userLearningRecordService.getByUserIdAndCourseId(1L, 1L)).thenReturn(List.of(record));
 
@@ -57,6 +59,7 @@ class LearningToolTest {
     @Test
     @DisplayName("getLearningRecordOfCourseChapter 返回用户某课程章节的学习记录")
     void getLearningRecordOfCourseChapter() {
+        when(userService.getCurrentUserId()).thenReturn("1");
         UserLearningRecord record = mock(UserLearningRecord.class);
         when(userLearningRecordService.getByUserIdAndCourseIdAndChapterId(1L, 1L, 1L))
                 .thenReturn(List.of(record));

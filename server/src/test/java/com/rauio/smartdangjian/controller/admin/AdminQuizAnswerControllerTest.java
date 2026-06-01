@@ -19,6 +19,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
 import com.rauio.smartdangjian.server.quiz.controller.admin.AdminQuizAnswerController;
 import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -70,11 +71,11 @@ class AdminQuizAnswerControllerTest extends BaseControllerTest {
         @DisplayName("删除答题记录 - Service 抛出 BusinessException 返回 400")
         void deleteThrowsBusinessException() throws Exception {
             when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(anyLong(), anyLong(), anyLong()))
-                    .thenThrow(new BusinessException(4000, "删除答题记录失败"));
+                    .thenThrow(new BusinessException(QuizErrorConstants.QUIZ_NOT_FOUND, "删除答题记录失败"));
 
             mockMvc.perform(delete("/api/admin/quiz/answers/users/1/quizzes/1/options/1"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("6001"))
                     .andExpect(jsonPath("$.message").value("删除答题记录失败"));
         }
 

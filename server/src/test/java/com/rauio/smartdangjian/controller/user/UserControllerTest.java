@@ -182,7 +182,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - Service 抛出 BusinessException 返回 400")
         void updateThrowsBusinessException() throws Exception {
-            doThrow(new BusinessException(4000, "更新用户失败"))
+            doThrow(new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "更新用户失败"))
                     .when(userService)
                     .update(eq(1L), any(UserUpdateRequest.class));
 
@@ -190,7 +190,7 @@ class UserControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"realName\":\"新名称\"}"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("2005"))
                     .andExpect(jsonPath("$.message").value("更新用户失败"));
         }
 

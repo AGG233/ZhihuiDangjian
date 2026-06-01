@@ -70,7 +70,7 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
     }
 
     @Transactional(transactionManager = "dataSourceTransactionManager", rollbackFor = Exception.class)
-    @CacheEvict(value = RedisConstants.AI_FAQ_CACHE_PREFIX, allEntries = true)
+    @CacheEvict(value = RedisConstants.AI_FAQ_CACHE_PREFIX, key = "#result.id")
     public AiFaqResponse createFaq(FaqCreateRequest request) {
         AiFaq faq = AiFaq.builder()
                 .keywords(request.getKeywords())
@@ -85,7 +85,7 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
     }
 
     @Transactional(transactionManager = "dataSourceTransactionManager", rollbackFor = Exception.class)
-    @CacheEvict(value = RedisConstants.AI_FAQ_CACHE_PREFIX, allEntries = true)
+    @CacheEvict(value = RedisConstants.AI_FAQ_CACHE_PREFIX, key = "#request.id")
     public AiFaqResponse updateFaq(FaqUpdateRequest request) {
         AiFaq faq = this.getById(request.getId());
         if (faq == null) {
@@ -112,7 +112,7 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
     }
 
     @Transactional(transactionManager = "dataSourceTransactionManager", rollbackFor = Exception.class)
-    @CacheEvict(value = RedisConstants.AI_FAQ_CACHE_PREFIX, allEntries = true)
+    @CacheEvict(value = RedisConstants.AI_FAQ_CACHE_PREFIX, key = "#id")
     public void deleteFaq(Long id) {
         boolean removed = this.removeById(id);
         if (!removed) {

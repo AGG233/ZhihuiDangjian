@@ -20,6 +20,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.QuizTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
 import com.rauio.smartdangjian.server.quiz.controller.user.UserQuizAnswerController;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
 import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
@@ -193,11 +194,11 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @DisplayName("POST - Service 抛出 BusinessException 返回 400")
         void createQuizAnswerThrowsBusinessException() throws Exception {
             when(userQuizAnswerService.create(any(UserQuizAnswer.class)))
-                    .thenThrow(new BusinessException(4000, "答题提交失败"));
+                    .thenThrow(new BusinessException(QuizErrorConstants.QUIZ_NOT_FOUND, "答题提交失败"));
 
             mockMvc.perform(post("/api/quiz/answers/users/1/quizzes/1/options/1"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("6001"))
                     .andExpect(jsonPath("$.message").value("答题提交失败"));
         }
     }

@@ -31,6 +31,7 @@ class RecommendToolTest {
     @Test
     @DisplayName("getRecommendedCourses 返回推荐课程 ID 列表字符串")
     void getRecommendedCourses() {
+        when(userService.getCurrentUserId()).thenReturn("1");
         Page<Long> page = new Page<>();
         page.setRecords(List.of(1L, 2L, 3L));
         when(recommendService.recommend(1L, 1, 5)).thenReturn(page);
@@ -43,6 +44,7 @@ class RecommendToolTest {
     @Test
     @DisplayName("getRecommendedCourses 默认返回 10 条推荐")
     void getRecommendedCoursesDefaultLimit() {
+        when(userService.getCurrentUserId()).thenReturn("1");
         Page<Long> page = new Page<>();
         page.setRecords(List.of(1L));
         when(recommendService.recommend(1L, 1, 10)).thenReturn(page);
@@ -55,6 +57,7 @@ class RecommendToolTest {
     @Test
     @DisplayName("getRecommendedCourses with limit=0 falls back to default 10")
     void getRecommendedCoursesZeroLimit() {
+        when(userService.getCurrentUserId()).thenReturn("1");
         Page<Long> page = new Page<>();
         page.setRecords(List.of(1L));
         when(recommendService.recommend(1L, 1, 10)).thenReturn(page);
@@ -67,6 +70,7 @@ class RecommendToolTest {
     @Test
     @DisplayName("getRecommendedCourses no recommendation returns hint message")
     void getRecommendedCoursesEmpty() {
+        when(userService.getCurrentUserId()).thenReturn("1");
         Page<Long> page = new Page<>();
         page.setRecords(List.of());
         when(recommendService.recommend(1L, 1, 10)).thenReturn(page);
@@ -91,6 +95,7 @@ class RecommendToolTest {
     @Test
     @DisplayName("getRecommendedCourses 负数 limit 回退到默认 10")
     void getRecommendedCoursesNegativeLimit() {
+        when(userService.getCurrentUserId()).thenReturn("1");
         Page<Long> page = new Page<>();
         page.setRecords(List.of(1L));
         when(recommendService.recommend(1L, 1, 10)).thenReturn(page);

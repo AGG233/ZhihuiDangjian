@@ -20,6 +20,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.QuizTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
 import com.rauio.smartdangjian.server.quiz.controller.admin.AdminQuizController;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
@@ -130,13 +131,14 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("创建试题 - Service 抛出 BusinessException 返回 400")
         void createQuizThrowsBusinessException() throws Exception {
-            when(quizService.create(any(Quiz.class))).thenThrow(new BusinessException(4000, "试题创建失败"));
+            when(quizService.create(any(Quiz.class)))
+                    .thenThrow(new BusinessException(QuizErrorConstants.QUIZ_NOT_FOUND, "试题创建失败"));
 
             mockMvc.perform(post("/api/admin/quiz/quizzes")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(QuizTestDataFactory.toJson(QuizTestDataFactory.createQuiz())))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("6001"))
                     .andExpect(jsonPath("$.message").value("试题创建失败"));
         }
 

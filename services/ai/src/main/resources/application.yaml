@@ -11,7 +11,7 @@ spring:
       idle-timeout: 30000
       username: ${DATABASE_USERNAME}
       password: ${DATABASE_PASSWORD}
-    url: ${DATABASE_URL:jdbc:mysql://127.0.0.1:3306/zhihuidangjian?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    url: ${DATABASE_URL:jdbc:mysql://127.0.0.1:3306/zhihuidangjian?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
   data:
     redis:
       host: ${REDIS_HOST}

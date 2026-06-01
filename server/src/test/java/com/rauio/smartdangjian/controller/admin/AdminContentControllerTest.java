@@ -29,6 +29,7 @@ import com.rauio.smartdangjian.server.content.controller.admin.AdminContentContr
 import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
 import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
 import com.rauio.smartdangjian.server.content.spec.BlockType;
+import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
 @SpringBootTest(
@@ -118,14 +119,14 @@ class AdminContentControllerTest extends BaseControllerTest {
         @DisplayName("PUT /carousel - Service 抛出 BusinessException 返回 400")
         void updateThrowsBusinessException() throws Exception {
             when(chapterChapterContentBlockService.update(any(ChapterContentBlock.class)))
-                    .thenThrow(new BusinessException(4000, "更新轮播图失败"));
+                    .thenThrow(new BusinessException(ResourceErrorConstants.RESOURCE_UPDATE_FAILED, "更新轮播图失败"));
 
             ChapterContentBlock block = ContentTestDataFactory.createCarouselBlock(1L, BlockType.Image);
             mockMvc.perform(put(CAROUSEL_URL)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(ContentTestDataFactory.toJson(block)))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("5003"))
                     .andExpect(jsonPath("$.message").value("更新轮播图失败"));
         }
 
@@ -133,25 +134,26 @@ class AdminContentControllerTest extends BaseControllerTest {
         @DisplayName("POST /carousel - Service 抛出 BusinessException 返回 400")
         void addThrowsBusinessException() throws Exception {
             when(chapterChapterContentBlockService.createBatch(any(List.class)))
-                    .thenThrow(new BusinessException(4000, "添加轮播图失败"));
+                    .thenThrow(new BusinessException(ResourceErrorConstants.RESOURCE_CREATE_FAILED, "添加轮播图失败"));
 
             List<ChapterContentBlock> blocks = List.of(ContentTestDataFactory.createCarouselBlock(1L, BlockType.Image));
             mockMvc.perform(post(CAROUSEL_URL)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(ContentTestDataFactory.listToJson(blocks)))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("5001"))
                     .andExpect(jsonPath("$.message").value("添加轮播图失败"));
         }
 
         @Test
         @DisplayName("DELETE /carousel/{id} - Service 抛出 BusinessException 返回 400")
         void deleteThrowsBusinessException() throws Exception {
-            when(chapterChapterContentBlockService.delete(anyLong())).thenThrow(new BusinessException(4000, "轮播图不存在"));
+            when(chapterChapterContentBlockService.delete(anyLong()))
+                    .thenThrow(new BusinessException(ResourceErrorConstants.BANNER_NOT_FOUND, "轮播图不存在"));
 
             mockMvc.perform(delete(CAROUSEL_URL + "/9999"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("5011"))
                     .andExpect(jsonPath("$.message").value("轮播图不存在"));
         }
 

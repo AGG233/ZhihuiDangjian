@@ -23,6 +23,7 @@ import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.LearningTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.server.learning.constants.LearningErrorConstants;
 import com.rauio.smartdangjian.server.learning.controller.admin.AdminChapterProgressController;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
 import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
@@ -91,22 +92,24 @@ class AdminChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /chapter/{chapterId} - Service 抛出 BusinessException 返回 400")
         void getByChapterIdThrowsBusinessException() throws Exception {
-            when(progressService.getByChapterId(1L)).thenThrow(new BusinessException(4000, "章节不存在"));
+            when(progressService.getByChapterId(1L))
+                    .thenThrow(new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "章节不存在"));
 
             mockMvc.perform(get("/api/admin/learning/progress/chapter/1"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("4011"))
                     .andExpect(jsonPath("$.message").value("章节不存在"));
         }
 
         @Test
         @DisplayName("DELETE /{id} - Service 抛出 BusinessException 返回 400")
         void deleteThrowsBusinessException() throws Exception {
-            when(progressService.delete(9999L)).thenThrow(new BusinessException(4000, "进度记录不存在"));
+            when(progressService.delete(9999L))
+                    .thenThrow(new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在"));
 
             mockMvc.perform(delete("/api/admin/learning/progress/9999"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("4011"))
                     .andExpect(jsonPath("$.message").value("进度记录不存在"));
         }
 
@@ -222,7 +225,8 @@ class AdminChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入在路径参数中")
         void sqlInjectionInPath() throws Exception {
-            when(progressService.getByChapterId(anyLong())).thenThrow(new BusinessException(4000, "章节不存在"));
+            when(progressService.getByChapterId(anyLong()))
+                    .thenThrow(new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "章节不存在"));
 
             mockMvc.perform(get(URI.create("/api/admin/learning/progress/chapter/%27%20OR%20%271%27%3D%271")))
                     .andExpect(status().isBadRequest());

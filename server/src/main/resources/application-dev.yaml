@@ -14,7 +14,7 @@ spring:
     uri: ${NEO4J_URI:bolt://localhost:7687}
     authentication:
       username: ${NEO4J_USERNAME:neo4j}
-      password: ${NEO4J_PASSWORD:password}
+      password: ${NEO4J_PASSWORD:neo4j}
   ai:
     openai:
       api-key: ${AI_KEY:dummy-key}

@@ -25,6 +25,7 @@ import com.rauio.smartdangjian.server.content.controller.user.UserContentControl
 import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
 import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
 import com.rauio.smartdangjian.server.content.spec.BlockType;
+import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
@@ -90,11 +91,11 @@ class UserContentControllerTest extends BaseControllerTest {
         @DisplayName("Service 抛出 BusinessException 返回 400")
         void getCarouselThrowsBusinessException() throws Exception {
             when(chapterContentBlockService.getByChapterId(1145141919810L))
-                    .thenThrow(new BusinessException(4000, "轮播图查询失败"));
+                    .thenThrow(new BusinessException(ResourceErrorConstants.BANNER_NOT_FOUND, "轮播图查询失败"));
 
             mockMvc.perform(get(CAROUSEL_URL))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("5011"))
                     .andExpect(jsonPath("$.message").value("轮播图查询失败"));
         }
 
