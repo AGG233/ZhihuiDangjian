@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -462,6 +463,46 @@ class AuthServiceTest {
     // helpers
     // ================================================================
 
+    @Test
+    @DisplayName("changePassword 弱密码抛出 BusinessException(PASSWORD_WEAK)")
+    void changePasswordThrowsWhenNewPasswordWeak() {
+        ChangePasswordRequest request = createChangePasswordRequest();
+        request.setNewPassword("weak");
+        User user = createUser(1L, "testuser");
+        user.setPassword(newEncodedPassword());
+
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("u1");
+            when(userMapper.selectById("u1")).thenReturn(user);
+
+            assertThatThrownBy(() -> authService.changePassword(request))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("code")
+                    .isEqualTo(UserErrorConstants.PASSWORD_WEAK);
+            verify(userMapper, never()).updateById(any(com.rauio.smartdangjian.server.user.pojo.entity.User.class));
+        }
+    }
+
+    @Test
+    @DisplayName("changePassword 弱密码不调用 updateById")
+    void changePasswordDoesNotCallUpdateByIdWhenWeakPassword() {
+        ChangePasswordRequest request = createChangePasswordRequest();
+        request.setNewPassword("onlylowercase1");
+        User user = createUser(1L, "testuser");
+        user.setPassword(newEncodedPassword());
+
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("u1");
+            when(userMapper.selectById("u1")).thenReturn(user);
+
+            assertThatThrownBy(() -> authService.changePassword(request))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("code")
+                    .isEqualTo(UserErrorConstants.PASSWORD_WEAK);
+            verify(userMapper, never()).updateById(any(com.rauio.smartdangjian.server.user.pojo.entity.User.class));
+        }
+    }
+
     private static String newEncodedPassword() {
         return "enc_" + UUID.randomUUID();
     }
@@ -496,8 +537,8 @@ class AuthServiceTest {
 
     private ChangePasswordRequest createChangePasswordRequest() {
         ChangePasswordRequest request = new ChangePasswordRequest();
-        request.setOldPassword(UUID.randomUUID().toString());
-        request.setNewPassword(UUID.randomUUID().toString());
+        request.setOldPassword("OldP@ss1");
+        request.setNewPassword("NewP@ss1");
         return request;
     }
 

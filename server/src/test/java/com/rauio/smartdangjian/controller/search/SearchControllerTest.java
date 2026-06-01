@@ -128,7 +128,6 @@ class SearchControllerTest extends BaseControllerTest {
                             .avgDuration(600)
                             .totalRecords(6)
                             .completedChapters(4)
-                            .preferredDevice("web")
                             .build())
                     .build();
             when(userProfileService.getCurrentUserProfile()).thenReturn(profile);

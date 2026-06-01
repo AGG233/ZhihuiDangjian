@@ -4,15 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.ibatis.builder.MapperBuilderAssistant;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -134,7 +134,6 @@ class UserProfileServiceTest {
         assertThat(profile.getLearning().getAvgDuration()).isEqualTo(450.0);
         assertThat(profile.getLearning().getTotalRecords()).isEqualTo(2);
         assertThat(profile.getLearning().getCompletedChapters()).isEqualTo(1);
-        assertThat(profile.getLearning().getPreferredDevice()).isEqualTo("web");
 
         assertThat(profile.getKnowledge()).isNotNull();
         assertThat(profile.getKnowledge().getAvgProgress()).isEqualTo(100.0);
@@ -162,7 +161,6 @@ class UserProfileServiceTest {
         assertThat(profile.getLearning().getTotalDuration()).isZero();
         assertThat(profile.getLearning().getAvgDuration()).isZero();
         assertThat(profile.getLearning().getTotalRecords()).isZero();
-        assertThat(profile.getLearning().getPreferredDevice()).isNull();
         assertThat(profile.getKnowledge().getAvgProgress()).isZero();
         assertThat(profile.getKnowledge().getCompletionRate()).isZero();
         assertThat(profile.getInterestCategoryIds()).isEmpty();
@@ -261,7 +259,6 @@ class UserProfileServiceTest {
         UserProfileResponse profile = userProfileService.getProfile(userId);
 
         assertThat(profile.getKnowledge().getAvgProgress()).isEqualTo(30.0);
-        assertThat(profile.getKnowledge().getWeakChapterIds()).isEmpty();
     }
 
     @Test
@@ -304,7 +301,6 @@ class UserProfileServiceTest {
 
         UserProfileResponse profile = userProfileService.getProfile(userId);
 
-        assertThat(profile.getLearning().getPreferredDevice()).isEqualTo("mobile");
         assertThat(profile.getLearning().getTotalDuration()).isEqualTo(300);
     }
 
@@ -332,8 +328,6 @@ class UserProfileServiceTest {
         doReturn(List.of(weak, strong)).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
 
         UserProfileResponse profile = userProfileService.getProfile(userId);
-
-        assertThat(profile.getKnowledge().getWeakChapterIds()).containsExactly(10L);
     }
 
     @Test

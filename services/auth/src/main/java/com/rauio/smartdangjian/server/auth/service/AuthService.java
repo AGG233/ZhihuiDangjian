@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.server.auth.service;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Service;
 
@@ -111,6 +112,7 @@ public class AuthService {
             throw new BusinessException(AuthErrorConstants.USER_NOT_FOUND, "用户不存在");
         }
 
+        validatePasswordStrength(request.getNewPassword());
         if (!BCrypt.checkpw(request.getOldPassword(), user.getPassword())) {
             throw new BusinessException(AuthErrorConstants.OLD_PASSWORD_ERROR, "旧密码错误");
         }
@@ -154,6 +156,15 @@ public class AuthService {
         boolean exists = userMapper.exists(new LambdaQueryWrapper<User>().eq(User::getPartyMemberId, partyMemberId));
         if (exists) {
             throw new BusinessException(UserErrorConstants.PARTY_MEMBER_ID_EXISTS, "党员编号已存在");
+        }
+    }
+
+    private static final Pattern PASSWORD_PATTERN =
+            Pattern.compile("^(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,20}$");
+
+    private void validatePasswordStrength(String password) {
+        if (password == null || !PASSWORD_PATTERN.matcher(password).matches()) {
+            throw new BusinessException(UserErrorConstants.PASSWORD_WEAK, "密码强度不足，密码必须包含大写字母、数字和特殊符号，长度8-20位");
         }
     }
 }

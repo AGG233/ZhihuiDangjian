@@ -42,9 +42,6 @@ public class UserProfileResponse {
 
         @Schema(description = "已完成章节数", example = "8")
         private int completedChapters;
-
-        @Schema(description = "偏好设备类型", example = "web")
-        private String preferredDevice;
     }
 
     @Data
@@ -56,9 +53,6 @@ public class UserProfileResponse {
 
         @Schema(description = "章节完成率", example = "0.8")
         private double completionRate;
-
-        @Schema(description = "薄弱章节ID列表")
-        private List<Long> weakChapterIds;
     }
 
     @Data

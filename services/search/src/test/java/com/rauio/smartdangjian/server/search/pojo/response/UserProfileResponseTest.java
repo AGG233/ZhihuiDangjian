@@ -19,13 +19,11 @@ class UserProfileResponseTest {
                 .avgDuration(600)
                 .totalRecords(6)
                 .completedChapters(4)
-                .preferredDevice("web")
                 .build();
 
         UserProfileResponse.KnowledgeStats knowledge = UserProfileResponse.KnowledgeStats.builder()
                 .avgProgress(75.0)
                 .completionRate(0.66)
-                .weakChapterIds(List.of(1L))
                 .build();
 
         UserProfileResponse.QuizStats quiz = UserProfileResponse.QuizStats.builder()
@@ -46,9 +44,7 @@ class UserProfileResponseTest {
 
         assertThat(profile.getUserId()).isEqualTo("1");
         assertThat(profile.getLearning().getTotalDuration()).isEqualTo(3600);
-        assertThat(profile.getLearning().getPreferredDevice()).isEqualTo("web");
         assertThat(profile.getKnowledge().getAvgProgress()).isEqualTo(75.0);
-        assertThat(profile.getKnowledge().getWeakChapterIds()).containsExactly(1L);
         assertThat(profile.getInterestCategoryIds()).hasSize(2);
         assertThat(profile.getQuiz().getCorrectRate()).isEqualTo(0.84);
         assertThat(profile.getQuiz().getByDifficulty()).containsKey("easy");
@@ -64,7 +60,6 @@ class UserProfileResponseTest {
         assertThat(stats.getAvgDuration()).isZero();
         assertThat(stats.getTotalRecords()).isZero();
         assertThat(stats.getCompletedChapters()).isZero();
-        assertThat(stats.getPreferredDevice()).isNull();
     }
 
     @Test
@@ -75,7 +70,6 @@ class UserProfileResponseTest {
 
         assertThat(stats.getAvgProgress()).isZero();
         assertThat(stats.getCompletionRate()).isZero();
-        assertThat(stats.getWeakChapterIds()).isNull();
     }
 
     @Test

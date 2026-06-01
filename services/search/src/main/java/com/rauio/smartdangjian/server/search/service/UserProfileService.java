@@ -69,16 +69,6 @@ public class UserProfileService {
 
         double avgDuration = records.isEmpty() ? 0 : (double) totalDuration / records.size();
 
-        // 统计常用设备
-        String preferredDevice = records.stream()
-                .filter(r -> r.getDeviceType() != null)
-                .collect(Collectors.groupingBy(UserLearningRecord::getDeviceType, Collectors.counting()))
-                .entrySet()
-                .stream()
-                .max(Map.Entry.comparingByValue())
-                .map(Map.Entry::getKey)
-                .orElse(null);
-
         // 统计已完成章节数
         Long completedCount = chapterProgressMapper.selectCount(new LambdaQueryWrapper<UserChapterProgress>()
                 .eq(UserChapterProgress::getUserId, userId)
@@ -89,7 +79,6 @@ public class UserProfileService {
                 .avgDuration(avgDuration)
                 .totalRecords(records.size())
                 .completedChapters(completedCount.intValue())
-                .preferredDevice(preferredDevice)
                 .build();
     }
 
@@ -109,15 +98,9 @@ public class UserProfileService {
                 .count();
         double completionRate = progresses.isEmpty() ? 0 : (double) completedCount / progresses.size();
 
-        List<Long> weakChapterIds = progresses.stream()
-                .filter(p -> p.getProgress() != null && p.getProgress() < 50)
-                .map(UserChapterProgress::getChapterId)
-                .toList();
-
         return UserProfileResponse.KnowledgeStats.builder()
                 .avgProgress(avgProgress)
                 .completionRate(completionRate)
-                .weakChapterIds(weakChapterIds)
                 .build();
     }
 
