@@ -7,7 +7,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.quiz.mapper.UserQuizAnswerMapper;
+import com.rauio.smartdangjian.server.quiz.pojo.dto.UserQuizAnswerSummaryDto;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
@@ -26,13 +28,23 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
         return this.save(userQuizAnswer);
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean createForUser(Long userId, Long quizId, Long optionId) {
+        UserQuizAnswer userQuizAnswer = UserQuizAnswer.builder()
+                .userId(userId)
+                .quizId(quizId)
+                .optionId(optionId)
+                .build();
+        return create(userQuizAnswer);
+    }
+
     /**
      * 根据主键更新用户答题记录。
      *
      * @param userQuizAnswer 用户答题实体
      * @return 是否更新成功
      */
-    @SaCheckRole("SCHOOL")
+    @SaCheckRole(RoleConstants.SCHOOL)
     @Transactional(rollbackFor = Exception.class)
     public Boolean update(UserQuizAnswer userQuizAnswer) {
         return this.updateById(userQuizAnswer);
@@ -55,13 +67,23 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
         return this.updateById(userQuizAnswer);
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateByUserIdAndQuizIdAndOptionId(Long userId, Long quizId, Long optionId) {
+        UserQuizAnswer userQuizAnswer = UserQuizAnswer.builder()
+                .userId(userId)
+                .quizId(quizId)
+                .optionId(optionId)
+                .build();
+        return updateByUserIdAndQuizIdAndOptionId(userQuizAnswer);
+    }
+
     /**
      * 根据记录 ID 删除答题记录。
      *
      * @param id 记录 ID
      * @return 是否删除成功
      */
-    @SaCheckRole("MANAGER")
+    @SaCheckRole(RoleConstants.MANAGER)
     @Transactional(rollbackFor = Exception.class)
     public Boolean delete(Long id) {
         return this.removeById(id);
@@ -75,7 +97,7 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param optionId 选项 ID
      * @return 是否删除成功
      */
-    @SaCheckRole("MANAGER")
+    @SaCheckRole(RoleConstants.MANAGER)
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteByUserIdAndQuizIdAndOptionId(Long userId, Long quizId, Long optionId) {
         UserQuizAnswer existing = getByUserIdAndQuizIdAndOptionId(userId, quizId, optionId);
@@ -122,6 +144,21 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
         wrapper.eq(UserQuizAnswer::getUserId, userId);
         return this.list(wrapper);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserQuizAnswerSummaryDto> listAnswerSummariesByUserId(Long userId) {
+        return this.list(new LambdaQueryWrapper<UserQuizAnswer>()
+                        .eq(UserQuizAnswer::getUserId, userId)
+                        .select(
+                                UserQuizAnswer::getUserId,
+                                UserQuizAnswer::getQuizId,
+                                UserQuizAnswer::getIsCorrect,
+                                UserQuizAnswer::getTimeSpent))
+                .stream()
+                .map(answer -> new UserQuizAnswerSummaryDto(
+                        answer.getUserId(), answer.getQuizId(), answer.getIsCorrect(), answer.getTimeSpent()))
+                .toList();
     }
 
     /**

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
 import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 
@@ -26,7 +27,7 @@ public class UserKnowledgeGraphController {
 
     @Operation(summary = "获取用户学习图谱", description = "返回用户学习课程和章节的图谱结构")
     @GetMapping("/users/{userId}")
-    @SaCheckRole("STUDENT")
+    @SaCheckRole(RoleConstants.STUDENT)
     @SaCheckPermission("graph:read")
     public Result<KnowledgeGraphResponse> getUserGraph(
             @Parameter(name = "userId", description = "用户ID") @PathVariable String userId) {
@@ -35,7 +36,7 @@ public class UserKnowledgeGraphController {
 
     @Operation(summary = "获取课程图谱", description = "返回课程关联的学习用户和章节结构")
     @GetMapping("/courses/{courseId}")
-    @SaCheckRole("STUDENT")
+    @SaCheckRole(RoleConstants.STUDENT)
     public Result<KnowledgeGraphResponse> getCourseGraph(
             @Parameter(name = "courseId", description = "课程ID") @PathVariable String courseId) {
         return Result.ok(knowledgeGraphService.getCourseGraph(courseId));

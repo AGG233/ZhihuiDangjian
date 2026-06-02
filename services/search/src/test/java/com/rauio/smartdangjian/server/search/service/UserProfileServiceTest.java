@@ -1,7 +1,6 @@
 package com.rauio.smartdangjian.server.search.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -9,8 +8,9 @@ import static org.mockito.Mockito.verify;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,49 +19,39 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cache.annotation.Cacheable;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
-import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
-import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
-import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
-import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
-import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
-import com.rauio.smartdangjian.server.learning.pojo.entity.UserChapterProgress;
-import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
-import com.rauio.smartdangjian.server.quiz.mapper.QuizMapper;
-import com.rauio.smartdangjian.server.quiz.mapper.UserQuizAnswerMapper;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
+import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
+import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.learning.pojo.dto.ChapterProgressSummaryDto;
+import com.rauio.smartdangjian.server.learning.pojo.dto.LearningRecordSummaryDto;
+import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
+import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
+import com.rauio.smartdangjian.server.quiz.pojo.dto.UserQuizAnswerSummaryDto;
+import com.rauio.smartdangjian.server.quiz.service.QuizService;
+import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
-import com.rauio.smartdangjian.server.search.support.TestMybatisPlusConfig;
 import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserProfileService 用户画像构建")
 class UserProfileServiceTest {
 
-    @BeforeAll
-    static void initMybatisPlus() {
-        TestMybatisPlusConfig.ensureInitialized();
-    }
+    @Mock
+    private UserLearningRecordService learningRecordService;
 
     @Mock
-    private UserLearningRecordMapper learningRecordMapper;
+    private UserChapterProgressService chapterProgressService;
 
     @Mock
-    private UserChapterProgressMapper chapterProgressMapper;
+    private UserQuizAnswerService quizAnswerService;
 
     @Mock
-    private UserQuizAnswerMapper quizAnswerMapper;
+    private QuizService quizService;
 
     @Mock
-    private QuizMapper quizMapper;
+    private ChapterService chapterService;
 
     @Mock
-    private ChapterMapper chapterMapper;
-
-    @Mock
-    private CategoryCourseMapper categoryCourseMapper;
+    private CourseService courseService;
 
     @Mock
     private UserService userService;
@@ -82,41 +72,19 @@ class UserProfileServiceTest {
     @Test
     @DisplayName("有完整学习数据时返回所有画像统计")
     void getProfileWithCompleteDataReturnsFullProfile() {
-        String userId = "user-1";
+        String userId = "1";
 
-        UserLearningRecord record1 = UserLearningRecord.builder()
-                .userId(1L)
-                .chapterId(1L)
-                .duration(600)
-                .deviceType("web")
-                .build();
-        UserLearningRecord record2 = UserLearningRecord.builder()
-                .userId(1L)
-                .chapterId(1L)
-                .duration(300)
-                .deviceType("web")
-                .build();
-        doReturn(List.of(record1, record2)).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+        LearningRecordSummaryDto record1 = new LearningRecordSummaryDto(1L, 1L, 600);
+        LearningRecordSummaryDto record2 = new LearningRecordSummaryDto(1L, 1L, 300);
+        doReturn(List.of(record1, record2)).when(learningRecordService).listRecordSummariesByUserId(1L);
 
-        UserChapterProgress progress = UserChapterProgress.builder()
-                .userId(1L)
-                .chapterId(1L)
-                .progress(100)
-                .status("completed")
-                .build();
-        doReturn(List.of(progress)).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(1L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
+        ChapterProgressSummaryDto progress = new ChapterProgressSummaryDto(1L, 1L, 100, "completed");
+        doReturn(List.of(progress)).when(chapterProgressService).listProgressSummariesByUserId(1L);
+        doReturn(1L).when(chapterProgressService).countCompletedByUserId(1L);
+        doReturn(List.of(1L)).when(chapterService).listCourseIdsByChapterIds(Collections.singleton(1L));
+        doReturn(List.of(1L)).when(courseService).listTopCategoryIdsByCourseIds(List.of(1L), 5);
 
-        Chapter chapter = Chapter.builder().id(1L).courseId(1L).build();
-        Chapter chapter2 = Chapter.builder().id(2L).courseId(1L).build();
-        doReturn(List.of(chapter, chapter2)).when(chapterMapper).selectList(any(LambdaQueryWrapper.class));
-
-        CategoryCourse cc = CategoryCourse.builder().courseId(1L).categoryId(1L).build();
-        CategoryCourse cc2 =
-                CategoryCourse.builder().courseId(1L).categoryId(1L).build();
-        doReturn(List.of(cc, cc2)).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
-
-        doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(quizAnswerService).listAnswerSummariesByUserId(1L);
 
         UserProfileResponse profile = userProfileService.getProfile(userId);
 
@@ -140,12 +108,12 @@ class UserProfileServiceTest {
     @Test
     @DisplayName("无学习记录时返回空统计")
     void getProfileWithNoDataReturnsEmptyStats() {
-        String userId = "user-1";
+        String userId = "1";
 
-        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(Collections.emptyList()).when(chapterProgressService).listProgressSummariesByUserId(1L);
+        doReturn(0L).when(chapterProgressService).countCompletedByUserId(1L);
+        doReturn(Collections.emptyList()).when(quizAnswerService).listAnswerSummariesByUserId(1L);
 
         UserProfileResponse profile = userProfileService.getProfile(userId);
 
@@ -162,36 +130,19 @@ class UserProfileServiceTest {
     @Test
     @DisplayName("有答题数据时包含按难度统计的正确率")
     void getProfileWithQuizDataIncludesDifficultyBreakdown() {
-        String userId = "user-1";
+        String userId = "1";
 
-        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(Collections.emptyList()).when(chapterProgressService).listProgressSummariesByUserId(1L);
+        doReturn(0L).when(chapterProgressService).countCompletedByUserId(1L);
 
-        UserQuizAnswer a1 = UserQuizAnswer.builder()
-                .userId(1L)
-                .quizId(1L)
-                .isCorrect(1)
-                .timeSpent(30)
-                .build();
-        UserQuizAnswer a2 = UserQuizAnswer.builder()
-                .userId(1L)
-                .quizId(2L)
-                .isCorrect(0)
-                .timeSpent(60)
-                .build();
-        UserQuizAnswer a3 = UserQuizAnswer.builder()
-                .userId(1L)
-                .quizId(3L)
-                .isCorrect(1)
-                .timeSpent(45)
-                .build();
-        doReturn(List.of(a1, a2, a3)).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
-
-        Quiz q1 = Quiz.builder().id(1L).difficulty("easy").build();
-        Quiz q2 = Quiz.builder().id(2L).difficulty("easy").build();
-        Quiz q3 = Quiz.builder().id(3L).difficulty("medium").build();
-        doReturn(List.of(q1, q2, q3)).when(quizMapper).selectList(any(LambdaQueryWrapper.class));
+        UserQuizAnswerSummaryDto a1 = new UserQuizAnswerSummaryDto(1L, 1L, 1, 30);
+        UserQuizAnswerSummaryDto a2 = new UserQuizAnswerSummaryDto(1L, 2L, 0, 60);
+        UserQuizAnswerSummaryDto a3 = new UserQuizAnswerSummaryDto(1L, 3L, 1, 45);
+        doReturn(List.of(a1, a2, a3)).when(quizAnswerService).listAnswerSummariesByUserId(1L);
+        doReturn(Map.of(1L, "easy", 2L, "easy", 3L, "medium"))
+                .when(quizService)
+                .getDifficultyMapByIds(Set.of(1L, 2L, 3L));
 
         UserProfileResponse profile = userProfileService.getProfile(userId);
 
@@ -206,18 +157,13 @@ class UserProfileServiceTest {
     @Test
     @DisplayName("学习记录duration为null时处理为0")
     void getProfileHandlesNullDuration() {
-        String userId = "user-1";
+        String userId = "1";
 
-        UserLearningRecord record = UserLearningRecord.builder()
-                .userId(1L)
-                .chapterId(1L)
-                .duration(null)
-                .deviceType("mobile")
-                .build();
-        doReturn(List.of(record)).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+        LearningRecordSummaryDto record = new LearningRecordSummaryDto(1L, 1L, null);
+        doReturn(List.of(record)).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(Collections.emptyList()).when(chapterProgressService).listProgressSummariesByUserId(1L);
+        doReturn(0L).when(chapterProgressService).countCompletedByUserId(1L);
+        doReturn(Collections.emptyList()).when(quizAnswerService).listAnswerSummariesByUserId(1L);
 
         UserProfileResponse profile = userProfileService.getProfile(userId);
 
@@ -228,25 +174,15 @@ class UserProfileServiceTest {
     @Test
     @DisplayName("进度为null的章节不影响平均进度且不计入薄弱章节")
     void getProfileHandlesNullProgress() {
-        String userId = "user-1";
+        String userId = "1";
 
-        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(0L).when(chapterProgressService).countCompletedByUserId(1L);
+        doReturn(Collections.emptyList()).when(quizAnswerService).listAnswerSummariesByUserId(1L);
 
-        UserChapterProgress p1 = UserChapterProgress.builder()
-                .userId(1L)
-                .chapterId(1L)
-                .progress(null)
-                .status("in_progress")
-                .build();
-        UserChapterProgress p2 = UserChapterProgress.builder()
-                .userId(1L)
-                .chapterId(2L)
-                .progress(60)
-                .status("in_progress")
-                .build();
-        doReturn(List.of(p1, p2)).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
+        ChapterProgressSummaryDto p1 = new ChapterProgressSummaryDto(1L, 1L, null, "in_progress");
+        ChapterProgressSummaryDto p2 = new ChapterProgressSummaryDto(1L, 2L, 60, "in_progress");
+        doReturn(List.of(p1, p2)).when(chapterProgressService).listProgressSummariesByUserId(1L);
 
         UserProfileResponse profile = userProfileService.getProfile(userId);
 
@@ -256,40 +192,30 @@ class UserProfileServiceTest {
     @Test
     @DisplayName("无学习记录时不会查询章节和分类")
     void getProfileNoRecordsSkipsChapterAndCategoryQueries() {
-        String userId = "user-1";
+        String userId = "1";
 
-        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(Collections.emptyList()).when(chapterProgressService).listProgressSummariesByUserId(1L);
+        doReturn(0L).when(chapterProgressService).countCompletedByUserId(1L);
+        doReturn(Collections.emptyList()).when(quizAnswerService).listAnswerSummariesByUserId(1L);
 
         userProfileService.getProfile(userId);
 
-        verify(chapterMapper, never()).selectList(any(LambdaQueryWrapper.class));
-        verify(categoryCourseMapper, never()).selectList(any(LambdaQueryWrapper.class));
+        verify(chapterService, never()).listCourseIdsByChapterIds(Set.of());
+        verify(courseService, never()).listTopCategoryIdsByCourseIds(List.of(), 5);
     }
 
     @Test
     @DisplayName("学习记录有null deviceType时被preferredDevice过滤掉")
     void getProfileHandlesNullDeviceType() {
-        String userId = "user-1";
+        String userId = "1";
 
-        UserLearningRecord r1 = UserLearningRecord.builder()
-                .userId(1L)
-                .chapterId(1L)
-                .duration(100)
-                .deviceType("mobile")
-                .build();
-        UserLearningRecord r2 = UserLearningRecord.builder()
-                .userId(1L)
-                .chapterId(1L)
-                .duration(200)
-                .deviceType(null)
-                .build();
-        doReturn(List.of(r1, r2)).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+        LearningRecordSummaryDto r1 = new LearningRecordSummaryDto(1L, 1L, 100);
+        LearningRecordSummaryDto r2 = new LearningRecordSummaryDto(1L, 1L, 200);
+        doReturn(List.of(r1, r2)).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(Collections.emptyList()).when(chapterProgressService).listProgressSummariesByUserId(1L);
+        doReturn(0L).when(chapterProgressService).countCompletedByUserId(1L);
+        doReturn(Collections.emptyList()).when(quizAnswerService).listAnswerSummariesByUserId(1L);
 
         UserProfileResponse profile = userProfileService.getProfile(userId);
 
@@ -299,25 +225,15 @@ class UserProfileServiceTest {
     @Test
     @DisplayName("进度<50的章节计入薄弱章节列表")
     void getProfileWithWeakChapters() {
-        String userId = "user-1";
+        String userId = "1";
 
-        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(0L).when(chapterProgressService).countCompletedByUserId(1L);
+        doReturn(Collections.emptyList()).when(quizAnswerService).listAnswerSummariesByUserId(1L);
 
-        UserChapterProgress weak = UserChapterProgress.builder()
-                .userId(1L)
-                .chapterId(10L)
-                .progress(30)
-                .status("in_progress")
-                .build();
-        UserChapterProgress strong = UserChapterProgress.builder()
-                .userId(1L)
-                .chapterId(20L)
-                .progress(80)
-                .status("in_progress")
-                .build();
-        doReturn(List.of(weak, strong)).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
+        ChapterProgressSummaryDto weak = new ChapterProgressSummaryDto(1L, 10L, 30, "in_progress");
+        ChapterProgressSummaryDto strong = new ChapterProgressSummaryDto(1L, 20L, 80, "in_progress");
+        doReturn(List.of(weak, strong)).when(chapterProgressService).listProgressSummariesByUserId(1L);
 
         UserProfileResponse profile = userProfileService.getProfile(userId);
 
@@ -328,17 +244,13 @@ class UserProfileServiceTest {
     @Test
     @DisplayName("学习记录chapterId全为null时interestCategoryIds返回空")
     void getProfileWithNullChapterIdsInRecords() {
-        String userId = "user-1";
+        String userId = "1";
 
-        UserLearningRecord record = UserLearningRecord.builder()
-                .userId(1L)
-                .chapterId(null)
-                .duration(100)
-                .build();
-        doReturn(List.of(record)).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+        LearningRecordSummaryDto record = new LearningRecordSummaryDto(1L, null, 100);
+        doReturn(List.of(record)).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(Collections.emptyList()).when(chapterProgressService).listProgressSummariesByUserId(1L);
+        doReturn(0L).when(chapterProgressService).countCompletedByUserId(1L);
+        doReturn(Collections.emptyList()).when(quizAnswerService).listAnswerSummariesByUserId(1L);
 
         UserProfileResponse profile = userProfileService.getProfile(userId);
 
@@ -348,28 +260,16 @@ class UserProfileServiceTest {
     @Test
     @DisplayName("答题有时间为null的记录时跳过并计算平均值")
     void getProfileWithNullTimeSpent() {
-        String userId = "user-1";
+        String userId = "1";
 
-        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(Collections.emptyList()).when(chapterProgressService).listProgressSummariesByUserId(1L);
+        doReturn(0L).when(chapterProgressService).countCompletedByUserId(1L);
 
-        UserQuizAnswer a1 = UserQuizAnswer.builder()
-                .userId(1L)
-                .quizId(1L)
-                .isCorrect(1)
-                .timeSpent(30)
-                .build();
-        UserQuizAnswer a2 = UserQuizAnswer.builder()
-                .userId(1L)
-                .quizId(1L)
-                .isCorrect(1)
-                .timeSpent(null)
-                .build();
-        doReturn(List.of(a1, a2)).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
-
-        Quiz q1 = Quiz.builder().id(1L).difficulty("easy").build();
-        doReturn(List.of(q1)).when(quizMapper).selectList(any(LambdaQueryWrapper.class));
+        UserQuizAnswerSummaryDto a1 = new UserQuizAnswerSummaryDto(1L, 1L, 1, 30);
+        UserQuizAnswerSummaryDto a2 = new UserQuizAnswerSummaryDto(1L, 1L, 1, null);
+        doReturn(List.of(a1, a2)).when(quizAnswerService).listAnswerSummariesByUserId(1L);
+        doReturn(Map.of(1L, "easy")).when(quizService).getDifficultyMapByIds(Set.of(1L));
 
         UserProfileResponse profile = userProfileService.getProfile(userId);
 
@@ -380,60 +280,37 @@ class UserProfileServiceTest {
     @Test
     @DisplayName("答题记录quizId全为null时跳过难度分组")
     void getProfileWithNullQuizIds() {
-        String userId = "user-1";
+        String userId = "1";
 
-        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(Collections.emptyList()).when(chapterProgressService).listProgressSummariesByUserId(1L);
+        doReturn(0L).when(chapterProgressService).countCompletedByUserId(1L);
 
-        UserQuizAnswer a1 = UserQuizAnswer.builder()
-                .userId(1L)
-                .quizId(null)
-                .isCorrect(1)
-                .timeSpent(30)
-                .build();
-        UserQuizAnswer a2 = UserQuizAnswer.builder()
-                .userId(1L)
-                .quizId(null)
-                .isCorrect(0)
-                .timeSpent(60)
-                .build();
-        doReturn(List.of(a1, a2)).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+        UserQuizAnswerSummaryDto a1 = new UserQuizAnswerSummaryDto(1L, null, 1, 30);
+        UserQuizAnswerSummaryDto a2 = new UserQuizAnswerSummaryDto(1L, null, 0, 60);
+        doReturn(List.of(a1, a2)).when(quizAnswerService).listAnswerSummariesByUserId(1L);
 
-        // quizMapper should NOT be called because quizIds set is empty
+        // quizService should NOT be called because quizIds set is empty
         UserProfileResponse profile = userProfileService.getProfile(userId);
 
         assertThat(profile.getQuiz().getTotalAnswers()).isEqualTo(2);
         assertThat(profile.getQuiz().getByDifficulty()).isEmpty();
-        verify(quizMapper, never()).selectList(any(LambdaQueryWrapper.class));
+        verify(quizService, never()).getDifficultyMapByIds(Set.of());
     }
 
     @Test
     @DisplayName("测验有null难度时过滤掉后不影响分组统计")
     void getProfileWithNullDifficultyQuiz() {
-        String userId = "user-1";
+        String userId = "1";
 
-        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(Collections.emptyList()).when(chapterProgressService).listProgressSummariesByUserId(1L);
+        doReturn(0L).when(chapterProgressService).countCompletedByUserId(1L);
 
-        UserQuizAnswer a1 = UserQuizAnswer.builder()
-                .userId(1L)
-                .quizId(1L)
-                .isCorrect(1)
-                .timeSpent(30)
-                .build();
-        UserQuizAnswer a2 = UserQuizAnswer.builder()
-                .userId(1L)
-                .quizId(2L)
-                .isCorrect(0)
-                .timeSpent(60)
-                .build();
-        doReturn(List.of(a1, a2)).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
-
-        Quiz q1 = Quiz.builder().id(1L).difficulty("easy").build();
-        Quiz q2 = Quiz.builder().id(2L).difficulty(null).build();
-        doReturn(List.of(q1, q2)).when(quizMapper).selectList(any(LambdaQueryWrapper.class));
+        UserQuizAnswerSummaryDto a1 = new UserQuizAnswerSummaryDto(1L, 1L, 1, 30);
+        UserQuizAnswerSummaryDto a2 = new UserQuizAnswerSummaryDto(1L, 2L, 0, 60);
+        doReturn(List.of(a1, a2)).when(quizAnswerService).listAnswerSummariesByUserId(1L);
+        doReturn(Map.of(1L, "easy")).when(quizService).getDifficultyMapByIds(Set.of(1L, 2L));
 
         UserProfileResponse profile = userProfileService.getProfile(userId);
 
@@ -447,16 +324,16 @@ class UserProfileServiceTest {
     @Test
     @DisplayName("getCurrentUserProfile 获取当前用户ID后委托 getProfile")
     void getCurrentUserProfileDelegatesToGetProfile() {
-        doReturn("current-user").when(userService).getCurrentUserId();
+        doReturn("1").when(userService).getCurrentUserId();
 
-        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(Collections.emptyList()).when(chapterProgressService).listProgressSummariesByUserId(1L);
+        doReturn(0L).when(chapterProgressService).countCompletedByUserId(1L);
+        doReturn(Collections.emptyList()).when(quizAnswerService).listAnswerSummariesByUserId(1L);
 
         UserProfileResponse profile = userProfileService.getCurrentUserProfile();
 
-        assertThat(profile.getUserId()).isEqualTo("current-user");
+        assertThat(profile.getUserId()).isEqualTo("1");
         verify(userService).getCurrentUserId();
     }
 }

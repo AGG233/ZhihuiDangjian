@@ -54,15 +54,17 @@ class AiChatMessageServiceTest {
     }
 
     @Test
-    @DisplayName("AiChatMessageService 类级无 @Transactional；无自定义方法无需方法级事务")
+    @DisplayName("AiChatMessageService 类级无 @Transactional；自定义查询方法只读")
     void transactionalBoundariesAreMethodLevel() throws NoSuchMethodException {
         assertThat(AiChatMessageService.class.getAnnotation(Transactional.class))
                 .isNull();
-        // AiChatMessageService has no custom methods; inherited ServiceImpl methods
-        // rely on caller's transaction context.
-        assertThat(AiChatMessageService.class.getDeclaredMethods())
-                .filteredOn(m -> !m.isSynthetic())
-                .allMatch(m -> m.getAnnotation(Transactional.class) == null);
+
+        Transactional transactional = AiChatMessageService.class
+                .getMethod("findLatestBySessionIdAndUserId", String.class, Long.class)
+                .getAnnotation(Transactional.class);
+
+        assertThat(transactional).isNotNull();
+        assertThat(transactional.readOnly()).isTrue();
     }
 
     @Test

@@ -8,8 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.content.pojo.entity.CategoryArticle;
-import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
+import com.rauio.smartdangjian.security.RoleConstants;
+import com.rauio.smartdangjian.server.content.pojo.response.CategoryArticleResponse;
+import com.rauio.smartdangjian.server.content.pojo.response.CategoryCourseResponse;
 import com.rauio.smartdangjian.server.content.pojo.response.CategoryResponse;
 import com.rauio.smartdangjian.server.content.service.article.ArticleService;
 import com.rauio.smartdangjian.server.content.service.category.CategoryService;
@@ -24,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/content/categories")
 @RequiredArgsConstructor
-@SaCheckRole("STUDENT")
+@SaCheckRole(RoleConstants.STUDENT)
 public class UserCategoryController {
 
     private final CategoryService categoryService;
@@ -57,13 +58,17 @@ public class UserCategoryController {
 
     @Operation(summary = "获取目录下的所有课程ID", description = "仅允许访问当前用户可见分类下的课程关联。")
     @GetMapping("/{categoryId}/courses")
-    public Result<List<CategoryCourse>> getByCategoryIdCourses(@PathVariable Long categoryId) {
-        return Result.ok(courseService.getByCategoryId(categoryId));
+    public Result<List<CategoryCourseResponse>> getByCategoryIdCourses(@PathVariable Long categoryId) {
+        return Result.ok(courseService.getByCategoryId(categoryId).stream()
+                .map(CategoryCourseResponse::from)
+                .toList());
     }
 
     @Operation(summary = "获取目录下的所有文章ID", description = "仅允许访问当前用户可见分类下的文章关联。")
     @GetMapping("/{categoryId}/articles")
-    public Result<List<CategoryArticle>> getByCategoryIdArticles(@PathVariable Long categoryId) {
-        return Result.ok(articleService.getByCategoryId(categoryId));
+    public Result<List<CategoryArticleResponse>> getByCategoryIdArticles(@PathVariable Long categoryId) {
+        return Result.ok(articleService.getByCategoryId(categoryId).stream()
+                .map(CategoryArticleResponse::from)
+                .toList());
     }
 }

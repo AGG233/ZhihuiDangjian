@@ -27,6 +27,7 @@ import com.rauio.smartdangjian.controller.factory.ContentTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.controller.admin.AdminContentController;
 import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
+import com.rauio.smartdangjian.server.content.pojo.request.ChapterContentBlockRequest;
 import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
 import com.rauio.smartdangjian.server.content.spec.BlockType;
 import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
@@ -67,7 +68,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /carousel - 更新轮播图成功")
         void updateCarouselSuccess() throws Exception {
-            when(chapterChapterContentBlockService.update(any(ChapterContentBlock.class)))
+            when(chapterChapterContentBlockService.updateCarousel(any(ChapterContentBlockRequest.class)))
                     .thenReturn(true);
 
             ChapterContentBlock block = ContentTestDataFactory.createCarouselBlock(1L, BlockType.Image);
@@ -82,7 +83,8 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /carousel - 添加轮播图成功")
         void addCarouselSuccess() throws Exception {
-            when(chapterChapterContentBlockService.createBatch(any(List.class))).thenReturn(true);
+            when(chapterChapterContentBlockService.createCarouselBatch(any(List.class)))
+                    .thenReturn(true);
 
             List<ChapterContentBlock> blocks = List.of(
                     ContentTestDataFactory.createCarouselBlock(1L, BlockType.Image),
@@ -118,7 +120,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /carousel - Service 抛出 BusinessException 返回 400")
         void updateThrowsBusinessException() throws Exception {
-            when(chapterChapterContentBlockService.update(any(ChapterContentBlock.class)))
+            when(chapterChapterContentBlockService.updateCarousel(any(ChapterContentBlockRequest.class)))
                     .thenThrow(new BusinessException(ResourceErrorConstants.RESOURCE_UPDATE_FAILED, "更新轮播图失败"));
 
             ChapterContentBlock block = ContentTestDataFactory.createCarouselBlock(1L, BlockType.Image);
@@ -133,7 +135,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /carousel - Service 抛出 BusinessException 返回 400")
         void addThrowsBusinessException() throws Exception {
-            when(chapterChapterContentBlockService.createBatch(any(List.class)))
+            when(chapterChapterContentBlockService.createCarouselBatch(any(List.class)))
                     .thenThrow(new BusinessException(ResourceErrorConstants.RESOURCE_CREATE_FAILED, "添加轮播图失败"));
 
             List<ChapterContentBlock> blocks = List.of(ContentTestDataFactory.createCarouselBlock(1L, BlockType.Image));
@@ -160,7 +162,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /carousel - Service 抛出 RuntimeException 返回 500")
         void updateThrowsRuntimeException() throws Exception {
-            when(chapterChapterContentBlockService.update(any(ChapterContentBlock.class)))
+            when(chapterChapterContentBlockService.updateCarousel(any(ChapterContentBlockRequest.class)))
                     .thenThrow(new RuntimeException("数据库连接失败"));
 
             ChapterContentBlock block = ContentTestDataFactory.createCarouselBlock(1L, BlockType.Image);
@@ -174,7 +176,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /carousel - Service 抛出 RuntimeException 返回 500")
         void addThrowsRuntimeException() throws Exception {
-            when(chapterChapterContentBlockService.createBatch(any(List.class)))
+            when(chapterChapterContentBlockService.createCarouselBatch(any(List.class)))
                     .thenThrow(new RuntimeException("数据库连接失败"));
 
             List<ChapterContentBlock> blocks = List.of(ContentTestDataFactory.createCarouselBlock(1L, BlockType.Image));
@@ -249,7 +251,8 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /carousel - 空列表正常处理")
         void addCarouselWithEmptyList() throws Exception {
-            when(chapterChapterContentBlockService.createBatch(any(List.class))).thenReturn(true);
+            when(chapterChapterContentBlockService.createCarouselBatch(any(List.class)))
+                    .thenReturn(true);
 
             mockMvc.perform(post(CAROUSEL_URL)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -262,7 +265,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /carousel - 文本内容包含特殊字符正常处理")
         void updateWithSpecialChars() throws Exception {
-            when(chapterChapterContentBlockService.update(any(ChapterContentBlock.class)))
+            when(chapterChapterContentBlockService.updateCarousel(any(ChapterContentBlockRequest.class)))
                     .thenReturn(true);
 
             ChapterContentBlock block = ContentTestDataFactory.createCarouselBlock(1L, BlockType.Paragraph);
@@ -278,7 +281,8 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /carousel - 内容块包含中文正常处理")
         void addWithChineseContent() throws Exception {
-            when(chapterChapterContentBlockService.createBatch(any(List.class))).thenReturn(true);
+            when(chapterChapterContentBlockService.createCarouselBatch(any(List.class)))
+                    .thenReturn(true);
 
             ChapterContentBlock block = ContentTestDataFactory.createCarouselBlock(1L, BlockType.Image);
             block.setTextContent("习近平新时代中国特色社会主义思想");
@@ -293,7 +297,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /carousel - 文本内容超长（1000 字符）正常处理")
         void updateWithLongTextContent() throws Exception {
-            when(chapterChapterContentBlockService.update(any(ChapterContentBlock.class)))
+            when(chapterChapterContentBlockService.updateCarousel(any(ChapterContentBlockRequest.class)))
                     .thenReturn(true);
 
             ChapterContentBlock block = ContentTestDataFactory.createCarouselBlock(1L, BlockType.Paragraph);
@@ -320,7 +324,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /carousel - service 返回 false 时 code 为 400")
         void updateReturnsFalse() throws Exception {
-            when(chapterChapterContentBlockService.update(any(ChapterContentBlock.class)))
+            when(chapterChapterContentBlockService.updateCarousel(any(ChapterContentBlockRequest.class)))
                     .thenReturn(false);
 
             ChapterContentBlock block = ContentTestDataFactory.createCarouselBlock(1L, BlockType.Image);
@@ -344,7 +348,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /carousel - XSS 注入在 textContent 字段")
         void xssInTextContent() throws Exception {
-            when(chapterChapterContentBlockService.update(any(ChapterContentBlock.class)))
+            when(chapterChapterContentBlockService.updateCarousel(any(ChapterContentBlockRequest.class)))
                     .thenReturn(true);
 
             ChapterContentBlock block = ContentTestDataFactory.createCarouselBlock(1L, BlockType.Paragraph);
@@ -359,7 +363,7 @@ class AdminContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /carousel - SQL 注入在 textContent 字段")
         void sqlInjectionInTextContent() throws Exception {
-            when(chapterChapterContentBlockService.update(any(ChapterContentBlock.class)))
+            when(chapterChapterContentBlockService.updateCarousel(any(ChapterContentBlockRequest.class)))
                     .thenReturn(true);
 
             ChapterContentBlock block = ContentTestDataFactory.createCarouselBlock(1L, BlockType.Paragraph);

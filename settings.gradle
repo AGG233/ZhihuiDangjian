@@ -1,4 +1,4 @@
-rootProject.name = 'zhihuidanjian'
+rootProject.name = 'zhihuidangjian'
 
 include 'server'
 include 'services'

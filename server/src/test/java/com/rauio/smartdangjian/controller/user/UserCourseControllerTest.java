@@ -22,6 +22,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.server.content.controller.user.UserCourseController;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
@@ -38,8 +39,9 @@ class UserCourseControllerTest extends BaseControllerTest {
     @SpringBootConfiguration
     static class TestConfig extends CommonTestConfig {
         @Bean
-        public UserCourseController userCourseController(CourseService courseService) {
-            return new UserCourseController(courseService);
+        public UserCourseController userCourseController(
+                CourseService courseService, CurrentUserProvider currentUserProvider) {
+            return new UserCourseController(courseService, currentUserProvider);
         }
     }
 
@@ -96,12 +98,12 @@ class UserCourseControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("GET /learned/{id} - 获取用户已学习课程")
+        @DisplayName("GET /learned/me - 获取用户已学习课程")
         void getLearnedCoursesSuccess() throws Exception {
             Course course = CourseTestDataFactory.createCourse(1L);
             when(courseService.getByUserId(1L)).thenReturn(List.of(course));
 
-            mockMvc.perform(get("/api/content/courses/learned/1"))
+            mockMvc.perform(get("/api/content/courses/learned/me"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data[0].id").value("1"))
@@ -147,12 +149,12 @@ class UserCourseControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("GET /learned/{id} - Service 抛出 BusinessException 返回 400")
+        @DisplayName("GET /learned/me - Service 抛出 BusinessException 返回 400")
         void getLearnedThrowsBusinessException() throws Exception {
             when(courseService.getByUserId(1L))
                     .thenThrow(new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户不存在"));
 
-            mockMvc.perform(get("/api/content/courses/learned/1"))
+            mockMvc.perform(get("/api/content/courses/learned/me"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("2005"))
                     .andExpect(jsonPath("$.message").value("用户不存在"));
@@ -177,11 +179,11 @@ class UserCourseControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("GET /learned/{id} - 返回空列表")
+        @DisplayName("GET /learned/me - 返回空列表")
         void getLearnedCoursesEmpty() throws Exception {
             when(courseService.getByUserId(1L)).thenReturn(List.of());
 
-            mockMvc.perform(get("/api/content/courses/learned/1"))
+            mockMvc.perform(get("/api/content/courses/learned/me"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").isArray())
@@ -225,12 +227,9 @@ class UserCourseControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("查看其他用户学习课程返回 403")
-        void viewOtherUserLearnedCoursesReturns403() throws Exception {
-            mockMvc.perform(get("/api/content/courses/learned/2"))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("403"))
-                    .andExpect(jsonPath("$.message").value("无权查看其他用户的学习课程"));
+        @DisplayName("旧的用户 ID 学习课程路径不可用")
+        void oldUserIdLearnedCoursesPathIsUnavailable() throws Exception {
+            mockMvc.perform(get("/api/content/courses/learned/2")).andExpect(status().isNotFound());
         }
     }
 }

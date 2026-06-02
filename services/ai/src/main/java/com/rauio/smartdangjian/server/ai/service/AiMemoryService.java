@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
 import com.rauio.smartdangjian.server.ai.pojo.response.AiChatMessageResponse;
@@ -23,6 +24,9 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class AiMemoryService {
+
+    private static final int MIN_LONG_TERM_MEMORY_LIMIT = 1;
+    private static final int MAX_LONG_TERM_MEMORY_LIMIT = 100;
 
     private final AiChatMessageService aiChatMessageService;
 
@@ -45,11 +49,15 @@ public class AiMemoryService {
             return "";
         }
         boolean excludeCurrentSession = sessionId != null && !sessionId.isBlank();
-        List<AiChatMessage> memories = aiChatMessageService.list(new LambdaQueryWrapper<AiChatMessage>()
-                .eq(AiChatMessage::getUserId, userId)
-                .ne(excludeCurrentSession, AiChatMessage::getSessionId, sessionId)
-                .orderByDesc(AiChatMessage::getCreatedAt)
-                .last("limit " + Math.max(limit, 1)));
+        int boundedLimit = Math.min(Math.max(limit, MIN_LONG_TERM_MEMORY_LIMIT), MAX_LONG_TERM_MEMORY_LIMIT);
+        List<AiChatMessage> memories = aiChatMessageService
+                .page(
+                        new Page<>(1, boundedLimit),
+                        new LambdaQueryWrapper<AiChatMessage>()
+                                .eq(AiChatMessage::getUserId, userId)
+                                .ne(excludeCurrentSession, AiChatMessage::getSessionId, sessionId)
+                                .orderByDesc(AiChatMessage::getCreatedAt))
+                .getRecords();
 
         if (memories.isEmpty()) {
             return "";

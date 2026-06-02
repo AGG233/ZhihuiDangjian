@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,12 +24,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cache.annotation.Cacheable;
 
-import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
-import com.rauio.smartdangjian.server.learning.mapper.dto.HotCategoryRaw;
-import com.rauio.smartdangjian.server.learning.mapper.dto.HotCourseRaw;
-import com.rauio.smartdangjian.server.learning.mapper.dto.TrendRaw;
+import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.learning.pojo.dto.HotCategorySummaryDto;
+import com.rauio.smartdangjian.server.learning.pojo.dto.HotCourseSummaryDto;
+import com.rauio.smartdangjian.server.learning.pojo.dto.TrendSummaryDto;
+import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
 import com.rauio.smartdangjian.server.search.pojo.response.HotCategoryResponse;
 import com.rauio.smartdangjian.server.search.pojo.response.HotCourseResponse;
 import com.rauio.smartdangjian.server.search.pojo.response.LearningTrendResponse;
@@ -38,10 +39,10 @@ import com.rauio.smartdangjian.server.search.pojo.response.LearningTrendResponse
 class LearningHotspotServiceTest {
 
     @Mock
-    private UserLearningRecordMapper userLearningRecordMapper;
+    private UserLearningRecordService userLearningRecordService;
 
     @Mock
-    private CourseMapper courseMapper;
+    private CourseService courseService;
 
     private LearningHotspotService learningHotspotService;
 
@@ -49,7 +50,7 @@ class LearningHotspotServiceTest {
 
     @BeforeEach
     void setUp() {
-        learningHotspotService = new LearningHotspotService(userLearningRecordMapper, courseMapper, FIXED_CLOCK);
+        learningHotspotService = new LearningHotspotService(userLearningRecordService, courseService, FIXED_CLOCK);
     }
 
     @Test
@@ -70,33 +71,27 @@ class LearningHotspotServiceTest {
     @Test
     @DisplayName("正常返回热门课程列表")
     void getHotCoursesReturnsEnrichedList() {
-        HotCourseRaw raw1 = new HotCourseRaw();
-        raw1.setCourseId(1L);
-        raw1.setCourseTitle("rawTitle1");
-        raw1.setLearnerCount(100);
+        HotCourseSummaryDto raw1 = new HotCourseSummaryDto(1L, "rawTitle1", 100);
 
-        HotCourseRaw raw2 = new HotCourseRaw();
-        raw2.setCourseId(2L);
-        raw2.setCourseTitle("rawTitle2");
-        raw2.setLearnerCount(80);
+        HotCourseSummaryDto raw2 = new HotCourseSummaryDto(2L, "rawTitle2", 80);
 
-        when(userLearningRecordMapper.selectHotCourses(10)).thenReturn(List.of(raw1, raw2));
+        when(userLearningRecordService.getHotCourses(10)).thenReturn(List.of(raw1, raw2));
 
-        Course course1 = Course.builder()
+        CourseResponse course1 = CourseResponse.builder()
                 .id(1L)
                 .title("课程1")
                 .coverImageId(10L)
                 .enrollmentCount(50)
                 .averageRating(BigDecimal.valueOf(4.5))
                 .build();
-        Course course2 = Course.builder()
+        CourseResponse course2 = CourseResponse.builder()
                 .id(2L)
                 .title("课程2")
                 .coverImageId(20L)
                 .enrollmentCount(30)
                 .averageRating(BigDecimal.valueOf(4.0))
                 .build();
-        when(courseMapper.selectBatchIds(any())).thenReturn(List.of(course1, course2));
+        when(courseService.getCourseResponseMapByIds(any())).thenReturn(Map.of(1L, course1, 2L, course2));
 
         List<HotCourseResponse> result = learningHotspotService.getHotCourses(10);
 
@@ -115,7 +110,7 @@ class LearningHotspotServiceTest {
     @Test
     @DisplayName("空结果返回空列表")
     void getHotCoursesEmptyResultReturnsEmptyList() {
-        when(userLearningRecordMapper.selectHotCourses(10)).thenReturn(Collections.emptyList());
+        when(userLearningRecordService.getHotCourses(10)).thenReturn(Collections.emptyList());
 
         List<HotCourseResponse> result = learningHotspotService.getHotCourses(10);
 
@@ -125,49 +120,42 @@ class LearningHotspotServiceTest {
     @Test
     @DisplayName("limit 为负数时使用默认值 10")
     void getHotCoursesNegativeLimitUsesDefault() {
-        HotCourseRaw raw = new HotCourseRaw();
-        raw.setCourseId(1L);
-        raw.setCourseTitle("title");
-        raw.setLearnerCount(10);
+        HotCourseSummaryDto raw = new HotCourseSummaryDto(1L, "title", 10);
 
-        when(userLearningRecordMapper.selectHotCourses(10)).thenReturn(List.of(raw));
-        when(courseMapper.selectBatchIds(any()))
-                .thenReturn(List.of(Course.builder().id(1L).title("课程").build()));
+        when(userLearningRecordService.getHotCourses(10)).thenReturn(List.of(raw));
+        when(courseService.getCourseResponseMapByIds(any()))
+                .thenReturn(
+                        Map.of(1L, CourseResponse.builder().id(1L).title("课程").build()));
 
         List<HotCourseResponse> result = learningHotspotService.getHotCourses(-5);
 
         assertThat(result).hasSize(1);
-        verify(userLearningRecordMapper).selectHotCourses(10);
+        verify(userLearningRecordService).getHotCourses(10);
     }
 
     @Test
     @DisplayName("limit 超过 50 被截断为 50")
     void getHotCoursesExcessiveLimitClampedToMax() {
-        HotCourseRaw raw = new HotCourseRaw();
-        raw.setCourseId(1L);
-        raw.setCourseTitle("title");
-        raw.setLearnerCount(10);
+        HotCourseSummaryDto raw = new HotCourseSummaryDto(1L, "title", 10);
 
-        when(userLearningRecordMapper.selectHotCourses(50)).thenReturn(List.of(raw));
-        when(courseMapper.selectBatchIds(any()))
-                .thenReturn(List.of(Course.builder().id(1L).title("课程").build()));
+        when(userLearningRecordService.getHotCourses(50)).thenReturn(List.of(raw));
+        when(courseService.getCourseResponseMapByIds(any()))
+                .thenReturn(
+                        Map.of(1L, CourseResponse.builder().id(1L).title("课程").build()));
 
         List<HotCourseResponse> result = learningHotspotService.getHotCourses(100);
 
         assertThat(result).hasSize(1);
-        verify(userLearningRecordMapper).selectHotCourses(50);
+        verify(userLearningRecordService).getHotCourses(50);
     }
 
     @Test
     @DisplayName("courseMapper 返回 null 时回退到 raw 数据")
     void getHotCoursesNullCourseFallsBackToRawData() {
-        HotCourseRaw raw = new HotCourseRaw();
-        raw.setCourseId(99L);
-        raw.setCourseTitle("rawFallbackTitle");
-        raw.setLearnerCount(42);
+        HotCourseSummaryDto raw = new HotCourseSummaryDto(99L, "rawFallbackTitle", 42);
 
-        when(userLearningRecordMapper.selectHotCourses(10)).thenReturn(List.of(raw));
-        when(courseMapper.selectBatchIds(any())).thenReturn(Collections.emptyList());
+        when(userLearningRecordService.getHotCourses(10)).thenReturn(List.of(raw));
+        when(courseService.getCourseResponseMapByIds(any())).thenReturn(Collections.emptyMap());
 
         List<HotCourseResponse> result = learningHotspotService.getHotCourses(10);
 
@@ -185,17 +173,11 @@ class LearningHotspotServiceTest {
     @Test
     @DisplayName("正常返回热门分类")
     void getHotCategoriesReturnsList() {
-        HotCategoryRaw raw1 = new HotCategoryRaw();
-        raw1.setCategoryId(1L);
-        raw1.setCategoryName("党史");
-        raw1.setLearnerCount(200);
+        HotCategorySummaryDto raw1 = new HotCategorySummaryDto(1L, "党史", 200);
 
-        HotCategoryRaw raw2 = new HotCategoryRaw();
-        raw2.setCategoryId(2L);
-        raw2.setCategoryName("理论");
-        raw2.setLearnerCount(150);
+        HotCategorySummaryDto raw2 = new HotCategorySummaryDto(2L, "理论", 150);
 
-        when(userLearningRecordMapper.selectHotCategories(10)).thenReturn(List.of(raw1, raw2));
+        when(userLearningRecordService.getHotCategories(10)).thenReturn(List.of(raw1, raw2));
 
         List<HotCategoryResponse> result = learningHotspotService.getHotCategories(10);
 
@@ -211,7 +193,7 @@ class LearningHotspotServiceTest {
     @Test
     @DisplayName("空结果返回空列表")
     void getHotCategoriesEmptyResultReturnsEmptyList() {
-        when(userLearningRecordMapper.selectHotCategories(10)).thenReturn(Collections.emptyList());
+        when(userLearningRecordService.getHotCategories(10)).thenReturn(Collections.emptyList());
 
         List<HotCategoryResponse> result = learningHotspotService.getHotCategories(10);
 
@@ -226,16 +208,11 @@ class LearningHotspotServiceTest {
         String today = LocalDate.now(FIXED_CLOCK).toString();
         String yesterday = LocalDate.now(FIXED_CLOCK).minusDays(1).toString();
 
-        TrendRaw trend1 = new TrendRaw();
-        trend1.setDate(yesterday);
-        trend1.setCount(5);
+        TrendSummaryDto trend1 = new TrendSummaryDto(yesterday, 5);
 
-        TrendRaw trend2 = new TrendRaw();
-        trend2.setDate(today);
-        trend2.setCount(3);
+        TrendSummaryDto trend2 = new TrendSummaryDto(today, 3);
 
-        when(userLearningRecordMapper.selectDailyTrend(any(LocalDateTime.class)))
-                .thenReturn(List.of(trend1, trend2));
+        when(userLearningRecordService.getDailyTrend(any(LocalDateTime.class))).thenReturn(List.of(trend1, trend2));
 
         LearningTrendResponse result = learningHotspotService.getTrends(2);
 
@@ -256,12 +233,9 @@ class LearningHotspotServiceTest {
         String yesterday = LocalDate.now(FIXED_CLOCK).minusDays(1).toString();
         String twoDaysAgo = LocalDate.now(FIXED_CLOCK).minusDays(2).toString();
 
-        TrendRaw trend = new TrendRaw();
-        trend.setDate(today);
-        trend.setCount(3);
+        TrendSummaryDto trend = new TrendSummaryDto(today, 3);
 
-        when(userLearningRecordMapper.selectDailyTrend(any(LocalDateTime.class)))
-                .thenReturn(List.of(trend));
+        when(userLearningRecordService.getDailyTrend(any(LocalDateTime.class))).thenReturn(List.of(trend));
 
         LearningTrendResponse result = learningHotspotService.getTrends(3);
 
@@ -279,8 +253,7 @@ class LearningHotspotServiceTest {
     @Test
     @DisplayName("days=0 时 avgDailyCount=0")
     void getTrendsZeroDaysReturnsZeroAvg() {
-        when(userLearningRecordMapper.selectDailyTrend(any(LocalDateTime.class)))
-                .thenReturn(Collections.emptyList());
+        when(userLearningRecordService.getDailyTrend(any(LocalDateTime.class))).thenReturn(Collections.emptyList());
 
         LearningTrendResponse result = learningHotspotService.getTrends(0);
 

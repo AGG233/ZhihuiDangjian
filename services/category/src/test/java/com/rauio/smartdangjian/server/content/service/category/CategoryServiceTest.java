@@ -6,8 +6,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -17,28 +15,26 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
+import com.rauio.smartdangjian.security.LoginUser;
 import com.rauio.smartdangjian.server.content.constants.CategoryErrorConstants;
 import com.rauio.smartdangjian.server.content.mapper.CategoryMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.CategoryConvertor;
 import com.rauio.smartdangjian.server.content.pojo.entity.Category;
 import com.rauio.smartdangjian.server.content.pojo.request.CategoryRequest;
 import com.rauio.smartdangjian.server.content.pojo.response.CategoryResponse;
-import com.rauio.smartdangjian.utils.SecurityUtils;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,28 +49,17 @@ class CategoryServiceTest {
     @Mock
     private com.rauio.smartdangjian.service.DataScopeService dataScopeService;
 
+    @Mock
+    private CurrentUserProvider currentUserProvider;
+
     @Spy
     @InjectMocks
     private CategoryService categoryService;
 
     @BeforeEach
-    void resetSpy() {
-        reset(categoryService);
-    }
-
-    private MockedStatic<SecurityUtils> securityUtilsMock;
-
-    @BeforeEach
     void setUp() {
-        securityUtilsMock = mockStatic(SecurityUtils.class);
-        CurrentUserPrincipal manager = mock(CurrentUserPrincipal.class);
-        lenient().when(manager.getUserType()).thenReturn(UserType.MANAGER);
-        lenient().when(SecurityUtils.getCurrentUser()).thenReturn(manager);
-    }
-
-    @AfterEach
-    void tearDown() {
-        securityUtilsMock.close();
+        reset(categoryService);
+        lenient().when(currentUserProvider.getCurrentUser()).thenReturn(createUser(UserType.MANAGER, null));
     }
 
     @Test
@@ -246,7 +231,7 @@ class CategoryServiceTest {
     @Test
     @DisplayName("create 当前用户为 null 时抛出 BusinessException 3006")
     void createWhenCurrentUserIsNullThrowsBusinessException() {
-        securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(null);
+        lenient().when(currentUserProvider.getCurrentUser()).thenReturn(null);
         CategoryRequest dto = CategoryRequest.builder()
                 .name("根目录")
                 .childrenNode(Collections.emptyList())
@@ -266,8 +251,8 @@ class CategoryServiceTest {
     @Test
     @DisplayName("create 当前用户为 MANAGER 时创建公共根目录成功（无学校归属）")
     void createWhenUserIsManagerCreatesPublicCategory() {
-        CurrentUserPrincipal managerUser = createMockUser(UserType.MANAGER, null);
-        securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(managerUser);
+        LoginUser managerUser = createUser(UserType.MANAGER, null);
+        lenient().when(currentUserProvider.getCurrentUser()).thenReturn(managerUser);
         CategoryRequest dto = CategoryRequest.builder()
                 .name("根目录")
                 .childrenNode(Collections.emptyList())
@@ -288,8 +273,8 @@ class CategoryServiceTest {
     @Test
     @DisplayName("create SCHOOL 用户 universityId 为 null 时抛出 BusinessException 3002")
     void createWhenSchoolUserAndUniversityIdIsNullThrowsBusinessException() {
-        CurrentUserPrincipal schoolUser = createMockUser(UserType.SCHOOL, null);
-        securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(schoolUser);
+        LoginUser schoolUser = createUser(UserType.SCHOOL, null);
+        lenient().when(currentUserProvider.getCurrentUser()).thenReturn(schoolUser);
         CategoryRequest dto = CategoryRequest.builder()
                 .name("根目录")
                 .childrenNode(Collections.emptyList())
@@ -309,8 +294,8 @@ class CategoryServiceTest {
     @Test
     @DisplayName("create SCHOOL 用户无子节点时创建根目录成功")
     void createWhenSchoolUserAndNoChildrenCreatesSuccessfully() {
-        CurrentUserPrincipal schoolUser = createMockUser(UserType.SCHOOL, "uni123");
-        securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(schoolUser);
+        LoginUser schoolUser = createUser(UserType.SCHOOL, "uni123");
+        lenient().when(currentUserProvider.getCurrentUser()).thenReturn(schoolUser);
         CategoryRequest dto = CategoryRequest.builder()
                 .name("根目录")
                 .childrenNode(Collections.emptyList())
@@ -331,8 +316,8 @@ class CategoryServiceTest {
     @Test
     @DisplayName("create STUDENT 用户无子节点时创建根目录成功")
     void createWhenStudentUserAndNoChildrenCreatesSuccessfully() {
-        CurrentUserPrincipal studentUser = createMockUser(UserType.STUDENT, "uni456");
-        securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(studentUser);
+        LoginUser studentUser = createUser(UserType.STUDENT, "uni456");
+        lenient().when(currentUserProvider.getCurrentUser()).thenReturn(studentUser);
         CategoryRequest dto = CategoryRequest.builder()
                 .name("根目录")
                 .childrenNode(new ArrayList<>())
@@ -352,8 +337,8 @@ class CategoryServiceTest {
     @Test
     @DisplayName("create 有子节点时委托给 createByParentId")
     void createWithChildrenDelegatesToCreateByParentId() {
-        CurrentUserPrincipal schoolUser = createMockUser(UserType.SCHOOL, "uni123");
-        securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(schoolUser);
+        LoginUser schoolUser = createUser(UserType.SCHOOL, "uni123");
+        lenient().when(currentUserProvider.getCurrentUser()).thenReturn(schoolUser);
         CategoryRequest childDto = CategoryRequest.builder()
                 .name("子目录")
                 .childrenNode(Collections.emptyList())
@@ -717,10 +702,7 @@ class CategoryServiceTest {
         return vo;
     }
 
-    private CurrentUserPrincipal createMockUser(UserType userType, String universityId) {
-        CurrentUserPrincipal user = mock(CurrentUserPrincipal.class);
-        lenient().when(user.getUserType()).thenReturn(userType);
-        lenient().when(user.getUniversityId()).thenReturn(universityId);
-        return user;
+    private LoginUser createUser(UserType userType, String universityId) {
+        return LoginUser.builder().userType(userType).universityId(universityId).build();
     }
 }

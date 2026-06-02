@@ -2,7 +2,6 @@ package com.rauio.smartdangjian.server.search.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -14,13 +13,11 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,22 +28,15 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.data.neo4j.core.Neo4jClient;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
-import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
-import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
-import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
-import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
-import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
+import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
+import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.learning.pojo.dto.LearningRecordSummaryDto;
 import com.rauio.smartdangjian.server.learning.pojo.dto.UserBehaviorDto;
-import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
+import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
+import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
-import com.rauio.smartdangjian.server.search.support.TestMybatisPlusConfig;
-import com.rauio.smartdangjian.server.user.mapper.UserSimilarityMapper;
-import com.rauio.smartdangjian.server.user.pojo.entity.UserSimilarity;
+import com.rauio.smartdangjian.server.user.pojo.dto.UserSimilaritySummaryDto;
 import com.rauio.smartdangjian.server.user.service.UserSimilarityService;
 
 @ExtendWith(MockitoExtension.class)
@@ -54,31 +44,20 @@ import com.rauio.smartdangjian.server.user.service.UserSimilarityService;
 @DisplayName("RecommendService 推荐算法")
 class RecommendServiceTest {
 
-    @BeforeAll
-    static void initMybatisPlus() {
-        TestMybatisPlusConfig.ensureInitialized();
-    }
+    @Mock
+    private UserLearningRecordService learningRecordService;
 
     @Mock
-    private UserLearningRecordMapper userLearningRecordMapper;
-
-    @Mock
-    private UserChapterProgressMapper userChapterProgressMapper;
-
-    @Mock
-    private UserSimilarityMapper userSimilarityMapper;
-
-    @Mock
-    private ChapterMapper chapterMapper;
-
-    @Mock
-    private CategoryCourseMapper categoryCourseMapper;
-
-    @Mock
-    private CourseMapper courseMapper;
+    private UserChapterProgressService chapterProgressService;
 
     @Mock
     private UserSimilarityService userSimilarityService;
+
+    @Mock
+    private ChapterService chapterService;
+
+    @Mock
+    private CourseService courseService;
 
     @Mock
     private Neo4jClient neo4jClient;
@@ -91,16 +70,13 @@ class RecommendServiceTest {
     @BeforeEach
     void resetSpy() {
         recommendService = spy(new RecommendService(
-                userLearningRecordMapper,
-                userChapterProgressMapper,
-                userSimilarityMapper,
-                chapterMapper,
-                categoryCourseMapper,
-                courseMapper,
+                learningRecordService,
+                chapterProgressService,
+                chapterService,
+                courseService,
                 userSimilarityService,
                 neo4jClient,
-                userProfileService,
-                Clock.fixed(Instant.parse("2026-05-31T10:15:30Z"), ZoneId.of("UTC"))));
+                userProfileService));
     }
 
     @Mock
@@ -123,6 +99,12 @@ class RecommendServiceTest {
         when(runnableSpec.fetchAs(String.class)).thenReturn(mappingSpec);
         when(mappingSpec.mappedBy(any())).thenReturn(recordFetchSpec);
         when(recordFetchSpec.all()).thenReturn(Collections.emptyList());
+    }
+
+    private static Page<Long> courseIdPage(Long... courseIds) {
+        Page<Long> page = new Page<>(1, 10, courseIds.length);
+        page.setRecords(List.of(courseIds));
+        return page;
     }
 
     // ==================== recommend ====================
@@ -165,9 +147,7 @@ class RecommendServiceTest {
     @Test
     @DisplayName("协同过滤无相似用户时返回空页")
     void recommendByCFNoSimilarUsersReturnsEmptyPage() {
-        Page<UserSimilarity> similarityPage = new Page<>(1, 10);
-        similarityPage.setRecords(Collections.emptyList());
-        doReturn(similarityPage).when(userSimilarityMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(userSimilarityService).listTopSimilarUsers(1L, 10);
 
         Page<Long> result = recommendService.recommendByCF(1L, 1, 10);
 
@@ -177,27 +157,20 @@ class RecommendServiceTest {
     @Test
     @DisplayName("协同过滤有相似用户时按学习章节推荐课程")
     void recommendByCFWithSimilarUsersReturnsRecommendedCourses() {
-        UserSimilarity sim = UserSimilarity.builder().userId1(1L).userId2(2L).build();
-        Page<UserSimilarity> similarityPage = new Page<>(1, 10, 1);
-        similarityPage.setRecords(List.of(sim));
-        doReturn(similarityPage).when(userSimilarityMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+        UserSimilaritySummaryDto sim = new UserSimilaritySummaryDto(1L, 2L, null);
+        doReturn(List.of(sim)).when(userSimilarityService).listTopSimilarUsers(1L, 10);
 
-        UserLearningRecord learned =
-                UserLearningRecord.builder().chapterId(1L).userId(1L).build();
-        doReturn(List.of(learned)).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-        Chapter learnedChapter = Chapter.builder().id(1L).courseId(1L).build();
-        doReturn(List.of(learnedChapter)).when(chapterMapper).selectList(any(LambdaQueryWrapper.class));
+        LearningRecordSummaryDto learned = new LearningRecordSummaryDto(1L, 1L, null);
+        doReturn(List.of(learned)).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(List.of(1L)).when(chapterService).listCourseIdsByChapterIds(List.of(1L));
 
-        UserLearningRecord similarRecord =
-                UserLearningRecord.builder().chapterId(2L).userId(2L).build();
-        doReturn(List.of(learned), List.of(similarRecord))
-                .when(userLearningRecordMapper)
-                .selectList(any(LambdaQueryWrapper.class));
+        LearningRecordSummaryDto similarRecord = new LearningRecordSummaryDto(2L, 2L, null);
+        doReturn(List.of(similarRecord)).when(learningRecordService).listChapterRecordSummariesByUserIds(List.of(2L));
 
-        doReturn(Collections.emptyList()).when(userChapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
-
-        Chapter chapter = Chapter.builder().id(2L).courseId(2L).title("章节2").build();
-        doReturn(List.of(chapter)).when(chapterMapper).selectByIds(anyCollection());
+        doReturn(Collections.emptyList())
+                .when(chapterProgressService)
+                .listChapterProgressSummariesByUserIds(List.of(2L));
+        doReturn(Map.of(2L, 2L)).when(chapterService).getCourseIdMapByChapterIds(Set.of(2L));
 
         Page<Long> result = recommendService.recommendByCF(1L, 1, 10);
 
@@ -208,24 +181,19 @@ class RecommendServiceTest {
     @Test
     @DisplayName("协同过滤用户已学完全部相似课程时返回空页")
     void recommendByCFUserAlreadyLearnedAllReturnsEmptyPage() {
-        UserSimilarity sim = UserSimilarity.builder().userId1(1L).userId2(2L).build();
-        Page<UserSimilarity> similarityPage = new Page<>(1, 10, 1);
-        similarityPage.setRecords(List.of(sim));
-        doReturn(similarityPage).when(userSimilarityMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+        UserSimilaritySummaryDto sim = new UserSimilaritySummaryDto(1L, 2L, null);
+        doReturn(List.of(sim)).when(userSimilarityService).listTopSimilarUsers(1L, 10);
 
-        UserLearningRecord learned =
-                UserLearningRecord.builder().chapterId(1L).userId(1L).build();
-        doReturn(List.of(learned)).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-        Chapter learnedChapter = Chapter.builder().id(1L).courseId(1L).build();
-        doReturn(List.of(learnedChapter)).when(chapterMapper).selectList(any(LambdaQueryWrapper.class));
+        LearningRecordSummaryDto learned = new LearningRecordSummaryDto(1L, 1L, null);
+        doReturn(List.of(learned)).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(List.of(1L)).when(chapterService).listCourseIdsByChapterIds(List.of(1L));
 
-        UserLearningRecord similarRecord =
-                UserLearningRecord.builder().chapterId(1L).userId(1L).build();
-        doReturn(List.of(learned), List.of(similarRecord))
-                .when(userLearningRecordMapper)
-                .selectList(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(userChapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(List.of(learnedChapter)).when(chapterMapper).selectByIds(anyCollection());
+        LearningRecordSummaryDto similarRecord = new LearningRecordSummaryDto(1L, 1L, null);
+        doReturn(List.of(similarRecord)).when(learningRecordService).listChapterRecordSummariesByUserIds(List.of(2L));
+        doReturn(Collections.emptyList())
+                .when(chapterProgressService)
+                .listChapterProgressSummariesByUserIds(List.of(2L));
+        doReturn(Map.of(1L, 1L)).when(chapterService).getCourseIdMapByChapterIds(Set.of(1L));
 
         Page<Long> result = recommendService.recommendByCF(1L, 1, 10);
 
@@ -273,15 +241,10 @@ class RecommendServiceTest {
                 .build();
         doReturn(profile).when(userProfileService).getProfile("1");
 
-        doReturn(Collections.emptyList()).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-
-        CategoryCourse cc = CategoryCourse.builder().courseId(1L).categoryId(1L).build();
-        doReturn(List.of(cc)).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
-
-        Course course = Course.builder().id(1L).title("兴趣课程").build();
-        Page<Course> coursePage = new Page<>(1, 10, 1);
-        coursePage.setRecords(List.of(course));
-        doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(courseIdPage(1L))
+                .when(courseService)
+                .recommendPublishedCourseIds(List.of(1L), Collections.emptySet(), null, 1, 10);
 
         Page<Long> result = recommendService.recommendByProfile(1L, 1, 10);
 
@@ -297,8 +260,10 @@ class RecommendServiceTest {
                 .interestCategoryIds(List.of(999L))
                 .build();
         doReturn(profile).when(userProfileService).getProfile("1");
-        doReturn(Collections.emptyList()).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(new Page<Long>(1, 10, 0))
+                .when(courseService)
+                .recommendPublishedCourseIds(List.of(999L), Collections.emptySet(), null, 1, 10);
 
         Page<Long> result = recommendService.recommendByProfile(1L, 1, 10);
 
@@ -316,15 +281,10 @@ class RecommendServiceTest {
                 .quiz(quizStats)
                 .build();
         doReturn(profile).when(userProfileService).getProfile("1");
-        doReturn(Collections.emptyList()).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-
-        CategoryCourse cc = CategoryCourse.builder().courseId(1L).categoryId(1L).build();
-        doReturn(List.of(cc)).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
-
-        Course course = Course.builder().id(1L).difficulty("advanced").build();
-        Page<Course> coursePage = new Page<>(1, 10, 1);
-        coursePage.setRecords(List.of(course));
-        doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(courseIdPage(1L))
+                .when(courseService)
+                .recommendPublishedCourseIds(List.of(1L), Collections.emptySet(), "advanced", 1, 10);
 
         Page<Long> result = recommendService.recommendByProfile(1L, 1, 10);
 
@@ -342,15 +302,10 @@ class RecommendServiceTest {
                 .quiz(quizStats)
                 .build();
         doReturn(profile).when(userProfileService).getProfile("1");
-        doReturn(Collections.emptyList()).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-
-        CategoryCourse cc = CategoryCourse.builder().courseId(1L).categoryId(1L).build();
-        doReturn(List.of(cc)).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
-
-        Course course = Course.builder().id(1L).difficulty("intermediate").build();
-        Page<Course> coursePage = new Page<>(1, 10, 1);
-        coursePage.setRecords(List.of(course));
-        doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(courseIdPage(1L))
+                .when(courseService)
+                .recommendPublishedCourseIds(List.of(1L), Collections.emptySet(), "intermediate", 1, 10);
 
         Page<Long> result = recommendService.recommendByProfile(1L, 1, 10);
 
@@ -368,15 +323,10 @@ class RecommendServiceTest {
                 .quiz(quizStats)
                 .build();
         doReturn(profile).when(userProfileService).getProfile("1");
-        doReturn(Collections.emptyList()).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-
-        CategoryCourse cc = CategoryCourse.builder().courseId(1L).categoryId(1L).build();
-        doReturn(List.of(cc)).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
-
-        Course course = Course.builder().id(1L).difficulty("beginner").build();
-        Page<Course> coursePage = new Page<>(1, 10, 1);
-        coursePage.setRecords(List.of(course));
-        doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(courseIdPage(1L))
+                .when(courseService)
+                .recommendPublishedCourseIds(List.of(1L), Collections.emptySet(), "beginner", 1, 10);
 
         Page<Long> result = recommendService.recommendByProfile(1L, 1, 10);
 
@@ -388,12 +338,10 @@ class RecommendServiceTest {
     void recommendByProfileNoInterestsSkipsCategoryFilter() {
         UserProfileResponse profile = UserProfileResponse.builder().userId("1").build();
         doReturn(profile).when(userProfileService).getProfile("1");
-        doReturn(Collections.emptyList()).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-
-        Course course = Course.builder().id(1L).build();
-        Page<Course> coursePage = new Page<>(1, 10, 1);
-        coursePage.setRecords(List.of(course));
-        doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(courseIdPage(1L))
+                .when(courseService)
+                .recommendPublishedCourseIds(Collections.emptyList(), Collections.emptySet(), null, 1, 10);
 
         Page<Long> result = recommendService.recommendByProfile(1L, 1, 10);
 
@@ -424,11 +372,11 @@ class RecommendServiceTest {
     @Test
     @DisplayName("定时计算相似度：无行为数据时直接返回")
     void calculateSimilarityEmptyBehaviors() {
-        doReturn(Collections.emptyList()).when(userLearningRecordMapper).getAllUserBehaviors();
+        doReturn(Collections.emptyList()).when(learningRecordService).listAllUserBehaviors();
 
         recommendService.calculateSimilarity();
 
-        verify(userSimilarityMapper, never()).delete(any());
+        verify(userSimilarityService, never()).deleteAllSimilarities();
     }
 
     @Test
@@ -441,11 +389,11 @@ class RecommendServiceTest {
         b2.setUserId(2L);
         b2.setChapterId(10L);
 
-        doReturn(List.of(b1, b2)).when(userLearningRecordMapper).getAllUserBehaviors();
+        doReturn(List.of(b1, b2)).when(learningRecordService).listAllUserBehaviors();
 
         recommendService.calculateSimilarity();
 
-        verify(userSimilarityService).saveBatch(anyList());
+        verify(userSimilarityService).saveSummaries(anyList());
     }
 
     @Test
@@ -474,11 +422,11 @@ class RecommendServiceTest {
         u3.setChapterId(1L);
         behaviors.add(u3);
 
-        doReturn(behaviors).when(userLearningRecordMapper).getAllUserBehaviors();
+        doReturn(behaviors).when(learningRecordService).listAllUserBehaviors();
 
         recommendService.calculateSimilarity();
 
-        verify(userSimilarityService).saveBatch(anyList());
+        verify(userSimilarityService).saveSummaries(anyList());
     }
 
     @Test
@@ -489,12 +437,12 @@ class RecommendServiceTest {
         b1.setUserId(1L);
         b1.setChapterId(1L);
 
-        doReturn(List.of(b1)).when(userLearningRecordMapper).getAllUserBehaviors();
+        doReturn(List.of(b1)).when(learningRecordService).listAllUserBehaviors();
 
         recommendService.calculateSimilarity();
 
-        verify(userSimilarityMapper).delete(any());
-        // No buffer -> saveBatch not called
+        verify(userSimilarityService).deleteAllSimilarities();
+        // No buffer -> saveSummaries not called
     }
 
     // ==================== recommendByCF - allInvolvedChapterIds empty ====================
@@ -502,23 +450,19 @@ class RecommendServiceTest {
     @Test
     @DisplayName("协同过滤相似用户的章节ID全部为空时返回空页")
     void recommendByCFAllChapterIdsEmpty() {
-        UserSimilarity sim = UserSimilarity.builder().userId1(1L).userId2(2L).build();
-        Page<UserSimilarity> similarityPage = new Page<>(1, 10, 1);
-        similarityPage.setRecords(List.of(sim));
-        doReturn(similarityPage).when(userSimilarityMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+        UserSimilaritySummaryDto sim = new UserSimilaritySummaryDto(1L, 2L, null);
+        doReturn(List.of(sim)).when(userSimilarityService).listTopSimilarUsers(1L, 10);
 
         // user's own learned records have chapterIds
-        UserLearningRecord learned =
-                UserLearningRecord.builder().chapterId(1L).userId(1L).build();
+        LearningRecordSummaryDto learned = new LearningRecordSummaryDto(1L, 1L, null);
+        doReturn(List.of(learned)).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(List.of(1L)).when(chapterService).listCourseIdsByChapterIds(List.of(1L));
         // similar user's records have null chapterIds
-        UserLearningRecord nullChapter =
-                UserLearningRecord.builder().chapterId(null).userId(2L).build();
-        doReturn(List.of(learned), List.of(nullChapter))
-                .when(userLearningRecordMapper)
-                .selectList(any(LambdaQueryWrapper.class));
-        Chapter learnedChapter = Chapter.builder().id(1L).courseId(1L).build();
-        doReturn(List.of(learnedChapter)).when(chapterMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(Collections.emptyList()).when(userChapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
+        LearningRecordSummaryDto nullChapter = new LearningRecordSummaryDto(2L, null, null);
+        doReturn(List.of(nullChapter)).when(learningRecordService).listChapterRecordSummariesByUserIds(List.of(2L));
+        doReturn(Collections.emptyList())
+                .when(chapterProgressService)
+                .listChapterProgressSummariesByUserIds(List.of(2L));
 
         Page<Long> result = recommendService.recommendByCF(1L, 1, 10);
 
@@ -535,12 +479,10 @@ class RecommendServiceTest {
                 .interestCategoryIds(Collections.emptyList())
                 .build();
         doReturn(profile).when(userProfileService).getProfile("1");
-        doReturn(Collections.emptyList()).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-
-        Course course = Course.builder().id(1L).build();
-        Page<Course> coursePage = new Page<>(1, 10, 1);
-        coursePage.setRecords(List.of(course));
-        doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(courseIdPage(1L))
+                .when(courseService)
+                .recommendPublishedCourseIds(Collections.emptyList(), Collections.emptySet(), null, 1, 10);
 
         Page<Long> result = recommendService.recommendByProfile(1L, 1, 10);
 
@@ -558,15 +500,10 @@ class RecommendServiceTest {
                 .quiz(quizStats)
                 .build();
         doReturn(profile).when(userProfileService).getProfile("1");
-        doReturn(Collections.emptyList()).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
-
-        CategoryCourse cc = CategoryCourse.builder().courseId(1L).categoryId(1L).build();
-        doReturn(List.of(cc)).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
-
-        Course course = Course.builder().id(1L).build();
-        Page<Course> coursePage = new Page<>(1, 10, 1);
-        coursePage.setRecords(List.of(course));
-        doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(learningRecordService).listRecordSummariesByUserId(1L);
+        doReturn(courseIdPage(1L))
+                .when(courseService)
+                .recommendPublishedCourseIds(List.of(1L), Collections.emptySet(), null, 1, 10);
 
         Page<Long> result = recommendService.recommendByProfile(1L, 1, 10);
 

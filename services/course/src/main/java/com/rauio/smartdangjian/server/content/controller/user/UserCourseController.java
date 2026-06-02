@@ -1,16 +1,24 @@
 package com.rauio.smartdangjian.server.content.controller.user;
 
+import static com.rauio.smartdangjian.constants.ValidationConstants.PAGE_NUM_MIN;
+import static com.rauio.smartdangjian.constants.ValidationConstants.PAGE_SIZE_MAX;
+import static com.rauio.smartdangjian.constants.ValidationConstants.PAGE_SIZE_MIN;
+
 import java.util.List;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.content.pojo.response.PageResponse;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
-import com.rauio.smartdangjian.utils.SecurityUtils;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
@@ -23,9 +31,11 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/content/courses")
 @RequiredArgsConstructor
+@Validated
 public class UserCourseController {
 
     private final CourseService courseService;
+    private final CurrentUserProvider currentUserProvider;
 
     @Operation(summary = "获取课程详情", description = "根据课程ID获取课程详细信息")
     @GetMapping("/{id}")
@@ -36,20 +46,24 @@ public class UserCourseController {
     @Operation(summary = "分页获取课程", description = "根据分页参数获取课程列表")
     @GetMapping
     public Result<PageResponse<Object>> getPage(
-            @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
-            @Parameter(name = "pageSize", description = "页的大小") @RequestParam(defaultValue = "10") int pageSize) {
+            @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") @Min(PAGE_NUM_MIN)
+                    int pageNum,
+            @Parameter(name = "pageSize", description = "页的大小")
+                    @RequestParam(defaultValue = "10")
+                    @Min(PAGE_SIZE_MIN)
+                    @Max(PAGE_SIZE_MAX)
+                    int pageSize) {
         return Result.ok(courseService.getPage(pageNum, pageSize));
     }
 
     @Operation(summary = "获取用户已学习课程", description = "根据用户ID获取已学习课程列表")
-    @GetMapping("/learned/{id}")
-    @SaCheckRole("STUDENT")
+    @GetMapping("/learned/me")
+    @SaCheckRole(RoleConstants.STUDENT)
     @SaCheckPermission("course:read")
-    public Result<List<Course>> getByUserIdCourses(@PathVariable Long id) {
-        String currentUserId = SecurityUtils.getCurrentUserId();
-        if (!currentUserId.equals(String.valueOf(id))) {
-            return Result.error("403", "无权查看其他用户的学习课程");
-        }
-        return Result.ok(courseService.getByUserId(id));
+    public Result<List<CourseResponse>> getByUserIdCourses() {
+        Long currentUserId = Long.valueOf(currentUserProvider.getCurrentUserId());
+        return Result.ok(courseService.getByUserId(currentUserId).stream()
+                .map(CourseResponse::from)
+                .toList());
     }
 }

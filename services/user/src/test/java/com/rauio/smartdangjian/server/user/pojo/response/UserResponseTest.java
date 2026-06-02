@@ -27,7 +27,7 @@ class UserResponseTest {
         response.setBranchName("党支部A");
         response.setUserType(UserType.STUDENT);
         response.setStatus(AccountStatus.ACTIVE);
-        response.setUniversityId(1L);
+        response.setUniversityId("uni-001");
         response.setJoinPartyDate(joinDate);
         response.setEmail("test@example.com");
         response.setPhone("13800138000");
@@ -40,7 +40,7 @@ class UserResponseTest {
         assertThat(response.getBranchName()).isEqualTo("党支部A");
         assertThat(response.getUserType()).isEqualTo(UserType.STUDENT);
         assertThat(response.getStatus()).isEqualTo(AccountStatus.ACTIVE);
-        assertThat(response.getUniversityId()).isEqualTo(1L);
+        assertThat(response.getUniversityId()).isEqualTo("uni-001");
         assertThat(response.getJoinPartyDate()).isEqualTo(joinDate);
         assertThat(response.getEmail()).isEqualTo("test@example.com");
         assertThat(response.getPhone()).isEqualTo("13800138000");

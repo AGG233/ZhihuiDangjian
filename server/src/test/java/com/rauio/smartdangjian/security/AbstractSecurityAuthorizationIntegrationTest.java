@@ -451,8 +451,9 @@ abstract class AbstractSecurityAuthorizationIntegrationTest {
         }
 
         @Bean
-        UserCourseController userCourseController(CourseService courseService) {
-            return new UserCourseController(courseService);
+        UserCourseController userCourseController(
+                CourseService courseService, com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
+            return new UserCourseController(courseService, currentUserProvider);
         }
 
         @Bean
@@ -489,8 +490,9 @@ abstract class AbstractSecurityAuthorizationIntegrationTest {
         }
 
         @Bean
-        FileController fileController(FileService fileService) {
-            return new FileController(fileService);
+        FileController fileController(
+                FileService fileService, com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
+            return new FileController(fileService, currentUserProvider);
         }
 
         @Bean

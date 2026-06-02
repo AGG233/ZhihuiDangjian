@@ -1,9 +1,6 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
@@ -16,8 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
 import com.rauio.smartdangjian.server.ai.service.AiChatMessageService;
 import com.rauio.smartdangjian.server.user.service.UserService;
@@ -38,15 +33,6 @@ class QuizToolTest {
     @DisplayName("getQuizReasoning 方法")
     class GetQuizReasoningTest {
 
-        @SuppressWarnings("unchecked")
-        private LambdaQueryChainWrapper<AiChatMessage> realChain(AiChatMessage result) {
-            BaseMapper<AiChatMessage> mockMapper = mock(BaseMapper.class);
-            when(mockMapper.selectOne(any())).thenReturn(result);
-            LambdaQueryChainWrapper<AiChatMessage> wrapper = new LambdaQueryChainWrapper<>(mockMapper);
-            doReturn(wrapper).when(messageService).lambdaQuery();
-            return wrapper;
-        }
-
         @Test
         @DisplayName("提供 sessionId 参数时使用该值查询并返回 metadata")
         void usesProvidedSessionIdAndReturnsMetadata() {
@@ -57,7 +43,8 @@ class QuizToolTest {
                     .metadata(metadata)
                     .build();
 
-            realChain(message);
+            when(userService.getCurrentUserId()).thenReturn("1");
+            when(messageService.findLatestBySessionIdAndUserId("session-1", 1L)).thenReturn(message);
 
             Object result = quizTool.getQuizReasoning("session-1");
 
@@ -83,7 +70,9 @@ class QuizToolTest {
         @Test
         @DisplayName("未找到消息时返回 null")
         void returnsNullWhenMessageNotFound() {
-            realChain(null);
+            when(userService.getCurrentUserId()).thenReturn("1");
+            when(messageService.findLatestBySessionIdAndUserId("nonexistent-session", 1L))
+                    .thenReturn(null);
 
             Object result = quizTool.getQuizReasoning("nonexistent-session");
 

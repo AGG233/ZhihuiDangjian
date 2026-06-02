@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.content.pojo.request.CourseRequest;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
 
@@ -17,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/content/courses")
 @RequiredArgsConstructor
-@SaCheckRole("SCHOOL")
+@SaCheckRole(RoleConstants.SCHOOL)
 public class AdminCourseController {
 
     private final CourseService courseService;

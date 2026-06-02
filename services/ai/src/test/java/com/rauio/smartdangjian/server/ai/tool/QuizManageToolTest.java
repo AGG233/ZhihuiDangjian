@@ -89,7 +89,7 @@ class QuizManageToolTest {
 
         assertThat(result).isTrue();
         verify(quizService, times(1))
-                .create(argThat(q -> q.getChapterId().equals(1L)
+                .create(argThat((Quiz q) -> q.getChapterId().equals(1L)
                         && q.getQuestion().equals("Q1")
                         && q.getQuestionType().equals("single_choice")
                         && q.getScore().equals(5)
@@ -130,7 +130,7 @@ class QuizManageToolTest {
         Boolean result = quizManageTool.createQuiz("1", "Q", "single_choice", 5, "easy", null, options);
 
         assertThat(result).isTrue();
-        verify(quizOptionService).create(any(), argThat(opt -> opt.getIsCorrect() == null));
+        verify(quizOptionService).create(any(), argThat((QuizOption opt) -> opt.getIsCorrect() == null));
     }
 
     @Test
@@ -393,7 +393,7 @@ class QuizManageToolTest {
         Boolean result = quizManageTool.createQuiz("1", "Q", "single_choice", 5, "easy", null, options);
 
         assertThat(result).isTrue();
-        verify(quizOptionService).create(any(), argThat(opt -> opt.getOptionText() == null));
+        verify(quizOptionService).create(any(), argThat((QuizOption opt) -> opt.getOptionText() == null));
     }
 
     @Test
@@ -411,7 +411,7 @@ class QuizManageToolTest {
         Boolean result = quizManageTool.createQuiz("1", "Q", "single_choice", 5, "easy", null, options);
 
         assertThat(result).isTrue();
-        verify(quizOptionService).create(any(), argThat(opt -> opt.getOrderIndex() == null));
+        verify(quizOptionService).create(any(), argThat((QuizOption opt) -> opt.getOrderIndex() == null));
     }
 
     @Test

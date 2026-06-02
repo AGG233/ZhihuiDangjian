@@ -6,8 +6,9 @@ import org.springframework.web.bind.annotation.*;
 
 import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
+import com.rauio.smartdangjian.security.RoleConstants;
+import com.rauio.smartdangjian.server.quiz.pojo.request.QuizOptionRequest;
+import com.rauio.smartdangjian.server.quiz.pojo.request.QuizRequest;
 import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
 import com.rauio.smartdangjian.server.quiz.service.QuizService;
 
@@ -21,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/quiz/quizzes")
 @RequiredArgsConstructor
-@SaCheckRole("SCHOOL")
+@SaCheckRole(RoleConstants.SCHOOL)
 public class AdminQuizController {
 
     private final QuizService quizService;
@@ -29,16 +30,16 @@ public class AdminQuizController {
 
     @Operation(summary = "创建试题", description = "创建一道新试题")
     @PostMapping
-    public Result<Boolean> createQuiz(@RequestBody @Valid Quiz quiz) {
-        return Result.ok(quizService.create(quiz));
+    public Result<Boolean> createQuiz(@RequestBody @Valid QuizRequest request) {
+        return Result.ok(quizService.create(request));
     }
 
     @Operation(summary = "更新试题", description = "根据ID更新试题信息")
     @PutMapping("/{id}")
     public Result<Boolean> updateQuiz(
-            @Parameter(name = "id", description = "试题ID") @PathVariable String id, @RequestBody @Valid Quiz quiz) {
-        quiz.setId(IdUtil.parse(id));
-        return Result.ok(quizService.update(quiz));
+            @Parameter(name = "id", description = "试题ID") @PathVariable String id,
+            @RequestBody @Valid QuizRequest request) {
+        return Result.ok(quizService.update(IdUtil.parse(id), request));
     }
 
     @Operation(summary = "删除试题", description = "根据ID删除试题")
@@ -51,16 +52,16 @@ public class AdminQuizController {
     @PostMapping("/{id}/options")
     public Result<Boolean> createQuizOption(
             @Parameter(name = "id", description = "试题ID") @PathVariable String id,
-            @RequestBody @Valid QuizOption quizOption) {
-        return Result.ok(quizOptionService.create(IdUtil.parse(id), quizOption));
+            @RequestBody @Valid QuizOptionRequest request) {
+        return Result.ok(quizOptionService.create(IdUtil.parse(id), request));
     }
 
     @Operation(summary = "更新选项", description = "根据选项ID更新选项信息")
     @PutMapping("/{quizId}/options/{optionId}")
     public Result<Boolean> updateQuizOption(
             @Parameter(name = "optionId", description = "选项ID") @PathVariable String optionId,
-            @RequestBody @Valid QuizOption quizOption) {
-        return Result.ok(quizOptionService.update(IdUtil.parse(optionId), quizOption));
+            @RequestBody @Valid QuizOptionRequest request) {
+        return Result.ok(quizOptionService.update(IdUtil.parse(optionId), request));
     }
 
     @Operation(summary = "删除选项", description = "根据选项ID删除选项")

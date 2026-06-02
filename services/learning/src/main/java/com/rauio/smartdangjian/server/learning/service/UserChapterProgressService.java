@@ -7,12 +7,14 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.learning.constants.LearningErrorConstants;
 import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
 import com.rauio.smartdangjian.server.learning.pojo.convertor.UserChapterProgressConvertor;
+import com.rauio.smartdangjian.server.learning.pojo.dto.ChapterProgressSummaryDto;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserChapterProgress;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserChapterProgressRequest;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
@@ -64,6 +66,42 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
         wrapper.eq("user_id", userId);
         List<UserChapterProgress> list = this.list(wrapper);
         return convertor.toResponseList(list);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChapterProgressSummaryDto> listProgressSummariesByUserId(Long userId) {
+        return this.list(new LambdaQueryWrapper<UserChapterProgress>()
+                        .eq(UserChapterProgress::getUserId, userId)
+                        .select(
+                                UserChapterProgress::getUserId,
+                                UserChapterProgress::getChapterId,
+                                UserChapterProgress::getProgress,
+                                UserChapterProgress::getStatus))
+                .stream()
+                .map(progress -> new ChapterProgressSummaryDto(
+                        progress.getUserId(), progress.getChapterId(), progress.getProgress(), progress.getStatus()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChapterProgressSummaryDto> listChapterProgressSummariesByUserIds(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return List.of();
+        }
+        return this.list(new LambdaQueryWrapper<UserChapterProgress>()
+                        .in(UserChapterProgress::getUserId, userIds)
+                        .select(UserChapterProgress::getChapterId, UserChapterProgress::getUserId))
+                .stream()
+                .map(progress -> new ChapterProgressSummaryDto(
+                        progress.getUserId(), progress.getChapterId(), progress.getProgress(), progress.getStatus()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public long countCompletedByUserId(Long userId) {
+        return this.count(new LambdaQueryWrapper<UserChapterProgress>()
+                .eq(UserChapterProgress::getUserId, userId)
+                .eq(UserChapterProgress::getStatus, "completed"));
     }
 
     /**

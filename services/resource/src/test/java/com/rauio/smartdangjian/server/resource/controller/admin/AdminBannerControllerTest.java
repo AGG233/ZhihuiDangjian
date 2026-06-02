@@ -46,7 +46,7 @@ class AdminBannerControllerTest {
 
         var result = controller.get(1);
 
-        assertThat(result.getData().getId()).isEqualTo(1L);
+        assertThat(result.getData().id()).isEqualTo("1");
     }
 
     @Test
@@ -57,7 +57,7 @@ class AdminBannerControllerTest {
 
         var result = controller.create(request);
 
-        assertThat(result.getData().getId()).isEqualTo(1L);
+        assertThat(result.getData().id()).isEqualTo("1");
     }
 
     @Test
@@ -81,7 +81,7 @@ class AdminBannerControllerTest {
 
         var result = controller.update(1, request);
 
-        assertThat(result.getData().getId()).isEqualTo(1L);
+        assertThat(result.getData().id()).isEqualTo("1");
     }
 
     @Test
@@ -113,6 +113,6 @@ class AdminBannerControllerTest {
 
         var result = controller.update(1, request);
 
-        assertThat(result.getData().getId()).isEqualTo(1L);
+        assertThat(result.getData().id()).isEqualTo("1");
     }
 }

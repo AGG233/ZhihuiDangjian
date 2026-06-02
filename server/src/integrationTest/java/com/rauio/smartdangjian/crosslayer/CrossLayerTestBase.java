@@ -26,6 +26,7 @@ import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.security.LoginUser;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
+import cn.dev33.satoken.exception.SaTokenContextException;
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 
@@ -148,7 +149,10 @@ public abstract class CrossLayerTestBase {
 
                 @Override
                 public String getCurrentUserRole() {
-                    return null;
+                    LoginUser user = getCurrentUser();
+                    return user != null && user.getUserType() != null
+                            ? user.getUserType().name()
+                            : null;
                 }
 
                 @Override
@@ -158,6 +162,25 @@ public abstract class CrossLayerTestBase {
 
                 @Override
                 public LoginUser getCurrentUser() {
+                    try {
+                        if (!StpUtil.isLogin()) {
+                            return null;
+                        }
+                    } catch (SaTokenContextException e) {
+                        return null;
+                    }
+                    Object sessionUser = StpUtil.getSession().get("user");
+                    if (sessionUser instanceof CurrentUserPrincipal principal) {
+                        return LoginUser.builder()
+                                .id(String.valueOf(principal.getId()))
+                                .userType(principal.getUserType())
+                                .role(
+                                        principal.getUserType() != null
+                                                ? principal.getUserType().name()
+                                                : null)
+                                .universityId(principal.getUniversityId())
+                                .build();
+                    }
                     return null;
                 }
             };

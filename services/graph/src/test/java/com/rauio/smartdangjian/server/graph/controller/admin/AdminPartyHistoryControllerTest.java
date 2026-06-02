@@ -3,6 +3,7 @@ package com.rauio.smartdangjian.server.graph.controller.admin;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -13,10 +14,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.rauio.smartdangjian.server.graph.pojo.request.PartyHistoryEntityImportRequest;
+import com.rauio.smartdangjian.server.graph.pojo.request.PartyHistoryRelationshipImportRequest;
 import com.rauio.smartdangjian.server.graph.service.PartyHistoryGraphService;
 import com.rauio.smartdangjian.server.graph.service.PartyHistoryImportService;
 
@@ -41,10 +45,15 @@ class AdminPartyHistoryControllerTest {
         @DisplayName("按标签批量导入实体成功")
         void importEntitiesSuccess() {
             when(importService.importEntities(anyString(), any())).thenReturn(5);
+            PartyHistoryEntityImportRequest request = new PartyHistoryEntityImportRequest();
+            request.put("name", "毛泽东");
 
-            var result = controller.importEntities("Person", List.of(Map.of("name", "毛泽东")));
+            var result = controller.importEntities("Person", List.of(request));
 
             assertThat(result.getData()).isEqualTo(5);
+            ArgumentCaptor<List<Map<String, Object>>> captor = ArgumentCaptor.captor();
+            verify(importService).importEntities(eq("Person"), captor.capture());
+            assertThat(captor.getValue()).containsExactly(Map.of("name", "毛泽东"));
         }
 
         @Test
@@ -66,11 +75,19 @@ class AdminPartyHistoryControllerTest {
         @DisplayName("批量导入关系成功")
         void importRelationshipsSuccess() {
             when(importService.importRelationships(any())).thenReturn(3);
+            PartyHistoryRelationshipImportRequest request = new PartyHistoryRelationshipImportRequest();
+            request.setSource("p-1");
+            request.setTarget("e-1");
+            request.setType("INITIATED");
 
-            var result = controller.importRelationships(
-                    List.of(Map.of("source", "p-1", "target", "e-1", "type", "INITIATED")));
+            var result = controller.importRelationships(List.of(request));
 
             assertThat(result.getData()).isEqualTo(3);
+            ArgumentCaptor<List<Map<String, Object>>> captor = ArgumentCaptor.captor();
+            verify(importService).importRelationships(captor.capture());
+            assertThat(captor.getValue())
+                    .containsExactly(
+                            Map.of("source", "p-1", "target", "e-1", "type", "INITIATED", "properties", Map.of()));
         }
 
         @Test

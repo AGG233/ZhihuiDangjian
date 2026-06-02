@@ -1,6 +1,11 @@
 package com.rauio.smartdangjian.server.content.service.chapter;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,6 +103,27 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
     public List<ChapterResponse> getByCourseId(Long courseId) {
         List<Chapter> chapters = this.list(new LambdaQueryWrapper<Chapter>().eq(Chapter::getCourseId, courseId));
         return chapterConvertor.toResponseList(chapters);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, Long> getCourseIdMapByChapterIds(Collection<Long> chapterIds) {
+        if (chapterIds == null || chapterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return this.list(new LambdaQueryWrapper<Chapter>()
+                        .in(Chapter::getId, chapterIds)
+                        .select(Chapter::getId, Chapter::getCourseId))
+                .stream()
+                .filter(chapter -> chapter.getId() != null && chapter.getCourseId() != null)
+                .collect(Collectors.toMap(Chapter::getId, Chapter::getCourseId, (a, b) -> a));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> listCourseIdsByChapterIds(Collection<Long> chapterIds) {
+        return getCourseIdMapByChapterIds(chapterIds).values().stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
     }
 
     /**

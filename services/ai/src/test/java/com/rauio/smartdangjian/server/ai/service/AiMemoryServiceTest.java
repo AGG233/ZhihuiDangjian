@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
 import com.rauio.smartdangjian.server.ai.pojo.response.AiChatMessageResponse;
 
@@ -35,6 +36,9 @@ class AiMemoryServiceTest {
 
     @Captor
     private ArgumentCaptor<AiChatMessage> messageCaptor;
+
+    @Captor
+    private ArgumentCaptor<Page<AiChatMessage>> pageCaptor;
 
     @Test
     @DisplayName("事务边界按方法声明：读方法只读，写方法显式回滚")
@@ -116,7 +120,7 @@ class AiMemoryServiceTest {
                 .senderType("user")
                 .content("content")
                 .build();
-        doReturn(List.of(msg)).when(aiChatMessageService).list(any(LambdaQueryWrapper.class));
+        doReturn(pageOf(msg)).when(aiChatMessageService).page(any(Page.class), any(LambdaQueryWrapper.class));
 
         String memory = aiMemoryService.buildLongTermMemory("user-1", "  ", 10);
 
@@ -153,7 +157,7 @@ class AiMemoryServiceTest {
                 .senderType("user")
                 .content("content")
                 .build();
-        doReturn(List.of(msg)).when(aiChatMessageService).list(any(LambdaQueryWrapper.class));
+        doReturn(pageOf(msg)).when(aiChatMessageService).page(any(Page.class), any(LambdaQueryWrapper.class));
 
         String memory = aiMemoryService.buildLongTermMemory("user-1", null, 10);
 
@@ -182,7 +186,7 @@ class AiMemoryServiceTest {
                 .content("AI回复")
                 .build();
 
-        doReturn(List.of(msg1, msg2)).when(aiChatMessageService).list(any(LambdaQueryWrapper.class));
+        doReturn(pageOf(msg1, msg2)).when(aiChatMessageService).page(any(Page.class), any(LambdaQueryWrapper.class));
 
         String memory = aiMemoryService.buildLongTermMemory("user-1", "session-1", 10);
 
@@ -196,7 +200,7 @@ class AiMemoryServiceTest {
         String memory = aiMemoryService.buildLongTermMemory(null, "session-1", 10);
 
         assertThat(memory).isEmpty();
-        verify(aiChatMessageService, never()).list(any(LambdaQueryWrapper.class));
+        verify(aiChatMessageService, never()).page(any(Page.class), any(LambdaQueryWrapper.class));
     }
 
     @Test
@@ -210,11 +214,24 @@ class AiMemoryServiceTest {
     @Test
     @DisplayName("buildLongTermMemory no history returns empty")
     void buildLongTermMemoryNoHistory() {
-        doReturn(List.of()).when(aiChatMessageService).list(any(LambdaQueryWrapper.class));
+        doReturn(pageOf()).when(aiChatMessageService).page(any(Page.class), any(LambdaQueryWrapper.class));
 
         String memory = aiMemoryService.buildLongTermMemory("user-1", "session-1", 10);
 
         assertThat(memory).isEmpty();
+    }
+
+    @Test
+    @DisplayName("buildLongTermMemory clamps limit to bounded Page size")
+    void buildLongTermMemoryClampsLimit() {
+        doReturn(pageOf()).when(aiChatMessageService).page(any(Page.class), any(LambdaQueryWrapper.class));
+
+        aiMemoryService.buildLongTermMemory("user-1", "session-1", 1000);
+        aiMemoryService.buildLongTermMemory("user-1", "session-1", 0);
+
+        verify(aiChatMessageService, times(2)).page(pageCaptor.capture(), any(LambdaQueryWrapper.class));
+        assertThat(pageCaptor.getAllValues().get(0).getSize()).isEqualTo(100);
+        assertThat(pageCaptor.getAllValues().get(1).getSize()).isEqualTo(1);
     }
 
     @Test
@@ -227,5 +244,11 @@ class AiMemoryServiceTest {
         List<AiChatMessageResponse> messages = aiMemoryService.listSessionMessages("user-1", "session-1");
 
         assertThat(messages).hasSize(2);
+    }
+
+    private Page<AiChatMessage> pageOf(AiChatMessage... messages) {
+        Page<AiChatMessage> page = new Page<>(1, Math.max(messages.length, 1));
+        page.setRecords(List.of(messages));
+        return page;
     }
 }

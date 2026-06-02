@@ -43,8 +43,9 @@ class FileUploadFallbackTest extends CrossLayerTestBase {
     static class TestConfig extends CrossLayerTestConfig {
 
         @Bean
-        FileController fileController(FileService fileService) {
-            return new FileController(fileService);
+        FileController fileController(
+                FileService fileService, com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
+            return new FileController(fileService, currentUserProvider);
         }
 
         @Bean

@@ -29,12 +29,14 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
@@ -45,7 +47,6 @@ import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
-import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.crypto.digest.BCrypt;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,6 +61,9 @@ class UserServiceTest {
 
     @Mock
     private UserConvertor convertor;
+
+    @Mock
+    private CurrentUserProvider currentUserProvider;
 
     @Spy
     @InjectMocks
@@ -79,23 +83,39 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("用户写操作通过注解清空多 key 用户缓存")
+    @DisplayName("用户写操作通过 Spring Cache 注解驱逐对应用户缓存")
     void userWriteMethodsEvictUserCacheEntries() throws NoSuchMethodException {
-        assertUserCacheEvictsAllEntries("update", Long.class, User.class);
-        assertUserCacheEvictsAllEntries("update", Long.class, UserUpdateRequest.class);
-        assertUserCacheEvictsAllEntries("delete", Long.class);
-        assertUserCacheEvictsAllEntries("register", User.class);
-        assertUserCacheEvictsAllEntries("changePassword", String.class, String.class);
+        assertUserCacheEvictsKeys(
+                "update", new Class<?>[] {Long.class, User.class}, "#id", "#user.email", "#user.phone");
+        assertUserCacheEvictsKeys(
+                "update",
+                new Class<?>[] {Long.class, UserUpdateRequest.class},
+                "#id",
+                "#request.email",
+                "#request.phone");
+        assertUserCacheEvictsKeys("delete", new Class<?>[] {Long.class}, "#id");
+        assertUserCacheEvictsKeys("register", new Class<?>[] {User.class}, "#user.email", "#user.phone");
+        assertUserCacheEvictsKeys(
+                "changePasswordForUser", new Class<?>[] {String.class, String.class, String.class}, "#userId");
     }
 
-    private void assertUserCacheEvictsAllEntries(String methodName, Class<?>... parameterTypes)
+    private void assertUserCacheEvictsKeys(String methodName, Class<?>[] parameterTypes, String... keys)
             throws NoSuchMethodException {
         Method method = UserService.class.getMethod(methodName, parameterTypes);
-        CacheEvict cacheEvict = method.getAnnotation(CacheEvict.class);
+        List<CacheEvict> evicts = userCacheEvicts(method);
 
-        assertThat(cacheEvict).isNotNull();
-        assertThat(cacheEvict.allEntries()).isTrue();
-        assertThat(cacheEvict.value()).contains("user:data:");
+        assertThat(evicts).isNotEmpty();
+        assertThat(evicts).noneMatch(CacheEvict::allEntries);
+        assertThat(evicts).allMatch(cacheEvict -> List.of(cacheEvict.value()).contains("user:data:"));
+        assertThat(evicts).extracting(CacheEvict::key).contains(keys);
+    }
+
+    private List<CacheEvict> userCacheEvicts(Method method) {
+        CacheEvict cacheEvict = method.getAnnotation(CacheEvict.class);
+        if (cacheEvict != null) {
+            return List.of(cacheEvict);
+        }
+        return List.of(method.getAnnotation(Caching.class).evict());
     }
 
     // ---------- helpers ----------
@@ -197,41 +217,33 @@ class UserServiceTest {
     void getCurrentUserAuthenticatedReturnsUser() {
         User user = createUser(1L, "testuser", "test@example.com", "13800138000");
 
-        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
-            stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
-            stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("1");
-            doReturn(user).when(userService).getById("1");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
+        doReturn(user).when(userService).getById("1");
 
-            User result = userService.getCurrentUser();
+        User result = userService.getCurrentUser();
 
-            assertThat(result).isEqualTo(user);
-        }
+        assertThat(result).isEqualTo(user);
     }
 
     @Test
     @DisplayName("getCurrentUser 已登录但用户不存在时返回null")
     void getCurrentUserUserNotFoundReturnsNull() {
-        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
-            stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
-            stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("1");
-            doReturn(null).when(userService).getById("1");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
+        doReturn(null).when(userService).getById("1");
 
-            User result = userService.getCurrentUser();
+        User result = userService.getCurrentUser();
 
-            assertThat(result).isNull();
-        }
+        assertThat(result).isNull();
     }
 
     @Test
     @DisplayName("getCurrentUser 未登录时返回null")
     void getCurrentUserNullAuthenticationReturnsNull() {
-        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
-            stpUtilMock.when(StpUtil::isLogin).thenReturn(false);
+        when(currentUserProvider.getCurrentUserId()).thenReturn(null);
 
-            User result = userService.getCurrentUser();
+        User result = userService.getCurrentUser();
 
-            assertThat(result).isNull();
-        }
+        assertThat(result).isNull();
     }
 
     // ================================================================
@@ -241,26 +253,21 @@ class UserServiceTest {
     @Test
     @DisplayName("getCurrentUserId 已登录时返回用户ID")
     void getCurrentUserIdAuthenticatedReturnsId() {
-        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
-            stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
-            stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("user-id-123");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("user-id-123");
 
-            String result = userService.getCurrentUserId();
+        String result = userService.getCurrentUserId();
 
-            assertThat(result).isEqualTo("user-id-123");
-        }
+        assertThat(result).isEqualTo("user-id-123");
     }
 
     @Test
     @DisplayName("getCurrentUserId 未登录时返回null")
     void getCurrentUserIdNotAuthenticatedReturnsDefaultId() {
-        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
-            stpUtilMock.when(StpUtil::isLogin).thenReturn(false);
+        when(currentUserProvider.getCurrentUserId()).thenReturn(null);
 
-            String result = userService.getCurrentUserId();
+        String result = userService.getCurrentUserId();
 
-            assertThat(result).isNull();
-        }
+        assertThat(result).isNull();
     }
 
     // ================================================================
@@ -458,7 +465,7 @@ class UserServiceTest {
     @Test
     @DisplayName("register 用户为 null 时抛出BusinessException(EMPTY_ARGS)")
     void registerThrowsWhenUserIsNull() {
-        assertThatThrownBy(() -> userService.register(null))
+        assertThatThrownBy(() -> userService.register((User) null))
                 .isInstanceOf(BusinessException.class)
                 .extracting("code")
                 .isEqualTo(UserErrorConstants.EMPTY_ARGS);
@@ -554,7 +561,7 @@ class UserServiceTest {
         User user = createUser(1L, "testuser", "test@example.com", "13800138000");
         user.setPassword("encodedOldPassword");
 
-        doReturn("1").when(userService).getCurrentUserId();
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
         doReturn(user).when(userService).getById("1");
         doReturn(true).when(userService).updateById(any(User.class));
 
@@ -579,7 +586,7 @@ class UserServiceTest {
         User user = createUser(1L, "testuser", "test@example.com", "13800138000");
         user.setPassword("encodedOldPassword");
 
-        doReturn("1").when(userService).getCurrentUserId();
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
         doReturn(user).when(userService).getById("1");
 
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
@@ -603,7 +610,7 @@ class UserServiceTest {
         User user = createUser(1L, "testuser", "test@example.com", "13800138000");
         user.setPassword("encodedOldPassword");
 
-        doReturn("1").when(userService).getCurrentUserId();
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
         doReturn(user).when(userService).getById("1");
         doReturn(false).when(userService).updateById(any(User.class));
 

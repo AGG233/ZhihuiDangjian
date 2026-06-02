@@ -68,8 +68,9 @@ class CategoryServiceCrossLayerTest extends CrossLayerTestBase {
         CategoryService categoryService(
                 CategoryConvertor convertor,
                 CategoryMapper categoryMapper,
-                com.rauio.smartdangjian.service.DataScopeService dataScopeService) {
-            CategoryService service = new CategoryService(convertor, dataScopeService);
+                com.rauio.smartdangjian.service.DataScopeService dataScopeService,
+                com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
+            CategoryService service = new CategoryService(convertor, dataScopeService, currentUserProvider);
             try {
                 Field field = findBaseMapperField(service.getClass());
                 field.setAccessible(true);

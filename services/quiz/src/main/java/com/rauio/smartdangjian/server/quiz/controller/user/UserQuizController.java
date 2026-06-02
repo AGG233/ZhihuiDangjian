@@ -8,8 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.quiz.pojo.response.QuizOptionResponse;
 import com.rauio.smartdangjian.server.quiz.pojo.response.QuizResponse;
 import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
@@ -25,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/quiz/quizzes")
 @RequiredArgsConstructor
-@SaCheckRole("STUDENT")
+@SaCheckRole(RoleConstants.STUDENT)
 public class UserQuizController {
 
     private final QuizService quizService;
@@ -34,7 +33,7 @@ public class UserQuizController {
     @Operation(summary = "获取试题详情", description = "根据试题ID获取试题详情")
     @GetMapping("/{id}")
     public Result<QuizResponse> getQuiz(@Parameter(name = "id", description = "试题ID") @PathVariable Long id) {
-        return Result.ok(toQuizResponse(quizService.get(id)));
+        return Result.ok(QuizResponse.from(quizService.get(id)));
     }
 
     @Operation(summary = "获取章节下所有试题", description = "根据章节ID获取该章节下的所有试题列表")
@@ -42,7 +41,7 @@ public class UserQuizController {
     public Result<List<QuizResponse>> getQuizOfChapter(
             @Parameter(name = "chapterId", description = "章节ID") @PathVariable Long chapterId) {
         List<QuizResponse> responses = quizService.getByChapterId(chapterId).stream()
-                .map(this::toQuizResponse)
+                .map(QuizResponse::from)
                 .toList();
         return Result.ok(responses);
     }
@@ -52,7 +51,7 @@ public class UserQuizController {
     public Result<List<QuizOptionResponse>> getQuizOption(
             @Parameter(name = "id", description = "试题ID") @PathVariable Long id) {
         List<QuizOptionResponse> responses = quizOptionService.getByQuizId(id).stream()
-                .map(this::toQuizOptionResponse)
+                .map(QuizOptionResponse::from)
                 .toList();
         return Result.ok(responses);
     }
@@ -61,36 +60,6 @@ public class UserQuizController {
     @GetMapping("/{id}/options/{optionId}")
     public Result<QuizOptionResponse> getByOptionId(
             @Parameter(name = "optionId", description = "选项ID") @PathVariable Long optionId) {
-        return Result.ok(toQuizOptionResponse(quizOptionService.get(optionId)));
-    }
-
-    private QuizResponse toQuizResponse(Quiz quiz) {
-        if (quiz == null) {
-            return null;
-        }
-        return QuizResponse.builder()
-                .id(quiz.getId())
-                .chapterId(quiz.getChapterId())
-                .question(quiz.getQuestion())
-                .questionType(quiz.getQuestionType())
-                .score(quiz.getScore())
-                .difficulty(quiz.getDifficulty())
-                .explanation(quiz.getExplanation())
-                .isActive(quiz.getIsActive())
-                .createdAt(quiz.getCreatedAt())
-                .updatedAt(quiz.getUpdatedAt())
-                .build();
-    }
-
-    private QuizOptionResponse toQuizOptionResponse(QuizOption option) {
-        if (option == null) {
-            return null;
-        }
-        return QuizOptionResponse.builder()
-                .id(option.getId())
-                .quizId(option.getQuizId())
-                .optionText(option.getOptionText())
-                .orderIndex(option.getOrderIndex())
-                .build();
+        return Result.ok(QuizOptionResponse.from(quizOptionService.get(optionId)));
     }
 }

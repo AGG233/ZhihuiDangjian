@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.security.CurrentUserProvider;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.quiz.pojo.response.UserQuizAnswerResponse;
 import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
 
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/quiz/answers")
 @RequiredArgsConstructor
-@SaCheckRole("STUDENT")
+@SaCheckRole(RoleConstants.STUDENT)
 public class UserQuizAnswerController {
 
     private final UserQuizAnswerService userQuizAnswerService;
@@ -32,7 +32,7 @@ public class UserQuizAnswerController {
     @SaCheckPermission("quiz:read")
     public Result<List<UserQuizAnswerResponse>> getMyQuizAnswers() {
         List<UserQuizAnswerResponse> responses = userQuizAnswerService.getByUserId(currentUserId()).stream()
-                .map(this::toUserQuizAnswerResponse)
+                .map(UserQuizAnswerResponse::from)
                 .toList();
         return Result.ok(responses);
     }
@@ -44,7 +44,7 @@ public class UserQuizAnswerController {
             @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId) {
         List<UserQuizAnswerResponse> responses =
                 userQuizAnswerService.getByUserIdAndQuizId(currentUserId(), quizId).stream()
-                        .map(this::toUserQuizAnswerResponse)
+                        .map(UserQuizAnswerResponse::from)
                         .toList();
         return Result.ok(responses);
     }
@@ -55,7 +55,7 @@ public class UserQuizAnswerController {
     public Result<UserQuizAnswerResponse> getMyQuizAnswer(
             @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId,
             @Parameter(name = "optionId", description = "选项ID") @PathVariable Long optionId) {
-        return Result.ok(toUserQuizAnswerResponse(
+        return Result.ok(UserQuizAnswerResponse.from(
                 userQuizAnswerService.getByUserIdAndQuizIdAndOptionId(currentUserId(), quizId, optionId)));
     }
 
@@ -65,11 +65,7 @@ public class UserQuizAnswerController {
     public Result<Boolean> createQuizAnswer(
             @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId,
             @Parameter(name = "optionId", description = "选项ID") @PathVariable Long optionId) {
-        UserQuizAnswer userQuizAnswer = UserQuizAnswer.builder().build();
-        userQuizAnswer.setUserId(currentUserId());
-        userQuizAnswer.setQuizId(quizId);
-        userQuizAnswer.setOptionId(optionId);
-        return Result.ok(userQuizAnswerService.create(userQuizAnswer));
+        return Result.ok(userQuizAnswerService.createForUser(currentUserId(), quizId, optionId));
     }
 
     @Operation(summary = "更新答题", description = "用户更新已提交的答案")
@@ -78,32 +74,10 @@ public class UserQuizAnswerController {
     public Result<Boolean> updateQuizAnswer(
             @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId,
             @Parameter(name = "optionId", description = "选项ID") @PathVariable Long optionId) {
-        UserQuizAnswer userQuizAnswer = UserQuizAnswer.builder().build();
-        userQuizAnswer.setUserId(currentUserId());
-        userQuizAnswer.setQuizId(quizId);
-        userQuizAnswer.setOptionId(optionId);
-        return Result.ok(userQuizAnswerService.updateByUserIdAndQuizIdAndOptionId(userQuizAnswer));
+        return Result.ok(userQuizAnswerService.updateByUserIdAndQuizIdAndOptionId(currentUserId(), quizId, optionId));
     }
 
     private Long currentUserId() {
         return Long.valueOf(currentUserProvider.getCurrentUserId());
-    }
-
-    private UserQuizAnswerResponse toUserQuizAnswerResponse(UserQuizAnswer answer) {
-        if (answer == null) {
-            return null;
-        }
-        return UserQuizAnswerResponse.builder()
-                .id(answer.getId())
-                .userId(answer.getUserId())
-                .optionId(answer.getOptionId())
-                .quizId(answer.getQuizId())
-                .userAnswer(answer.getUserAnswer())
-                .isCorrect(answer.getIsCorrect())
-                .scoreObtained(answer.getScoreObtained())
-                .timeSpent(answer.getTimeSpent())
-                .sessionId(answer.getSessionId())
-                .answerTime(answer.getAnswerTime())
-                .build();
     }
 }

@@ -34,6 +34,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 import com.rauio.smartdangjian.server.resource.controller.user.FileController;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
@@ -67,8 +68,8 @@ class FileControllerTest {
     @EnableWebMvc
     static class TestConfig {
         @Bean
-        public FileController fileController(FileService fileService) {
-            return new FileController(fileService);
+        public FileController fileController(FileService fileService, CurrentUserProvider currentUserProvider) {
+            return new FileController(fileService, currentUserProvider);
         }
     }
 
@@ -78,9 +79,14 @@ class FileControllerTest {
     @MockitoBean
     private FileService fileService;
 
+    @MockitoBean
+    private CurrentUserProvider currentUserProvider;
+
     @BeforeEach
     void resetMocks() {
         reset(fileService);
+        reset(currentUserProvider);
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
     }
 
     // ═══════════════════════════════════════════════════════════════

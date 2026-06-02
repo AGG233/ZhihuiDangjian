@@ -20,6 +20,11 @@ import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 import com.rauio.smartdangjian.server.learning.constants.LearningErrorConstants;
 import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
 import com.rauio.smartdangjian.server.learning.pojo.convertor.UserLearningRecordConvertor;
+import com.rauio.smartdangjian.server.learning.pojo.dto.HotCategorySummaryDto;
+import com.rauio.smartdangjian.server.learning.pojo.dto.HotCourseSummaryDto;
+import com.rauio.smartdangjian.server.learning.pojo.dto.LearningRecordSummaryDto;
+import com.rauio.smartdangjian.server.learning.pojo.dto.TrendSummaryDto;
+import com.rauio.smartdangjian.server.learning.pojo.dto.UserBehaviorDto;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserLearningRecordRequest;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
@@ -112,6 +117,61 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
                 .eq(UserLearningRecord::getUserId, userId)
                 .ge(UserLearningRecord::getCreatedAt, threshold)
                 .orderByDesc(UserLearningRecord::getCreatedAt));
+    }
+
+    @Transactional(readOnly = true)
+    public List<LearningRecordSummaryDto> listRecordSummariesByUserId(Long userId) {
+        return this.list(new LambdaQueryWrapper<UserLearningRecord>()
+                        .eq(UserLearningRecord::getUserId, userId)
+                        .select(
+                                UserLearningRecord::getUserId,
+                                UserLearningRecord::getChapterId,
+                                UserLearningRecord::getDuration))
+                .stream()
+                .map(record ->
+                        new LearningRecordSummaryDto(record.getUserId(), record.getChapterId(), record.getDuration()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<LearningRecordSummaryDto> listChapterRecordSummariesByUserIds(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return List.of();
+        }
+        return this.list(new LambdaQueryWrapper<UserLearningRecord>()
+                        .in(UserLearningRecord::getUserId, userIds)
+                        .select(UserLearningRecord::getChapterId, UserLearningRecord::getUserId))
+                .stream()
+                .map(record ->
+                        new LearningRecordSummaryDto(record.getUserId(), record.getChapterId(), record.getDuration()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserBehaviorDto> listAllUserBehaviors() {
+        return this.baseMapper.getAllUserBehaviors();
+    }
+
+    @Transactional(readOnly = true)
+    public List<HotCourseSummaryDto> getHotCourses(int limit) {
+        return this.baseMapper.selectHotCourses(limit).stream()
+                .map(raw -> new HotCourseSummaryDto(raw.getCourseId(), raw.getCourseTitle(), raw.getLearnerCount()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<HotCategorySummaryDto> getHotCategories(int limit) {
+        return this.baseMapper.selectHotCategories(limit).stream()
+                .map(raw ->
+                        new HotCategorySummaryDto(raw.getCategoryId(), raw.getCategoryName(), raw.getLearnerCount()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<TrendSummaryDto> getDailyTrend(LocalDateTime since) {
+        return this.baseMapper.selectDailyTrend(since).stream()
+                .map(raw -> new TrendSummaryDto(raw.getDate(), raw.getCount()))
+                .toList();
     }
 
     /**

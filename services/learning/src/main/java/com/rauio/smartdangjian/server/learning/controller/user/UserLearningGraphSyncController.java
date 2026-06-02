@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.security.CurrentUserProvider;
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
@@ -24,7 +25,7 @@ public class UserLearningGraphSyncController {
 
     @Operation(summary = "同步用户学习图谱", description = "将用户已学习内容同步到Neo4j图谱")
     @PostMapping("/me/sync")
-    @SaCheckRole("STUDENT")
+    @SaCheckRole(RoleConstants.STUDENT)
     public Result<Integer> syncMyGraph() {
         Long userId = Long.valueOf(currentUserProvider.getCurrentUserId());
         return Result.ok(userLearningRecordService.syncUserLearningGraph(userId));

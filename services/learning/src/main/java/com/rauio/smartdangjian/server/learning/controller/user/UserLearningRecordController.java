@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.security.CurrentUserProvider;
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserLearningRecordRequest;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
@@ -29,7 +30,7 @@ public class UserLearningRecordController {
 
     @Operation(summary = "获取当前用户学习记录", description = "根据记录ID获取当前用户学习记录详情")
     @GetMapping("/me/{id}")
-    @SaCheckRole("STUDENT")
+    @SaCheckRole(RoleConstants.STUDENT)
     public Result<UserLearningRecordResponse> get(@Parameter(name = "id", description = "记录ID") @PathVariable Long id) {
         UserLearningRecordResponse result = recordService.getForUser(id, currentUserId());
         return Result.ok(result);
@@ -37,7 +38,7 @@ public class UserLearningRecordController {
 
     @Operation(summary = "获取当前用户所有学习记录", description = "获取当前登录用户的所有学习记录")
     @GetMapping("/me")
-    @SaCheckRole("STUDENT")
+    @SaCheckRole(RoleConstants.STUDENT)
     public Result<List<UserLearningRecordResponse>> getMine() {
         List<UserLearningRecordResponse> result = recordService.getByUserId(currentUserId());
         return Result.ok(result);
@@ -45,7 +46,7 @@ public class UserLearningRecordController {
 
     @Operation(summary = "获取当前用户章节学习记录", description = "获取当前用户在指定章节的所有学习记录")
     @GetMapping("/me/chapters/{chapterId}")
-    @SaCheckRole("STUDENT")
+    @SaCheckRole(RoleConstants.STUDENT)
     public Result<List<UserLearningRecordResponse>> getMineByChapterId(
             @Parameter(name = "chapterId", description = "章节ID") @PathVariable Long chapterId) {
         List<UserLearningRecordResponse> result = recordService.getByUserIdAndChapterId(currentUserId(), chapterId);
@@ -54,7 +55,7 @@ public class UserLearningRecordController {
 
     @Operation(summary = "创建学习记录", description = "创建新的学习记录")
     @PostMapping
-    @SaCheckRole("STUDENT")
+    @SaCheckRole(RoleConstants.STUDENT)
     public Result<Boolean> create(@RequestBody @Valid UserLearningRecordRequest dto) {
         Boolean result = recordService.createForUser(dto, currentUserId());
         return Result.ok(result);
@@ -62,7 +63,7 @@ public class UserLearningRecordController {
 
     @Operation(summary = "更新学习记录", description = "更新学习记录")
     @PutMapping
-    @SaCheckRole("STUDENT")
+    @SaCheckRole(RoleConstants.STUDENT)
     public Result<Boolean> update(@RequestBody @Valid UserLearningRecordRequest dto) {
         Boolean result = recordService.updateForUser(dto, currentUserId());
         return Result.ok(result);

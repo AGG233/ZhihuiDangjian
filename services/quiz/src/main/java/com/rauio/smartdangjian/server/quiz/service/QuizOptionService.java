@@ -11,6 +11,7 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
 import com.rauio.smartdangjian.server.quiz.mapper.QuizOptionMapper;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
+import com.rauio.smartdangjian.server.quiz.pojo.request.QuizOptionRequest;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -37,6 +38,11 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
         return this.updateById(quizOption);
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean update(Long id, QuizOptionRequest request) {
+        return update(id, request.toEntity());
+    }
+
     /**
      * 为指定测验创建选项。
      *
@@ -48,6 +54,11 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
     public Boolean create(Long quizId, QuizOption option) {
         option.setQuizId(quizId);
         return this.save(option);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean create(Long quizId, QuizOptionRequest request) {
+        return create(quizId, request.toEntity());
     }
 
     /**

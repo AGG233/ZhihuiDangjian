@@ -24,13 +24,7 @@ public class QuizTool {
             return null;
         }
         String userId = ToolContextUtil.resolveUserId(userService);
-        AiChatMessage message = messageService
-                .lambdaQuery()
-                .eq(AiChatMessage::getSessionId, sessionId)
-                .eq(AiChatMessage::getUserId, userId)
-                .orderByDesc(AiChatMessage::getCreatedAt)
-                .last("limit 1")
-                .one();
+        AiChatMessage message = messageService.findLatestBySessionIdAndUserId(sessionId, Long.valueOf(userId));
         return message == null ? null : message.getMetadata();
     }
 }

@@ -1,6 +1,5 @@
 package com.rauio.smartdangjian.controller.user;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -98,7 +97,8 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /api/quiz/answers/me/quizzes/{quizId}/options/{optionId} - 提交答题成功")
         void createQuizAnswerSuccess() throws Exception {
-            when(userQuizAnswerService.create(any(UserQuizAnswer.class))).thenReturn(true);
+            when(userQuizAnswerService.createForUser(anyLong(), anyLong(), anyLong()))
+                    .thenReturn(true);
 
             mockMvc.perform(post("/api/quiz/answers/me/quizzes/1/options/1"))
                     .andExpect(status().isOk())
@@ -109,7 +109,7 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /api/quiz/answers/me/quizzes/{quizId}/options/{optionId} - 更新答题成功")
         void updateQuizAnswerSuccess() throws Exception {
-            when(userQuizAnswerService.updateByUserIdAndQuizIdAndOptionId(any(UserQuizAnswer.class)))
+            when(userQuizAnswerService.updateByUserIdAndQuizIdAndOptionId(anyLong(), anyLong(), anyLong()))
                     .thenReturn(true);
 
             mockMvc.perform(put("/api/quiz/answers/me/quizzes/1/options/1"))
@@ -170,7 +170,8 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST - 提交答题 Service 返回 false 则 code 为 400")
         void createQuizAnswerReturnsFalse() throws Exception {
-            when(userQuizAnswerService.create(any(UserQuizAnswer.class))).thenReturn(false);
+            when(userQuizAnswerService.createForUser(anyLong(), anyLong(), anyLong()))
+                    .thenReturn(false);
 
             mockMvc.perform(post("/api/quiz/answers/me/quizzes/1/options/1"))
                     .andExpect(status().isOk())
@@ -182,7 +183,7 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT - 更新答题 Service 返回 false 则 code 为 400")
         void updateQuizAnswerReturnsFalse() throws Exception {
-            when(userQuizAnswerService.updateByUserIdAndQuizIdAndOptionId(any(UserQuizAnswer.class)))
+            when(userQuizAnswerService.updateByUserIdAndQuizIdAndOptionId(anyLong(), anyLong(), anyLong()))
                     .thenReturn(false);
 
             mockMvc.perform(put("/api/quiz/answers/me/quizzes/1/options/1"))
@@ -195,7 +196,7 @@ class UserQuizAnswerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST - Service 抛出 BusinessException 返回 400")
         void createQuizAnswerThrowsBusinessException() throws Exception {
-            when(userQuizAnswerService.create(any(UserQuizAnswer.class)))
+            when(userQuizAnswerService.createForUser(anyLong(), anyLong(), anyLong()))
                     .thenThrow(new BusinessException(QuizErrorConstants.QUIZ_NOT_FOUND, "答题提交失败"));
 
             mockMvc.perform(post("/api/quiz/answers/me/quizzes/1/options/1"))

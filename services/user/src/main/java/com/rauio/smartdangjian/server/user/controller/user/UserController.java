@@ -1,11 +1,19 @@
 package com.rauio.smartdangjian.server.user.controller.user;
 
-import jakarta.validation.Valid;
+import static com.rauio.smartdangjian.constants.ValidationConstants.PAGE_NUM_MIN;
+import static com.rauio.smartdangjian.constants.ValidationConstants.PAGE_SIZE_MAX;
+import static com.rauio.smartdangjian.constants.ValidationConstants.PAGE_SIZE_MIN;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.request.UserUpdateRequest;
 import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
@@ -23,7 +31,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/user/users")
-@SaCheckRole("STUDENT")
+@SaCheckRole(RoleConstants.STUDENT)
+@Validated
 public class UserController {
 
     private final UserService userService;
@@ -38,8 +47,13 @@ public class UserController {
     @PostMapping("/search")
     public Result<Page<UserPublicResponse>> getPage(
             @RequestBody UserRequest userDto,
-            @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
-            @Parameter(name = "pageSize", description = "页大小") @RequestParam(defaultValue = "10") int pageSize) {
+            @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") @Min(PAGE_NUM_MIN)
+                    int pageNum,
+            @Parameter(name = "pageSize", description = "页大小")
+                    @RequestParam(defaultValue = "10")
+                    @Min(PAGE_SIZE_MIN)
+                    @Max(PAGE_SIZE_MAX)
+                    int pageSize) {
         return Result.ok(userService.getPage(userDto, pageNum, pageSize));
     }
 

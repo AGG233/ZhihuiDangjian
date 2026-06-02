@@ -57,9 +57,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
     @Cacheable(value = "resourceMeta", key = "#hash", sync = true)
     @Transactional(readOnly = true)
     public ResourceMeta getByHash(String hash) {
-        ResourceMeta meta = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
-                .eq(ResourceMeta::getHash, hash)
-                .last("limit 1"));
+        ResourceMeta meta = this.getOne(new LambdaQueryWrapper<ResourceMeta>().eq(ResourceMeta::getHash, hash));
         if (meta == null) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在");
         }
@@ -129,9 +127,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
     @CacheEvict(value = "resourceMeta", key = "#hash")
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteByHash(String hash) {
-        ResourceMeta meta = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
-                .eq(ResourceMeta::getHash, hash)
-                .last("limit 1"));
+        ResourceMeta meta = this.getOne(new LambdaQueryWrapper<ResourceMeta>().eq(ResourceMeta::getHash, hash));
         if (meta == null) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在");
         }
@@ -163,16 +159,14 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
     }
 
     private void validateDuplicate(Long currentId, String hash, String objectKey) {
-        ResourceMeta sameHash = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
-                .eq(StringUtils.isNotBlank(hash), ResourceMeta::getHash, hash)
-                .last("limit 1"));
+        ResourceMeta sameHash = this.getOne(
+                new LambdaQueryWrapper<ResourceMeta>().eq(StringUtils.isNotBlank(hash), ResourceMeta::getHash, hash));
         if (sameHash != null && !sameHash.getId().equals(currentId)) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_HASH_EXISTS, "资源哈希已存在");
         }
 
         ResourceMeta sameObjectKey = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
-                .eq(StringUtils.isNotBlank(objectKey), ResourceMeta::getObjectKey, objectKey)
-                .last("limit 1"));
+                .eq(StringUtils.isNotBlank(objectKey), ResourceMeta::getObjectKey, objectKey));
         if (sameObjectKey != null && !sameObjectKey.getId().equals(currentId)) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_OBJECT_KEY_EXISTS, "对象存储键已存在");
         }

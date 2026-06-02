@@ -3,6 +3,8 @@ package com.rauio.smartdangjian.server.content.pojo.response;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
@@ -44,4 +46,22 @@ public class CourseResponse {
 
     @Schema(description = "创建者ID")
     private Long creatorId;
+
+    public static CourseResponse from(Course course) {
+        if (course == null) {
+            return null;
+        }
+        return CourseResponse.builder()
+                .id(course.getId())
+                .title(course.getTitle())
+                .description(course.getDescription())
+                .difficulty(course.getDifficulty())
+                .coverImageId(course.getCoverImageId())
+                .estimatedDuration(course.getEstimatedDuration())
+                .enrollmentCount(course.getEnrollmentCount())
+                .averageRating(course.getAverageRating())
+                .publishedAt(course.getPublishedAt())
+                .creatorId(course.getCreatorId())
+                .build();
+    }
 }

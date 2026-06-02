@@ -59,7 +59,7 @@ tasks.withType<JavaCompile>().configureEach {
 val integrationTestSourceSet = sourceSets.create("integrationTest") {
     java.srcDir("src/integrationTest/java")
     resources.srcDir("src/integrationTest/resources")
-    compileClasspath += sourceSets.main.get().output + configurations.testRuntimeClasspath.get()
+    compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output + configurations.testRuntimeClasspath.get()
     runtimeClasspath += output + compileClasspath
 }
 

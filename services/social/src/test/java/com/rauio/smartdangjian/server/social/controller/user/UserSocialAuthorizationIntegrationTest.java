@@ -214,8 +214,39 @@ class UserSocialAuthorizationIntegrationTest {
 
         @Bean
         UserSocialController userSocialController(
-                CommentService commentService, LikeService likeService, UserService userService) {
-            return new UserSocialController(commentService, likeService, userService);
+                CommentService commentService,
+                LikeService likeService,
+                com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
+            return new UserSocialController(commentService, likeService, currentUserProvider);
+        }
+
+        @Bean
+        com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider() {
+            return new com.rauio.smartdangjian.security.CurrentUserProvider() {
+                @Override
+                public String getCurrentUserId() {
+                    return "1";
+                }
+
+                @Override
+                public String getCurrentUserRole() {
+                    return "STUDENT";
+                }
+
+                @Override
+                public boolean hasRole(String role) {
+                    return "STUDENT".equals(role);
+                }
+
+                @Override
+                public com.rauio.smartdangjian.security.LoginUser getCurrentUser() {
+                    return com.rauio.smartdangjian.security.LoginUser.builder()
+                            .id("1")
+                            .userType(com.rauio.smartdangjian.utils.spec.UserType.STUDENT)
+                            .role("STUDENT")
+                            .build();
+                }
+            };
         }
     }
 }

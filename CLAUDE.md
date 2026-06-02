@@ -257,67 +257,38 @@ dev 专属的多阶段构建和本地编排使用 `.dev` 后缀，合并到 prod
 
 ## 可复用工作流（.claude/workflows/）
 
-通过 Workflow 工具按名称调用，例如 `Workflow({name: "dev-to-prod"})` 或 `/dev-to-prod`。
+通过 Workflow 工具按名称调用，例如 `Workflow({name: "plan-execute"})` 或 `/plan-execute`。
 
-### 主编排器
+### plan-execute — 四阶段复杂计划编排器
 
-| 工作流 | 用途 | 阶段 |
-|--------|------|------|
-| `dev-to-prod` | **全生命周期编排 (v2)** | Plan确认 → 拆分+派发 → 并行编码/测试 → 本地门控 → 智能PR → 等待CI → 核查Bot → 汇报/修复循环。远程CI驱动，智能PR拆分，支持 `startPhase` 从任意阶段进入 |
+`plan-execute` 是**唯一的工作流入口**，用于实施复杂、长时间才能完成的计划。将计划拆分为安全、业务逻辑、控制层、数据层、测试等维度，并行探索确认后分阶段执行。
 
-### 子工作流（被主编排器调用）
+| 阶段 | 名称 | 核心职责 | Agent 模式 |
+|------|------|----------|-----------|
+| 1. Explore & Plan | 多维探索与计划确认 | 按安全/业务逻辑/控制层/数据层/测试维度并行 exploration → 汇总 agent 去重合并 → 确认最终工作内容（WorkItem[]） | `parallel()` 并行 |
+| 2. Code & Test | 编码与自测 | 将 WorkItem 分派给 coding agent，实现代码并自测通过 | `parallel()` 并行（worktree 隔离） |
+| 3. Review & Validate | 审查验证 | 对每个 coding agent 的产出串行审查，发现问题退回修复 → 全部通过 | root agent 串行派发 |
+| 4. Report | 最终汇报 | 汇总所有修改：修改文件、测试结果、审查意见、剩余风险 | 单 agent |
 
-| 工作流 | 用途 | 阶段 |
-|--------|------|------|
-| `nl-parser` | **自然语言解析** | 解析 → 确认。将自由文本功能描述解析为结构化参数，自动推断模块和意图 |
-| `task-splitter` | **任务拆分（含需求分析）** | 分析 → 拆解 → 验证 → 输出。分析范围+生成需求文档→拆分为并行子任务→验证完整性。支持 feature/refactor/bugfix 三种拆分策略 |
-| `dependency-scheduler` | **依赖驱动并行调度** | 构建依赖图 → 并发调度(上限16) → 收集结果。按依赖关系动态调度，任务完成立即释放下游，支持死锁检测 |
-| `ship-to-product` | **PR创建+CI监控+Bot检查** | 创建PR → 轮询CI → 检查Review → 核查Bot(Codacy/Sourcery/CodeRabbit/SonarQube) → 报告。支持 `action` 模式分阶段调用 |
-
-### 独立可用工作流（不在主编排流程中）
-
-| 工作流 | 用途 | 阶段 |
-|--------|------|------|
-| `qa-check` | 快速质量检查 | 编译 → 单元测试+JaCoCo → 集成测试 → 格式检查。支持 `{ module: "ai" }` 按模块过滤 |
-| `review-diff` | 本地多维代码审查 | 发现变更 → 3维度并行审查(bugs/security/patterns) → 3票对抗验证 → 报告 |
-| `requirements-confirm` | 独立需求确认 | 审查 → 决策 → 修订。对需求文档多维度评审，驳回时自动修订，最多3轮 |
-| `deep-ci-eval` | CI/CD深度评估 | 安全 → 性能 → 可靠性 → 综合。对 GitHub Actions 工作流多维审计 |
-
-### 典型使用方式
+### 使用方式
 
 ```bash
-# 自然语言入口：自动解析→拆分→并行执行→PR→CI→Bot核查
-/dev-to-prod { text: "给 user 模块加一个导出功能，支持 Excel 和 CSV 格式" }
+# 传入计划文本
+/plan-execute { plan: "实现课程分类管理功能：1.新增 Category 实体与 CRUD..." }
 
-# Plan Mode 入口：先在 Plan Mode 中规划，工作流自动检测 .claude/plans/ 下最新计划文件
-/dev-to-prod
+# 传入计划文件路径
+/plan-execute { planFile: "/home/rauio/.claude/plans/my-plan.md" }
 
-# 结构化参数入口
-/dev-to-prod { feature: "导出用户资料", module: "user" }
-
-# 从特定阶段开始（跳过前面的阶段）
-/dev-to-prod { startPhase: "execute" }     # 从并行编码开始
-/dev-to-prod { startPhase: "pr" }          # 从创建PR开始
-/dev-to-prod { startPhase: "ci" }          # 从等待CI开始
-
-# 全自动模式（自动合并+打标签）
-/dev-to-prod { feature: "修复登录bug", module: "auth", autoMerge: true, autoTag: true }
-
-# 只拆分任务（不执行后续阶段）
-/task-splitter { feature: "实现课程推荐系统", module: "course" }
-
-# 只创建PR
-/ship-to-product { action: "create-pr", head: "dev", base: "product" }
-
-# 只检查Bot Comment
-/ship-to-product { action: "check-bots", prNumber: 123 }
-
-# 本地代码审查（独立使用）
-/review-diff { base: "product" }
-
-# 本地QA检查（独立使用）
-/qa-check { module: "ai" }
+# Dry run 模式（只运行到 Phase 1，不执行编码）
+/plan-execute { plan: "修复登录超时问题", dryRun: true }
 ```
+
+Args 说明：
+| 参数 | 类型 | 必须 | 说明 |
+|------|------|------|------|
+| `plan` | string | 二选一 | 计划描述文本 |
+| `planFile` | string | 二选一 | 计划文件路径 |
+| `dryRun` | boolean | 可选 | 只运行到 Phase 1 结束 |
 
 ### 可用技能
 
@@ -326,8 +297,38 @@ dev 专属的多阶段构建和本地编排使用 `.dev` 后缀，合并到 prod
 | `spring-boot-coding` | Spring Boot 编码规范。Controller/Service/Mapper/Entity/Config 的项目级约定 |
 | `test-coding` | 测试规范。JUnit 5 + Mockito + AssertJ + 跨层回归测试要求 |
 | `code-review` | 代码审查清单。错误处理、安全、并发、可观测性、AI 模块专项检查 |
-| `plan-execute` | Plan 模式 → dev-to-prod v2 入口。支持自然语言和计划文件自动检测 |
 | `release-checklist` | 发布前验证清单。代码质量、API稳定性、数据库、配置、Docker、版本号 |
+
+### 项目专用 Agent（.claude/agents/）
+
+| Agent | 用途 | 权限 |
+|-------|------|------|
+| `zhdj-project-coder` | 编码实现：Controller/Service/Mapper/Entity/Config/Flyway 迁移 | `acceptEdits` |
+| `zhdj-project-tester` | 测试编写：JUnit/Mockito/AssertJ/MockMvc | `acceptEdits` |
+| `zhdj-project-reviewer` | 代码/安全/计划审查 | 只读 |
+| `zhdj-release-validator` | 发布验收：编译/测试/覆盖率/Spotless/bootJar 全量门禁 | `acceptEdits`（限于报告） |
+
+典型使用模式：Coder + Tester 并行编码测试 → Reviewer 审查 → Release Validator 最终门禁。
+
+## 架构修复计划（602）
+
+当前正在进行的架构修复计划位于 `.claude/plans/602/`，包含 20+ 个问题点，分 5 个阶段执行：
+
+| 阶段 | 内容 | 状态 |
+|------|------|------|
+| 阶段1 | 建规则和边界：ArchUnit 规则扩展、测试分层分离、角色常量 | 进行中 |
+| 阶段2 | 拆 common：拆分为 common-core/web/data-mybatis/redis/security 子模块 | 待开始 |
+| 阶段3 | 收敛横向依赖：search/ai 移除跨模块 Mapper/Entity 依赖 | 待开始 |
+| 阶段4 | 配置治理：ai/auth/quiz 改为 library 模块，配置集中到 server | 待开始 |
+| 阶段5 | 包名整理：category/chapter/course 的包名与模块名一致性 | 待开始 |
+
+### 阶段1 任务清单
+
+1. **扩展 ArchUnit 架构测试**：禁止 Controller→Entity 依赖、禁止跨模块 Mapper 访问
+2. **迁移 crosslayer 测试**：从 `src/test` → `src/integrationTest`，分离单元/集成测试生命周期
+3. **替换硬编码角色字符串**：`@SaCheckRole("MANAGER")` → `@SaCheckRole(RoleConstants.MANAGER)`
+
+阶段1 执行使用 `plan-execute` 工作流（纯编码任务，无需PR）。
 
 ## 依赖管理
 

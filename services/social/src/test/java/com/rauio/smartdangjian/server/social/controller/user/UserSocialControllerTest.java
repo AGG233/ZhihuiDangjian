@@ -19,11 +19,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.server.social.pojo.response.CommentResponse;
 import com.rauio.smartdangjian.server.social.pojo.response.LikeStatusResponse;
 import com.rauio.smartdangjian.server.social.service.CommentService;
 import com.rauio.smartdangjian.server.social.service.LikeService;
-import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 class UserSocialControllerTest {
@@ -35,7 +35,7 @@ class UserSocialControllerTest {
     private LikeService likeService;
 
     @Mock
-    private UserService userService;
+    private CurrentUserProvider currentUserProvider;
 
     @InjectMocks
     private UserSocialController controller;
@@ -77,7 +77,7 @@ class UserSocialControllerTest {
         @Test
         @DisplayName("查询点赞状态")
         void getLikeStatus() {
-            when(userService.getCurrentUserId()).thenReturn("1");
+            when(currentUserProvider.getCurrentUserId()).thenReturn("1");
             var response = LikeStatusResponse.builder()
                     .liked(false)
                     .likeCount(5)

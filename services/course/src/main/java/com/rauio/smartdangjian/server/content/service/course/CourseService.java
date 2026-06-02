@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.server.content.service.course;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
@@ -194,9 +196,8 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         if (courseId == null) {
             return null;
         }
-        CategoryCourse relation = categoryCourseMapper.selectOne(new LambdaQueryWrapper<CategoryCourse>()
-                .eq(CategoryCourse::getCourseId, courseId)
-                .last("limit 1"));
+        CategoryCourse relation = categoryCourseMapper.selectOne(
+                new LambdaQueryWrapper<CategoryCourse>().eq(CategoryCourse::getCourseId, courseId));
         return relation == null ? null : relation.getCategoryId();
     }
 
@@ -211,5 +212,106 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
                 .filter(Objects::nonNull)
                 .distinct()
                 .collect(Collectors.toList());
+    }
+
+    public List<Long> listTopCategoryIdsByCourseIds(Collection<Long> courseIds, int limit) {
+        if (courseIds == null || courseIds.isEmpty() || limit <= 0) {
+            return Collections.emptyList();
+        }
+        return categoryCourseMapper
+                .selectList(new LambdaQueryWrapper<CategoryCourse>().in(CategoryCourse::getCourseId, courseIds))
+                .stream()
+                .map(CategoryCourse::getCategoryId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(categoryId -> categoryId, Collectors.counting()))
+                .entrySet()
+                .stream()
+                .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
+                .map(Map.Entry::getKey)
+                .limit(limit)
+                .toList();
+    }
+
+    public Page<CourseResponse> searchPublishedCourses(
+            String keyword, String categoryId, String difficulty, int pageNum, int pageSize) {
+        LambdaQueryWrapper<Course> wrapper = new LambdaQueryWrapper<Course>()
+                .eq(Course::getIsPublished, true)
+                .select(
+                        Course::getId,
+                        Course::getTitle,
+                        Course::getDescription,
+                        Course::getDifficulty,
+                        Course::getCoverImageId,
+                        Course::getEnrollmentCount,
+                        Course::getAverageRating);
+
+        if (StringUtils.isNotBlank(keyword)) {
+            wrapper.apply("MATCH(title, description) AGAINST({0} IN BOOLEAN MODE)", keyword);
+        }
+        if (StringUtils.isNotBlank(categoryId)) {
+            List<Long> matchedCourseIds = categoryCourseMapper
+                    .selectList(new LambdaQueryWrapper<CategoryCourse>().eq(CategoryCourse::getCategoryId, categoryId))
+                    .stream()
+                    .map(CategoryCourse::getCourseId)
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .toList();
+            if (matchedCourseIds.isEmpty()) {
+                return new Page<>(pageNum, pageSize, 0);
+            }
+            wrapper.in(Course::getId, matchedCourseIds);
+        }
+        if (StringUtils.isNotBlank(difficulty)) {
+            wrapper.eq(Course::getDifficulty, difficulty);
+        }
+
+        wrapper.orderByDesc(Course::getEnrollmentCount);
+
+        Page<Course> coursePage = this.page(new Page<>(pageNum, pageSize), wrapper);
+        Page<CourseResponse> result = new Page<>(coursePage.getCurrent(), coursePage.getSize(), coursePage.getTotal());
+        result.setRecords(toCourseResponseList(coursePage.getRecords()));
+        return result;
+    }
+
+    public Page<Long> recommendPublishedCourseIds(
+            Collection<Long> interestCategoryIds,
+            Collection<Long> excludedCourseIds,
+            String difficulty,
+            int pageNum,
+            int pageSize) {
+        LambdaQueryWrapper<Course> wrapper = new LambdaQueryWrapper<Course>()
+                .eq(Course::getIsPublished, true)
+                .notIn(excludedCourseIds != null && !excludedCourseIds.isEmpty(), Course::getId, excludedCourseIds);
+
+        if (interestCategoryIds != null && !interestCategoryIds.isEmpty()) {
+            List<Long> matchedCourseIds = getCourseIdsByCategoryIds(new ArrayList<>(interestCategoryIds));
+            if (matchedCourseIds.isEmpty()) {
+                return new Page<>(pageNum, pageSize, 0);
+            }
+            wrapper.in(Course::getId, matchedCourseIds);
+        }
+        if (StringUtils.isNotBlank(difficulty)) {
+            wrapper.eq(Course::getDifficulty, difficulty);
+        }
+
+        wrapper.orderByDesc(Course::getEnrollmentCount);
+
+        Page<Course> coursePage = this.page(new Page<>(pageNum, pageSize), wrapper);
+        Page<Long> result = new Page<>(pageNum, pageSize);
+        result.setTotal(coursePage.getTotal());
+        result.setRecords(coursePage.getRecords().stream().map(Course::getId).toList());
+        return result;
+    }
+
+    public List<CourseResponse> listCourseResponsesByIds(Collection<Long> courseIds) {
+        if (courseIds == null || courseIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return toCourseResponseList(this.listByIds(courseIds));
+    }
+
+    public Map<Long, CourseResponse> getCourseResponseMapByIds(Collection<Long> courseIds) {
+        return listCourseResponsesByIds(courseIds).stream()
+                .collect(Collectors.toMap(CourseResponse::getId, course -> course, (a, b) -> a));
     }
 }

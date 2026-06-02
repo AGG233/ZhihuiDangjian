@@ -1,8 +1,12 @@
 package com.rauio.smartdangjian.server.graph.controller.admin;
 
 import java.util.List;
-import java.util.Map;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
+
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.security.RoleConstants;
+import com.rauio.smartdangjian.server.graph.pojo.request.PartyHistoryEntityImportRequest;
+import com.rauio.smartdangjian.server.graph.pojo.request.PartyHistoryRelationshipImportRequest;
 import com.rauio.smartdangjian.server.graph.service.PartyHistoryGraphService;
 import com.rauio.smartdangjian.server.graph.service.PartyHistoryImportService;
 
@@ -24,7 +31,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/graph/party-history/admin")
 @RequiredArgsConstructor
-@SaCheckRole("MANAGER")
+@SaCheckRole(RoleConstants.MANAGER)
+@Validated
 public class AdminPartyHistoryController {
 
     private final PartyHistoryImportService importService;
@@ -34,14 +42,21 @@ public class AdminPartyHistoryController {
     @PostMapping("/import/entities/{label}")
     public Result<Integer> importEntities(
             @Parameter(description = "节点标签") @PathVariable String label,
-            @RequestBody List<Map<String, Object>> entities) {
-        return Result.ok(importService.importEntities(label, entities));
+            @RequestBody @Valid @NotEmpty(message = "实体列表不能为空") @Size(max = 500, message = "单次最多导入500个实体")
+                    List<@Valid PartyHistoryEntityImportRequest> entities) {
+        return Result.ok(importService.importEntities(
+                label,
+                entities.stream().map(PartyHistoryEntityImportRequest::toMap).toList()));
     }
 
     @Operation(summary = "批量导入关系", description = "批量导入党史实体间的关系")
     @PostMapping("/import/relationships")
-    public Result<Integer> importRelationships(@RequestBody List<Map<String, Object>> relationships) {
-        return Result.ok(importService.importRelationships(relationships));
+    public Result<Integer> importRelationships(
+            @RequestBody @Valid @NotEmpty(message = "关系列表不能为空") @Size(max = 500, message = "单次最多导入500条关系")
+                    List<@Valid PartyHistoryRelationshipImportRequest> relationships) {
+        return Result.ok(importService.importRelationships(relationships.stream()
+                .map(PartyHistoryRelationshipImportRequest::toMap)
+                .toList()));
     }
 
     @Operation(summary = "删除实体", description = "根据 graph_id 删除党史实体及其所有关联关系")

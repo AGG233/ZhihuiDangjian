@@ -7,7 +7,8 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
+import com.rauio.smartdangjian.security.RoleConstants;
+import com.rauio.smartdangjian.server.content.pojo.request.ChapterContentBlockRequest;
 import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
@@ -19,26 +20,21 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/content/content-blocks")
 @RequiredArgsConstructor
-@SaCheckRole("MANAGER")
+@SaCheckRole(RoleConstants.MANAGER)
 public class AdminContentController {
-
-    private static final Long CAROUSEL_PARENT_ID = 1145141919810L;
 
     private final ChapterContentBlockService chapterContentBlockService;
 
     @Operation(summary = "更新轮播图")
     @PutMapping("/carousel")
-    public Result<Boolean> updateCarousel(@RequestBody @Valid ChapterContentBlock chapterContentBlock) {
-        return Result.ok(chapterContentBlockService.update(chapterContentBlock));
+    public Result<Boolean> updateCarousel(@RequestBody @Valid ChapterContentBlockRequest request) {
+        return Result.ok(chapterContentBlockService.updateCarousel(request));
     }
 
     @Operation(summary = "添加轮播图")
     @PostMapping("/carousel")
-    public Result<Boolean> addCarousel(@RequestBody @Valid List<ChapterContentBlock> chapterContentBlocks) {
-        for (ChapterContentBlock block : chapterContentBlocks) {
-            block.setChapterId(CAROUSEL_PARENT_ID);
-        }
-        return Result.ok(chapterContentBlockService.createBatch(chapterContentBlocks));
+    public Result<Boolean> addCarousel(@RequestBody @Valid List<ChapterContentBlockRequest> requests) {
+        return Result.ok(chapterContentBlockService.createCarouselBatch(requests));
     }
 
     @Operation(summary = "删除轮播图")

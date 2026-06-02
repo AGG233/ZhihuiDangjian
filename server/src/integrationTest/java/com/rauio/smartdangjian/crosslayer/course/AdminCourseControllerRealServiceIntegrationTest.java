@@ -192,13 +192,13 @@ class AdminCourseControllerRealServiceIntegrationTest extends CrossLayerTestBase
     }
 
     @Test
-    @DisplayName("GET /content/courses/learned/{id} 使用真实 CourseService 查询当前用户已学课程")
+    @DisplayName("GET /content/courses/learned/me 使用真实 CourseService 查询当前用户已学课程")
     void getLearnedCoursesUsesRealCourseServiceForCurrentUser() throws Exception {
         setSecurityContext(UserType.STUDENT, 7L, "uni-1");
         List<Course> courses = List.of(Course.builder().id(100L).title("党史课程").build());
         when(courseMapper.selectLearnedCoursesByUserId(7L)).thenReturn(courses);
 
-        mockMvc.perform(get("/api/content/courses/learned/7"))
+        mockMvc.perform(get("/api/content/courses/learned/me"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("200"))
                 .andExpect(jsonPath("$.data.length()").value(1))
@@ -208,14 +208,11 @@ class AdminCourseControllerRealServiceIntegrationTest extends CrossLayerTestBase
     }
 
     @Test
-    @DisplayName("GET /content/courses/learned/{id} 查询他人课程返回 403 且不调用真实 Service")
-    void getOtherUsersLearnedCoursesReturns403BeforeService() throws Exception {
+    @DisplayName("旧的 learned/{id} 路径不可用且不调用真实 Service")
+    void oldLearnedCoursesPathIsUnavailableBeforeService() throws Exception {
         setSecurityContext(UserType.STUDENT, 7L, "uni-1");
 
-        mockMvc.perform(get("/api/content/courses/learned/8"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value("403"))
-                .andExpect(jsonPath("$.message").value("无权查看其他用户的学习课程"));
+        mockMvc.perform(get("/api/content/courses/learned/8")).andExpect(status().isNotFound());
 
         verify(courseMapper, never()).selectLearnedCoursesByUserId(any());
     }
@@ -291,8 +288,9 @@ class AdminCourseControllerRealServiceIntegrationTest extends CrossLayerTestBase
         }
 
         @Bean
-        UserCourseController userCourseController(CourseService courseService) {
-            return new UserCourseController(courseService);
+        UserCourseController userCourseController(
+                CourseService courseService, com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
+            return new UserCourseController(courseService, currentUserProvider);
         }
 
         @Bean

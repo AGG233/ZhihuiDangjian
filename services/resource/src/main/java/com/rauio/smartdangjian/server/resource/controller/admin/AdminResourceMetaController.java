@@ -7,9 +7,10 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaCreateRequest;
 import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaUpdateRequest;
+import com.rauio.smartdangjian.server.resource.pojo.response.ResourceMetaResponse;
 import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
@@ -22,26 +23,26 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/resource/files")
 @RequiredArgsConstructor
-@SaCheckRole("SCHOOL")
+@SaCheckRole(RoleConstants.SCHOOL)
 public class AdminResourceMetaController {
 
     private final ResourceMetaService resourceMetaService;
 
     @Operation(summary = "创建资源元数据", description = "由管理员创建资源元数据，不处理文件上传")
     @PostMapping
-    public Result<ResourceMeta> create(@RequestBody @Valid ResourceMetaCreateRequest request) {
-        return Result.ok(resourceMetaService.create(request));
+    public Result<ResourceMetaResponse> create(@RequestBody @Valid ResourceMetaCreateRequest request) {
+        return Result.ok(ResourceMetaResponse.from(resourceMetaService.create(request)));
     }
 
     @Operation(summary = "获取资源元数据", description = "根据资源ID获取资源元数据详情")
     @GetMapping("/{id}")
-    public Result<ResourceMeta> get(@PathVariable Long id) {
-        return Result.ok(resourceMetaService.get(id));
+    public Result<ResourceMetaResponse> get(@PathVariable Long id) {
+        return Result.ok(ResourceMetaResponse.from(resourceMetaService.get(id)));
     }
 
     @Operation(summary = "查询资源元数据", description = "按上传人、原始文件名、哈希、资源类型、状态筛选")
     @GetMapping
-    public Result<List<ResourceMeta>> list(
+    public Result<List<ResourceMetaResponse>> list(
             @Parameter(name = "uploaderId", description = "上传人ID") @RequestParam(required = false) Long uploaderId,
             @Parameter(name = "originalName", description = "原始文件名") @RequestParam(required = false)
                     String originalName,
@@ -50,7 +51,9 @@ public class AdminResourceMetaController {
                     Integer resourceType,
             @Parameter(name = "status", description = "资源状态：0表示上传中，1表示公开可用，2表示隐藏") @RequestParam(required = false)
                     Integer status) {
-        return Result.ok(resourceMetaService.list(uploaderId, originalName, hash, resourceType, status));
+        return Result.ok(resourceMetaService.list(uploaderId, originalName, hash, resourceType, status).stream()
+                .map(ResourceMetaResponse::from)
+                .toList());
     }
 
     @Operation(summary = "更新资源元数据", description = "根据资源ID更新原始文件名、对象存储键、资源类型、状态")

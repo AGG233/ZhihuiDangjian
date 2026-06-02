@@ -42,8 +42,7 @@ public class UserResponse {
     private AccountStatus status;
 
     @Schema(description = "学校ID")
-    @JsonSerialize(using = ToStringSerializer.class)
-    private Long universityId;
+    private String universityId;
 
     @Schema(description = "入党时间")
     private LocalDateTime joinPartyDate;

@@ -8,7 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
+import com.rauio.smartdangjian.security.LoginUser;
 import com.rauio.smartdangjian.server.content.constants.CategoryErrorConstants;
 import com.rauio.smartdangjian.server.content.mapper.CategoryMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.CategoryConvertor;
@@ -16,7 +17,6 @@ import com.rauio.smartdangjian.server.content.pojo.entity.Category;
 import com.rauio.smartdangjian.server.content.pojo.request.CategoryRequest;
 import com.rauio.smartdangjian.server.content.pojo.response.CategoryResponse;
 import com.rauio.smartdangjian.service.DataScopeService;
-import com.rauio.smartdangjian.utils.SecurityUtils;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +27,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
 
     private final CategoryConvertor convertor;
     private final DataScopeService dataScopeService;
+    private final CurrentUserProvider currentUserProvider;
 
     public final int MAX_LEVEL = 3;
 
@@ -70,7 +71,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
     @Transactional(readOnly = true)
     public List<CategoryResponse> getRootList() {
         LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<Category>().eq(Category::getLevel, 0);
-        CurrentUserPrincipal currentUser = SecurityUtils.getCurrentUser();
+        LoginUser currentUser = currentUserProvider.getCurrentUser();
         if (currentUser != null && currentUser.getUserType() != UserType.MANAGER) {
             wrapper.and(w -> w.eq(Category::getUniversityId, currentUser.getUniversityId())
                     .or()
@@ -94,7 +95,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
         dataScopeService.requireSameUniversity(parent.getUniversityId());
 
         LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<Category>().eq(Category::getParentId, categoryId);
-        CurrentUserPrincipal currentUser = SecurityUtils.getCurrentUser();
+        LoginUser currentUser = currentUserProvider.getCurrentUser();
         if (currentUser != null && currentUser.getUserType() != UserType.MANAGER) {
             wrapper.and(w -> w.eq(Category::getUniversityId, currentUser.getUniversityId())
                     .or()
@@ -119,7 +120,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
         category.setLevel(0);
         category.setParentId(null);
 
-        CurrentUserPrincipal currentUser = SecurityUtils.getCurrentUser();
+        LoginUser currentUser = currentUserProvider.getCurrentUser();
         if (currentUser == null) {
             throw new BusinessException(CategoryErrorConstants.CATEGORY_USER_NOT_FOUND, "当前用户不存在");
         }
