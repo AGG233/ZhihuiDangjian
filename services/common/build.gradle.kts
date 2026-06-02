@@ -29,6 +29,14 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    // 架构测试：提供跨模块类路径访问以支持完整包扫描
+    listOf(
+        ":services:ai", ":services:article", ":services:auth", ":services:category",
+        ":services:chapter", ":services:content", ":services:course", ":services:graph",
+        ":services:learning", ":services:quiz", ":services:resource", ":services:search",
+        ":services:social", ":services:user"
+    ).forEach { testImplementation(project(it)) }
 }
 
 tasks.test {

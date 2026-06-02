@@ -69,11 +69,11 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @return 当前调用接口的用户
      */
     public User getCurrentUser() {
-        if (!StpUtil.isLogin()) {
+        String userId = getCurrentUserId();
+        if (userId == null) {
             return null;
         }
-        Object user = StpUtil.getSession().get("user");
-        return user instanceof User ? (User) user : null;
+        return this.getById(userId);
     }
 
     /**
@@ -139,7 +139,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param user 用户实体
      * @throws BusinessException 如果更新失败
      */
-    @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#id")
+    @CacheEvict(value = USER_VO_CACHE_PREFIX, allEntries = true)
     public User update(Long id, User user) {
         user.setId(id);
         if (StringUtils.isNotBlank(user.getPassword())) {
@@ -151,7 +151,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         return this.getById(id);
     }
 
-    @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#id")
+    @CacheEvict(value = USER_VO_CACHE_PREFIX, allEntries = true)
     public User update(Long id, UserUpdateRequest request) {
         User user = convertor.toEntity(request);
         return update(id, user);
@@ -163,7 +163,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param id 用户 ID
      * @throws BusinessException 如果删除失败
      */
-    @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#id")
+    @CacheEvict(value = USER_VO_CACHE_PREFIX, allEntries = true)
     public void delete(Long id) {
         if (!this.removeById(id)) {
             throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户删除失败");
@@ -176,6 +176,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param user 用户实体
      * @throws BusinessException 如果注册失败
      */
+    @CacheEvict(value = USER_VO_CACHE_PREFIX, allEntries = true)
     public void register(User user) {
         if (user == null) {
             throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "有空参数");
@@ -197,12 +198,19 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param newPassword 新密码
      * @throws BusinessException 如果修改失败
      */
-    @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#root.target.getCurrentUser().id")
+    @CacheEvict(value = USER_VO_CACHE_PREFIX, allEntries = true)
     public void changePassword(String oldPassword, String newPassword) {
         if (oldPassword == null || oldPassword.isEmpty()) {
             throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "有空参数");
         }
-        User user = getCurrentUser();
+        String currentUserId = getCurrentUserId();
+        if (currentUserId == null) {
+            throw new BusinessException(UserErrorConstants.PASSWORD_CHANGE_ERROR, "未登录或登录已过期");
+        }
+        User user = this.getById(currentUserId);
+        if (user == null) {
+            throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户不存在");
+        }
         if (BCrypt.checkpw(oldPassword, user.getPassword())) {
             user.setPassword(BCrypt.hashpw(newPassword));
             if (!this.updateById(user)) {

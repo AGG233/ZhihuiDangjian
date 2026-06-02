@@ -23,7 +23,6 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.TransactionDefinition;
@@ -210,17 +209,10 @@ class AdminResourceMetaControllerRealServiceIntegrationTest extends CrossLayerTe
         }
 
         @Bean
-        CacheManager cacheManager() {
-            return mock(CacheManager.class);
-        }
-
-        @Bean
         @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
         ResourceMetaService resourceMetaService(
-                ResourceMetaMapper resourceMetaMapper,
-                PermissionValidator permissionValidator,
-                CacheManager cacheManager) {
-            ResourceMetaService service = new ResourceMetaService(permissionValidator, cacheManager);
+                ResourceMetaMapper resourceMetaMapper, PermissionValidator permissionValidator) {
+            ResourceMetaService service = new ResourceMetaService(permissionValidator);
             try {
                 Field field = findBaseMapperField(service.getClass());
                 field.setAccessible(true);

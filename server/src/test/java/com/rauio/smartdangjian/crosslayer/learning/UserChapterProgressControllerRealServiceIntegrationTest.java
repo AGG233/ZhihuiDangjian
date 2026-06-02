@@ -56,6 +56,7 @@ class UserChapterProgressControllerRealServiceIntegrationTest extends CrossLayer
     @BeforeEach
     void resetMocks() {
         reset(progressMapper, convertor);
+        setStudentContext(1L, "uni1");
     }
 
     @Test
@@ -132,6 +133,7 @@ class UserChapterProgressControllerRealServiceIntegrationTest extends CrossLayer
                 .status("in_progress")
                 .build();
 
+        when(progressMapper.selectOne(any(Wrapper.class), anyBoolean())).thenReturn(existing);
         when(progressMapper.selectById(100L)).thenReturn(existing);
         when(convertor.toEntity(any(UserChapterProgressRequest.class))).thenReturn(updated);
         when(progressMapper.updateById(any(UserChapterProgress.class))).thenReturn(1);
@@ -167,7 +169,7 @@ class UserChapterProgressControllerRealServiceIntegrationTest extends CrossLayer
     }
 
     @Test
-    @DisplayName("GET /progress/users/{userId} 使用真实 UserChapterProgressService 查询并转换列表")
+    @DisplayName("GET /progress/me 使用真实 UserChapterProgressService 查询并转换列表")
     void getByUserIdUsesRealProgressService() throws Exception {
         List<UserChapterProgress> records = List.of(UserChapterProgress.builder()
                 .id(100L)
@@ -185,7 +187,7 @@ class UserChapterProgressControllerRealServiceIntegrationTest extends CrossLayer
         when(progressMapper.selectList(any(Wrapper.class))).thenReturn(records);
         when(convertor.toResponseList(records)).thenReturn(responses);
 
-        mockMvc.perform(get("/api/learning/progress/users/1"))
+        mockMvc.perform(get("/api/learning/progress/me"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("200"))
                 .andExpect(jsonPath("$.data[0].id").value(100))
@@ -223,8 +225,10 @@ class UserChapterProgressControllerRealServiceIntegrationTest extends CrossLayer
         }
 
         @Bean
-        UserChapterProgressController userChapterProgressController(UserChapterProgressService progressService) {
-            return new UserChapterProgressController(progressService);
+        UserChapterProgressController userChapterProgressController(
+                UserChapterProgressService progressService,
+                com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
+            return new UserChapterProgressController(progressService, currentUserProvider);
         }
 
         @Bean

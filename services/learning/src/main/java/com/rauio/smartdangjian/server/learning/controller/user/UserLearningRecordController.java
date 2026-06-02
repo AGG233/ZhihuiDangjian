@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserLearningRecordRequest;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
@@ -24,31 +25,30 @@ import lombok.RequiredArgsConstructor;
 public class UserLearningRecordController {
 
     private final UserLearningRecordService recordService;
+    private final CurrentUserProvider currentUserProvider;
 
-    @Operation(summary = "获取学习记录", description = "根据记录ID获取学习记录详情")
-    @GetMapping("/{id}")
+    @Operation(summary = "获取当前用户学习记录", description = "根据记录ID获取当前用户学习记录详情")
+    @GetMapping("/me/{id}")
     @SaCheckRole("STUDENT")
     public Result<UserLearningRecordResponse> get(@Parameter(name = "id", description = "记录ID") @PathVariable Long id) {
-        UserLearningRecordResponse result = recordService.get(id);
+        UserLearningRecordResponse result = recordService.getForUser(id, currentUserId());
         return Result.ok(result);
     }
 
-    @Operation(summary = "获取用户所有学习记录", description = "根据用户ID获取该用户的所有学习记录")
-    @GetMapping("/users/{userId}")
+    @Operation(summary = "获取当前用户所有学习记录", description = "获取当前登录用户的所有学习记录")
+    @GetMapping("/me")
     @SaCheckRole("STUDENT")
-    public Result<List<UserLearningRecordResponse>> getByUserId(
-            @Parameter(name = "userId", description = "用户ID") @PathVariable Long userId) {
-        List<UserLearningRecordResponse> result = recordService.getByUserId(userId);
+    public Result<List<UserLearningRecordResponse>> getMine() {
+        List<UserLearningRecordResponse> result = recordService.getByUserId(currentUserId());
         return Result.ok(result);
     }
 
-    @Operation(summary = "获取用户章节学习记录", description = "获取指定用户在指定章节的所有学习记录")
-    @GetMapping("/users/{userId}/chapters/{chapterId}")
+    @Operation(summary = "获取当前用户章节学习记录", description = "获取当前用户在指定章节的所有学习记录")
+    @GetMapping("/me/chapters/{chapterId}")
     @SaCheckRole("STUDENT")
-    public Result<List<UserLearningRecordResponse>> getByUserIdAndChapterId(
-            @Parameter(name = "userId", description = "用户ID") @PathVariable Long userId,
+    public Result<List<UserLearningRecordResponse>> getMineByChapterId(
             @Parameter(name = "chapterId", description = "章节ID") @PathVariable Long chapterId) {
-        List<UserLearningRecordResponse> result = recordService.getByUserIdAndChapterId(userId, chapterId);
+        List<UserLearningRecordResponse> result = recordService.getByUserIdAndChapterId(currentUserId(), chapterId);
         return Result.ok(result);
     }
 
@@ -56,7 +56,7 @@ public class UserLearningRecordController {
     @PostMapping
     @SaCheckRole("STUDENT")
     public Result<Boolean> create(@RequestBody @Valid UserLearningRecordRequest dto) {
-        Boolean result = recordService.create(dto);
+        Boolean result = recordService.createForUser(dto, currentUserId());
         return Result.ok(result);
     }
 
@@ -64,7 +64,11 @@ public class UserLearningRecordController {
     @PutMapping
     @SaCheckRole("STUDENT")
     public Result<Boolean> update(@RequestBody @Valid UserLearningRecordRequest dto) {
-        Boolean result = recordService.update(dto);
+        Boolean result = recordService.updateForUser(dto, currentUserId());
         return Result.ok(result);
+    }
+
+    private Long currentUserId() {
+        return Long.valueOf(currentUserProvider.getCurrentUserId());
     }
 }

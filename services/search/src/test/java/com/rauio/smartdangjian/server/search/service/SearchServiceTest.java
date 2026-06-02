@@ -8,27 +8,21 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
@@ -36,6 +30,7 @@ import com.rauio.smartdangjian.server.content.pojo.convertor.CourseConvertor;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.search.support.TestMybatisPlusConfig;
 import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,10 +39,7 @@ class SearchServiceTest {
 
     @BeforeAll
     static void initMybatisPlus() {
-        MybatisConfiguration config = new MybatisConfiguration();
-        MapperBuilderAssistant assistant = new MapperBuilderAssistant(config, "");
-        TableInfoHelper.initTableInfo(assistant, Course.class);
-        TableInfoHelper.initTableInfo(assistant, CategoryCourse.class);
+        TestMybatisPlusConfig.ensureInitialized();
     }
 
     @Mock
@@ -65,14 +57,8 @@ class SearchServiceTest {
     @Mock
     private RecommendService recommendService;
 
-    @Spy
     @InjectMocks
     private SearchService searchService;
-
-    @BeforeEach
-    void resetSpy() {
-        reset(searchService);
-    }
 
     // ==================== searchCourses ====================
 

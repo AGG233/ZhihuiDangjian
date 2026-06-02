@@ -32,8 +32,9 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
     static class TestConfig extends CommonTestConfig {
         @Bean
         public UserLearningGraphSyncController userLearningGraphSyncController(
-                UserLearningRecordService userLearningRecordService) {
-            return new UserLearningGraphSyncController(userLearningRecordService);
+                UserLearningRecordService userLearningRecordService,
+                com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
+            return new UserLearningGraphSyncController(userLearningRecordService, currentUserProvider);
         }
     }
 
@@ -49,22 +50,22 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
     class NormalTests {
 
         @Test
-        @DisplayName("POST /user/{userId}/sync - 同步用户学习图谱成功")
+        @DisplayName("POST /me/sync - 同步当前用户学习图谱成功")
         void syncUserGraphSuccess() throws Exception {
             when(userLearningRecordService.syncUserLearningGraph(1L)).thenReturn(5);
 
-            mockMvc.perform(post("/api/learning/graph/users/1/sync"))
+            mockMvc.perform(post("/api/learning/graph/me/sync"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(5));
         }
 
         @Test
-        @DisplayName("POST /user/{userId}/sync - 同步无学习记录的用户返回 0")
+        @DisplayName("POST /me/sync - 同步无学习记录的当前用户返回 0")
         void syncUserGraphNoRecords() throws Exception {
-            when(userLearningRecordService.syncUserLearningGraph(2L)).thenReturn(0);
+            when(userLearningRecordService.syncUserLearningGraph(1L)).thenReturn(0);
 
-            mockMvc.perform(post("/api/learning/graph/users/2/sync"))
+            mockMvc.perform(post("/api/learning/graph/me/sync"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(0));
@@ -80,23 +81,23 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
     class ErrorTests {
 
         @Test
-        @DisplayName("POST /user/{userId}/sync - Service 抛出 BusinessException 返回 400")
+        @DisplayName("POST /me/sync - Service 抛出 BusinessException 返回 400")
         void syncThrowsBusinessException() throws Exception {
             when(userLearningRecordService.syncUserLearningGraph(1L))
                     .thenThrow(new BusinessException(GraphErrorConstants.USER_NOT_FOUND, "用户不存在"));
 
-            mockMvc.perform(post("/api/learning/graph/users/1/sync"))
+            mockMvc.perform(post("/api/learning/graph/me/sync"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("7001"))
                     .andExpect(jsonPath("$.message").value("用户不存在"));
         }
 
         @Test
-        @DisplayName("POST /user/{userId}/sync - Service 抛出 RuntimeException 返回 500")
+        @DisplayName("POST /me/sync - Service 抛出 RuntimeException 返回 500")
         void syncThrowsRuntimeException() throws Exception {
             when(userLearningRecordService.syncUserLearningGraph(1L)).thenThrow(new RuntimeException("图谱同步异常"));
 
-            mockMvc.perform(post("/api/learning/graph/users/1/sync"))
+            mockMvc.perform(post("/api/learning/graph/me/sync"))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("500"));
         }
@@ -111,21 +112,21 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
     class BoundaryTests {
 
         @Test
-        @DisplayName("POST /user/{userId}/sync - 用户 ID 含特殊字符")
+        @DisplayName("POST /me/sync - 当前用户 ID 来自登录态")
         void syncWithSpecialCharsInUserId() throws Exception {
-            when(userLearningRecordService.syncUserLearningGraph(3L)).thenReturn(0);
+            when(userLearningRecordService.syncUserLearningGraph(1L)).thenReturn(0);
 
-            mockMvc.perform(post("/api/learning/graph/users/3/sync"))
+            mockMvc.perform(post("/api/learning/graph/me/sync"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test
-        @DisplayName("POST /user/{userId}/sync - 大量记录同步返回大数字")
+        @DisplayName("POST /me/sync - 大量记录同步返回大数字")
         void syncWithLargeNumberOfRecords() throws Exception {
-            when(userLearningRecordService.syncUserLearningGraph(4L)).thenReturn(9999);
+            when(userLearningRecordService.syncUserLearningGraph(1L)).thenReturn(9999);
 
-            mockMvc.perform(post("/api/learning/graph/users/4/sync"))
+            mockMvc.perform(post("/api/learning/graph/me/sync"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(9999));
@@ -147,7 +148,7 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
                     .thenThrow(new BusinessException(GraphErrorConstants.USER_NOT_FOUND, "用户不存在"));
 
             mockMvc.perform(post(URI.create("/api/learning/graph/users/999/sync")))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isNotFound());
         }
 
         @Test
@@ -156,20 +157,20 @@ class UserLearningGraphSyncControllerTest extends BaseControllerTest {
             when(userLearningRecordService.syncUserLearningGraph(9999L))
                     .thenThrow(new BusinessException(GraphErrorConstants.USER_NOT_FOUND, "用户不存在"));
 
-            mockMvc.perform(post("/api/learning/graph/users/9999/sync")).andExpect(status().isBadRequest());
+            mockMvc.perform(post("/api/learning/graph/users/9999/sync")).andExpect(status().isNotFound());
         }
 
         @Test
         @DisplayName("GET 请求同步接口返回 405")
         void syncWithWrongMethod() throws Exception {
-            mockMvc.perform(get("/api/learning/graph/users/1/sync")).andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(get("/api/learning/graph/me/sync")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test
         @DisplayName("DELETE 请求同步接口返回 405")
         void syncWithDeleteMethod() throws Exception {
             mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete(
-                            "/api/learning/graph/users/1/sync"))
+                            "/api/learning/graph/me/sync"))
                     .andExpect(status().isMethodNotAllowed());
         }
     }

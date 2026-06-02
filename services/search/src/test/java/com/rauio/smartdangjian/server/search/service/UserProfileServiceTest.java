@@ -4,28 +4,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cache.annotation.Cacheable;
 
-import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
@@ -39,6 +33,7 @@ import com.rauio.smartdangjian.server.quiz.mapper.UserQuizAnswerMapper;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
+import com.rauio.smartdangjian.server.search.support.TestMybatisPlusConfig;
 import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,14 +42,7 @@ class UserProfileServiceTest {
 
     @BeforeAll
     static void initMybatisPlus() {
-        MybatisConfiguration config = new MybatisConfiguration();
-        MapperBuilderAssistant assistant = new MapperBuilderAssistant(config, "");
-        TableInfoHelper.initTableInfo(assistant, Chapter.class);
-        TableInfoHelper.initTableInfo(assistant, CategoryCourse.class);
-        TableInfoHelper.initTableInfo(assistant, UserLearningRecord.class);
-        TableInfoHelper.initTableInfo(assistant, UserChapterProgress.class);
-        TableInfoHelper.initTableInfo(assistant, UserQuizAnswer.class);
-        TableInfoHelper.initTableInfo(assistant, Quiz.class);
+        TestMybatisPlusConfig.ensureInitialized();
     }
 
     @Mock
@@ -78,14 +66,10 @@ class UserProfileServiceTest {
     @Mock
     private UserService userService;
 
-    @Spy
     @InjectMocks
     private UserProfileService userProfileService;
 
-    @BeforeEach
-    void resetSpy() {
-        reset(userProfileService);
-    }
+    // ==================== getProfile ====================
 
     @Test
     @DisplayName("getProfile 缓存启用 sync，避免用户画像并发击穿")
@@ -94,8 +78,6 @@ class UserProfileServiceTest {
 
         assertThat(method.getAnnotation(Cacheable.class).sync()).isTrue();
     }
-
-    // ==================== getProfile ====================
 
     @Test
     @DisplayName("有完整学习数据时返回所有画像统计")
@@ -338,6 +320,9 @@ class UserProfileServiceTest {
         doReturn(List.of(weak, strong)).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
 
         UserProfileResponse profile = userProfileService.getProfile(userId);
+
+        assertThat(profile.getKnowledge().getAvgProgress()).isEqualTo(55.0);
+        assertThat(profile.getKnowledge().getCompletionRate()).isZero();
     }
 
     @Test

@@ -41,6 +41,17 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
         return convertor.toResponse(progress);
     }
 
+    @Transactional(readOnly = true)
+    public UserChapterProgressResponse getForUser(Long id, Long userId) {
+        QueryWrapper<UserChapterProgress> wrapper = new QueryWrapper<>();
+        wrapper.eq("id", id).eq("user_id", userId);
+        UserChapterProgress progress = this.getOne(wrapper);
+        if (progress == null) {
+            throw new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在");
+        }
+        return convertor.toResponse(progress);
+    }
+
     /**
      * 查询用户的章节学习进度。
      *
@@ -117,6 +128,12 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
         return true;
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean createForUser(UserChapterProgressRequest dto, Long userId) {
+        dto.setUserId(userId);
+        return create(dto);
+    }
+
     /**
      * 更新章节学习进度记录。
      *
@@ -147,6 +164,23 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
             throw new BusinessException(LearningErrorConstants.PROGRESS_UPDATE_FAILED, "更新进度记录失败");
         }
         return result;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateForUser(UserChapterProgressRequest dto, Long userId) {
+        if (dto.getId() == null) {
+            throw new BusinessException(LearningErrorConstants.PROGRESS_ID_REQUIRED, "更新时必须提供进度ID");
+        }
+
+        QueryWrapper<UserChapterProgress> wrapper = new QueryWrapper<>();
+        wrapper.eq("id", dto.getId()).eq("user_id", userId);
+        UserChapterProgress existing = this.getOne(wrapper);
+        if (existing == null) {
+            throw new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在");
+        }
+
+        dto.setUserId(userId);
+        return update(dto);
     }
 
     /**

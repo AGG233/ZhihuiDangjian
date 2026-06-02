@@ -23,8 +23,7 @@ public class UserQuizAnswerTool {
     private final UserService userService;
 
     @Tool(description = "获取当前用户最近的答题记录")
-    public List<UserQuizAnswer> getRecentQuizAnswers(
-            @ToolParam(description = "返回记录条数，默认10条") Integer limit) {
+    public List<UserQuizAnswer> getRecentQuizAnswers(@ToolParam(description = "返回记录条数，默认10条") Integer limit) {
         int safeLimit = limit == null || limit <= 0 ? 10 : limit;
         Long userId = IdUtil.parseNullable(ToolContextUtil.resolveUserId(userService));
         return userQuizAnswerService.getByUserId(userId).stream()
@@ -35,8 +34,7 @@ public class UserQuizAnswerTool {
     }
 
     @Tool(description = "获取当前用户在指定测验下的答题记录")
-    public List<UserQuizAnswer> getQuizAnswersByQuizId(
-            @ToolParam(description = "测验ID") String quizId) {
+    public List<UserQuizAnswer> getQuizAnswersByQuizId(@ToolParam(description = "测验ID") String quizId) {
         Long userId = IdUtil.parseNullable(ToolContextUtil.resolveUserId(userService));
         return userQuizAnswerService.getByUserIdAndQuizId(userId, IdUtil.parse(quizId));
     }

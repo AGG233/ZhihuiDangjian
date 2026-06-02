@@ -1,5 +1,5 @@
 plugins {
-    id("boot-application-conventions")
+    id("service-conventions")
 }
 
 dependencies {
@@ -16,4 +16,5 @@ dependencies {
     annotationProcessor(libs.mapstruct.processor)
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

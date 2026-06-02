@@ -5,6 +5,7 @@ import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.pojo.response.Result;
 
 import cn.dev33.satoken.exception.NotLoginException;
@@ -31,9 +33,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BusinessException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Result handleBusinessExceptions(BusinessException e) {
-        return buildResult(String.valueOf(e.getCode()), e.getMessage());
+    public ResponseEntity<Result> handleBusinessExceptions(BusinessException e) {
+        HttpStatus status =
+                e.getCode() == ErrorConstants.RESOURCE_NOT_AUTHORIZED ? HttpStatus.FORBIDDEN : HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status).body(buildResult(String.valueOf(e.getCode()), e.getMessage()));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)

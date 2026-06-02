@@ -48,8 +48,8 @@ class SecurityPermissionAuthorizationIntegrationTest extends AbstractSecurityAut
                 Arguments.of("/api/graph/knowledge-graphs/users/user-1", "GET", "graph:read"),
                 Arguments.of("/api/user/users/1", "PUT", "user:update"),
                 Arguments.of("/api/content/courses/learned/1", "GET", "course:read"),
-                Arguments.of("/api/quiz/answers/users/1", "GET", "quiz:read"),
-                Arguments.of("/api/quiz/answers/users/1/quizzes/1/options/1", "POST", "quiz:answer"));
+                Arguments.of("/api/quiz/answers/me", "GET", "quiz:read"),
+                Arguments.of("/api/quiz/answers/me/quizzes/1/options/1", "POST", "quiz:answer"));
     }
 
     @ParameterizedTest(name = "{0} 权限满足时返回 200")
@@ -89,8 +89,8 @@ class SecurityPermissionAuthorizationIntegrationTest extends AbstractSecurityAut
                 Arguments.of("/api/graph/knowledge-graphs/users/user-1", "GET", "graph:read"),
                 Arguments.of("/api/user/users/1", "PUT", "user:update"),
                 Arguments.of("/api/content/courses/learned/1", "GET", "course:read"),
-                Arguments.of("/api/quiz/answers/users/1", "GET", "quiz:read"),
-                Arguments.of("/api/quiz/answers/users/1/quizzes/1/options/1", "POST", "quiz:answer"));
+                Arguments.of("/api/quiz/answers/me", "GET", "quiz:read"),
+                Arguments.of("/api/quiz/answers/me/quizzes/1/options/1", "POST", "quiz:answer"));
     }
 
     @ParameterizedTest(name = "{0} 缺少 {2} 权限时不调用业务服务")

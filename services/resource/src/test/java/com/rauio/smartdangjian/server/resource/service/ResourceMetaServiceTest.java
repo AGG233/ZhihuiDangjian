@@ -16,7 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,9 +38,6 @@ class ResourceMetaServiceTest {
     @Mock
     private PermissionValidator permissionValidator;
 
-    @Mock
-    private CacheManager cacheManager;
-
     @Spy
     @InjectMocks
     private ResourceMetaService resourceMetaService;
@@ -56,6 +53,37 @@ class ResourceMetaServiceTest {
         Method method = ResourceMetaService.class.getMethod("getByHash", String.class);
 
         assertThat(method.getAnnotation(Cacheable.class).sync()).isTrue();
+    }
+
+    @Test
+    @DisplayName("资源元数据写操作通过注解驱逐缓存")
+    void writeMethodsEvictResourceMetaCacheByAnnotation() throws NoSuchMethodException {
+        assertResourceMetaCacheEvictsAllEntries("update", Long.class, ResourceMetaUpdateRequest.class);
+        assertResourceMetaCacheEvictsAllEntries("delete", Long.class);
+        assertResourceMetaCacheEvictsByKey("#hash", "deleteByHash", String.class);
+        assertResourceMetaCacheEvictsAllEntries("deleteByHashes", List.class);
+        assertResourceMetaCacheEvictsAllEntries("markPublic", Long.class);
+    }
+
+    private void assertResourceMetaCacheEvictsAllEntries(String methodName, Class<?>... parameterTypes)
+            throws NoSuchMethodException {
+        CacheEvict cacheEvict =
+                ResourceMetaService.class.getMethod(methodName, parameterTypes).getAnnotation(CacheEvict.class);
+
+        assertThat(cacheEvict).isNotNull();
+        assertThat(cacheEvict.value()).contains("resourceMeta");
+        assertThat(cacheEvict.allEntries()).isTrue();
+    }
+
+    private void assertResourceMetaCacheEvictsByKey(String key, String methodName, Class<?>... parameterTypes)
+            throws NoSuchMethodException {
+        CacheEvict cacheEvict =
+                ResourceMetaService.class.getMethod(methodName, parameterTypes).getAnnotation(CacheEvict.class);
+
+        assertThat(cacheEvict).isNotNull();
+        assertThat(cacheEvict.value()).contains("resourceMeta");
+        assertThat(cacheEvict.key()).isEqualTo(key);
+        assertThat(cacheEvict.allEntries()).isFalse();
     }
 
     @Test

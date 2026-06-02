@@ -44,7 +44,6 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param userQuizAnswer 用户答题实体
      * @return 是否更新成功
      */
-    @SaCheckRole("SCHOOL")
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateByUserIdAndQuizIdAndOptionId(UserQuizAnswer userQuizAnswer) {
         UserQuizAnswer existing = getByUserIdAndQuizIdAndOptionId(

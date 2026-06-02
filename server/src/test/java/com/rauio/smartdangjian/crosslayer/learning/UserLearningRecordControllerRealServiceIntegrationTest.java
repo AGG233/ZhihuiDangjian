@@ -57,26 +57,27 @@ class UserLearningRecordControllerRealServiceIntegrationTest extends CrossLayerT
     @BeforeEach
     void resetMocks() {
         reset(recordMapper, convertor, knowledgeGraphService);
+        setStudentContext(1L, "uni1");
     }
 
     @Test
-    @DisplayName("GET /records/{id} 记录不存在时真实 Service 返回业务异常")
+    @DisplayName("GET /records/me/{id} 记录不存在时真实 Service 返回业务异常")
     void getMissingRecordReturnsBusinessException() throws Exception {
         when(recordMapper.selectById(404L)).thenReturn(null);
 
-        mockMvc.perform(get("/api/learning/records/404"))
+        mockMvc.perform(get("/api/learning/records/me/404"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(String.valueOf(LearningErrorConstants.RECORD_NOT_FOUND)))
                 .andExpect(jsonPath("$.message").value("学习记录不存在"));
     }
 
     @Test
-    @DisplayName("GET /records/users/{userId} 使用真实 Service 查询并转换空列表")
+    @DisplayName("GET /records/me 使用真实 Service 查询并转换空列表")
     void getByUserIdUsesRealServiceAndConvertsEmptyList() throws Exception {
         when(recordMapper.selectList(any(Wrapper.class))).thenReturn(List.of());
         when(convertor.toResponseList(List.of())).thenReturn(List.of());
 
-        mockMvc.perform(get("/api/learning/records/users/1"))
+        mockMvc.perform(get("/api/learning/records/me"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("200"))
                 .andExpect(jsonPath("$.data.length()").value(0));
@@ -152,7 +153,8 @@ class UserLearningRecordControllerRealServiceIntegrationTest extends CrossLayerT
     @Test
     @DisplayName("PUT /records 目标记录不存在时真实 Service 返回业务异常")
     void updateMissingRecordReturnsBusinessException() throws Exception {
-        when(recordMapper.selectById(99L)).thenReturn(null);
+        when(recordMapper.selectOne(any(Wrapper.class), org.mockito.ArgumentMatchers.anyBoolean()))
+                .thenReturn(null);
 
         mockMvc.perform(put("/api/learning/records")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -161,7 +163,8 @@ class UserLearningRecordControllerRealServiceIntegrationTest extends CrossLayerT
                 .andExpect(jsonPath("$.code").value(String.valueOf(LearningErrorConstants.RECORD_NOT_FOUND)))
                 .andExpect(jsonPath("$.message").value("学习记录不存在"));
 
-        verify(recordMapper).selectById(99L);
+        verify(recordMapper).selectOne(any(Wrapper.class), org.mockito.ArgumentMatchers.anyBoolean());
+        verify(recordMapper, never()).selectById(any());
         verify(recordMapper, never()).updateById(any(UserLearningRecord.class));
     }
 
@@ -202,8 +205,10 @@ class UserLearningRecordControllerRealServiceIntegrationTest extends CrossLayerT
         }
 
         @Bean
-        UserLearningRecordController userLearningRecordController(UserLearningRecordService recordService) {
-            return new UserLearningRecordController(recordService);
+        UserLearningRecordController userLearningRecordController(
+                UserLearningRecordService recordService,
+                com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
+            return new UserLearningRecordController(recordService, currentUserProvider);
         }
 
         @Bean

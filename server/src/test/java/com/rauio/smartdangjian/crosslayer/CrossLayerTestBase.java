@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
+import com.rauio.smartdangjian.security.LoginUser;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
 import cn.dev33.satoken.session.SaSession;
@@ -135,5 +137,30 @@ public abstract class CrossLayerTestBase {
                 com.rauio.smartdangjian.config.RedisConfig.class,
                 com.rauio.smartdangjian.config.TransactionConfig.class
             })
-    protected static class CrossLayerTestConfig {}
+    protected static class CrossLayerTestConfig {
+        @org.springframework.context.annotation.Bean
+        CurrentUserProvider currentUserProvider() {
+            return new CurrentUserProvider() {
+                @Override
+                public String getCurrentUserId() {
+                    return StpUtil.getLoginIdAsString();
+                }
+
+                @Override
+                public String getCurrentUserRole() {
+                    return null;
+                }
+
+                @Override
+                public boolean hasRole(String role) {
+                    return StpUtil.hasRole(role);
+                }
+
+                @Override
+                public LoginUser getCurrentUser() {
+                    return null;
+                }
+            };
+        }
+    }
 }

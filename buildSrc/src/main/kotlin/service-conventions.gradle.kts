@@ -75,14 +75,27 @@ val integrationTest = tasks.register<Test>("integrationTest") {
     useJUnitPlatform()
 }
 
-tasks.withType<Test>().configureEach {
+val unitTestForks = (project.findProperty("unitTestForks") as String? ?: "2").toInt().coerceAtLeast(1)
+val integrationTestForks = (project.findProperty("integrationTestForks") as String? ?: "1").toInt().coerceAtLeast(1)
+
+tasks.named<Test>("test") {
     useJUnitPlatform()
-    maxParallelForks = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
-    forkEvery = 100
+    maxParallelForks = unitTestForks
+    forkEvery = 0
+}
+
+tasks.named<Test>("integrationTest") {
+    maxParallelForks = integrationTestForks
+    forkEvery = 0
 }
 
 tasks.check {
     dependsOn(integrationTest)
+}
+
+dependencies {
+    testImplementation(libs.findLibrary("archunit-junit5").get())
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 configurations.configureEach {

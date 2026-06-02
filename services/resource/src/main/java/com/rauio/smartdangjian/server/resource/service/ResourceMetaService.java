@@ -2,8 +2,7 @@ package com.rauio.smartdangjian.server.resource.service;
 
 import java.util.List;
 
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +27,6 @@ import lombok.RequiredArgsConstructor;
 public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, ResourceMeta> {
 
     private final PermissionValidator permissionValidator;
-
-    private final CacheManager cacheManager;
 
     @Transactional(rollbackFor = Exception.class)
     public ResourceMeta create(ResourceMetaCreateRequest request) {
@@ -87,6 +84,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return this.list(wrapper);
     }
 
+    @CacheEvict(value = "resourceMeta", allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public Boolean update(Long id, ResourceMetaUpdateRequest request) {
         ResourceMeta existing = this.get(id);
@@ -113,10 +111,10 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         if (!this.updateById(meta)) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_UPDATE_FAILED, "更新资源失败");
         }
-        evictResourceMeta(existing.getHash());
         return true;
     }
 
+    @CacheEvict(value = "resourceMeta", allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public Boolean delete(Long id) {
         ResourceMeta meta = this.get(id);
@@ -125,10 +123,10 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         if (!this.removeById(id)) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_DELETE_FAILED, "删除资源失败");
         }
-        evictResourceMeta(meta.getHash());
         return true;
     }
 
+    @CacheEvict(value = "resourceMeta", key = "#hash")
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteByHash(String hash) {
         ResourceMeta meta = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
@@ -141,10 +139,10 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         if (!this.removeById(meta.getId())) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_DELETE_FAILED, "删除资源失败");
         }
-        evictResourceMeta(hash);
         return true;
     }
 
+    @CacheEvict(value = "resourceMeta", allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteByHashes(List<String> hashes) {
         for (String hash : hashes) {
@@ -153,6 +151,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return true;
     }
 
+    @CacheEvict(value = "resourceMeta", allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public boolean markPublic(Long id) {
         ResourceMeta existing = this.get(id);
@@ -160,7 +159,6 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         if (!this.updateById(existing)) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_UPDATE_FAILED, "更新资源失败");
         }
-        evictResourceMeta(existing.getHash());
         return true;
     }
 
@@ -177,16 +175,6 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
                 .last("limit 1"));
         if (sameObjectKey != null && !sameObjectKey.getId().equals(currentId)) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_OBJECT_KEY_EXISTS, "对象存储键已存在");
-        }
-    }
-
-    private void evictResourceMeta(String hash) {
-        if (StringUtils.isBlank(hash)) {
-            return;
-        }
-        Cache cache = cacheManager.getCache("resourceMeta");
-        if (cache != null) {
-            cache.evict(hash);
         }
     }
 }

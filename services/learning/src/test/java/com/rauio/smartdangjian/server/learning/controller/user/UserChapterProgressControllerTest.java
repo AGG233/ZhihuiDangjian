@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserChapterProgressRequest;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
 import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
@@ -22,6 +23,9 @@ class UserChapterProgressControllerTest {
     @Mock
     private UserChapterProgressService progressService;
 
+    @Mock
+    private CurrentUserProvider currentUserProvider;
+
     @InjectMocks
     private UserChapterProgressController controller;
 
@@ -30,7 +34,8 @@ class UserChapterProgressControllerTest {
     void get() {
         UserChapterProgressResponse vo =
                 UserChapterProgressResponse.builder().id(1L).build();
-        when(progressService.get(1L)).thenReturn(vo);
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
+        when(progressService.getForUser(1L, 1L)).thenReturn(vo);
 
         var result = controller.get(1L);
 
@@ -40,10 +45,11 @@ class UserChapterProgressControllerTest {
     @Test
     @DisplayName("getByUserId 委托 service 获取用户所有进度")
     void getByUserId() {
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
         when(progressService.getByUserId(1L))
                 .thenReturn(List.of(UserChapterProgressResponse.builder().id(1L).build()));
 
-        var result = controller.getByUserId(1L);
+        var result = controller.getMine();
 
         assertThat(result.getData()).hasSize(1);
     }
@@ -53,9 +59,10 @@ class UserChapterProgressControllerTest {
     void getByUserIdAndChapterId() {
         UserChapterProgressResponse vo =
                 UserChapterProgressResponse.builder().id(1L).build();
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
         when(progressService.getByUserIdAndChapterId(1L, 2L)).thenReturn(vo);
 
-        var result = controller.getByUserIdAndChapterId(1L, 2L);
+        var result = controller.getMineByChapterId(2L);
 
         assertThat(result.getData()).isNotNull();
     }
@@ -65,7 +72,8 @@ class UserChapterProgressControllerTest {
     void create() {
         UserChapterProgressRequest dto =
                 UserChapterProgressRequest.builder().userId(1L).chapterId(1L).build();
-        when(progressService.create(dto)).thenReturn(true);
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
+        when(progressService.createForUser(dto, 1L)).thenReturn(true);
 
         var result = controller.create(dto);
 
@@ -77,7 +85,8 @@ class UserChapterProgressControllerTest {
     void update() {
         UserChapterProgressRequest dto =
                 UserChapterProgressRequest.builder().id(1L).progress(80).build();
-        when(progressService.update(dto)).thenReturn(true);
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
+        when(progressService.updateForUser(dto, 1L)).thenReturn(true);
 
         var result = controller.update(dto);
 

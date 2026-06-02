@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserChapterProgressRequest;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
 import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
@@ -24,32 +25,31 @@ import lombok.RequiredArgsConstructor;
 public class UserChapterProgressController {
 
     private final UserChapterProgressService progressService;
+    private final CurrentUserProvider currentUserProvider;
 
-    @Operation(summary = "获取进度记录", description = "根据进度ID获取用户章节进度记录")
-    @GetMapping("/{id}")
+    @Operation(summary = "获取当前用户进度记录", description = "根据进度ID获取当前用户章节进度记录")
+    @GetMapping("/me/{id}")
     @SaCheckRole("STUDENT")
     public Result<UserChapterProgressResponse> get(
             @Parameter(name = "id", description = "进度ID") @PathVariable Long id) {
-        UserChapterProgressResponse result = progressService.get(id);
+        UserChapterProgressResponse result = progressService.getForUser(id, currentUserId());
         return Result.ok(result);
     }
 
-    @Operation(summary = "获取用户所有进度", description = "根据用户ID获取该用户的所有章节进度")
-    @GetMapping("/users/{userId}")
+    @Operation(summary = "获取当前用户所有进度", description = "获取当前用户的所有章节进度")
+    @GetMapping("/me")
     @SaCheckRole("STUDENT")
-    public Result<List<UserChapterProgressResponse>> getByUserId(
-            @Parameter(name = "userId", description = "用户ID") @PathVariable Long userId) {
-        List<UserChapterProgressResponse> result = progressService.getByUserId(userId);
+    public Result<List<UserChapterProgressResponse>> getMine() {
+        List<UserChapterProgressResponse> result = progressService.getByUserId(currentUserId());
         return Result.ok(result);
     }
 
-    @Operation(summary = "获取用户章节进度", description = "获取指定用户在指定章节的学习进度")
-    @GetMapping("/users/{userId}/chapters/{chapterId}")
+    @Operation(summary = "获取当前用户章节进度", description = "获取当前用户在指定章节的学习进度")
+    @GetMapping("/me/chapters/{chapterId}")
     @SaCheckRole("STUDENT")
-    public Result<UserChapterProgressResponse> getByUserIdAndChapterId(
-            @Parameter(name = "userId", description = "用户ID") @PathVariable Long userId,
+    public Result<UserChapterProgressResponse> getMineByChapterId(
             @Parameter(name = "chapterId", description = "章节ID") @PathVariable Long chapterId) {
-        UserChapterProgressResponse result = progressService.getByUserIdAndChapterId(userId, chapterId);
+        UserChapterProgressResponse result = progressService.getByUserIdAndChapterId(currentUserId(), chapterId);
         return Result.ok(result);
     }
 
@@ -57,7 +57,7 @@ public class UserChapterProgressController {
     @PostMapping
     @SaCheckRole("STUDENT")
     public Result<Boolean> create(@RequestBody @Valid UserChapterProgressRequest dto) {
-        Boolean result = progressService.create(dto);
+        Boolean result = progressService.createForUser(dto, currentUserId());
         return Result.ok(result);
     }
 
@@ -65,7 +65,11 @@ public class UserChapterProgressController {
     @PutMapping
     @SaCheckRole("STUDENT")
     public Result<Boolean> update(@RequestBody @Valid UserChapterProgressRequest dto) {
-        Boolean result = progressService.update(dto);
+        Boolean result = progressService.updateForUser(dto, currentUserId());
         return Result.ok(result);
+    }
+
+    private Long currentUserId() {
+        return Long.valueOf(currentUserProvider.getCurrentUserId());
     }
 }

@@ -1,5 +1,5 @@
 plugins {
-    id("boot-application-conventions")
+    id("service-conventions")
 }
 
 dependencies {

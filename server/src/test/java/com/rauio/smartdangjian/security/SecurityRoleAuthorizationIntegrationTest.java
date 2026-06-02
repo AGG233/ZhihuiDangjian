@@ -60,14 +60,14 @@ class SecurityRoleAuthorizationIntegrationTest extends AbstractSecurityAuthoriza
                 Arguments.of("/api/admin/resource/banners", "GET", "MANAGER"),
                 Arguments.of("/api/user/users/1", "GET", "STUDENT"),
                 Arguments.of("/api/content/courses/learned/1", "GET", "STUDENT"),
-                Arguments.of("/api/quiz/answers/users/1", "GET", "STUDENT"),
+                Arguments.of("/api/quiz/answers/me", "GET", "STUDENT"),
                 Arguments.of("/api/ai/chat/session-1/messages", "GET", "STUDENT"),
                 Arguments.of("/api/admin/content/categories/root", "POST", "SCHOOL"),
                 Arguments.of("/api/content/categories/1", "GET", "STUDENT"),
                 Arguments.of("/api/graph/party-history/search?keyword=history", "GET", "STUDENT"),
-                Arguments.of("/api/learning/records/1", "GET", "STUDENT"),
+                Arguments.of("/api/learning/records/me/1", "GET", "STUDENT"),
                 Arguments.of("/api/content/chapters/1", "GET", "STUDENT"),
-                Arguments.of("/api/learning/graph/users/1/sync", "POST", "STUDENT"));
+                Arguments.of("/api/learning/graph/me/sync", "POST", "STUDENT"));
     }
 
     @ParameterizedTest(name = "{0} 角色满足时返回 200")
@@ -134,18 +134,18 @@ class SecurityRoleAuthorizationIntegrationTest extends AbstractSecurityAuthoriza
                 Arguments.of("/api/admin/resource/banners", "GET", "MANAGER"),
                 Arguments.of("/api/user/users/1", "GET", "STUDENT"),
                 Arguments.of("/api/content/courses/learned/1", "GET", "STUDENT"),
-                Arguments.of("/api/quiz/answers/users/1", "GET", "STUDENT"),
+                Arguments.of("/api/quiz/answers/me", "GET", "STUDENT"),
                 Arguments.of("/api/ai/chat/session-1/messages", "GET", "STUDENT"),
-                Arguments.of("/api/learning/records/1", "GET", "STUDENT"),
+                Arguments.of("/api/learning/records/me/1", "GET", "STUDENT"),
                 Arguments.of("/api/content/categories/1", "GET", "STUDENT"),
                 Arguments.of("/api/content/content-blocks/carousel", "GET", "STUDENT"),
                 Arguments.of("/api/learning/hotspots/trends", "GET", "STUDENT"),
                 Arguments.of("/api/resource/banners", "GET", "STUDENT"),
                 Arguments.of("/api/content/categories/1/children", "GET", "STUDENT"),
                 Arguments.of("/api/graph/party-history/search?keyword=history", "GET", "STUDENT"),
-                Arguments.of("/api/learning/records/users/1", "GET", "STUDENT"),
+                Arguments.of("/api/learning/records/me", "GET", "STUDENT"),
                 Arguments.of("/api/content/categories/root", "GET", "STUDENT"),
                 Arguments.of("/api/content/chapters/1", "GET", "STUDENT"),
-                Arguments.of("/api/learning/graph/users/1/sync", "POST", "STUDENT"));
+                Arguments.of("/api/learning/graph/me/sync", "POST", "STUDENT"));
     }
 }

@@ -375,6 +375,31 @@ abstract class AbstractSecurityAuthorizationIntegrationTest {
     @Import({SaTokenConfigure.class, GlobalExceptionHandler.class})
     static class TestConfig {
         @Bean
+        com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider() {
+            return new com.rauio.smartdangjian.security.CurrentUserProvider() {
+                @Override
+                public String getCurrentUserId() {
+                    return cn.dev33.satoken.stp.StpUtil.getLoginIdAsString();
+                }
+
+                @Override
+                public String getCurrentUserRole() {
+                    return null;
+                }
+
+                @Override
+                public boolean hasRole(String role) {
+                    return cn.dev33.satoken.stp.StpUtil.hasRole(role);
+                }
+
+                @Override
+                public com.rauio.smartdangjian.security.LoginUser getCurrentUser() {
+                    return null;
+                }
+            };
+        }
+
+        @Bean
         AuthController authController(AuthService authService, CaptchaService captchaService) {
             return new AuthController(authService, captchaService);
         }
@@ -451,8 +476,10 @@ abstract class AbstractSecurityAuthorizationIntegrationTest {
         }
 
         @Bean
-        UserQuizAnswerController userQuizAnswerController(UserQuizAnswerService answerService) {
-            return new UserQuizAnswerController(answerService);
+        UserQuizAnswerController userQuizAnswerController(
+                UserQuizAnswerService answerService,
+                com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
+            return new UserQuizAnswerController(answerService, currentUserProvider);
         }
 
         @Bean
@@ -488,18 +515,24 @@ abstract class AbstractSecurityAuthorizationIntegrationTest {
         }
 
         @Bean
-        UserLearningRecordController userLearningRecordController(UserLearningRecordService recordService) {
-            return new UserLearningRecordController(recordService);
+        UserLearningRecordController userLearningRecordController(
+                UserLearningRecordService recordService,
+                com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
+            return new UserLearningRecordController(recordService, currentUserProvider);
         }
 
         @Bean
-        UserLearningGraphSyncController userLearningGraphSyncController(UserLearningRecordService recordService) {
-            return new UserLearningGraphSyncController(recordService);
+        UserLearningGraphSyncController userLearningGraphSyncController(
+                UserLearningRecordService recordService,
+                com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
+            return new UserLearningGraphSyncController(recordService, currentUserProvider);
         }
 
         @Bean
-        UserChapterProgressController userChapterProgressController(UserChapterProgressService progressService) {
-            return new UserChapterProgressController(progressService);
+        UserChapterProgressController userChapterProgressController(
+                UserChapterProgressService progressService,
+                com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
+            return new UserChapterProgressController(progressService, currentUserProvider);
         }
 
         @Bean

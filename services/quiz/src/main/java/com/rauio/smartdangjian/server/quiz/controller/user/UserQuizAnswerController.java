@@ -5,10 +5,10 @@ import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
 import com.rauio.smartdangjian.server.quiz.pojo.response.UserQuizAnswerResponse;
 import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
-import com.rauio.smartdangjian.utils.SecurityUtils;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
@@ -25,79 +25,68 @@ import lombok.RequiredArgsConstructor;
 public class UserQuizAnswerController {
 
     private final UserQuizAnswerService userQuizAnswerService;
+    private final CurrentUserProvider currentUserProvider;
 
-    @Operation(summary = "获取用户全部答题记录", description = "根据用户ID获取该用户的所有答题记录")
-    @GetMapping("/users/{id}")
+    @Operation(summary = "获取当前用户全部答题记录", description = "获取当前登录用户的所有答题记录")
+    @GetMapping("/me")
     @SaCheckPermission("quiz:read")
-    public Result<List<UserQuizAnswerResponse>> getByUserIdQuizAnswers(
-            @Parameter(name = "id", description = "用户ID") @PathVariable Long id) {
-        String currentUserId = SecurityUtils.getCurrentUserId();
-        if (!currentUserId.equals(String.valueOf(id))) {
-            return Result.error("403", "无权查看其他用户的答题记录");
-        }
-        List<UserQuizAnswerResponse> responses = userQuizAnswerService.getByUserId(id).stream()
+    public Result<List<UserQuizAnswerResponse>> getMyQuizAnswers() {
+        List<UserQuizAnswerResponse> responses = userQuizAnswerService.getByUserId(currentUserId()).stream()
                 .map(this::toUserQuizAnswerResponse)
                 .toList();
         return Result.ok(responses);
     }
 
-    @Operation(summary = "获取用户某题答题记录", description = "根据用户ID和试题ID获取该用户在某道题的答题记录")
-    @GetMapping("/users/{id}/quizzes/{quizId}")
+    @Operation(summary = "获取当前用户某题答题记录", description = "获取当前用户在某道题的答题记录")
+    @GetMapping("/me/quizzes/{quizId}")
     @SaCheckPermission("quiz:read")
-    public Result<List<UserQuizAnswerResponse>> getByQuizIdQuizAnswers(
-            @Parameter(name = "id", description = "用户ID") @PathVariable Long id,
+    public Result<List<UserQuizAnswerResponse>> getMyQuizAnswersByQuizId(
             @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId) {
-        String currentUserId = SecurityUtils.getCurrentUserId();
-        if (!currentUserId.equals(String.valueOf(id))) {
-            return Result.error("403", "无权查看其他用户的答题记录");
-        }
-        List<UserQuizAnswerResponse> responses = userQuizAnswerService.getByUserIdAndQuizId(id, quizId).stream()
-                .map(this::toUserQuizAnswerResponse)
-                .toList();
+        List<UserQuizAnswerResponse> responses =
+                userQuizAnswerService.getByUserIdAndQuizId(currentUserId(), quizId).stream()
+                        .map(this::toUserQuizAnswerResponse)
+                        .toList();
         return Result.ok(responses);
     }
 
-    @Operation(summary = "获取指定答题记录", description = "根据用户ID、试题ID、选项ID精确获取一条答题记录")
-    @GetMapping("/users/{id}/quizzes/{quizId}/options/{optionId}")
+    @Operation(summary = "获取当前用户指定答题记录", description = "根据试题ID、选项ID精确获取当前用户的一条答题记录")
+    @GetMapping("/me/quizzes/{quizId}/options/{optionId}")
     @SaCheckPermission("quiz:read")
-    public Result<UserQuizAnswerResponse> getByUserIdAndQuizIdAndOptionIdQuizAnswer(
-            @Parameter(name = "id", description = "用户ID") @PathVariable Long id,
+    public Result<UserQuizAnswerResponse> getMyQuizAnswer(
             @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId,
             @Parameter(name = "optionId", description = "选项ID") @PathVariable Long optionId) {
-        String currentUserId = SecurityUtils.getCurrentUserId();
-        if (!currentUserId.equals(String.valueOf(id))) {
-            return Result.error("403", "无权查看其他用户的答题记录");
-        }
-        return Result.ok(
-                toUserQuizAnswerResponse(userQuizAnswerService.getByUserIdAndQuizIdAndOptionId(id, quizId, optionId)));
+        return Result.ok(toUserQuizAnswerResponse(
+                userQuizAnswerService.getByUserIdAndQuizIdAndOptionId(currentUserId(), quizId, optionId)));
     }
 
     @Operation(summary = "提交答题", description = "用户提交一道题的答案")
-    @PostMapping("/users/{id}/quizzes/{quizId}/options/{optionId}")
+    @PostMapping("/me/quizzes/{quizId}/options/{optionId}")
     @SaCheckPermission("quiz:answer")
     public Result<Boolean> createQuizAnswer(
-            @Parameter(name = "id", description = "用户ID") @PathVariable Long id,
             @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId,
             @Parameter(name = "optionId", description = "选项ID") @PathVariable Long optionId) {
         UserQuizAnswer userQuizAnswer = UserQuizAnswer.builder().build();
-        userQuizAnswer.setUserId(id);
+        userQuizAnswer.setUserId(currentUserId());
         userQuizAnswer.setQuizId(quizId);
         userQuizAnswer.setOptionId(optionId);
         return Result.ok(userQuizAnswerService.create(userQuizAnswer));
     }
 
     @Operation(summary = "更新答题", description = "用户更新已提交的答案")
-    @PutMapping("/users/{id}/quizzes/{quizId}/options/{optionId}")
+    @PutMapping("/me/quizzes/{quizId}/options/{optionId}")
     @SaCheckPermission("quiz:answer")
     public Result<Boolean> updateQuizAnswer(
-            @Parameter(name = "id", description = "用户ID") @PathVariable Long id,
             @Parameter(name = "quizId", description = "试题ID") @PathVariable Long quizId,
             @Parameter(name = "optionId", description = "选项ID") @PathVariable Long optionId) {
         UserQuizAnswer userQuizAnswer = UserQuizAnswer.builder().build();
-        userQuizAnswer.setUserId(id);
+        userQuizAnswer.setUserId(currentUserId());
         userQuizAnswer.setQuizId(quizId);
         userQuizAnswer.setOptionId(optionId);
         return Result.ok(userQuizAnswerService.updateByUserIdAndQuizIdAndOptionId(userQuizAnswer));
+    }
+
+    private Long currentUserId() {
+        return Long.valueOf(currentUserProvider.getCurrentUserId());
     }
 
     private UserQuizAnswerResponse toUserQuizAnswerResponse(UserQuizAnswer answer) {

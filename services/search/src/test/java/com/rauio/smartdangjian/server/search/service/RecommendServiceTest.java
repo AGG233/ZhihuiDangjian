@@ -20,7 +20,6 @@ import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -32,9 +31,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.data.neo4j.core.Neo4jClient;
 
-import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
@@ -45,9 +42,9 @@ import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
 import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
 import com.rauio.smartdangjian.server.learning.pojo.dto.UserBehaviorDto;
-import com.rauio.smartdangjian.server.learning.pojo.entity.UserChapterProgress;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
+import com.rauio.smartdangjian.server.search.support.TestMybatisPlusConfig;
 import com.rauio.smartdangjian.server.user.mapper.UserSimilarityMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.UserSimilarity;
 import com.rauio.smartdangjian.server.user.service.UserSimilarityService;
@@ -59,14 +56,7 @@ class RecommendServiceTest {
 
     @BeforeAll
     static void initMybatisPlus() {
-        MybatisConfiguration config = new MybatisConfiguration();
-        MapperBuilderAssistant assistant = new MapperBuilderAssistant(config, "");
-        TableInfoHelper.initTableInfo(assistant, Course.class);
-        TableInfoHelper.initTableInfo(assistant, CategoryCourse.class);
-        TableInfoHelper.initTableInfo(assistant, Chapter.class);
-        TableInfoHelper.initTableInfo(assistant, UserSimilarity.class);
-        TableInfoHelper.initTableInfo(assistant, UserLearningRecord.class);
-        TableInfoHelper.initTableInfo(assistant, UserChapterProgress.class);
+        TestMybatisPlusConfig.ensureInitialized();
     }
 
     @Mock

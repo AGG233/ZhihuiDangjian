@@ -49,6 +49,17 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
         return convertor.toResponse(record);
     }
 
+    @Transactional(readOnly = true)
+    public UserLearningRecordResponse getForUser(Long id, Long userId) {
+        QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
+        wrapper.eq("id", id).eq("user_id", userId);
+        UserLearningRecord record = this.getOne(wrapper);
+        if (record == null) {
+            throw new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "学习记录不存在");
+        }
+        return convertor.toResponse(record);
+    }
+
     /**
      * 按条件分页查询用户。
      *
@@ -226,6 +237,12 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
         return result;
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean createForUser(UserLearningRecordRequest dto, Long userId) {
+        dto.setUserId(userId);
+        return create(dto);
+    }
+
     /**
      * 更新学习记录。
      *
@@ -242,7 +259,6 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
         if (existing == null) {
             throw new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "学习记录不存在");
         }
-
         UserLearningRecord record = convertor.toEntity(dto);
 
         // 自动计算学习时长（如果提供了开始和结束时间）
@@ -257,6 +273,23 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
             throw new BusinessException(LearningErrorConstants.RECORD_UPDATE_FAILED, "更新学习记录失败");
         }
         return result;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateForUser(UserLearningRecordRequest dto, Long userId) {
+        if (dto.getId() == null) {
+            throw new BusinessException(LearningErrorConstants.RECORD_ID_REQUIRED, "更新时必须提供记录ID");
+        }
+
+        QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
+        wrapper.eq("id", dto.getId()).eq("user_id", userId);
+        UserLearningRecord existing = this.getOne(wrapper);
+        if (existing == null) {
+            throw new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "学习记录不存在");
+        }
+
+        dto.setUserId(userId);
+        return update(dto);
     }
 
     /**

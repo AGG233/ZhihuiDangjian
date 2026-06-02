@@ -37,8 +37,10 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
     @SpringBootConfiguration
     static class TestConfig extends CommonTestConfig {
         @Bean
-        public UserChapterProgressController userChapterProgressController(UserChapterProgressService progressService) {
-            return new UserChapterProgressController(progressService);
+        public UserChapterProgressController userChapterProgressController(
+                UserChapterProgressService progressService,
+                com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
+            return new UserChapterProgressController(progressService, currentUserProvider);
         }
     }
 
@@ -57,9 +59,9 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @DisplayName("GET /{id} - 获取进度记录成功")
         void getSuccess() throws Exception {
             UserChapterProgressResponse vo = LearningTestDataFactory.createChapterProgressVO(1L);
-            when(progressService.get(1L)).thenReturn(vo);
+            when(progressService.getForUser(1L, 1L)).thenReturn(vo);
 
-            mockMvc.perform(get("/api/learning/progress/1"))
+            mockMvc.perform(get("/api/learning/progress/me/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.id").value("1"))
@@ -68,24 +70,24 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("GET /user/{userId} - 获取用户所有进度成功")
+        @DisplayName("GET /me - 获取当前用户所有进度成功")
         void getByUserIdSuccess() throws Exception {
             UserChapterProgressResponse vo = LearningTestDataFactory.createChapterProgressVO(1L);
             when(progressService.getByUserId(1L)).thenReturn(List.of(vo));
 
-            mockMvc.perform(get("/api/learning/progress/users/1"))
+            mockMvc.perform(get("/api/learning/progress/me"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data[0].id").value("1"));
         }
 
         @Test
-        @DisplayName("GET /user/{userId}/chapter/{chapterId} - 获取用户章节进度成功")
+        @DisplayName("GET /me/chapters/{chapterId} - 获取当前用户章节进度成功")
         void getByUserIdAndChapterIdSuccess() throws Exception {
             UserChapterProgressResponse vo = LearningTestDataFactory.createChapterProgressVO(1L);
             when(progressService.getByUserIdAndChapterId(1L, 1L)).thenReturn(vo);
 
-            mockMvc.perform(get("/api/learning/progress/users/1/chapters/1"))
+            mockMvc.perform(get("/api/learning/progress/me/chapters/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.id").value("1"));
@@ -94,7 +96,8 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST / - 创建进度记录成功")
         void createSuccess() throws Exception {
-            when(progressService.create(any(UserChapterProgressRequest.class))).thenReturn(true);
+            when(progressService.createForUser(any(UserChapterProgressRequest.class), anyLong()))
+                    .thenReturn(true);
 
             mockMvc.perform(post("/api/learning/progress")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -108,7 +111,8 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT / - 更新进度记录成功")
         void updateSuccess() throws Exception {
-            when(progressService.update(any(UserChapterProgressRequest.class))).thenReturn(true);
+            when(progressService.updateForUser(any(UserChapterProgressRequest.class), anyLong()))
+                    .thenReturn(true);
 
             mockMvc.perform(put("/api/learning/progress")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -131,10 +135,10 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 BusinessException 返回 400")
         void getThrowsBusinessException() throws Exception {
-            when(progressService.get(1L))
+            when(progressService.getForUser(1L, 1L))
                     .thenThrow(new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在"));
 
-            mockMvc.perform(get("/api/learning/progress/1"))
+            mockMvc.perform(get("/api/learning/progress/me/1"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("4011"))
                     .andExpect(jsonPath("$.message").value("进度记录不存在"));
@@ -143,9 +147,9 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 RuntimeException 返回 500")
         void getThrowsRuntimeException() throws Exception {
-            when(progressService.get(1L)).thenThrow(new RuntimeException("数据库异常"));
+            when(progressService.getForUser(1L, 1L)).thenThrow(new RuntimeException("数据库异常"));
 
-            mockMvc.perform(get("/api/learning/progress/1"))
+            mockMvc.perform(get("/api/learning/progress/me/1"))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.code").value("500"));
         }
@@ -153,7 +157,7 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST / - Service 抛出 BusinessException 返回 400")
         void createThrowsBusinessException() throws Exception {
-            when(progressService.create(any(UserChapterProgressRequest.class)))
+            when(progressService.createForUser(any(UserChapterProgressRequest.class), anyLong()))
                     .thenThrow(new BusinessException(LearningErrorConstants.PROGRESS_ALREADY_EXISTS, "该用户的章节进度记录已存在"));
 
             mockMvc.perform(post("/api/learning/progress")
@@ -168,7 +172,7 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST / - Service 抛出 RuntimeException 返回 500")
         void createThrowsRuntimeException() throws Exception {
-            when(progressService.create(any(UserChapterProgressRequest.class)))
+            when(progressService.createForUser(any(UserChapterProgressRequest.class), anyLong()))
                     .thenThrow(new RuntimeException("创建进度记录失败"));
 
             mockMvc.perform(post("/api/learning/progress")
@@ -182,7 +186,8 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST / - Service 返回 false 时 code 为 400")
         void createReturnsFalse() throws Exception {
-            when(progressService.create(any(UserChapterProgressRequest.class))).thenReturn(false);
+            when(progressService.createForUser(any(UserChapterProgressRequest.class), anyLong()))
+                    .thenReturn(false);
 
             mockMvc.perform(post("/api/learning/progress")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -197,7 +202,7 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT / - Service 抛出 BusinessException 返回 400")
         void updateThrowsBusinessException() throws Exception {
-            when(progressService.update(any(UserChapterProgressRequest.class)))
+            when(progressService.updateForUser(any(UserChapterProgressRequest.class), anyLong()))
                     .thenThrow(new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在"));
 
             mockMvc.perform(put("/api/learning/progress")
@@ -212,7 +217,8 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT / - Service 返回 false 时 code 为 400")
         void updateReturnsFalse() throws Exception {
-            when(progressService.update(any(UserChapterProgressRequest.class))).thenReturn(false);
+            when(progressService.updateForUser(any(UserChapterProgressRequest.class), anyLong()))
+                    .thenReturn(false);
 
             mockMvc.perform(put("/api/learning/progress")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -243,11 +249,11 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
     class BoundaryTests {
 
         @Test
-        @DisplayName("GET /user/{userId} - 空结果集返回空列表")
+        @DisplayName("GET /me - 空结果集返回空列表")
         void getByUserIdEmptyResult() throws Exception {
-            when(progressService.getByUserId(9999L)).thenReturn(List.of());
+            when(progressService.getByUserId(1L)).thenReturn(List.of());
 
-            mockMvc.perform(get("/api/learning/progress/users/9999"))
+            mockMvc.perform(get("/api/learning/progress/me"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").isArray())
@@ -255,14 +261,14 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("GET /user/{userId} - 多进度记录返回")
+        @DisplayName("GET /me - 多进度记录返回")
         void getByUserIdMultipleRecords() throws Exception {
             List<UserChapterProgressResponse> list = List.of(
                     LearningTestDataFactory.createChapterProgressVO(1L, 1L, 1L),
                     LearningTestDataFactory.createChapterProgressVO(2L, 1L, 2L));
             when(progressService.getByUserId(1L)).thenReturn(list);
 
-            mockMvc.perform(get("/api/learning/progress/users/1"))
+            mockMvc.perform(get("/api/learning/progress/me"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.length()").value(2));
@@ -290,26 +296,27 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 注入在路径参数中")
         void xssInPath() throws Exception {
-            when(progressService.get(anyLong()))
+            when(progressService.getForUser(anyLong(), anyLong()))
                     .thenThrow(new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在"));
 
-            mockMvc.perform(get(URI.create("/api/learning/progress/%3Cscript%3Ealert('xss')%3E")))
+            mockMvc.perform(get(URI.create("/api/learning/progress/me/%3Cscript%3Ealert('xss')%3E")))
                     .andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("SQL 注入在路径参数中")
         void sqlInjectionInPath() throws Exception {
-            when(progressService.get(anyLong()))
+            when(progressService.getForUser(anyLong(), anyLong()))
                     .thenThrow(new BusinessException(LearningErrorConstants.PROGRESS_NOT_FOUND, "进度记录不存在"));
 
-            mockMvc.perform(get("/api/learning/progress/{id}", "' OR '1'='1")).andExpect(status().isBadRequest());
+            mockMvc.perform(get("/api/learning/progress/me/{id}", "' OR '1'='1"))
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
         @DisplayName("DELETE 请求获取接口返回 405")
         void getWithWrongMethod() throws Exception {
-            mockMvc.perform(delete("/api/learning/progress/1")).andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(delete("/api/learning/progress/me/1")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test

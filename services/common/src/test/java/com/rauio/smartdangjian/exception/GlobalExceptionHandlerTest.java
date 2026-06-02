@@ -15,12 +15,15 @@ import jakarta.validation.Path;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.pojo.response.Result;
 
 import cn.dev33.satoken.exception.NotLoginException;
@@ -36,10 +39,27 @@ class GlobalExceptionHandlerTest {
     void handleBusinessException() {
         BusinessException ex = new BusinessException(1001, "验证码错误");
 
-        Result<?> result = handler.handleBusinessExceptions(ex);
+        ResponseEntity<Result> response = handler.handleBusinessExceptions(ex);
+        Result<?> result = response.getBody();
 
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(result).isNotNull();
         assertThat(result.getCode()).isEqualTo("1001");
         assertThat(result.getMessage()).isEqualTo("验证码错误");
+    }
+
+    @Test
+    @DisplayName("handleBusinessExceptions 对资源越权返回 FORBIDDEN")
+    void handleForbiddenBusinessException() {
+        BusinessException ex = new BusinessException(ErrorConstants.RESOURCE_NOT_AUTHORIZED, "无权访问该资源");
+
+        ResponseEntity<Result> response = handler.handleBusinessExceptions(ex);
+        Result<?> result = response.getBody();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(result).isNotNull();
+        assertThat(result.getCode()).isEqualTo(String.valueOf(ErrorConstants.RESOURCE_NOT_AUTHORIZED));
+        assertThat(result.getMessage()).isEqualTo("无权访问该资源");
     }
 
     @Test

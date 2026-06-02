@@ -52,12 +52,12 @@ class UserQuizAnswerControllerRealServiceIntegrationTest extends CrossLayerTestB
     }
 
     @Test
-    @DisplayName("GET /answers/users/{id} 使用真实 UserQuizAnswerService 查询当前用户列表")
+    @DisplayName("GET /answers/me 使用真实 UserQuizAnswerService 查询当前用户列表")
     void getByUserIdUsesRealService() throws Exception {
         when(answerMapper.selectList(any(Wrapper.class)))
                 .thenReturn(List.of(answer(100L, 1L, 10L, 20L), answer(101L, 1L, 11L, 21L)));
 
-        mockMvc.perform(get("/api/quiz/answers/users/1"))
+        mockMvc.perform(get("/api/quiz/answers/me"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("200"))
                 .andExpect(jsonPath("$.data.length()").value(2))
@@ -68,24 +68,21 @@ class UserQuizAnswerControllerRealServiceIntegrationTest extends CrossLayerTestB
     }
 
     @Test
-    @DisplayName("GET /answers/users/{id} 查询他人答题记录返回 403 且不调用 Service")
-    void getOtherUserAnswerReturns403BeforeService() throws Exception {
+    @DisplayName("GET /answers/users/{id} 旧他人答题记录路由已移除")
+    void oldUserScopedRouteReturns404BeforeService() throws Exception {
         setSecurityContext(UserType.STUDENT, 1L, "uni1");
 
-        mockMvc.perform(get("/api/quiz/answers/users/2"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value("403"))
-                .andExpect(jsonPath("$.message").value("无权查看其他用户的答题记录"));
+        mockMvc.perform(get("/api/quiz/answers/users/2")).andExpect(status().isNotFound());
 
         verify(answerMapper, never()).selectList(any(Wrapper.class));
     }
 
     @Test
-    @DisplayName("POST /answers/users/{id}/quizzes/{quizId}/options/{optionId} 使用真实 Service 创建答题记录")
+    @DisplayName("POST /answers/me/quizzes/{quizId}/options/{optionId} 使用真实 Service 创建答题记录")
     void createUsesRealServiceAndSetsPathFields() throws Exception {
         when(answerMapper.insert(any(UserQuizAnswer.class))).thenReturn(1);
 
-        mockMvc.perform(post("/api/quiz/answers/users/1/quizzes/10/options/20"))
+        mockMvc.perform(post("/api/quiz/answers/me/quizzes/10/options/20"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("200"))
                 .andExpect(jsonPath("$.data").value(true));
@@ -101,11 +98,11 @@ class UserQuizAnswerControllerRealServiceIntegrationTest extends CrossLayerTestB
     }
 
     @Test
-    @DisplayName("PUT /answers/users/{id}/quizzes/{quizId}/options/{optionId} 无现有记录时真实 Service 返回 false")
+    @DisplayName("PUT /answers/me/quizzes/{quizId}/options/{optionId} 无现有记录时真实 Service 返回 false")
     void updateMissingExistingAnswerReturnsFalse() throws Exception {
         when(answerMapper.selectOne(any(Wrapper.class), anyBoolean())).thenReturn(null);
 
-        mockMvc.perform(put("/api/quiz/answers/users/1/quizzes/10/options/20"))
+        mockMvc.perform(put("/api/quiz/answers/me/quizzes/10/options/20"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("200"))
                 .andExpect(jsonPath("$.data").value(false));
@@ -163,8 +160,10 @@ class UserQuizAnswerControllerRealServiceIntegrationTest extends CrossLayerTestB
         }
 
         @Bean
-        UserQuizAnswerController userQuizAnswerController(UserQuizAnswerService answerService) {
-            return new UserQuizAnswerController(answerService);
+        UserQuizAnswerController userQuizAnswerController(
+                UserQuizAnswerService answerService,
+                com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
+            return new UserQuizAnswerController(answerService, currentUserProvider);
         }
 
         @Bean
