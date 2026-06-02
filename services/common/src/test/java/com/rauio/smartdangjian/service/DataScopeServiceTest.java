@@ -2,48 +2,44 @@ package com.rauio.smartdangjian.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.MockedStatic;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
-import com.rauio.smartdangjian.utils.SecurityUtils;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
+import com.rauio.smartdangjian.security.LoginUser;
 import com.rauio.smartdangjian.utils.spec.UserType;
+
+import cn.dev33.satoken.exception.NotLoginException;
 
 @ExtendWith(MockitoExtension.class)
 class DataScopeServiceTest {
 
-    private final DataScopeService service = new DataScopeService();
-    private MockedStatic<SecurityUtils> securityUtilsMock;
+    @Mock
+    private CurrentUserProvider currentUserProvider;
+
+    private DataScopeService service;
 
     @BeforeEach
     void setUp() {
-        securityUtilsMock = mockStatic(SecurityUtils.class);
-    }
-
-    @AfterEach
-    void tearDown() {
-        securityUtilsMock.close();
+        service = new DataScopeService(currentUserProvider);
     }
 
     private void mockUser(UserType type, String universityId) {
-        CurrentUserPrincipal user = mock(CurrentUserPrincipal.class);
-        lenient().when(user.getUserType()).thenReturn(type);
-        lenient().when(user.getUniversityId()).thenReturn(universityId);
-        securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(user);
+        LoginUser user = LoginUser.builder()
+                .id("1")
+                .userType(type)
+                .universityId(universityId)
+                .build();
+        when(currentUserProvider.getCurrentUser()).thenReturn(user);
     }
-
-    // ==================== requireSameUniversity ====================
 
     @Test
     @DisplayName("MANAGER bypasses university check")
@@ -86,11 +82,9 @@ class DataScopeServiceTest {
     @Test
     @DisplayName("Null user throws exception")
     void nullUserThrowsForSameUniversity() {
-        securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(null);
+        when(currentUserProvider.getCurrentUser()).thenReturn(null);
         assertThatThrownBy(() -> service.requireSameUniversity("uni-1")).isInstanceOf(BusinessException.class);
     }
-
-    // ==================== requireManageable ====================
 
     @Test
     @DisplayName("MANAGER bypasses manageable check")
@@ -137,8 +131,6 @@ class DataScopeServiceTest {
                 });
     }
 
-    // ==================== requireUniversityId ====================
-
     @Test
     @DisplayName("MANAGER bypasses university id requirement")
     void managerBypassesUniversityIdReq() {
@@ -165,12 +157,10 @@ class DataScopeServiceTest {
                 });
     }
 
-    // ==================== isSameUniversity ====================
-
     @Test
     @DisplayName("isSameUniversity null user returns false")
     void isSameUniversityNullUserReturnsFalse() {
-        securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(null);
+        when(currentUserProvider.getCurrentUser()).thenReturn(null);
         assertThat(service.isSameUniversity("uni-1")).isFalse();
     }
 
@@ -182,9 +172,9 @@ class DataScopeServiceTest {
     }
 
     @Test
-    @DisplayName("requireManageable null user after non-manager check throws exception")
+    @DisplayName("requireManageable null user throws exception")
     void requireManageableNullUserThrows() {
-        securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(null);
+        when(currentUserProvider.getCurrentUser()).thenReturn(null);
         assertThatThrownBy(() -> service.requireManageable("uni-1"))
                 .isInstanceOf(BusinessException.class)
                 .satisfies(e -> {
@@ -197,7 +187,7 @@ class DataScopeServiceTest {
     @Test
     @DisplayName("requireUniversityId null user throws exception")
     void requireUniversityIdNullUserThrows() {
-        securityUtilsMock.when(SecurityUtils::getCurrentUser).thenReturn(null);
+        when(currentUserProvider.getCurrentUser()).thenReturn(null);
         assertThatThrownBy(() -> service.requireUniversityId())
                 .isInstanceOf(BusinessException.class)
                 .satisfies(e -> {
@@ -219,7 +209,7 @@ class DataScopeServiceTest {
     }
 
     @Test
-    @DisplayName("requireManageable user universityId blank with non-blank entity throws")
+    @DisplayName("requireManageable user universityId blank throws")
     void requireManageableUserBlankUniWithEntityThrows() {
         mockUser(UserType.SCHOOL, null);
         assertThatThrownBy(() -> service.requireManageable("uni-1"))
@@ -236,5 +226,13 @@ class DataScopeServiceTest {
         mockUser(UserType.STUDENT, "uni-1");
         service.requireSameUniversity("uni-1");
         assertThat(service.isSameUniversity("uni-1")).isTrue();
+    }
+
+    @Test
+    @DisplayName("NotLoginException is caught and treated as null user")
+    void notLoginExceptionReturnsNull() {
+        when(currentUserProvider.getCurrentUser()).thenThrow(NotLoginException.class);
+        assertThatThrownBy(() -> service.requireSameUniversity("uni-1")).isInstanceOf(BusinessException.class);
+        assertThat(service.isSameUniversity("uni-1")).isFalse();
     }
 }

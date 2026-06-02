@@ -5,18 +5,24 @@ import org.springframework.stereotype.Component;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
-import com.rauio.smartdangjian.utils.SecurityUtils;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
+import com.rauio.smartdangjian.security.LoginUser;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
+import cn.dev33.satoken.exception.NotLoginException;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Component
 public class DataScopeService {
+
+    private final CurrentUserProvider currentUserProvider;
 
     public void requireSameUniversity(String entityUniversityId) {
         if (isManager()) {
             return;
         }
-        CurrentUserPrincipal user = getCurrentUser();
+        LoginUser user = getCurrentUser();
         if (user == null) {
             throw new BusinessException(ErrorConstants.RESOURCE_NOT_AUTHORIZED, "用户未登录");
         }
@@ -33,7 +39,7 @@ public class DataScopeService {
         if (isManager()) {
             return;
         }
-        CurrentUserPrincipal user = getCurrentUser();
+        LoginUser user = getCurrentUser();
         if (user == null) {
             throw new BusinessException(ErrorConstants.RESOURCE_NOT_AUTHORIZED, "用户未登录");
         }
@@ -53,7 +59,7 @@ public class DataScopeService {
         if (isManager()) {
             return true;
         }
-        CurrentUserPrincipal user = getCurrentUser();
+        LoginUser user = getCurrentUser();
         if (user == null) {
             return false;
         }
@@ -68,7 +74,7 @@ public class DataScopeService {
         if (isManager()) {
             return;
         }
-        CurrentUserPrincipal user = getCurrentUser();
+        LoginUser user = getCurrentUser();
         if (user == null) {
             throw new BusinessException(ErrorConstants.RESOURCE_NOT_AUTHORIZED, "用户未登录");
         }
@@ -78,11 +84,15 @@ public class DataScopeService {
     }
 
     private boolean isManager() {
-        CurrentUserPrincipal user = getCurrentUser();
+        LoginUser user = getCurrentUser();
         return user != null && user.getUserType() == UserType.MANAGER;
     }
 
-    private CurrentUserPrincipal getCurrentUser() {
-        return SecurityUtils.getCurrentUser();
+    private LoginUser getCurrentUser() {
+        try {
+            return currentUserProvider.getCurrentUser();
+        } catch (NotLoginException e) {
+            return null;
+        }
     }
 }

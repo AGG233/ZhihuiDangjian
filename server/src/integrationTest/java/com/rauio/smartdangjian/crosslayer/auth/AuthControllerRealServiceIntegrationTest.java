@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.controller.auth;
+package com.rauio.smartdangjian.crosslayer.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;

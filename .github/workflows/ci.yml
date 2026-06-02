@@ -15,10 +15,87 @@ permissions:
   contents: read
 
 jobs:
-  ci:
-    name: Compile, Test & Build
+  compile-and-format:
+    name: Compile & Format Check
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: Compile sources
+        run: ./gradlew compileJava
+
+      - name: Spotless check
+        run: ./gradlew spotlessCheck
+
+      - name: Upload compile reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compile-format-reports
+          path: |
+            **/build/reports/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: compile-and-format
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: Run unit tests
+        run: ./gradlew test --continue
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports
+          path: |
+            **/build/reports/tests/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  integration-and-smoke:
+    name: Integration, Coverage & Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: unit-test
 
     services:
       mysql:
@@ -77,14 +154,8 @@ jobs:
       - name: Grant execute permission
         run: chmod +x gradlew
 
-      - name: Compile sources
-        run: ./gradlew compileJava
-
-      - name: Spotless check (fail fast)
-        run: ./gradlew spotlessCheck
-
-      - name: Run tests with coverage
-        run: ./gradlew test integrationTest jacocoRootReport jacocoRootCoverageVerification --continue
+      - name: Run integration tests and coverage
+        run: ./gradlew integrationTest jacocoRootReport jacocoRootCoverageVerification --continue
 
       - name: Upload coverage to Codacy
         if: success() || failure()
@@ -96,7 +167,7 @@ jobs:
           force-coverage-parser: jacoco
 
       - name: Build server bootJar
-        run: ./gradlew :server:bootJar -x test
+        run: ./gradlew :server:bootJar -x test -x integrationTest
 
       - name: Start server for API smoke
         env:

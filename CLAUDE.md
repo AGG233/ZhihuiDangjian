@@ -257,58 +257,46 @@ dev 专属的多阶段构建和本地编排使用 `.dev` 后缀，合并到 prod
 
 ## 可复用工作流（.claude/workflows/）
 
-通过 Workflow 工具按名称调用，例如 `Workflow({name: "plan-execute"})` 或 `/plan-execute`。
+通过 `Workflow({name: "plan-execute", args: {plan: "..."}})` 或 `/plan-execute <需求>` 调用。
 
 ### plan-execute — 四阶段复杂计划编排器
 
-`plan-execute` 是**唯一的工作流入口**，用于实施复杂、长时间才能完成的计划。将计划拆分为安全、业务逻辑、控制层、数据层、测试等维度，并行探索确认后分阶段执行。
+唯一活跃的工作流。将计划按安全/业务逻辑/控制层/数据层/测试维度并行探索，拆分为 WorkItem 后并行编码、串行审查、最终汇报。
 
-| 阶段 | 名称 | 核心职责 | Agent 模式 |
-|------|------|----------|-----------|
-| 1. Explore & Plan | 多维探索与计划确认 | 按安全/业务逻辑/控制层/数据层/测试维度并行 exploration → 汇总 agent 去重合并 → 确认最终工作内容（WorkItem[]） | `parallel()` 并行 |
-| 2. Code & Test | 编码与自测 | 将 WorkItem 分派给 coding agent，实现代码并自测通过 | `parallel()` 并行（worktree 隔离） |
-| 3. Review & Validate | 审查验证 | 对每个 coding agent 的产出串行审查，发现问题退回修复 → 全部通过 | root agent 串行派发 |
-| 4. Report | 最终汇报 | 汇总所有修改：修改文件、测试结果、审查意见、剩余风险 | 单 agent |
+| 阶段 | 名称 | 核心职责 |
+|------|------|----------|
+| 1. Explore & Plan | 多维探索与计划确认 | 5 维并行探索 → 汇总合并 → 输出 WorkItem[] |
+| 2. Code & Test | 并行编码与自测 | worktree 隔离并行编码 + 自测通过 |
+| 3. Review & Validate | 串行审查验证 | 逐个审查 → 发现问题退回修复 |
+| 4. Report | 最终汇报 | 汇总修改文件/测试/审查意见 |
 
 ### 使用方式
 
 ```bash
-# 传入计划文本
-/plan-execute { plan: "实现课程分类管理功能：1.新增 Category 实体与 CRUD..." }
+# 语义化启动（推荐）— 直接输入需求
+/plan-execute 实现课程分类管理功能
 
-# 传入计划文件路径
-/plan-execute { planFile: "/home/rauio/.claude/plans/my-plan.md" }
+# 指定计划文件
+/plan-execute { planFile: "/path/to/2026-06-02-feature.md" }
 
-# Dry run 模式（只运行到 Phase 1，不执行编码）
-/plan-execute { plan: "修复登录超时问题", dryRun: true }
+# 演练模式（只探查不编码）
+/plan-execute { plan: "重构登录模块", dryRun: true }
 ```
 
-Args 说明：
-| 参数 | 类型 | 必须 | 说明 |
-|------|------|------|------|
-| `plan` | string | 二选一 | 计划描述文本 |
-| `planFile` | string | 二选一 | 计划文件路径 |
-| `dryRun` | boolean | 可选 | 只运行到 Phase 1 结束 |
+### 计划文件命名规范
 
-### 可用技能
+> 在 Plan mode 下撰写的计划文件**必须保存于项目级目录** `.claude/plans/` 下。命名格式：`YYYY-MM-DD-<描述>.md`
 
-| 技能 | 用途 |
-|------|------|
-| `spring-boot-coding` | Spring Boot 编码规范。Controller/Service/Mapper/Entity/Config 的项目级约定 |
-| `test-coding` | 测试规范。JUnit 5 + Mockito + AssertJ + 跨层回归测试要求 |
-| `code-review` | 代码审查清单。错误处理、安全、并发、可观测性、AI 模块专项检查 |
-| `release-checklist` | 发布前验证清单。代码质量、API稳定性、数据库、配置、Docker、版本号 |
+| 格式 | 示例 | 目的 |
+|------|------|------|
+| `YYYY-MM-DD-<描述>.md` | `2026-06-02-security-permissions.md` | 按日期前缀便于检索与归档 |
+| `<描述>` | 英文短横线分割，避免特殊字符 | 清晰表达计划内容 |
 
-### 项目专用 Agent（.claude/agents/）
+无参数调用 `/plan-execute` 时，工作流自动检测 `.claude/plans/` 下当日（`YYYY-MM-DD-*`）或最近日期的计划文件。
 
-| Agent | 用途 | 权限 |
-|-------|------|------|
-| `zhdj-project-coder` | 编码实现：Controller/Service/Mapper/Entity/Config/Flyway 迁移 | `acceptEdits` |
-| `zhdj-project-tester` | 测试编写：JUnit/Mockito/AssertJ/MockMvc | `acceptEdits` |
-| `zhdj-project-reviewer` | 代码/安全/计划审查 | 只读 |
-| `zhdj-release-validator` | 发布验收：编译/测试/覆盖率/Spotless/bootJar 全量门禁 | `acceptEdits`（限于报告） |
+不传参数且无当日计划时，工作流进入交互式需求收集或由 `plan-discovery` Agent 根据项目上下文自动推导计划。
 
-典型使用模式：Coder + Tester 并行编码测试 → Reviewer 审查 → Release Validator 最终门禁。
+详细 Agent 映射、技能和参数说明见 `.claude/skills/plan-execute/SKILL.md`。
 
 ## 架构修复计划（602）
 
