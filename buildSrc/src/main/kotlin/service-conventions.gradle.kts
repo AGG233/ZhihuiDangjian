@@ -81,12 +81,12 @@ val integrationTestForks = (project.findProperty("integrationTestForks") as Stri
 tasks.named<Test>("test") {
     useJUnitPlatform()
     maxParallelForks = unitTestForks
-    forkEvery = 0
+    forkEvery = 100
 }
 
 tasks.named<Test>("integrationTest") {
     maxParallelForks = integrationTestForks
-    forkEvery = 0
+    forkEvery = 100
 }
 
 tasks.check {

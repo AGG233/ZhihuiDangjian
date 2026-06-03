@@ -12,14 +12,13 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
@@ -31,17 +30,9 @@ import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = UserControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("用户管理接口测试")
 class UserControllerTest extends BaseControllerTest {
-
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public UserController userController(UserService userService) {
-            return new UserController(userService);
-        }
-    }
 
     @MockitoBean
     private UserService userService;

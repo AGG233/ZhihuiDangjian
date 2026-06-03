@@ -11,13 +11,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.QuizTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
@@ -29,17 +28,9 @@ import com.rauio.smartdangjian.server.quiz.pojo.request.QuizRequest;
 import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
 import com.rauio.smartdangjian.server.quiz.service.QuizService;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = AdminQuizControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("管理员试题接口测试")
 class AdminQuizControllerTest extends BaseControllerTest {
-
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public AdminQuizController adminQuizController(QuizService quizService, QuizOptionService quizOptionService) {
-            return new AdminQuizController(quizService, quizOptionService);
-        }
-    }
 
     @MockitoBean
     private QuizService quizService;

@@ -16,14 +16,13 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.server.ai.constants.AiChatResponseType;
 import com.rauio.smartdangjian.server.ai.controller.user.UserChatController;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiChatRequest;
@@ -35,18 +34,9 @@ import com.rauio.smartdangjian.server.user.service.UserService;
 
 import reactor.core.publisher.Flux;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = UserChatControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("用户AI聊天接口测试")
 class UserChatControllerTest extends BaseControllerTest {
-
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public UserChatController userChatController(
-                LLMService llmService, AiMemoryService aiMemoryService, UserService userService) {
-            return new UserChatController(llmService, aiMemoryService, userService);
-        }
-    }
 
     @MockitoBean
     private LLMService llmService;

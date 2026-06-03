@@ -45,7 +45,8 @@ class QuizManageToolTest {
     @Test
     @DisplayName("getQuiz 返回存在的测验")
     void getQuizReturnsExistingQuiz() {
-        QuizSummary quiz = QuizSummary.builder().id(1L).question("What is Java?").build();
+        QuizSummary quiz =
+                QuizSummary.builder().id(1L).question("What is Java?").build();
         when(quizDataFacade.getQuiz(1L)).thenReturn(quiz);
 
         QuizSummary result = quizManageTool.getQuiz("1");
@@ -97,7 +98,8 @@ class QuizManageToolTest {
         when(quizDataFacade.createQuiz(any(), anyString(), anyString(), anyInt(), anyString(), any(), anyList()))
                 .thenReturn(null);
 
-        assertThatThrownBy(() -> quizManageTool.createQuiz("1", "Q3", "single_choice", 5, "easy", null, Collections.emptyList()))
+        assertThatThrownBy(() ->
+                        quizManageTool.createQuiz("1", "Q3", "single_choice", 5, "easy", null, Collections.emptyList()))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("测验创建失败");
     }

@@ -11,12 +11,11 @@ import java.net.URI;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.graph.constants.GraphErrorConstants;
 import com.rauio.smartdangjian.server.learning.controller.user.UserLearningGraphSyncController;
@@ -24,19 +23,10 @@ import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = UserLearningGraphSyncControllerTest.TestConfig.class)
+        classes = ControllerTestConfiguration.class)
 @DisplayName("学习图谱同步接口测试")
 class UserLearningGraphSyncControllerTest extends BaseControllerTest {
 
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public UserLearningGraphSyncController userLearningGraphSyncController(
-                UserLearningRecordService userLearningRecordService,
-                com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
-            return new UserLearningGraphSyncController(userLearningRecordService, currentUserProvider);
-        }
-    }
 
     @MockitoBean
     private UserLearningRecordService userLearningRecordService;

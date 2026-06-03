@@ -12,12 +12,11 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.graph.constants.GraphErrorConstants;
 import com.rauio.smartdangjian.server.graph.controller.user.UserKnowledgeGraphController;
@@ -28,17 +27,10 @@ import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = UserKnowledgeGraphControllerTest.TestConfig.class)
+        classes = ControllerTestConfiguration.class)
 @DisplayName("知识图谱接口测试")
 class UserKnowledgeGraphControllerTest extends BaseControllerTest {
 
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public UserKnowledgeGraphController knowledgeGraphController(KnowledgeGraphService knowledgeGraphService) {
-            return new UserKnowledgeGraphController(knowledgeGraphService);
-        }
-    }
 
     @MockitoBean
     private KnowledgeGraphService knowledgeGraphService;

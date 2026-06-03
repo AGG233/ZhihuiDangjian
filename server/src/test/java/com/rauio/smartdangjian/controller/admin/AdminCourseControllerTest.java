@@ -11,13 +11,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.constants.CourseErrorConstants;
@@ -27,17 +26,10 @@ import com.rauio.smartdangjian.server.content.service.course.CourseService;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminCourseControllerTest.TestConfig.class)
+        classes = ControllerTestConfiguration.class)
 @DisplayName("管理员课程接口测试")
 class AdminCourseControllerTest extends BaseControllerTest {
 
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public AdminCourseController adminCourseController(CourseService courseService) {
-            return new AdminCourseController(courseService);
-        }
-    }
 
     @MockitoBean
     private CourseService courseService;

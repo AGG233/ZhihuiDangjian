@@ -2,10 +2,10 @@ package com.rauio.smartdangjian.server.content.api.dto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import com.rauio.smartdangjian.server.content.pojo.entity.Course;
 
 class CourseSummaryTest {
 
@@ -41,11 +41,8 @@ class CourseSummaryTest {
     @Test
     @DisplayName("from(Course) 不复制 estimatedDuration 等非摘要字段")
     void fromCourseDoesNotCopyNonSummaryFields() {
-        Course course = Course.builder()
-                .id(1L)
-                .title("课程标题")
-                .estimatedDuration(120)
-                .build();
+        Course course =
+                Course.builder().id(1L).title("课程标题").estimatedDuration(120).build();
 
         CourseSummary summary = CourseSummary.from(course);
 
@@ -61,10 +58,7 @@ class CourseSummaryTest {
     @Test
     @DisplayName("from(Course) 处理部分 null 字段时不抛异常")
     void fromCourseWithNullFieldsDoesNotThrow() {
-        Course course = Course.builder()
-                .id(1L)
-                .title("标题")
-                .build();
+        Course course = Course.builder().id(1L).title("标题").build();
 
         CourseSummary summary = CourseSummary.from(course);
 

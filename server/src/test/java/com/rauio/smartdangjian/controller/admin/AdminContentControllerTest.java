@@ -16,13 +16,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.ContentTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.controller.admin.AdminContentController;
@@ -35,17 +34,10 @@ import com.rauio.smartdangjian.utils.spec.UserType;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminContentControllerTest.TestConfig.class)
+        classes = ControllerTestConfiguration.class)
 @DisplayName("管理员内容块接口测试")
 class AdminContentControllerTest extends BaseControllerTest {
 
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public AdminContentController adminContentController(ChapterContentBlockService chapterContentBlockService) {
-            return new AdminContentController(chapterContentBlockService);
-        }
-    }
 
     @MockitoBean
     private ChapterContentBlockService chapterChapterContentBlockService;

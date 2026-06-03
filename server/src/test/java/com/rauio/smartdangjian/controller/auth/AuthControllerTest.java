@@ -19,13 +19,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.controller.factory.AuthTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
@@ -39,13 +38,9 @@ import com.rauio.smartdangjian.server.auth.service.CaptchaService;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = AuthControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("认证接口测试")
 class AuthControllerTest extends BaseControllerTest {
-
-    @SpringBootConfiguration
-    @ComponentScan(basePackages = "com.rauio.smartdangjian.server.auth.controller")
-    static class TestConfig extends CommonTestConfig {}
 
     @MockitoBean
     private AuthService authService;

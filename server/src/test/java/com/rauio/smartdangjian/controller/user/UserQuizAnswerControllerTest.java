@@ -11,12 +11,11 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.QuizTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
@@ -26,19 +25,10 @@ import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = UserQuizAnswerControllerTest.TestConfig.class)
+        classes = ControllerTestConfiguration.class)
 @DisplayName("用户答题记录接口测试")
 class UserQuizAnswerControllerTest extends BaseControllerTest {
 
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public UserQuizAnswerController userQuizAnswerController(
-                UserQuizAnswerService userQuizAnswerService,
-                com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
-            return new UserQuizAnswerController(userQuizAnswerService, currentUserProvider);
-        }
-    }
 
     @MockitoBean
     private UserQuizAnswerService userQuizAnswerService;

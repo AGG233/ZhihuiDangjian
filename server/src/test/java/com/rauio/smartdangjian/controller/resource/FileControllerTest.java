@@ -20,19 +20,18 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
@@ -41,38 +40,13 @@ import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
 import com.rauio.smartdangjian.server.resource.service.FileService;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = FileControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @AutoConfigureMockMvc(addFilters = false)
 @TestPropertySource(
         locations = "classpath:application-test.yaml",
         properties = {"REDIS_HOST=localhost", "REDIS_PORT=6379", "REDIS_DATABASE=0"})
 @DisplayName("文件资源接口测试 (FileController)")
 class FileControllerTest {
-
-    @SpringBootConfiguration
-    @EnableAutoConfiguration(
-            exclude = {
-                DataSourceAutoConfiguration.class,
-                HibernateJpaAutoConfiguration.class,
-                org.redisson.spring.starter.RedissonAutoConfigurationV2.class,
-                org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.neo4j.Neo4jAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.data.neo4j.Neo4jDataAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
-                cn.dev33.satoken.dao.SaTokenDaoForRedisTemplate.class,
-                com.rauio.smartdangjian.config.RedisConfig.class,
-                com.rauio.smartdangjian.config.TransactionConfig.class,
-                com.rauio.smartdangjian.config.SensitiveWordConfig.class
-            })
-    @EnableWebMvc
-    static class TestConfig {
-        @Bean
-        public FileController fileController(FileService fileService, CurrentUserProvider currentUserProvider) {
-            return new FileController(fileService, currentUserProvider);
-        }
-    }
 
     @Autowired
     private MockMvc mockMvc;

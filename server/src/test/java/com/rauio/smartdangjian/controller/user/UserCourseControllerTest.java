@@ -14,12 +14,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserProvider;
@@ -32,18 +31,10 @@ import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = UserCourseControllerTest.TestConfig.class)
+        classes = ControllerTestConfiguration.class)
 @DisplayName("用户课程接口测试")
 class UserCourseControllerTest extends BaseControllerTest {
 
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public UserCourseController userCourseController(
-                CourseService courseService, CurrentUserProvider currentUserProvider) {
-            return new UserCourseController(courseService, currentUserProvider);
-        }
-    }
 
     @MockitoBean
     private CourseService courseService;

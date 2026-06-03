@@ -77,8 +77,6 @@ public class CourseQueryFacadeImpl implements CourseQueryFacade {
                 .like(Course::getTitle, keyword)
                 .eq(Course::getIsPublished, true)
                 .last("LIMIT " + limit);
-        return courseService.list(wrapper).stream()
-                .map(CourseSummary::from)
-                .toList();
+        return courseService.list(wrapper).stream().map(CourseSummary::from).toList();
     }
 }

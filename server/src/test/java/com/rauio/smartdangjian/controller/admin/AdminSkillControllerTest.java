@@ -15,13 +15,12 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.AiTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.ai.constants.AiErrorConstants;
@@ -31,17 +30,10 @@ import com.rauio.smartdangjian.server.ai.service.SkillService;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminSkillControllerTest.TestConfig.class)
+        classes = ControllerTestConfiguration.class)
 @DisplayName("管理员AI技能接口测试")
 class AdminSkillControllerTest extends BaseControllerTest {
 
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public AdminSkillController adminSkillController(SkillService skillService) {
-            return new AdminSkillController(skillService);
-        }
-    }
 
     @MockitoBean
     private SkillService skillService;

@@ -13,12 +13,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.constants.ChapterErrorConstants;
@@ -28,17 +27,10 @@ import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = UserChapterControllerTest.TestConfig.class)
+        classes = ControllerTestConfiguration.class)
 @DisplayName("用户章节接口测试")
 class UserChapterControllerTest extends BaseControllerTest {
 
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public UserChapterController userChapterController(ChapterService chapterService) {
-            return new UserChapterController(chapterService);
-        }
-    }
 
     @MockitoBean
     private ChapterService chapterService;

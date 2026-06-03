@@ -14,12 +14,11 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.LearningTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
@@ -31,18 +30,10 @@ import com.rauio.smartdangjian.utils.spec.UserType;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminChapterProgressControllerTest.TestConfig.class)
+        classes = ControllerTestConfiguration.class)
 @DisplayName("管理员章节进度接口测试")
 class AdminChapterProgressControllerTest extends BaseControllerTest {
 
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public AdminChapterProgressController adminChapterProgressController(
-                UserChapterProgressService progressService) {
-            return new AdminChapterProgressController(progressService);
-        }
-    }
 
     @MockitoBean
     private UserChapterProgressService progressService;

@@ -17,13 +17,12 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.BannerTestDataFactory;
 import com.rauio.smartdangjian.controller.factory.ResourceMetaTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
@@ -34,17 +33,10 @@ import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminResourceMetaControllerTest.TestConfig.class)
+        classes = ControllerTestConfiguration.class)
 @DisplayName("管理员资源元数据接口测试")
 class AdminResourceMetaControllerTest extends BaseControllerTest {
 
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public AdminResourceMetaController adminResourceMetaController(ResourceMetaService resourceMetaService) {
-            return new AdminResourceMetaController(resourceMetaService);
-        }
-    }
 
     @MockitoBean
     private ResourceMetaService resourceMetaService;
