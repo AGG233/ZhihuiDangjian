@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+
 import java.util.List;
 import java.util.Map;
 
@@ -210,7 +212,7 @@ class CourseQueryFacadeImplTest {
                     .enrollmentCount(50)
                     .isPublished(true)
                     .build();
-            when(courseService.list(any())).thenReturn(List.of(course));
+            when(courseService.list(any(LambdaQueryWrapper.class))).thenReturn(List.of(course));
 
             List<CourseSummary> results = facade.searchByTitle("党建", 10);
 
@@ -227,7 +229,7 @@ class CourseQueryFacadeImplTest {
         @Test
         @DisplayName("无匹配时返回空列表")
         void noMatchReturnsEmpty() {
-            when(courseService.list(any())).thenReturn(List.of());
+            when(courseService.list(any(LambdaQueryWrapper.class))).thenReturn(List.of());
 
             List<CourseSummary> results = facade.searchByTitle("不存在", 10);
 

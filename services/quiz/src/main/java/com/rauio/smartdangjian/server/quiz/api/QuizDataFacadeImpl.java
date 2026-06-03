@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.rauio.smartdangjian.server.quiz.pojo.dto.QuizOptionReviewDto;
 import com.rauio.smartdangjian.server.quiz.pojo.dto.QuizOptionSummary;

@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.common.utils.IdUtil;
+import com.rauio.smartdangjian.server.content.api.CourseQueryFacade;
 import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
-import com.rauio.smartdangjian.server.user.service.UserService;
+import com.rauio.smartdangjian.server.user.api.UserProfileQueryFacade;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class SearchService {
 
-    private final CourseService courseService;
-    private final UserService userService;
+    private final CourseQueryFacade courseQueryFacade;
+    private final UserProfileQueryFacade userProfileQueryFacade;
     private final RecommendService recommendService;
 
     /**
@@ -28,7 +28,7 @@ public class SearchService {
      */
     public Page<CourseResponse> searchCourses(
             String keyword, String categoryId, String difficulty, int pageNum, int pageSize) {
-        return courseService.searchPublishedCourses(keyword, categoryId, difficulty, pageNum, pageSize);
+        return courseQueryFacade.searchPublishedCourses(keyword, categoryId, difficulty, pageNum, pageSize);
     }
 
     /**
@@ -43,7 +43,7 @@ public class SearchService {
         if (records.size() < pageSize) {
             Set<Long> existingIds = records.stream().map(CourseResponse::getId).collect(Collectors.toSet());
 
-            String userIdStr = userService.getCurrentUserId();
+            String userIdStr = userProfileQueryFacade.getCurrentUserId();
             Long userId = IdUtil.parse(userIdStr);
             Page<Long> cfIds = recommendService.recommend(userId, 1, pageSize);
 
@@ -53,7 +53,7 @@ public class SearchService {
                     .collect(Collectors.toSet());
 
             if (!idsToFetch.isEmpty()) {
-                records.addAll(courseService.listCourseResponsesByIds(idsToFetch));
+                records.addAll(courseQueryFacade.listCourseResponsesByIds(idsToFetch));
             }
         }
 
