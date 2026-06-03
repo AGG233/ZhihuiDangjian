@@ -20,6 +20,10 @@ auth:
   captcha:
     test-code: TEST8888
 
+app:
+  sensitive-word:
+    enabled: false
+
 dromara:
   x-file-storage:
     tencent-cos:

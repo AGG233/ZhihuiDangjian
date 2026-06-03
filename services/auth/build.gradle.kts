@@ -3,7 +3,9 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":services:common"))
+    implementation(project(":services:common:common-core"))
+    implementation(project(":services:common:common-web"))
+    implementation(project(":services:common:common-security"))
     implementation(project(":services:user"))
 
     implementation(libs.bundles.common)

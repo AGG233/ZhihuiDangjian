@@ -63,7 +63,8 @@ class FileControllerTest {
                 org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
                 cn.dev33.satoken.dao.SaTokenDaoForRedisTemplate.class,
                 com.rauio.smartdangjian.config.RedisConfig.class,
-                com.rauio.smartdangjian.config.TransactionConfig.class
+                com.rauio.smartdangjian.config.TransactionConfig.class,
+                com.rauio.smartdangjian.config.SensitiveWordConfig.class
             })
     @EnableWebMvc
     static class TestConfig {

@@ -2,8 +2,6 @@ package com.rauio.smartdangjian.server.ai.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,30 +18,29 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.pojo.entity.Article;
-import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.content.api.ArticleQueryFacade;
+import com.rauio.smartdangjian.server.content.api.ChapterQueryFacade;
+import com.rauio.smartdangjian.server.content.api.CourseQueryFacade;
+import com.rauio.smartdangjian.server.content.api.dto.ArticleSummary;
+import com.rauio.smartdangjian.server.content.api.dto.ChapterSummary;
 import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
 import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
-import com.rauio.smartdangjian.server.content.service.article.ArticleService;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
 
 @ExtendWith(MockitoExtension.class)
 class ContentSearchToolTest {
 
     @Mock
-    private CourseService courseService;
+    private CourseQueryFacade courseQueryFacade;
 
     @Mock
-    private ArticleService articleService;
+    private ArticleQueryFacade articleQueryFacade;
 
     @Mock
-    private ChapterService chapterService;
+    private ChapterQueryFacade chapterQueryFacade;
 
     @Mock
     private ChapterContentBlockService chapterContentBlockService;
@@ -58,19 +55,21 @@ class ContentSearchToolTest {
         @Test
         @DisplayName("使用 like 查询匹配标题并返回映射列表")
         void returnsMappedResults() {
-            Course course1 = Course.builder()
+            CourseResponse course1 = CourseResponse.builder()
                     .id(1L)
                     .title("Java Basics")
                     .description("Intro to Java")
                     .build();
-            Course course2 = Course.builder()
+            CourseResponse course2 = CourseResponse.builder()
                     .id(2L)
                     .title("Advanced Java")
                     .description("Deep dive")
                     .build();
 
-            when(courseService.list(argThat((LambdaQueryWrapper<Course> w) -> w != null)))
-                    .thenReturn(List.of(course1, course2));
+            Page<CourseResponse> page = new Page<>(1, 1000);
+            page.setRecords(List.of(course1, course2));
+            when(courseQueryFacade.searchPublishedCourses("Java", null, null, 1, 1000))
+                    .thenReturn(page);
 
             List<Map<String, Object>> result = contentSearchTool.searchCourses("Java");
 
@@ -83,13 +82,16 @@ class ContentSearchToolTest {
                     .containsEntry("id", 2L)
                     .containsEntry("title", "Advanced Java")
                     .containsEntry("description", "Deep dive");
-            verify(courseService, times(1)).list(any(LambdaQueryWrapper.class));
+            verify(courseQueryFacade, times(1)).searchPublishedCourses("Java", null, null, 1, 1000);
         }
 
         @Test
         @DisplayName("无匹配结果时返回空列表")
         void returnsEmptyListWhenNoMatch() {
-            when(courseService.list(any(LambdaQueryWrapper.class))).thenReturn(Collections.emptyList());
+            Page<CourseResponse> page = new Page<>(1, 1000);
+            page.setRecords(Collections.emptyList());
+            when(courseQueryFacade.searchPublishedCourses("NonExistent", null, null, 1, 1000))
+                    .thenReturn(page);
 
             List<Map<String, Object>> result = contentSearchTool.searchCourses("NonExistent");
 
@@ -104,19 +106,18 @@ class ContentSearchToolTest {
         @Test
         @DisplayName("使用 like 查询匹配标题并返回映射列表")
         void returnsMappedResults() {
-            Article article1 = Article.builder()
+            ArticleSummary article1 = ArticleSummary.builder()
                     .id(1L)
                     .title("Article 1")
                     .summary("Summary 1")
                     .build();
-            Article article2 = Article.builder()
+            ArticleSummary article2 = ArticleSummary.builder()
                     .id(2L)
                     .title("Article 2")
                     .summary("Summary 2")
                     .build();
 
-            when(articleService.list(argThat((LambdaQueryWrapper<Article> w) -> w != null)))
-                    .thenReturn(List.of(article1, article2));
+            when(articleQueryFacade.searchByKeyword("Article")).thenReturn(List.of(article1, article2));
 
             List<Map<String, Object>> result = contentSearchTool.searchArticles("Article");
 
@@ -129,13 +130,13 @@ class ContentSearchToolTest {
                     .containsEntry("id", 2L)
                     .containsEntry("title", "Article 2")
                     .containsEntry("description", "Summary 2");
-            verify(articleService, times(1)).list(any(LambdaQueryWrapper.class));
+            verify(articleQueryFacade, times(1)).searchByKeyword("Article");
         }
 
         @Test
         @DisplayName("无匹配结果时返回空列表")
         void returnsEmptyListWhenNoMatch() {
-            when(articleService.list(any(LambdaQueryWrapper.class))).thenReturn(Collections.emptyList());
+            when(articleQueryFacade.searchByKeyword("NonExistent")).thenReturn(Collections.emptyList());
 
             List<Map<String, Object>> result = contentSearchTool.searchArticles("NonExistent");
 
@@ -150,19 +151,18 @@ class ContentSearchToolTest {
         @Test
         @DisplayName("使用 like 查询匹配标题并返回映射列表")
         void returnsMappedResults() {
-            Chapter chapter1 = Chapter.builder()
+            ChapterSummary chapter1 = ChapterSummary.builder()
                     .id(1L)
                     .title("Chapter 1")
                     .description("Desc 1")
                     .build();
-            Chapter chapter2 = Chapter.builder()
+            ChapterSummary chapter2 = ChapterSummary.builder()
                     .id(2L)
                     .title("Chapter 2")
                     .description("Desc 2")
                     .build();
 
-            when(chapterService.list(argThat((LambdaQueryWrapper<Chapter> w) -> w != null)))
-                    .thenReturn(List.of(chapter1, chapter2));
+            when(chapterQueryFacade.searchByTitle("Chapter")).thenReturn(List.of(chapter1, chapter2));
 
             List<Map<String, Object>> result = contentSearchTool.searchChapters("Chapter");
 
@@ -175,13 +175,13 @@ class ContentSearchToolTest {
                     .containsEntry("id", 2L)
                     .containsEntry("title", "Chapter 2")
                     .containsEntry("description", "Desc 2");
-            verify(chapterService, times(1)).list(any(LambdaQueryWrapper.class));
+            verify(chapterQueryFacade, times(1)).searchByTitle("Chapter");
         }
 
         @Test
         @DisplayName("无匹配结果时返回空列表")
         void returnsEmptyListWhenNoMatch() {
-            when(chapterService.list(any(LambdaQueryWrapper.class))).thenReturn(Collections.emptyList());
+            when(chapterQueryFacade.searchByTitle("NonExistent")).thenReturn(Collections.emptyList());
 
             List<Map<String, Object>> result = contentSearchTool.searchChapters("NonExistent");
 
@@ -209,8 +209,8 @@ class ContentSearchToolTest {
                     .orderIndex(1)
                     .build();
 
-            when(courseService.get(1L)).thenReturn(course);
-            when(chapterService.getByCourseId(1L)).thenReturn(List.of(chapter));
+            when(courseQueryFacade.get(1L)).thenReturn(course);
+            when(chapterQueryFacade.getByCourseId(1L)).thenReturn(List.of(chapter));
 
             Map<String, Object> result = contentSearchTool.getCourseDetail("1");
 
@@ -229,7 +229,7 @@ class ContentSearchToolTest {
                     .containsEntry("title", "Chapter 1")
                     .containsEntry("description", "Chapter desc")
                     .containsEntry("orderIndex", 1);
-            verify(chapterService, times(1)).getByCourseId(1L);
+            verify(chapterQueryFacade, times(1)).getByCourseId(1L);
         }
 
         @Test
@@ -257,7 +257,7 @@ class ContentSearchToolTest {
                     .build();
             ContentBlockResponse block = new ContentBlockResponse();
 
-            when(chapterService.get(1L)).thenReturn(chapter);
+            when(chapterQueryFacade.get(1L)).thenReturn(chapter);
             when(chapterContentBlockService.getByChapterId(1L)).thenReturn(List.of(block));
 
             Map<String, Object> result = contentSearchTool.getChapterDetail("1");

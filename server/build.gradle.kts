@@ -3,7 +3,11 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":services:common"))
+    implementation(project(":services:common:common-core"))
+    implementation(project(":services:common:common-web"))
+    implementation(project(":services:common:common-data-mybatis"))
+    implementation(project(":services:common:common-redis"))
+    implementation(project(":services:common:common-security"))
     implementation(project(":services:ai"))
     implementation(project(":services:auth"))
     implementation(project(":services:content"))
@@ -21,6 +25,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-tracing-bridge-brave")
     implementation(libs.resilience4j.spring.boot3)
+    implementation(libs.xfile)
     implementation(libs.flyway.core)
     runtimeOnly(libs.flyway.mysql)
     compileOnly(libs.lombok)

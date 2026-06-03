@@ -255,9 +255,9 @@ gh pr view <PR编号> --comments --json comments,reviews
 `server/Dockerfile` 在两分支上内容一致（单阶段），release.yml 始终引用它。
 dev 专属的多阶段构建和本地编排使用 `.dev` 后缀，合并到 product 时零冲突。
 
-## 可复用工作流（.claude/workflows/）
+## 可复用工作流（全局 ~/.claude/workflows/）
 
-通过 `Workflow({name: "plan-execute", args: {plan: "..."}})` 或 `/plan-execute <需求>` 调用。
+通过 `Workflow({name: "plan-execute", args: {plan: "..."}})` 或 `/plan-execute <需求>` 调用。工作流脚本统一存放在全局 `~/.claude/workflows/` 目录，按名称解析，所有项目共享。
 
 ### plan-execute — 四阶段复杂计划编排器
 

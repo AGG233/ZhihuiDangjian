@@ -13,16 +13,15 @@ import org.springframework.stereotype.Component;
 
 import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.content.api.ChapterQueryFacade;
+import com.rauio.smartdangjian.server.content.api.CourseQueryFacade;
 import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
+import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
-import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
-import com.rauio.smartdangjian.server.quiz.service.QuizService;
+import com.rauio.smartdangjian.server.quiz.api.QuizDataFacade;
+import com.rauio.smartdangjian.server.quiz.pojo.dto.QuizOptionReviewDto;
+import com.rauio.smartdangjian.server.quiz.pojo.dto.QuizSummary;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,19 +29,18 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ContentReviewTool {
 
-    private final CourseService courseService;
-    private final ChapterService chapterService;
+    private final CourseQueryFacade courseQueryFacade;
+    private final ChapterQueryFacade chapterQueryFacade;
     private final ChapterContentBlockService chapterContentBlockService;
-    private final QuizService quizService;
-    private final QuizOptionService quizOptionService;
+    private final QuizDataFacade quizDataFacade;
 
     @Tool(name = "reviewCourseContent", description = "获取课程完整内容（含章节和内容块）用于审查")
     public Map<String, Object> reviewCourseContent(@ToolParam(description = "课程ID") String courseId) {
-        Course course = courseService.getById(courseId);
+        CourseResponse course = courseQueryFacade.get(IdUtil.parse(courseId));
         if (course == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "课程不存在");
         }
-        List<ChapterResponse> chapters = chapterService.getByCourseId(IdUtil.parse(courseId));
+        List<ChapterResponse> chapters = chapterQueryFacade.getByCourseId(IdUtil.parse(courseId));
         List<Map<String, Object>> chapterData = chapters.stream()
                 .map(ch -> {
                     Map<String, Object> chMap = new HashMap<>();
@@ -67,11 +65,11 @@ public class ContentReviewTool {
 
     @Tool(name = "reviewQuizQuality", description = "获取题目详情（含选项）用于审查题目质量")
     public Map<String, Object> reviewQuizQuality(@ToolParam(description = "题目ID") String quizId) {
-        Quiz quiz = quizService.getById(quizId);
+        QuizSummary quiz = quizDataFacade.getQuiz(IdUtil.parse(quizId));
         if (quiz == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "题目不存在");
         }
-        List<QuizOption> options = quizOptionService.getByQuizId(IdUtil.parse(quizId));
+        List<QuizOptionReviewDto> options = quizDataFacade.getOptionsByQuizIdForReview(IdUtil.parse(quizId));
 
         Map<String, Object> result = new HashMap<>();
         result.put("id", quiz.getId());

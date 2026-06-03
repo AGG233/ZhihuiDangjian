@@ -8,10 +8,8 @@ import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
 
 import com.rauio.smartdangjian.common.utils.IdUtil;
-import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
-import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
-import com.rauio.smartdangjian.server.user.service.UserService;
+import com.rauio.smartdangjian.server.quiz.api.UserQuizQueryFacade;
+import com.rauio.smartdangjian.server.user.api.UserProfileQueryFacade;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,8 +17,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserQuizAnswerTool {
 
-    private final UserQuizAnswerService userQuizAnswerService;
-    private final UserService userService;
+    private final UserQuizQueryFacade userQuizQueryFacade;
+    private final UserProfileQueryFacade userProfileQueryFacade;
 
     @Tool(description = "获取当前用户最近的答题记录")
     public List<UserQuizAnswer> getRecentQuizAnswers(@ToolParam(description = "返回记录条数，默认10条") Integer limit) {

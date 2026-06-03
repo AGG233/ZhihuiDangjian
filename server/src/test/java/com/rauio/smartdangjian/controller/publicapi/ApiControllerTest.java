@@ -17,11 +17,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.common.controller.publicapi.ApiController;
-import com.rauio.smartdangjian.common.pojo.response.SchoolResponse;
-import com.rauio.smartdangjian.common.service.UniversitiesService;
 import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.user.controller.publicapi.ApiController;
+import com.rauio.smartdangjian.server.user.pojo.response.SchoolResponse;
+import com.rauio.smartdangjian.server.user.service.UniversitiesService;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ApiControllerTest.TestConfig.class)
 @DisplayName("公共API接口测试")

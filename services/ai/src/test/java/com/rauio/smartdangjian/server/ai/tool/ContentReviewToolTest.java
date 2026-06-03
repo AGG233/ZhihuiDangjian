@@ -16,34 +16,30 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.content.api.ChapterQueryFacade;
+import com.rauio.smartdangjian.server.content.api.CourseQueryFacade;
 import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
+import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
-import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
-import com.rauio.smartdangjian.server.quiz.service.QuizService;
+import com.rauio.smartdangjian.server.quiz.api.QuizDataFacade;
+import com.rauio.smartdangjian.server.quiz.pojo.dto.QuizOptionReviewDto;
+import com.rauio.smartdangjian.server.quiz.pojo.dto.QuizSummary;
 
 @ExtendWith(MockitoExtension.class)
 class ContentReviewToolTest {
 
     @Mock
-    private CourseService courseService;
+    private CourseQueryFacade courseQueryFacade;
 
     @Mock
-    private ChapterService chapterService;
+    private ChapterQueryFacade chapterQueryFacade;
 
     @Mock
     private ChapterContentBlockService contentBlockService;
 
     @Mock
-    private QuizService quizService;
-
-    @Mock
-    private QuizOptionService quizOptionService;
+    private QuizDataFacade quizDataFacade;
 
     @InjectMocks
     private ContentReviewTool contentReviewTool;
@@ -51,7 +47,7 @@ class ContentReviewToolTest {
     @Test
     @DisplayName("reviewCourseContent 返回课程完整内容")
     void reviewCourseContent() {
-        Course course = Course.builder()
+        CourseResponse course = CourseResponse.builder()
                 .id(1L)
                 .title("党建课程")
                 .description("课程描述")
@@ -65,8 +61,8 @@ class ContentReviewToolTest {
                 .build();
         ContentBlockResponse block = new ContentBlockResponse();
 
-        when(courseService.getById(any())).thenReturn(course);
-        when(chapterService.getByCourseId(1L)).thenReturn(List.of(chapter));
+        when(courseQueryFacade.get(1L)).thenReturn(course);
+        when(chapterQueryFacade.getByCourseId(1L)).thenReturn(List.of(chapter));
         when(contentBlockService.getByChapterId(1L)).thenReturn(List.of(block));
 
         Map<String, Object> result = contentReviewTool.reviewCourseContent("1");
@@ -80,7 +76,7 @@ class ContentReviewToolTest {
     @Test
     @DisplayName("reviewCourseContent 课程不存在时抛出 BusinessException")
     void reviewCourseContentNotFound() {
-        when(courseService.getById(any())).thenReturn(null);
+        when(courseQueryFacade.get(any())).thenReturn(null);
 
         assertThatThrownBy(() -> contentReviewTool.reviewCourseContent("1"))
                 .isInstanceOf(BusinessException.class)
@@ -90,7 +86,7 @@ class ContentReviewToolTest {
     @Test
     @DisplayName("reviewQuizQuality 返回题目详情及选项")
     void reviewQuizQuality() {
-        Quiz quiz = Quiz.builder()
+        QuizSummary quiz = QuizSummary.builder()
                 .id(1L)
                 .question("测试题目")
                 .questionType("single_choice")
@@ -98,15 +94,15 @@ class ContentReviewToolTest {
                 .score(5)
                 .explanation("解析内容")
                 .build();
-        QuizOption option = QuizOption.builder()
+        QuizOptionReviewDto option = QuizOptionReviewDto.builder()
                 .id(1L)
                 .quizId(1L)
                 .optionText("选项A")
                 .isCorrect(true)
                 .build();
 
-        when(quizService.getById(any())).thenReturn(quiz);
-        when(quizOptionService.getByQuizId(1L)).thenReturn(List.of(option));
+        when(quizDataFacade.getQuiz(1L)).thenReturn(quiz);
+        when(quizDataFacade.getOptionsByQuizIdForReview(1L)).thenReturn(List.of(option));
 
         Map<String, Object> result = contentReviewTool.reviewQuizQuality("1");
 
@@ -119,7 +115,7 @@ class ContentReviewToolTest {
     @Test
     @DisplayName("reviewQuizQuality 题目不存在时抛出 BusinessException")
     void reviewQuizQualityNotFound() {
-        when(quizService.getById(any())).thenReturn(null);
+        when(quizDataFacade.getQuiz(any())).thenReturn(null);
 
         assertThatThrownBy(() -> contentReviewTool.reviewQuizQuality("1"))
                 .isInstanceOf(BusinessException.class)

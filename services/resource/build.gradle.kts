@@ -3,7 +3,9 @@ plugins {
 }
 
 dependencies {
-    api(project(":services:common"))
+    api(project(":services:common:common-core"))
+    implementation(project(":services:common:common-web"))
+    implementation(project(":services:common:common-security"))
     implementation(project(":services:content"))
     implementation(project(":services:user"))
     implementation(libs.mapstruct)

@@ -127,6 +127,17 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
     }
 
     /**
+     * 根据关键词搜索章节。
+     *
+     * @param keyword 搜索关键词
+     * @return 匹配的章节实体列表
+     */
+    @Transactional(readOnly = true)
+    public List<Chapter> searchByTitle(String keyword) {
+        return this.lambdaQuery().like(Chapter::getTitle, keyword).list();
+    }
+
+    /**
      * 删除章节。
      *
      * @param chapterId 章节ID
