@@ -1,11 +1,11 @@
-package com.rauio.smartdangjian.server.content.api.dto;
+package com.rauio.smartdangjian.server.course.api.dto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.course.pojo.entity.Course;
 
 class CourseSummaryTest {
 

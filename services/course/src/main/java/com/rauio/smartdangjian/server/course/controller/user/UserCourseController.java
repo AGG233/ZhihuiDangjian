@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.controller.user;
+package com.rauio.smartdangjian.server.course.controller.user;
 
 import static com.rauio.smartdangjian.constants.ValidationConstants.PAGE_NUM_MIN;
 import static com.rauio.smartdangjian.constants.ValidationConstants.PAGE_SIZE_MAX;
@@ -16,9 +16,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.security.RoleConstants;
-import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
-import com.rauio.smartdangjian.server.content.pojo.response.PageResponse;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.course.pojo.response.PageResponse;
+import com.rauio.smartdangjian.server.course.service.course.CourseService;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;

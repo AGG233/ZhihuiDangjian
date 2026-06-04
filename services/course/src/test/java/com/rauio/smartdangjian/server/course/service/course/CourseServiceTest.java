@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.service.course;
+package com.rauio.smartdangjian.server.course.service.course;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -25,14 +25,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.constants.CourseErrorConstants;
-import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
-import com.rauio.smartdangjian.server.content.pojo.convertor.CourseConvertor;
-import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.content.pojo.request.CourseRequest;
-import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
-import com.rauio.smartdangjian.server.content.pojo.response.PageResponse;
+import com.rauio.smartdangjian.server.course.constants.CourseErrorConstants;
+import com.rauio.smartdangjian.server.course.mapper.CategoryCourseMapper;
+import com.rauio.smartdangjian.server.course.pojo.convertor.CourseConvertor;
+import com.rauio.smartdangjian.server.course.pojo.entity.CategoryCourse;
+import com.rauio.smartdangjian.server.course.pojo.entity.Course;
+import com.rauio.smartdangjian.server.course.pojo.request.CourseRequest;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.course.pojo.response.PageResponse;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;

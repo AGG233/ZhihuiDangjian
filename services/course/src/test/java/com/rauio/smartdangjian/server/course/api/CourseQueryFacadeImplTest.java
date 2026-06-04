@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.api;
+package com.rauio.smartdangjian.server.course.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -17,10 +17,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.server.content.api.dto.CourseSummary;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.course.api.dto.CourseSummary;
+import com.rauio.smartdangjian.server.course.pojo.entity.Course;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.course.service.course.CourseService;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CourseQueryFacadeImpl")

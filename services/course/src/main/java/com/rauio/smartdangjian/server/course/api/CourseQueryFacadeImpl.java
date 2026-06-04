@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.api;
+package com.rauio.smartdangjian.server.course.api;
 
 import java.util.Collection;
 import java.util.List;
@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.server.content.api.dto.CourseSummary;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.course.api.dto.CourseSummary;
+import com.rauio.smartdangjian.server.course.pojo.entity.Course;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.course.service.course.CourseService;
 
 import lombok.RequiredArgsConstructor;
 

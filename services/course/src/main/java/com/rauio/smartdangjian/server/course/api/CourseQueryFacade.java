@@ -1,12 +1,12 @@
-package com.rauio.smartdangjian.server.content.api;
+package com.rauio.smartdangjian.server.course.api;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.server.content.api.dto.CourseSummary;
-import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.course.api.dto.CourseSummary;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 
 /**
  * 课程查询门面 —— 供搜索模块等业务方调用的稳定接口。

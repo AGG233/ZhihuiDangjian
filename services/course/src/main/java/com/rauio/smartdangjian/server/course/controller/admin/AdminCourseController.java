@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.controller.admin;
+package com.rauio.smartdangjian.server.course.controller.admin;
 
 import jakarta.validation.Valid;
 
@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.security.RoleConstants;
-import com.rauio.smartdangjian.server.content.pojo.request.CourseRequest;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.course.pojo.request.CourseRequest;
+import com.rauio.smartdangjian.server.course.service.course.CourseService;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
