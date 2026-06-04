@@ -13,14 +13,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import cn.dev33.satoken.stp.StpUtil;
 
 @ExtendWith(MockitoExtension.class)
 class DevAutoLoginFilterTest {
-
-    private final DevAutoLoginFilter filter = new DevAutoLoginFilter();
 
     @Mock
     private HttpServletRequest request;
@@ -34,15 +31,15 @@ class DevAutoLoginFilterTest {
     @Test
     @DisplayName("未登录且配置了默认用户 ID 时自动登录并放行")
     void autoLoginWhenNotLoggedIn() throws Exception {
-        ReflectionTestUtils.setField(filter, "defaultDevUserId", "admin");
+        DevProperties props = new DevProperties();
+        props.setDefaultUserId("admin");
+        DevAutoLoginFilter filter = new DevAutoLoginFilter(props);
 
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
             stpUtil.when(StpUtil::isLogin).thenReturn(false);
 
             filter.doFilterInternal(request, response, chain);
 
-            // login() was implicitly verified: isLogin=false + defaultDevUserId set
-            // → filter calls login(). The test completes without exception.
             verify(chain).doFilter(request, response);
         }
     }
@@ -50,7 +47,9 @@ class DevAutoLoginFilterTest {
     @Test
     @DisplayName("已登录时跳过自动登录直接放行")
     void skipLoginWhenAlreadyLoggedIn() throws Exception {
-        ReflectionTestUtils.setField(filter, "defaultDevUserId", "admin");
+        DevProperties props = new DevProperties();
+        props.setDefaultUserId("admin");
+        DevAutoLoginFilter filter = new DevAutoLoginFilter(props);
 
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
             stpUtil.when(StpUtil::isLogin).thenReturn(true);
@@ -65,7 +64,8 @@ class DevAutoLoginFilterTest {
     @Test
     @DisplayName("defaultDevUserId null skips auto login")
     void skipLoginWhenDefaultUserIdIsNull() throws Exception {
-        ReflectionTestUtils.setField(filter, "defaultDevUserId", null);
+        DevProperties props = new DevProperties();
+        DevAutoLoginFilter filter = new DevAutoLoginFilter(props);
 
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
             stpUtil.when(StpUtil::isLogin).thenReturn(false);
@@ -79,7 +79,9 @@ class DevAutoLoginFilterTest {
     @Test
     @DisplayName("defaultDevUserId empty skips auto login")
     void skipLoginWhenDefaultUserIdIsEmpty() throws Exception {
-        ReflectionTestUtils.setField(filter, "defaultDevUserId", "");
+        DevProperties props = new DevProperties();
+        props.setDefaultUserId("");
+        DevAutoLoginFilter filter = new DevAutoLoginFilter(props);
 
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
             stpUtil.when(StpUtil::isLogin).thenReturn(false);
