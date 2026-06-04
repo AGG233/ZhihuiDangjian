@@ -2,8 +2,8 @@ package com.rauio.smartdangjian.config;
 
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -13,18 +13,17 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import com.rauio.smartdangjian.exception.GlobalExceptionHandler;
 
 @AutoConfiguration
+@EnableConfigurationProperties({CorsProperties.class, StorageProperties.class})
 public class WebConfig implements WebMvcConfigurer {
 
     private final Environment environment;
+    private final CorsProperties corsProperties;
+    private final StorageProperties storageProperties;
 
-    @Value("${app.cors.allowed-origins:http://localhost:*,http://127.0.0.1:*}")
-    private String allowedOrigins;
-
-    @Value("${app.storage.local-root:./uploads}")
-    private String localStorageRoot;
-
-    public WebConfig(Environment environment) {
+    public WebConfig(Environment environment, CorsProperties corsProperties, StorageProperties storageProperties) {
         this.environment = environment;
+        this.corsProperties = corsProperties;
+        this.storageProperties = storageProperties;
     }
 
     @Bean
@@ -46,7 +45,7 @@ public class WebConfig implements WebMvcConfigurer {
      */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        String[] origins = Arrays.stream(allowedOrigins.split(","))
+        String[] origins = Arrays.stream(corsProperties.getAllowedOrigins().split(","))
                 .map(String::trim)
                 .filter(origin -> !origin.isEmpty())
                 .toArray(String[]::new);
@@ -61,7 +60,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         String location = "file:"
-                + java.nio.file.Path.of(localStorageRoot).toAbsolutePath().normalize() + "/";
+                + java.nio.file.Path.of(storageProperties.getLocalRoot()).toAbsolutePath().normalize() + "/";
         registry.addResourceHandler("/uploads/**").addResourceLocations(location);
     }
 

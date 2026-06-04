@@ -11,11 +11,23 @@ import com.rauio.smartdangjian.exception.GlobalExceptionHandler;
 
 class WebConfigTest {
 
+    private CorsProperties corsProperties() {
+        return new CorsProperties();
+    }
+
+    private StorageProperties storageProperties() {
+        return new StorageProperties();
+    }
+
+    private WebConfig webConfig(Environment env) {
+        return new WebConfig(env, corsProperties(), storageProperties());
+    }
+
     @Test
-    @DisplayName("WebConfig 使用 Environment 构造")
+    @DisplayName("WebConfig 使用 Environment、CorsProperties 和 StorageProperties 构造")
     void constructor() {
         Environment env = new MockEnvironment();
-        WebConfig config = new WebConfig(env);
+        WebConfig config = webConfig(env);
         assertThat(config).isNotNull();
     }
 
@@ -23,7 +35,7 @@ class WebConfigTest {
     @DisplayName("globalExceptionHandler Bean 正确创建")
     void globalExceptionHandlerBean() {
         Environment env = new MockEnvironment();
-        WebConfig config = new WebConfig(env);
+        WebConfig config = webConfig(env);
         GlobalExceptionHandler handler = config.globalExceptionHandler();
         assertThat(handler).isNotNull();
     }
@@ -32,7 +44,7 @@ class WebConfigTest {
     @DisplayName("securityHeadersFilter Bean 正确创建")
     void securityHeadersFilter() {
         Environment env = new MockEnvironment();
-        WebConfig config = new WebConfig(env);
+        WebConfig config = webConfig(env);
         SecurityHeadersFilter filter = config.securityHeadersFilter();
         assertThat(filter).isNotNull();
     }
@@ -42,7 +54,7 @@ class WebConfigTest {
     void validateCorsOriginsNonProd() {
         MockEnvironment env = new MockEnvironment();
         env.setActiveProfiles("dev");
-        WebConfig config = new WebConfig(env);
+        WebConfig config = webConfig(env);
         assertThat(config).isNotNull();
     }
 }

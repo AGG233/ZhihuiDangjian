@@ -154,4 +154,27 @@ class ApplicationConfigStructureTest {
         assertThat(adrPath).as("ADR 003 (Caffeine L2 Cache) 文档必须存在").exists();
         assertThat(adrPath).as("ADR 003 应有内容").isNotEmptyFile();
     }
+
+    @Test
+    @DisplayName("application-dev.yaml 配置了 dev 环境的 CORS allowed-origins")
+    void devYamlHasCorsAllowedOrigins() throws IOException {
+        Path devYaml = projectRoot().resolve("server/src/main/resources/application-dev.yaml");
+        String content = Files.readString(devYaml);
+        assertThat(content)
+                .as("application-dev.yaml 应包含 app.cors.allowed-origins 配置")
+                .contains("allowed-origins:");
+    }
+
+    @Test
+    @DisplayName("application-prod.yaml 禁止包含 CORS 通配符（运行时 validateCorsOrigins 兜底校验）")
+    void prodYamlMustNotContainCorsWildcards() throws IOException {
+        String content = Files.readString(PROD_YAML);
+        // prod YAML 没有 app.cors 配置，由 WebConfig.validateCorsOrigins 运行时检查通配符并阻止启动
+        // 此测试确保不会意外加入通配符配置绕过校验
+        assertThat(content)
+                .as("application-prod.yaml 禁止包含 CORS 通配符")
+                .doesNotContain("allowed-origins: *")
+                .doesNotContain("allowed-origins: '*'")
+                .doesNotContain("allowed-origins: \"*\"");
+    }
 }
