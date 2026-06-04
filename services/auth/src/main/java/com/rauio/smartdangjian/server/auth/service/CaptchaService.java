@@ -6,11 +6,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import com.rauio.smartdangjian.server.auth.config.AuthProperties;
 import com.rauio.smartdangjian.server.auth.pojo.Captcha;
 
 import cn.hutool.captcha.CaptchaUtil;
@@ -27,8 +27,7 @@ public class CaptchaService {
 
     private final Environment env;
 
-    @Value("${auth.captcha.test-code:}")
-    private String testCode;
+    private final AuthProperties authProperties;
 
     /**
      * 生成对外展示用验证码信息。
@@ -69,7 +68,9 @@ public class CaptchaService {
      * @return 是否校验通过
      */
     public Boolean validate(String uuid, String code) {
-        if (env != null && isTestCodeProfile() && testCode != null && !testCode.isBlank() && testCode.equals(code)) {
+        if (env != null && isTestCodeProfile() && authProperties.getCaptcha().getTestCode() != null
+                && !authProperties.getCaptcha().getTestCode().isBlank()
+                && authProperties.getCaptcha().getTestCode().equals(code)) {
             return true;
         }
         return code != null && code.equals(redisTemplate.opsForValue().get("captcha:" + uuid));
