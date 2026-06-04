@@ -15,9 +15,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.mapper.ArticleMapper;
-import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
+import com.rauio.smartdangjian.server.course.mapper.CourseMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.Article;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.course.pojo.entity.Course;
 import com.rauio.smartdangjian.server.social.constants.SocialErrorConstants;
 import com.rauio.smartdangjian.server.social.mapper.CommentMapper;
 import com.rauio.smartdangjian.server.social.pojo.entity.Comment;

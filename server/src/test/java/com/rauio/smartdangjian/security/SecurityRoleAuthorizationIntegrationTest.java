@@ -13,8 +13,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 
-import com.rauio.smartdangjian.server.content.pojo.response.CategoryResponse;
-import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
+import com.rauio.smartdangjian.server.category.pojo.response.CategoryResponse;
+import com.rauio.smartdangjian.server.chapter.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 import com.rauio.smartdangjian.server.search.pojo.response.LearningTrendResponse;

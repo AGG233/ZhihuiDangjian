@@ -9,8 +9,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
+import com.rauio.smartdangjian.server.course.service.course.CourseService;
 import com.rauio.smartdangjian.server.learning.pojo.dto.ChapterProgressSummaryDto;
 import com.rauio.smartdangjian.server.learning.pojo.dto.LearningRecordSummaryDto;
 import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;

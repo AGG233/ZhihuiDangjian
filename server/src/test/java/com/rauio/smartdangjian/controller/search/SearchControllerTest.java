@@ -29,7 +29,7 @@ import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.search.controller.SearchController;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 import com.rauio.smartdangjian.server.search.service.RecommendService;

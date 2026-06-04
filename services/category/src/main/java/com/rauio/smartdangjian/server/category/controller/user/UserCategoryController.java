@@ -14,7 +14,7 @@ import com.rauio.smartdangjian.server.category.pojo.response.CategoryCourseRespo
 import com.rauio.smartdangjian.server.category.pojo.response.CategoryResponse;
 import com.rauio.smartdangjian.server.content.service.article.ArticleService;
 import com.rauio.smartdangjian.server.category.service.category.CategoryService;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.course.service.course.CourseService;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;

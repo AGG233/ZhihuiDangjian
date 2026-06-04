@@ -14,15 +14,15 @@ import org.springframework.stereotype.Component;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.chapter.api.ChapterQueryFacade;
+import com.rauio.smartdangjian.server.chapter.api.dto.ChapterSummary;
+import com.rauio.smartdangjian.server.chapter.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.api.ArticleQueryFacade;
-import com.rauio.smartdangjian.server.content.api.ChapterQueryFacade;
-import com.rauio.smartdangjian.server.content.api.CourseQueryFacade;
 import com.rauio.smartdangjian.server.content.api.dto.ArticleSummary;
-import com.rauio.smartdangjian.server.content.api.dto.ChapterSummary;
-import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
-import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
+import com.rauio.smartdangjian.server.course.api.CourseQueryFacade;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 
 import lombok.RequiredArgsConstructor;
 

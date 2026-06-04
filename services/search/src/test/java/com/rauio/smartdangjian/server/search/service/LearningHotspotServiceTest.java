@@ -24,8 +24,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cache.annotation.Cacheable;
 
-import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.course.service.course.CourseService;
 import com.rauio.smartdangjian.server.learning.pojo.dto.HotCategorySummaryDto;
 import com.rauio.smartdangjian.server.learning.pojo.dto.HotCourseSummaryDto;
 import com.rauio.smartdangjian.server.learning.pojo.dto.TrendSummaryDto;

@@ -30,10 +30,10 @@ import org.springframework.beans.factory.ObjectProvider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
+import com.rauio.smartdangjian.server.chapter.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
 import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
+import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
 import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;

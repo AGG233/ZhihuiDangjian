@@ -20,13 +20,13 @@ import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.CategoryTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
-import com.rauio.smartdangjian.server.content.controller.user.UserCategoryController;
+import com.rauio.smartdangjian.server.category.controller.user.UserCategoryController;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryArticle;
-import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
-import com.rauio.smartdangjian.server.content.pojo.response.CategoryResponse;
+import com.rauio.smartdangjian.server.course.pojo.entity.CategoryCourse;
+import com.rauio.smartdangjian.server.category.pojo.response.CategoryResponse;
 import com.rauio.smartdangjian.server.content.service.article.ArticleService;
-import com.rauio.smartdangjian.server.content.service.category.CategoryService;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.category.service.category.CategoryService;
+import com.rauio.smartdangjian.server.course.service.course.CourseService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
 @SpringBootTest(

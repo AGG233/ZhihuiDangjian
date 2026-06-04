@@ -2,7 +2,7 @@ package com.rauio.smartdangjian.server.category.pojo.response;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
+import com.rauio.smartdangjian.server.course.pojo.entity.CategoryCourse;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

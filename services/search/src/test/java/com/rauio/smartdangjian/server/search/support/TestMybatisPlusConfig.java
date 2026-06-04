@@ -6,9 +6,9 @@ import org.apache.ibatis.builder.MapperBuilderAssistant;
 
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
-import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
-import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.course.pojo.entity.CategoryCourse;
+import com.rauio.smartdangjian.server.chapter.pojo.entity.Chapter;
+import com.rauio.smartdangjian.server.course.pojo.entity.Course;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserChapterProgress;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;

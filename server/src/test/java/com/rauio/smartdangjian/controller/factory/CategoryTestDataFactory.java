@@ -5,9 +5,9 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryArticle;
-import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
-import com.rauio.smartdangjian.server.content.pojo.request.CategoryRequest;
-import com.rauio.smartdangjian.server.content.pojo.response.CategoryResponse;
+import com.rauio.smartdangjian.server.course.pojo.entity.CategoryCourse;
+import com.rauio.smartdangjian.server.category.pojo.request.CategoryRequest;
+import com.rauio.smartdangjian.server.category.pojo.response.CategoryResponse;
 
 /**
  * Static factory for category test data — produces CategoryRequest, CategoryResponse,

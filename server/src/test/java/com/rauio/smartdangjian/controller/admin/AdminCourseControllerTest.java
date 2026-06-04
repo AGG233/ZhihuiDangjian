@@ -19,10 +19,10 @@ import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.constants.CourseErrorConstants;
-import com.rauio.smartdangjian.server.content.controller.admin.AdminCourseController;
-import com.rauio.smartdangjian.server.content.pojo.request.CourseRequest;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.course.constants.CourseErrorConstants;
+import com.rauio.smartdangjian.server.course.controller.admin.AdminCourseController;
+import com.rauio.smartdangjian.server.course.pojo.request.CourseRequest;
+import com.rauio.smartdangjian.server.course.service.course.CourseService;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,

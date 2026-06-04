@@ -29,8 +29,8 @@ import org.mockito.quality.Strictness;
 import org.springframework.data.neo4j.core.Neo4jClient;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
+import com.rauio.smartdangjian.server.course.service.course.CourseService;
 import com.rauio.smartdangjian.server.learning.pojo.dto.LearningRecordSummaryDto;
 import com.rauio.smartdangjian.server.learning.pojo.dto.UserBehaviorDto;
 import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;

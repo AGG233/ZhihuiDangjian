@@ -33,19 +33,19 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.rauio.smartdangjian.crosslayer.CrossLayerTestBase;
-import com.rauio.smartdangjian.server.content.constants.ChapterErrorConstants;
-import com.rauio.smartdangjian.server.content.controller.admin.AdminChapterController;
+import com.rauio.smartdangjian.server.chapter.constants.ChapterErrorConstants;
+import com.rauio.smartdangjian.server.chapter.controller.admin.AdminChapterController;
+import com.rauio.smartdangjian.server.chapter.mapper.ChapterMapper;
+import com.rauio.smartdangjian.server.chapter.pojo.convertor.ChapterConvertor;
+import com.rauio.smartdangjian.server.chapter.pojo.entity.Chapter;
+import com.rauio.smartdangjian.server.chapter.pojo.request.ChapterRequest;
+import com.rauio.smartdangjian.server.chapter.pojo.response.ChapterResponse;
+import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
 import com.rauio.smartdangjian.server.content.mapper.ChapterContentBlockMapper;
-import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterContentBlockConvertor;
-import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterConvertor;
 import com.rauio.smartdangjian.server.content.pojo.dto.ContentBlockDto;
-import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
-import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
-import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
 import com.rauio.smartdangjian.server.content.spec.BlockType;
 
 @SpringBootTest(classes = AdminChapterControllerRealServiceIntegrationTest.TestConfig.class)
