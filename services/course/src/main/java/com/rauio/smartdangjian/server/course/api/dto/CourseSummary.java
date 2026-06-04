@@ -1,6 +1,6 @@
-package com.rauio.smartdangjian.server.content.api.dto;
+package com.rauio.smartdangjian.server.course.api.dto;
 
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.course.pojo.entity.Course;
 
 import lombok.Builder;
 import lombok.Data;

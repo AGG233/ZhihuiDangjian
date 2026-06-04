@@ -1,6 +1,6 @@
-package com.rauio.smartdangjian.server.content.pojo.dto;
+package com.rauio.smartdangjian.server.course.pojo.dto;
 
-import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
