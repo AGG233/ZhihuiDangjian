@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.pojo.response;
+package com.rauio.smartdangjian.server.category.pojo.response;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;

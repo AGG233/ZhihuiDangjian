@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.pojo.entity;
+package com.rauio.smartdangjian.server.category.pojo.entity;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;

@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.service.category;
+package com.rauio.smartdangjian.server.category.service.category;
 
 import java.util.List;
 
@@ -10,12 +10,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.security.LoginUser;
-import com.rauio.smartdangjian.server.content.constants.CategoryErrorConstants;
-import com.rauio.smartdangjian.server.content.mapper.CategoryMapper;
-import com.rauio.smartdangjian.server.content.pojo.convertor.CategoryConvertor;
-import com.rauio.smartdangjian.server.content.pojo.entity.Category;
-import com.rauio.smartdangjian.server.content.pojo.request.CategoryRequest;
-import com.rauio.smartdangjian.server.content.pojo.response.CategoryResponse;
+import com.rauio.smartdangjian.server.category.constants.CategoryErrorConstants;
+import com.rauio.smartdangjian.server.category.mapper.CategoryMapper;
+import com.rauio.smartdangjian.server.category.pojo.convertor.CategoryConvertor;
+import com.rauio.smartdangjian.server.category.pojo.entity.Category;
+import com.rauio.smartdangjian.server.category.pojo.request.CategoryRequest;
+import com.rauio.smartdangjian.server.category.pojo.response.CategoryResponse;
 import com.rauio.smartdangjian.service.DataScopeService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 

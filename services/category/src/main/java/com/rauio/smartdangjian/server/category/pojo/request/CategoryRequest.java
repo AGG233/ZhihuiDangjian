@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.pojo.request;
+package com.rauio.smartdangjian.server.category.pojo.request;
 
 import java.util.List;
 

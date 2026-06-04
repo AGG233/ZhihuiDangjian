@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.controller.user;
+package com.rauio.smartdangjian.server.category.controller.user;
 
 import java.util.List;
 
@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.security.RoleConstants;
-import com.rauio.smartdangjian.server.content.pojo.response.CategoryArticleResponse;
-import com.rauio.smartdangjian.server.content.pojo.response.CategoryCourseResponse;
-import com.rauio.smartdangjian.server.content.pojo.response.CategoryResponse;
+import com.rauio.smartdangjian.server.category.pojo.response.CategoryArticleResponse;
+import com.rauio.smartdangjian.server.category.pojo.response.CategoryCourseResponse;
+import com.rauio.smartdangjian.server.category.pojo.response.CategoryResponse;
 import com.rauio.smartdangjian.server.content.service.article.ArticleService;
-import com.rauio.smartdangjian.server.content.service.category.CategoryService;
+import com.rauio.smartdangjian.server.category.service.category.CategoryService;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
 
 import cn.dev33.satoken.annotation.SaCheckRole;

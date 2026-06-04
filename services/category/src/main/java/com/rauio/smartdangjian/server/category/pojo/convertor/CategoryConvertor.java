@@ -1,13 +1,13 @@
-package com.rauio.smartdangjian.server.content.pojo.convertor;
+package com.rauio.smartdangjian.server.category.pojo.convertor;
 
 import java.util.List;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
-import com.rauio.smartdangjian.server.content.pojo.entity.Category;
-import com.rauio.smartdangjian.server.content.pojo.request.CategoryRequest;
-import com.rauio.smartdangjian.server.content.pojo.response.CategoryResponse;
+import com.rauio.smartdangjian.server.category.pojo.entity.Category;
+import com.rauio.smartdangjian.server.category.pojo.request.CategoryRequest;
+import com.rauio.smartdangjian.server.category.pojo.response.CategoryResponse;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CategoryConvertor {
