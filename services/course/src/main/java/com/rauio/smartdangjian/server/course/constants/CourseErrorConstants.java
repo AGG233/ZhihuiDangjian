@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.constants;
+package com.rauio.smartdangjian.server.course.constants;
 
 /**
  * 课程模块错误码常量（范围 3200-3299）

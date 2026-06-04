@@ -74,6 +74,10 @@ dromara:
 server:
   port: 9000
 
+# MyBatis-Plus 配置
+mybatis-plus:
+  type-aliases-package: com.rauio.smartdangjian.server.content.pojo.entity,com.rauio.smartdangjian.server.category.pojo.entity,com.rauio.smartdangjian.server.chapter.pojo.entity,com.rauio.smartdangjian.server.course.pojo.entity
+
 logging:
   level:
     root: INFO

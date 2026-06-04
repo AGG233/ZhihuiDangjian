@@ -1,9 +1,9 @@
-package com.rauio.smartdangjian.server.content.pojo.response;
+package com.rauio.smartdangjian.server.course.pojo.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.course.pojo.entity.Course;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;

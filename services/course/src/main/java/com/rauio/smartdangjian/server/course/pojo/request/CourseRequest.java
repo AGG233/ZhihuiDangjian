@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.pojo.request;
+package com.rauio.smartdangjian.server.course.pojo.request;
 
 import jakarta.validation.constraints.NotNull;
 

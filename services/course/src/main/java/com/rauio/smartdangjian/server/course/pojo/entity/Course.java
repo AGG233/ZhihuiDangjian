@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.pojo.entity;
+package com.rauio.smartdangjian.server.course.pojo.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.mapper;
+package com.rauio.smartdangjian.server.course.mapper;
 
 import java.util.List;
 
@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Select;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.github.yulichang.base.MPJBaseMapper;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.course.pojo.entity.Course;
 
 @Mapper
 public interface CourseMapper extends BaseMapper<Course>, MPJBaseMapper<Course> {
