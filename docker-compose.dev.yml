@@ -8,8 +8,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 30
-    ports:
-      - "3306:3306"
+
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-zhdj}
@@ -27,14 +26,13 @@ services:
     image: redis:7-alpine
     container_name: zhihuidangjian-redis
     restart: unless-stopped
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-redis-dev}"]
+    command: ["redis-server"]
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis-dev}", "ping"]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 10
-    ports:
-      - "6379:6379"
+
     deploy:
       resources:
         limits:
@@ -53,9 +51,7 @@ services:
       timeout: 10s
       retries: 15
       start_period: 30s
-    ports:
-      - "7474:7474"
-      - "7687:7687"
+
     environment:
       NEO4J_AUTH: ${NEO4J_USERNAME:-neo4j}/${NEO4J_PASSWORD:-password}
     volumes:
@@ -85,7 +81,6 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: "6379"
       REDIS_DATABASE: ${REDIS_DATABASE:-0}
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis-dev}
       NEO4J_URI: bolt://neo4j:7687
       NEO4J_USERNAME: ${NEO4J_USERNAME:-neo4j}
       NEO4J_PASSWORD: ${NEO4J_PASSWORD:-password}

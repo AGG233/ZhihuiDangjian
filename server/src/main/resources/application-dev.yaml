@@ -24,7 +24,7 @@ dromara:
     tencent-cos:
       - platform: tencent-cos
         enable-storage: false
-    local:
+    local-plus:
       - platform: local-dev
         enable-storage: true
         storage-path: ./uploads

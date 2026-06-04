@@ -15,6 +15,7 @@ spring:
     url: ${DATABASE_URL:jdbc:mysql://127.0.0.1:3306/zhihuidangjian?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
   flyway:
     baseline-on-migrate: true
+  # Spring Data Redis (Spring Boot 3.x 新命名空间)
   data:
     redis:
       host: ${REDIS_HOST}
