@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -25,38 +25,20 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
+@EnableConfigurationProperties(AiProperties.class)
 public class RateLimitConfig implements WebMvcConfigurer {
 
     private final UserService userService;
     private final ObjectMapper objectMapper;
-
-    @Value("${ai.rate-limit.enabled:true}")
-    private boolean enabled;
-
-    @Value("${ai.rate-limit.requests-per-minute:10}")
-    private int requestsPerMinute;
-
-    @Value("${ai.rate-limit.path-patterns:"
-            + "/api/ai/chat/**,"
-            + "/api/auth/login,"
-            + "/api/auth/register,"
-            + "/api/auth/captcha/**,"
-            + "/api/auth/changePassword,"
-            + "/api/resource/files/upload,"
-            + "/api/resource/files/upload/callback/**,"
-            + "/api/resource/files/confirm/**,"
-            + "/api/user/users/search,"
-            + "/api/admin/users/search,"
-            + "/api/search/recommend,"
-            + "/api/search/profile}")
-    private List<String> pathPatterns;
+    private final AiProperties aiProperties;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        if (!enabled) {
+        if (!aiProperties.getRateLimit().isEnabled()) {
             return;
         }
-        registry.addInterceptor(new RateLimitInterceptor()).addPathPatterns(pathPatterns);
+        registry.addInterceptor(new RateLimitInterceptor())
+                .addPathPatterns(aiProperties.getRateLimit().getPathPatterns());
     }
 
     private class RateLimitInterceptor implements HandlerInterceptor {
@@ -86,7 +68,7 @@ public class RateLimitConfig implements WebMvcConfigurer {
             });
             int count = counter.counter().get();
 
-            if (count > requestsPerMinute) {
+            if (count > aiProperties.getRateLimit().getRequestsPerMinute()) {
                 log.warn("AI请求限流触发 userId={} count={}", userId, count);
                 response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
                 response.setContentType("application/json;charset=UTF-8");
