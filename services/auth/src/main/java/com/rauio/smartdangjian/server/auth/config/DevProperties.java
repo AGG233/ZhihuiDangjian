@@ -3,6 +3,7 @@ package com.rauio.smartdangjian.server.auth.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 import lombok.Data;
 
@@ -13,6 +14,7 @@ import lombok.Data;
  */
 @Data
 @Component
+@Validated
 @Profile("dev")
 @ConfigurationProperties(prefix = "app.dev")
 public class DevProperties {
