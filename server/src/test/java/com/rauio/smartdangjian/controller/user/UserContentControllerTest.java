@@ -20,18 +20,14 @@ import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.ContentTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.controller.user.UserContentController;
 import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
 import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
 import com.rauio.smartdangjian.server.content.spec.BlockType;
 import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = ControllerTestConfiguration.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("用户内容块接口测试")
 class UserContentControllerTest extends BaseControllerTest {
-
 
     @MockitoBean
     private ChapterContentBlockService chapterContentBlockService;

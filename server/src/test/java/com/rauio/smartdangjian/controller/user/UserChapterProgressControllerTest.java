@@ -22,17 +22,13 @@ import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.LearningTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.learning.constants.LearningErrorConstants;
-import com.rauio.smartdangjian.server.learning.controller.user.UserChapterProgressController;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserChapterProgressRequest;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
 import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = ControllerTestConfiguration.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("用户章节进度接口测试")
 class UserChapterProgressControllerTest extends BaseControllerTest {
-
 
     @MockitoBean
     private UserChapterProgressService progressService;

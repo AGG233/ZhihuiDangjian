@@ -20,16 +20,12 @@ import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.chapter.constants.ChapterErrorConstants;
-import com.rauio.smartdangjian.server.chapter.controller.admin.AdminChapterController;
 import com.rauio.smartdangjian.server.chapter.pojo.request.ChapterRequest;
 import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = ControllerTestConfiguration.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("管理员章节接口测试")
 class AdminChapterControllerTest extends BaseControllerTest {
-
 
     @MockitoBean
     private ChapterService chapterService;

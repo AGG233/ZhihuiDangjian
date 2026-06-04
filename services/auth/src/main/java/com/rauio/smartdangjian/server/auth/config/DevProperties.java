@@ -24,5 +24,4 @@ public class DevProperties {
      * 当用户在开发环境中未登录时，自动以此用户 ID 登录。
      */
     private String defaultUserId;
-
 }

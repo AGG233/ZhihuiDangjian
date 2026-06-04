@@ -19,16 +19,12 @@ import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
-import com.rauio.smartdangjian.server.quiz.controller.admin.AdminQuizAnswerController;
 import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = ControllerTestConfiguration.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("管理员答题记录接口测试")
 class AdminQuizAnswerControllerTest extends BaseControllerTest {
-
 
     @MockitoBean
     private UserQuizAnswerService userQuizAnswerService;

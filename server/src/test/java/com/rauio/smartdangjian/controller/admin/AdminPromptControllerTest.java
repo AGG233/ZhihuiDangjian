@@ -24,16 +24,12 @@ import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.AiTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.ai.constants.AiErrorConstants;
-import com.rauio.smartdangjian.server.ai.controller.admin.AdminPromptController;
 import com.rauio.smartdangjian.server.ai.pojo.response.AiPromptResponse;
 import com.rauio.smartdangjian.server.ai.service.PromptService;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = ControllerTestConfiguration.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("管理员AI提示词接口测试")
 class AdminPromptControllerTest extends BaseControllerTest {
-
 
     @MockitoBean
     private PromptService promptService;

@@ -202,9 +202,7 @@ class ApplicationConfigStructureTest {
         var scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AnnotationTypeFilter(ConfigurationProperties.class));
         Set<BeanDefinition> beans = scanner.findCandidateComponents("com.rauio.smartdangjian");
-        assertThat(beans)
-                .as("至少应有一个 @ConfigurationProperties 类")
-                .isNotEmpty();
+        assertThat(beans).as("至少应有一个 @ConfigurationProperties 类").isNotEmpty();
         for (BeanDefinition bd : beans) {
             Class<?> clazz = Class.forName(bd.getBeanClassName());
             assertThat(clazz.isAnnotationPresent(Validated.class))
@@ -217,8 +215,6 @@ class ApplicationConfigStructureTest {
     @DisplayName("application-prod.yaml 不包含 dummy-key")
     void prodYamlMustNotContainDummyKey() throws IOException {
         String content = Files.readString(PROD_YAML);
-        assertThat(content)
-                .as("application-prod.yaml 禁止包含 dummy-key 弱默认值")
-                .doesNotContain("dummy-key");
+        assertThat(content).as("application-prod.yaml 禁止包含 dummy-key 弱默认值").doesNotContain("dummy-key");
     }
 }

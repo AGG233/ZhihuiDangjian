@@ -27,16 +27,12 @@ import com.rauio.smartdangjian.controller.factory.BannerTestDataFactory;
 import com.rauio.smartdangjian.controller.factory.ResourceMetaTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
-import com.rauio.smartdangjian.server.resource.controller.admin.AdminResourceMetaController;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = ControllerTestConfiguration.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("管理员资源元数据接口测试")
 class AdminResourceMetaControllerTest extends BaseControllerTest {
-
 
     @MockitoBean
     private ResourceMetaService resourceMetaService;

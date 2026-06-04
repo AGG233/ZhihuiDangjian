@@ -20,15 +20,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.api.ArticleQueryFacade;
 import com.rauio.smartdangjian.server.chapter.api.ChapterQueryFacade;
-import com.rauio.smartdangjian.server.course.api.CourseQueryFacade;
-import com.rauio.smartdangjian.server.content.api.dto.ArticleSummary;
 import com.rauio.smartdangjian.server.chapter.api.dto.ChapterSummary;
 import com.rauio.smartdangjian.server.chapter.pojo.response.ChapterResponse;
+import com.rauio.smartdangjian.server.content.api.ArticleQueryFacade;
+import com.rauio.smartdangjian.server.content.api.dto.ArticleSummary;
 import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
-import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
+import com.rauio.smartdangjian.server.course.api.CourseQueryFacade;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 
 @ExtendWith(MockitoExtension.class)
 class ContentSearchToolTest {

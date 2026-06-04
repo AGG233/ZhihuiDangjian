@@ -68,7 +68,9 @@ public class CaptchaService {
      * @return 是否校验通过
      */
     public Boolean validate(String uuid, String code) {
-        if (env != null && isTestCodeProfile() && authProperties.getCaptcha().getTestCode() != null
+        if (env != null
+                && isTestCodeProfile()
+                && authProperties.getCaptcha().getTestCode() != null
                 && !authProperties.getCaptcha().getTestCode().isBlank()
                 && authProperties.getCaptcha().getTestCode().equals(code)) {
             return true;

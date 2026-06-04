@@ -19,18 +19,14 @@ import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.graph.constants.GraphErrorConstants;
-import com.rauio.smartdangjian.server.graph.controller.user.UserKnowledgeGraphController;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphEdgeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphNodeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
 import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = ControllerTestConfiguration.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("知识图谱接口测试")
 class UserKnowledgeGraphControllerTest extends BaseControllerTest {
-
 
     @MockitoBean
     private KnowledgeGraphService knowledgeGraphService;

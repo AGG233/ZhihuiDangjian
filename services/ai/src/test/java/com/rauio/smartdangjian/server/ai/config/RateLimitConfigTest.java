@@ -32,20 +32,23 @@ class RateLimitConfigTest {
     private ArgumentCaptor<HandlerInterceptor> interceptorCaptor;
 
     @Test
-    @DisplayName("\u542F\u7528\u9650\u6D41\u65F6\u6CE8\u518C\u62E6\u622A\u5668\u5230\u5173\u952E\u654F\u611F\u63A5\u53E3\u8DEF\u5F84")
+    @DisplayName(
+            "\u542F\u7528\u9650\u6D41\u65F6\u6CE8\u518C\u62E6\u622A\u5668\u5230\u5173\u952E\u654F\u611F\u63A5\u53E3\u8DEF\u5F84")
     void addInterceptorsWhenEnabled() {
         var userService = mock(UserService.class);
         var objectMapper = mock(ObjectMapper.class);
         var aiProperties = new AiProperties();
         aiProperties.getRateLimit().setEnabled(true);
         aiProperties.getRateLimit().setRequestsPerMinute(10);
-        aiProperties.getRateLimit().setPathPatterns(List.of(
-                "/api/ai/chat/**",
-                "/api/auth/login",
-                "/api/auth/register",
-                "/api/auth/captcha/**",
-                "/api/resource/files/upload",
-                "/api/user/users/search"));
+        aiProperties
+                .getRateLimit()
+                .setPathPatterns(List.of(
+                        "/api/ai/chat/**",
+                        "/api/auth/login",
+                        "/api/auth/register",
+                        "/api/auth/captcha/**",
+                        "/api/resource/files/upload",
+                        "/api/user/users/search"));
 
         var config = new RateLimitConfig(userService, objectMapper, aiProperties);
 
@@ -57,13 +60,14 @@ class RateLimitConfigTest {
 
         verify(registry).addInterceptor(interceptorCaptor.capture());
         assertThat(interceptorCaptor.getValue()).isInstanceOf(HandlerInterceptor.class);
-        verify(registration).addPathPatterns(List.of(
-                "/api/ai/chat/**",
-                "/api/auth/login",
-                "/api/auth/register",
-                "/api/auth/captcha/**",
-                "/api/resource/files/upload",
-                "/api/user/users/search"));
+        verify(registration)
+                .addPathPatterns(List.of(
+                        "/api/ai/chat/**",
+                        "/api/auth/login",
+                        "/api/auth/register",
+                        "/api/auth/captcha/**",
+                        "/api/resource/files/upload",
+                        "/api/user/users/search"));
     }
 
     @Test
@@ -115,7 +119,8 @@ class RateLimitConfigTest {
     }
 
     @Test
-    @DisplayName("\u62E6\u622A\u5668\u5728\u8BF7\u6C42\u9891\u7387\u8D85\u8FC7\u9650\u5236\u65F6\u8FD4\u56DE false \u5E76\u5199\u5165 429")
+    @DisplayName(
+            "\u62E6\u622A\u5668\u5728\u8BF7\u6C42\u9891\u7387\u8D85\u8FC7\u9650\u5236\u65F6\u8FD4\u56DE false \u5E76\u5199\u5165 429")
     void interceptorRejectsRequestWhenRateExceeded() throws Exception {
         var userService = mock(UserService.class);
         var objectMapper = mock(ObjectMapper.class);

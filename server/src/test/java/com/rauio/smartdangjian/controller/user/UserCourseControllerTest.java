@@ -21,20 +21,15 @@ import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.security.CurrentUserProvider;
-import com.rauio.smartdangjian.server.course.controller.user.UserCourseController;
 import com.rauio.smartdangjian.server.course.pojo.entity.Course;
 import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.course.pojo.response.PageResponse;
 import com.rauio.smartdangjian.server.course.service.course.CourseService;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = ControllerTestConfiguration.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("用户课程接口测试")
 class UserCourseControllerTest extends BaseControllerTest {
-
 
     @MockitoBean
     private CourseService courseService;

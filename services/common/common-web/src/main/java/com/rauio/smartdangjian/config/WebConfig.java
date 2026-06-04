@@ -60,7 +60,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         String location = "file:"
-                + java.nio.file.Path.of(storageProperties.getLocalRoot()).toAbsolutePath().normalize() + "/";
+                + java.nio.file.Path.of(storageProperties.getLocalRoot())
+                        .toAbsolutePath()
+                        .normalize() + "/";
         registry.addResourceHandler("/uploads/**").addResourceLocations(location);
     }
 

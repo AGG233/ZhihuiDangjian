@@ -18,15 +18,11 @@ import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.graph.constants.GraphErrorConstants;
-import com.rauio.smartdangjian.server.learning.controller.user.UserLearningGraphSyncController;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = ControllerTestConfiguration.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("学习图谱同步接口测试")
 class UserLearningGraphSyncControllerTest extends BaseControllerTest {
-
 
     @MockitoBean
     private UserLearningRecordService userLearningRecordService;
