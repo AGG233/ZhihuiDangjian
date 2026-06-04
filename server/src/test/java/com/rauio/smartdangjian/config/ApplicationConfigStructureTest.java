@@ -6,9 +6,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.validation.annotation.Validated;
 
 /**
  * 验证 application YAML 配置结构，防止弱默认密码、隐式时间单位等配置隐患。
@@ -176,5 +182,43 @@ class ApplicationConfigStructureTest {
                 .doesNotContain("allowed-origins: *")
                 .doesNotContain("allowed-origins: '*'")
                 .doesNotContain("allowed-origins: \"*\"");
+    }
+
+    @Test
+    @DisplayName("application.yaml 中 spring.ai 没有弱默认 API key（dummy-key 仅限 dev profile）")
+    void baseYamlAiApiKeyHasNoWeakDefault() throws IOException {
+        String content = Files.readString(BASE_YAML);
+        boolean hasDummyKey = content.lines()
+                .filter(line -> line.strip().startsWith("api-key:"))
+                .anyMatch(line -> line.contains("dummy-key"));
+        assertThat(hasDummyKey)
+                .as("application.yaml 中 spring.ai.openai.api-key 不应包含 dummy-key 默认值，dummy-key 仅限 dev profile")
+                .isFalse();
+    }
+
+    @Test
+    @DisplayName("所有 @ConfigurationProperties 类必须带有 @Validated 注解")
+    void allConfigurationPropertiesMustBeValidated() throws Exception {
+        var scanner = new ClassPathScanningCandidateComponentProvider(false);
+        scanner.addIncludeFilter(new AnnotationTypeFilter(ConfigurationProperties.class));
+        Set<BeanDefinition> beans = scanner.findCandidateComponents("com.rauio.smartdangjian");
+        assertThat(beans)
+                .as("至少应有一个 @ConfigurationProperties 类")
+                .isNotEmpty();
+        for (BeanDefinition bd : beans) {
+            Class<?> clazz = Class.forName(bd.getBeanClassName());
+            assertThat(clazz.isAnnotationPresent(Validated.class))
+                    .as("@ConfigurationProperties 类 %s 必须带有 @Validated 注解", clazz.getName())
+                    .isTrue();
+        }
+    }
+
+    @Test
+    @DisplayName("application-prod.yaml 不包含 dummy-key")
+    void prodYamlMustNotContainDummyKey() throws IOException {
+        String content = Files.readString(PROD_YAML);
+        assertThat(content)
+                .as("application-prod.yaml 禁止包含 dummy-key 弱默认值")
+                .doesNotContain("dummy-key");
     }
 }

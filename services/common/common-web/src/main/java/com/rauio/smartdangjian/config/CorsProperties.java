@@ -1,10 +1,12 @@
 package com.rauio.smartdangjian.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
 
 import lombok.Data;
 
 @Data
+@Validated
 @ConfigurationProperties(prefix = "app.cors")
 public class CorsProperties {
 

@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
 
 import lombok.Data;
 
@@ -11,6 +12,7 @@ import lombok.Data;
  * ({@code app.storage.local-root})，后续应统一迁移至此配置类。</p>
  */
 @Data
+@Validated
 @ConfigurationProperties(prefix = "app.storage")
 public class StorageProperties {
 
