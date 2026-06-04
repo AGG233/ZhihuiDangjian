@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.controller.user;
+package com.rauio.smartdangjian.server.chapter.controller.user;
 
 import java.util.List;
 
@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.security.RoleConstants;
-import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
+import com.rauio.smartdangjian.server.chapter.pojo.response.ChapterResponse;
+import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;

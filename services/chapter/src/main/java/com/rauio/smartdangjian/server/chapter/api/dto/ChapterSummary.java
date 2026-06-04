@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.api.dto;
+package com.rauio.smartdangjian.server.chapter.api.dto;
 
 import lombok.Builder;
 import lombok.Data;

@@ -1,11 +1,10 @@
-package com.rauio.smartdangjian.server.content.pojo.entity;
+package com.rauio.smartdangjian.server.chapter.pojo.response;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -13,16 +12,15 @@ import lombok.Data;
 
 @Data
 @Builder
-@TableName("chapter")
-@Schema(description = "章节")
-public class Chapter {
+@Schema(description = "章节视图对象")
+public class ChapterResponse {
 
-    @TableId
-    @JsonSerialize(using = ToStringSerializer.class)
     @Schema(description = "章节ID")
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 
     @Schema(description = "所属课程ID")
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long courseId;
 
     @Schema(description = "章节标题")
@@ -43,9 +41,6 @@ public class Chapter {
     @Schema(description = "章节状态")
     private String chapterStatus;
 
-    @Schema(description = "创建时间")
-    private LocalDateTime createdAt;
-
-    @Schema(description = "更新时间")
-    private LocalDateTime updatedAt;
+    @Schema(description = "章节内容块列表")
+    private List<ChapterContentBlock> content;
 }

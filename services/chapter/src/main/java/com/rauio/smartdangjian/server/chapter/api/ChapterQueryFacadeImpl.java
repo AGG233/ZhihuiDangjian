@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.api;
+package com.rauio.smartdangjian.server.chapter.api;
 
 import java.util.Collection;
 import java.util.List;
@@ -6,10 +6,10 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import com.rauio.smartdangjian.server.content.api.dto.ChapterSummary;
-import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
-import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
+import com.rauio.smartdangjian.server.chapter.api.dto.ChapterSummary;
+import com.rauio.smartdangjian.server.chapter.pojo.entity.Chapter;
+import com.rauio.smartdangjian.server.chapter.pojo.response.ChapterResponse;
+import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
 
 import lombok.RequiredArgsConstructor;
 
