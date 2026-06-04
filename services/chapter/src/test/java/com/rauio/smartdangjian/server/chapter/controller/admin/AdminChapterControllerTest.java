@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.controller.admin;
+package com.rauio.smartdangjian.server.chapter.controller.admin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -15,9 +15,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
-import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
+import com.rauio.smartdangjian.server.chapter.pojo.request.ChapterRequest;
+import com.rauio.smartdangjian.server.chapter.pojo.response.ChapterResponse;
+import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AdminChapterController 单元测试")

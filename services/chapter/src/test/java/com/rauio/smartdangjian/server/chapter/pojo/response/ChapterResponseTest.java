@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.pojo.response;
+package com.rauio.smartdangjian.server.chapter.pojo.response;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

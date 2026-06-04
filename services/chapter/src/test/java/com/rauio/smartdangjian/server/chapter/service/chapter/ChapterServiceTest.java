@@ -1,4 +1,4 @@
-package com.rauio.smartdangjian.server.content.service.chapter;
+package com.rauio.smartdangjian.server.chapter.service.chapter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -24,13 +24,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.chapter.pojo.convertor.ChapterConvertor;
+import com.rauio.smartdangjian.server.chapter.pojo.entity.Chapter;
+import com.rauio.smartdangjian.server.chapter.pojo.request.ChapterRequest;
+import com.rauio.smartdangjian.server.chapter.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterContentBlockConvertor;
-import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterConvertor;
 import com.rauio.smartdangjian.server.content.pojo.dto.ContentBlockDto;
-import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
-import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
-import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
 
 @ExtendWith(MockitoExtension.class)
