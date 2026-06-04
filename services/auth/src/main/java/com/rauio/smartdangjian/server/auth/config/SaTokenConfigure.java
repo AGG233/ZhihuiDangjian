@@ -1,5 +1,6 @@
 package com.rauio.smartdangjian.server.auth.config;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistration;
@@ -10,6 +11,7 @@ import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.stp.StpUtil;
 
 @Configuration
+@EnableConfigurationProperties(AuthProperties.class)
 public class SaTokenConfigure implements WebMvcConfigurer {
 
     private static final String[] PUBLIC_EXCLUDE_PATHS = {
