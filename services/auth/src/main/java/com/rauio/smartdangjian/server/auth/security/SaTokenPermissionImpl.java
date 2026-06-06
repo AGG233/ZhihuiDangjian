@@ -14,7 +14,7 @@ public class SaTokenPermissionImpl implements StpInterface {
 
     @Override
     public List<String> getRoleList(Object loginId, String loginType) {
-        Object userObj = StpUtil.getSession().get("user");
+        Object userObj = StpUtil.getSession().get(SessionPrincipalFactory.SESSION_USER_KEY);
         if (userObj instanceof CurrentUserPrincipal user && user.getUserType() != null) {
             return switch (user.getUserType()) {
                 case MANAGER -> List.of("STUDENT", "SCHOOL", "MANAGER");
@@ -27,7 +27,7 @@ public class SaTokenPermissionImpl implements StpInterface {
 
     @Override
     public List<String> getPermissionList(Object loginId, String loginType) {
-        Object userObj = StpUtil.getSession().get("user");
+        Object userObj = StpUtil.getSession().get(SessionPrincipalFactory.SESSION_USER_KEY);
         if (userObj instanceof CurrentUserPrincipal user && user.getUserType() != null) {
             return switch (user.getUserType()) {
                 case MANAGER -> List.of("*");

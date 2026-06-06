@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
+import com.rauio.smartdangjian.utils.spec.UserType;
+
 import lombok.Data;
 
 /**
@@ -24,4 +26,7 @@ public class DevProperties {
      * 当用户在开发环境中未登录时，自动以此用户 ID 登录。
      */
     private String defaultUserId;
+
+    /** 开发环境默认用户类型，用于模拟登录后的权限上下文。 */
+    private UserType defaultUserType = UserType.MANAGER;
 }
