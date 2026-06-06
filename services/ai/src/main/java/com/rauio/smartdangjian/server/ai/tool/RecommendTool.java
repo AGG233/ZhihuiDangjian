@@ -8,9 +8,9 @@ import org.springframework.stereotype.Component;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.common.utils.IdUtil;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
-import com.rauio.smartdangjian.server.search.service.RecommendService;
-import com.rauio.smartdangjian.server.user.service.UserService;
+import com.rauio.smartdangjian.server.search.api.SearchQueryFacade;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,14 +18,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RecommendTool {
 
-    private final RecommendService recommendService;
-    private final UserService userService;
+    private final SearchQueryFacade searchQueryFacade;
+    private final CurrentUserProvider currentUserProvider;
 
     @Tool(description = "为当前用户获取个性化推荐课程ID列表，基于协同过滤、知识图谱和用户画像综合推荐")
     public String getRecommendedCourses(@ToolParam(description = "返回推荐数量，默认10") Integer limit) {
-        Long userId = IdUtil.parseNullable(ToolContextUtil.resolveUserId(userService));
+        Long userId = IdUtil.parseNullable(ToolContextUtil.resolveUserId(currentUserProvider));
         int size = limit != null && limit > 0 ? limit : 10;
-        Page<Long> result = recommendService.recommend(userId, 1, size);
+        Page<Long> result = searchQueryFacade.recommend(userId, 1, size);
         if (result.getRecords().isEmpty()) {
             return "暂无推荐课程，请先完成更多学习内容以获取个性化推荐";
         }

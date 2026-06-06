@@ -23,7 +23,8 @@ class SqlFragmentUsageRulesTest {
             "services/social/src/main/java/com/rauio/smartdangjian/server/social/support/DefaultLikeTargetGateway.java:76",
             "services/social/src/main/java/com/rauio/smartdangjian/server/social/support/DefaultLikeTargetGateway.java:77",
             "services/social/src/main/java/com/rauio/smartdangjian/server/social/service/CommentService.java:74",
-            "services/course/src/main/java/com/rauio/smartdangjian/server/content/service/course/CourseService.java:249",
+            "services/course/src/main/java/com/rauio/smartdangjian/server/course/api/CourseQueryFacadeImpl.java:79",
+            "services/course/src/main/java/com/rauio/smartdangjian/server/course/service/course/CourseService.java:249",
             "services/learning/src/main/java/com/rauio/smartdangjian/server/learning/service/UserLearningRecordService.java:221",
             "services/learning/src/main/java/com/rauio/smartdangjian/server/learning/service/UserLearningRecordService.java:243");
 

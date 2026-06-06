@@ -14,18 +14,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.server.quiz.api.UserQuizQueryFacade;
 import com.rauio.smartdangjian.server.quiz.pojo.dto.UserQuizAnswerDto;
-import com.rauio.smartdangjian.server.user.api.UserProfileQueryFacade;
 
 @ExtendWith(MockitoExtension.class)
 class UserQuizAnswerToolTest {
 
     @Mock
-    private UserQuizQueryFacade userQuizQueryFacade;
+    private CurrentUserProvider currentUserProvider;
 
     @Mock
-    private UserProfileQueryFacade userProfileQueryFacade;
+    private UserQuizQueryFacade userQuizQueryFacade;
 
     @InjectMocks
     private UserQuizAnswerTool userQuizAnswerTool;
@@ -45,7 +45,7 @@ class UserQuizAnswerToolTest {
     @Test
     @DisplayName("getRecentQuizAnswers 返回最近答题记录（按时间倒序）")
     void getRecentQuizAnswers() {
-        when(userProfileQueryFacade.getCurrentUserId()).thenReturn("1");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
 
         UserQuizAnswerDto answer1 = createAnswer(LocalDateTime.now().minusDays(2));
         UserQuizAnswerDto answer2 = createAnswer(LocalDateTime.now());
@@ -62,7 +62,7 @@ class UserQuizAnswerToolTest {
     @Test
     @DisplayName("getRecentQuizAnswers limit 为 null 时默认返回 10 条")
     void getRecentQuizAnswersDefaultLimit() {
-        when(userProfileQueryFacade.getCurrentUserId()).thenReturn("1");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
 
         when(userQuizQueryFacade.listByUserId(1L)).thenReturn(List.of());
 
@@ -74,7 +74,7 @@ class UserQuizAnswerToolTest {
     @Test
     @DisplayName("getRecentQuizAnswers with limit=0 defaults to 10")
     void getRecentQuizAnswersZeroLimit() {
-        when(userProfileQueryFacade.getCurrentUserId()).thenReturn("1");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
 
         when(userQuizQueryFacade.listByUserId(1L)).thenReturn(List.of());
 
@@ -86,7 +86,7 @@ class UserQuizAnswerToolTest {
     @Test
     @DisplayName("getRecentQuizAnswers with negative limit defaults to 10")
     void getRecentQuizAnswersNegativeLimit() {
-        when(userProfileQueryFacade.getCurrentUserId()).thenReturn("1");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
 
         when(userQuizQueryFacade.listByUserId(1L)).thenReturn(List.of());
 
@@ -98,7 +98,7 @@ class UserQuizAnswerToolTest {
     @Test
     @DisplayName("getQuizAnswersByQuizId returns answers for quiz")
     void getQuizAnswersByQuizId() {
-        when(userProfileQueryFacade.getCurrentUserId()).thenReturn("1");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
 
         UserQuizAnswerDto answer = createAnswer(LocalDateTime.now());
         when(userQuizQueryFacade.listByUserIdAndQuizId(1L, 1L)).thenReturn(List.of(answer));
@@ -111,17 +111,15 @@ class UserQuizAnswerToolTest {
     @Test
     @DisplayName("getQuizAnswersByQuizId quizId 非数字时抛出参数异常")
     void getQuizAnswersByQuizIdInvalidQuizId() {
-        when(userProfileQueryFacade.getCurrentUserId()).thenReturn("1");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
 
         assertThatThrownBy(() -> userQuizAnswerTool.getQuizAnswersByQuizId("not-a-number"))
                 .isInstanceOf(RuntimeException.class);
     }
 
     @Test
-    @DisplayName("getRecentQuizAnswers 当前用户缺失时以 null userId 查询")
+    @DisplayName("getRecentQuizAnswers 当前用户缺失时返回空列表")
     void getRecentQuizAnswersWithMissingCurrentUser() {
-        when(userQuizQueryFacade.listByUserId(null)).thenReturn(List.of());
-
         List<UserQuizAnswerDto> result = userQuizAnswerTool.getRecentQuizAnswers(5);
 
         assertThat(result).isEmpty();

@@ -3,10 +3,10 @@ package com.rauio.smartdangjian.server.ai.tool;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Component;
 
+import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
-import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
+import com.rauio.smartdangjian.server.user.api.UserProfileQueryFacade;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
-import com.rauio.smartdangjian.server.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,12 +14,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserInfoTool {
 
-    private final UserService userService;
-    private final UserConvertor userConvertor;
+    private final UserProfileQueryFacade userProfileQueryFacade;
+    private final CurrentUserProvider currentUserProvider;
 
     @Tool(description = "获取用户基本信息")
     public UserResponse getUserInfo() {
-        String userId = ToolContextUtil.resolveUserId(userService);
-        return userConvertor.toResponse(userService.getById(userId));
+        String userId = ToolContextUtil.resolveUserId(currentUserProvider);
+        return userProfileQueryFacade.getUserById(userId);
     }
 }

@@ -33,7 +33,7 @@ class RateLimitConfigTest {
 
     @Test
     @DisplayName(
-            "\u542F\u7528\u9650\u6D41\u65F6\u6CE8\u518C\u62E6\u622A\u5668\u5230\u5173\u952E\u654F\u611F\u63A5\u53E3\u8DEF\u5F84")
+            "启用限流时注册拦\u622A\u5668\u5230\u5173\u952E\u654F\u611F\u63A5\u53E3\u8DEF\u5F84")
     void addInterceptorsWhenEnabled() {
         var userService = mock(UserService.class);
         var objectMapper = mock(ObjectMapper.class);

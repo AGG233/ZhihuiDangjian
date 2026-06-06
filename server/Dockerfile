@@ -7,16 +7,12 @@ RUN java -Djarmode=tools -jar app.jar extract --layers --launcher --destination 
 FROM eclipse-temurin:21-jre-alpine
 RUN addgroup -S app && adduser -S -G app app
 
-# Layer: dependencies (rarely changes, ~80MB)
 COPY --from=extractor /extracted/dependencies/ ./
 
-# Layer: spring-boot-loader (never changes, ~400KB)
 COPY --from=extractor /extracted/spring-boot-loader/ ./
 
-# Layer: snapshot-dependencies (usually empty)
 COPY --from=extractor /extracted/snapshot-dependencies/ ./
 
-# Layer: application code (changes every release, ~10MB)
 COPY --from=extractor /extracted/application/ ./
 
 LABEL com.rauio.zhihuidangjian=true

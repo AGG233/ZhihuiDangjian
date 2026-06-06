@@ -13,7 +13,7 @@ import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 
 @Component
-@ConditionalOnMissingBean(CurrentUserProvider.class)
+@ConditionalOnMissingBean(StpUtil.class)
 public class SaTokenCurrentUserProvider implements CurrentUserProvider {
 
     @Override

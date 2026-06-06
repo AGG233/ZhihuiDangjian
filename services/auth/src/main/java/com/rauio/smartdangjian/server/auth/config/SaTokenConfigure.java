@@ -19,7 +19,7 @@ public class SaTokenConfigure implements WebMvcConfigurer {
     };
 
     private static final String[] DOC_EXCLUDE_PATHS = {
-        "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/webjars/**"
+        "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/doc.html", "/webjars/**"
     };
 
     private final Environment environment;

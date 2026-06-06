@@ -2,8 +2,6 @@ package com.rauio.smartdangjian.server.ai.tool;
 
 import static com.rauio.smartdangjian.constants.ErrorConstants.RESOURCE_NOT_EXISTS;
 
-import java.time.Clock;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,14 +18,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.chapter.api.ChapterQueryFacade;
 import com.rauio.smartdangjian.server.chapter.pojo.response.ChapterResponse;
-import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
-import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
-import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
-import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
-import com.rauio.smartdangjian.server.quiz.service.QuizService;
+import com.rauio.smartdangjian.server.content.api.ContentQueryFacade;
+import com.rauio.smartdangjian.server.content.api.dto.ContentBlockSummary;
+import com.rauio.smartdangjian.server.quiz.api.QuizDataFacade;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,12 +33,10 @@ import lombok.extern.slf4j.Slf4j;
 public class AiQuizGeneratorTool {
 
     private final ObjectProvider<ChatModel> chatModelProvider;
-    private final ChapterService chapterService;
-    private final ChapterContentBlockService chapterContentBlockService;
-    private final QuizService quizService;
-    private final QuizOptionService quizOptionService;
+    private final ChapterQueryFacade chapterQueryFacade;
+    private final ContentQueryFacade contentQueryFacade;
+    private final QuizDataFacade quizDataFacade;
     private final ObjectMapper objectMapper;
-    private final Clock clock;
 
     @Tool(name = "generateMiniQuiz", description = "根据章节ID或主题，自动生成一道小问答并保存到数据库。AI会提取章节内容或主题要点生成题目、选项和解析。")
     public Map<String, Object> generateMiniQuiz(
@@ -60,11 +53,11 @@ public class AiQuizGeneratorTool {
         String effectiveChapterId = chapterId;
 
         if (chapterId != null && !chapterId.isBlank()) {
-            ChapterResponse chapter = chapterService.get(IdUtil.parse(chapterId));
+            ChapterResponse chapter = chapterQueryFacade.get(IdUtil.parse(chapterId));
             if (chapter == null) {
                 throw new BusinessException(RESOURCE_NOT_EXISTS, "章节不存在");
             }
-            List<ContentBlockResponse> blocks = chapterContentBlockService.getByChapterId(IdUtil.parse(chapterId));
+            List<ContentBlockSummary> blocks = contentQueryFacade.getByChapterId(IdUtil.parse(chapterId));
             StringBuilder sb = new StringBuilder();
             sb.append("章节标题：").append(chapter.getTitle()).append("\n");
             if (chapter.getDescription() != null) {
@@ -72,7 +65,7 @@ public class AiQuizGeneratorTool {
             }
             if (blocks != null && !blocks.isEmpty()) {
                 sb.append("章节内容：\n");
-                for (ContentBlockResponse block : blocks) {
+                for (ContentBlockSummary block : blocks) {
                     String text = getFieldValue(block, "textContent");
                     if (text != null && !text.isBlank()) {
                         sb.append(text).append("\n");
@@ -118,64 +111,44 @@ public class AiQuizGeneratorTool {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "AI生成的题目内容为空");
         }
 
-        Quiz quiz = Quiz.builder()
-                .chapterId(
-                        effectiveChapterId != null && !effectiveChapterId.isBlank()
-                                ? IdUtil.parseNullable(effectiveChapterId)
-                                : null)
-                .question(question)
-                .questionType(effectiveQuestionType)
-                .score(5)
-                .difficulty(effectiveDifficulty)
-                .explanation(explanation)
-                .isActive(true)
-                .createdAt(LocalDateTime.now(clock))
-                .updatedAt(LocalDateTime.now(clock))
-                .build();
-
-        Boolean saved = quizService.create(quiz);
-        if (!Boolean.TRUE.equals(saved) || quiz.getId() == null) {
-            throw new BusinessException(RESOURCE_NOT_EXISTS, "测验保存失败");
-        }
-
-        List<Map<String, Object>> optionResults = new ArrayList<>();
+        List<Map<String, Object>> optList = new ArrayList<>();
         if (optionsNode != null && optionsNode.isArray()) {
             for (JsonNode optNode : optionsNode) {
                 String optionText = optNode.path("optionText").asText(null);
-                Boolean isCorrect =
-                        optNode.has("isCorrect") ? optNode.path("isCorrect").asBoolean() : null;
-                String orderIndex = optNode.path("orderIndex").asText(null);
-
                 if (optionText == null || optionText.isBlank()) {
                     continue;
                 }
-
-                QuizOption option = QuizOption.builder()
-                        .quizId(quiz.getId())
-                        .optionText(optionText)
-                        .isCorrect(isCorrect != null ? isCorrect : false)
-                        .orderIndex(orderIndex)
-                        .build();
-                Boolean optionSaved = quizOptionService.create(quiz.getId(), option);
-                if (!Boolean.TRUE.equals(optionSaved)) {
-                    throw new BusinessException(RESOURCE_NOT_EXISTS, "选项创建失败");
-                }
-
-                Map<String, Object> optMap = new HashMap<>();
-                optMap.put("optionText", optionText);
-                optMap.put("isCorrect", isCorrect);
-                optMap.put("orderIndex", orderIndex);
-                optionResults.add(optMap);
+                boolean isCorrect = optNode.has("isCorrect") ? optNode.path("isCorrect").asBoolean() : false;
+                Map<String, Object> optData = new HashMap<>();
+                optData.put("optionText", optionText);
+                optData.put("isCorrect", isCorrect);
+                optData.put("orderIndex", optNode.path("orderIndex").asText(null));
+                optList.add(optData);
             }
         }
 
+        int score = switch (effectiveDifficulty) {
+            case "easy" -> 5;
+            case "hard" -> 15;
+            default -> 10;
+        };
+
+        Long quizId = quizDataFacade.createQuiz(
+                effectiveChapterId != null ? IdUtil.parse(effectiveChapterId) : null,
+                question,
+                effectiveQuestionType,
+                score,
+                effectiveDifficulty,
+                explanation,
+                optList);
+
         Map<String, Object> result = new HashMap<>();
-        result.put("quizId", quiz.getId());
+        result.put("quizId", quizId.toString());
         result.put("question", question);
         result.put("questionType", effectiveQuestionType);
         result.put("difficulty", effectiveDifficulty);
         result.put("explanation", explanation);
-        result.put("options", optionResults);
+        result.put("options", optList);
         return result;
     }
 
@@ -229,11 +202,10 @@ public class AiQuizGeneratorTool {
         return cleaned.trim();
     }
 
-    private String getFieldValue(ContentBlockResponse block, String fieldName) {
+    private String getFieldValue(ContentBlockSummary block, String fieldName) {
         return switch (fieldName) {
             case "textContent" -> block.getTextContent();
-            case "blockType" ->
-                block.getBlockType() != null ? block.getBlockType().toString() : null;
+            case "blockType" -> block.getBlockType();
             case "parentId" -> block.getParentId() != null ? block.getParentId().toString() : null;
             case "resourceId" ->
                 block.getResourceId() != null ? block.getResourceId().toString() : null;

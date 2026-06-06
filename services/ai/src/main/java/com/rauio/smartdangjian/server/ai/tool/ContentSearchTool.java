@@ -18,9 +18,9 @@ import com.rauio.smartdangjian.server.chapter.api.ChapterQueryFacade;
 import com.rauio.smartdangjian.server.chapter.api.dto.ChapterSummary;
 import com.rauio.smartdangjian.server.chapter.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.api.ArticleQueryFacade;
+import com.rauio.smartdangjian.server.content.api.ContentQueryFacade;
 import com.rauio.smartdangjian.server.content.api.dto.ArticleSummary;
-import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
-import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
+import com.rauio.smartdangjian.server.content.api.dto.ContentBlockSummary;
 import com.rauio.smartdangjian.server.course.api.CourseQueryFacade;
 import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 
@@ -33,7 +33,7 @@ public class ContentSearchTool {
     private final CourseQueryFacade courseQueryFacade;
     private final ArticleQueryFacade articleQueryFacade;
     private final ChapterQueryFacade chapterQueryFacade;
-    private final ChapterContentBlockService chapterContentBlockService;
+    private final ContentQueryFacade contentQueryFacade;
 
     @Tool(name = "searchCourses", description = "根据关键词搜索课程（匹配标题）")
     public List<Map<String, Object>> searchCourses(@ToolParam(description = "搜索关键词") String keyword) {
@@ -111,7 +111,7 @@ public class ContentSearchTool {
         if (chapter == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "章节不存在");
         }
-        List<ContentBlockResponse> blocks = chapterContentBlockService.getByChapterId(IdUtil.parse(chapterId));
+        List<ContentBlockSummary> blocks = contentQueryFacade.getByChapterId(IdUtil.parse(chapterId));
 
         Map<String, Object> result = new HashMap<>();
         result.put("id", chapter.getId());

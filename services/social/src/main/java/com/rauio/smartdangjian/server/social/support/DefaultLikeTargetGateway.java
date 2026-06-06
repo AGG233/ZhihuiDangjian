@@ -3,9 +3,12 @@ package com.rauio.smartdangjian.server.social.support;
 import org.springframework.stereotype.Component;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.content.api.ArticleQueryFacade;
 import com.rauio.smartdangjian.server.content.mapper.ArticleMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.Article;
+import com.rauio.smartdangjian.server.course.api.CourseQueryFacade;
 import com.rauio.smartdangjian.server.course.mapper.CourseMapper;
 import com.rauio.smartdangjian.server.course.pojo.entity.Course;
 import com.rauio.smartdangjian.server.social.constants.SocialErrorConstants;
@@ -21,6 +24,8 @@ public class DefaultLikeTargetGateway implements LikeTargetGateway {
     private final CommentMapper commentMapper;
     private final ArticleMapper articleMapper;
     private final CourseMapper courseMapper;
+    private final ArticleQueryFacade articleQueryFacade;
+    private final CourseQueryFacade courseQueryFacade;
 
     @Override
     public void requireExists(LikeTargetType targetType, Long targetId) {

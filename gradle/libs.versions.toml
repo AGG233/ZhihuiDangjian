@@ -1,10 +1,9 @@
 [versions]
-spring-boot = "3.5.4"
+spring-boot = "3.5.14"
 spring-dependency-management = "1.1.7"
 spring-ai = "1.1.2"
 spring-ai-ali = "1.1.2.0"
 spring-redisson = "4.3.0"
-flyway = "10.22.0"
 
 sa-token = "1.45.0"
 
@@ -12,8 +11,6 @@ mybatis-plus = "3.5.14"
 mybatis-plus-join = "1.5.4"
 mybatis = "3.5.19"
 hikari-cp = "7.0.2"
-
-commons-lang3 = "3.18.0"
 
 xfile = "2.3.0"
 
@@ -27,11 +24,11 @@ sensitive-word = "0.29.5"
 
 springdoc = "2.8.13"
 
-logback = "1.5.8"
+
 resilience4j = "2.2.0"
-lombok = "1.18.38"
+
 testcontainers = "2.0.3"
-archunit = "1.3.0"
+archunit = "1.4.2"
 
 [libraries]
 # BOMs
@@ -70,7 +67,7 @@ mybatis-plus-starter = { module = "com.baomidou:mybatis-plus-spring-boot3-starte
 redisson = { module = "org.redisson:redisson-spring-boot-starter", version.ref = "spring-redisson"}
 
 # Utilities
-commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }
+commons-lang3 = { module = "org.apache.commons:commons-lang3" }
 
 hutool-all = { module = "cn.hutool:hutool-all", version.ref = "hutool" }
 
@@ -88,8 +85,8 @@ xfile = { module = "org.dromara.x-file-storage:x-file-storage-spring", version.r
 springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 
 # Flyway
-flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
-flyway-mysql = { module = "org.flywaydb:flyway-mysql", version.ref = "flyway" }
+flyway-core = { module = "org.flywaydb:flyway-core" }
+flyway-mysql = { module = "org.flywaydb:flyway-mysql" }
 
 # Testcontainers
 spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
@@ -100,9 +97,7 @@ testcontainers-neo4j = { module = "org.testcontainers:testcontainers-neo4j", ver
 archunit-junit5 = { module = "com.tngtech.archunit:archunit-junit5-engine", version.ref = "archunit" }
 
 # Build and tooling
-logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
-logback-core = { module = "ch.qos.logback:logback-core", version.ref = "logback" }
-lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+lombok = { module = "org.projectlombok:lombok" }
 
 # Observability & Resilience
 resilience4j-spring-boot3 = { module = "io.github.resilience4j:resilience4j-spring-boot3", version.ref = "resilience4j" }

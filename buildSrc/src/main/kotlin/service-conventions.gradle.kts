@@ -100,8 +100,6 @@ dependencies {
 
 configurations.configureEach {
     resolutionStrategy {
-        force(libs.findLibrary("logback-classic").get().get().toString())
-        force(libs.findLibrary("logback-core").get().get().toString())
         force(libs.findLibrary("springdoc-openapi-starter-webmvc-ui").get().get().toString())
     }
 }

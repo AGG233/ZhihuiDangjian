@@ -15,8 +15,8 @@ import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.chapter.api.ChapterQueryFacade;
 import com.rauio.smartdangjian.server.chapter.pojo.response.ChapterResponse;
-import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
-import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
+import com.rauio.smartdangjian.server.content.api.ContentQueryFacade;
+import com.rauio.smartdangjian.server.content.api.dto.ContentBlockSummary;
 import com.rauio.smartdangjian.server.course.api.CourseQueryFacade;
 import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.quiz.api.QuizDataFacade;
@@ -31,7 +31,7 @@ public class ContentReviewTool {
 
     private final CourseQueryFacade courseQueryFacade;
     private final ChapterQueryFacade chapterQueryFacade;
-    private final ChapterContentBlockService chapterContentBlockService;
+    private final ContentQueryFacade contentQueryFacade;
     private final QuizDataFacade quizDataFacade;
 
     @Tool(name = "reviewCourseContent", description = "获取课程完整内容（含章节和内容块）用于审查")
@@ -48,7 +48,7 @@ public class ContentReviewTool {
                     chMap.put("title", ch.getTitle());
                     chMap.put("description", ch.getDescription());
                     chMap.put("orderIndex", ch.getOrderIndex());
-                    List<ContentBlockResponse> blocks = chapterContentBlockService.getByChapterId(ch.getId());
+                    List<ContentBlockSummary> blocks = contentQueryFacade.getByChapterId(ch.getId());
                     chMap.put("contentBlocks", blocks);
                     return chMap;
                 })
