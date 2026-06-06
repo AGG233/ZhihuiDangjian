@@ -12,21 +12,21 @@ import lombok.Data;
 @Schema(description = "AI技能创建请求")
 public class AiSkillCreateRequest {
 
-    @NotBlank
+    @NotBlank(message = "agentType不能为空")
     private String agentType;
 
-    @NotBlank
+    @NotBlank(message = "name不能为空")
     private String name;
 
-    @NotBlank
+    @NotBlank(message = "description不能为空")
     private String description;
 
-    @NotBlank
+    @NotBlank(message = "content不能为空")
     private String content;
 
     private Boolean enabled;
 
-    @Min(0)
+    @Min(value = 0, message = "sort不能小于0")
     private Integer sort;
 
     private List<String> toolGroups;

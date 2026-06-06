@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -73,7 +74,7 @@ class ObservabilityConfigTest {
         ClassPathResource resource = new ClassPathResource("logback-spring.xml");
         assertThat(resource.exists()).isTrue();
 
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory factory = secureDocumentBuilderFactory();
         DocumentBuilder builder = factory.newDocumentBuilder();
         try (InputStream is = resource.getInputStream()) {
             Document doc = builder.parse(is);
@@ -95,7 +96,7 @@ class ObservabilityConfigTest {
     @DisplayName("logback-spring.xml 的 pattern 包含 traceId 和 spanId 占位")
     void logbackPatternIncludesTraceAndSpanPlaceholders() throws Exception {
         ClassPathResource resource = new ClassPathResource("logback-spring.xml");
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory factory = secureDocumentBuilderFactory();
         DocumentBuilder builder = factory.newDocumentBuilder();
         try (InputStream is = resource.getInputStream()) {
             Document doc = builder.parse(is);
@@ -110,6 +111,18 @@ class ObservabilityConfigTest {
             }
             assertThat(hasTracePlaceholder).isTrue();
         }
+    }
+
+    private static DocumentBuilderFactory secureDocumentBuilderFactory() throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+        factory.setExpandEntityReferences(false);
+        return factory;
     }
 
     // ── Task D: 链路追踪 ───────────────────────────────────────────────

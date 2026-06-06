@@ -3,7 +3,6 @@ package com.rauio.smartdangjian;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 import org.junit.jupiter.api.AfterEach;
@@ -17,6 +16,7 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
@@ -73,18 +73,13 @@ public abstract class BaseControllerTest {
     private void resetMockitoBeans() {
         Class<?> current = getClass();
         while (current != null && current != BaseControllerTest.class) {
-            for (Field field : current.getDeclaredFields()) {
+            for (var field : current.getDeclaredFields()) {
                 if (Modifier.isStatic(field.getModifiers()) || field.getAnnotation(MockitoBean.class) == null) {
                     continue;
                 }
-                field.setAccessible(true);
-                try {
-                    Object candidate = field.get(this);
-                    if (candidate != null && Mockito.mockingDetails(candidate).isMock()) {
-                        Mockito.reset(candidate);
-                    }
-                } catch (IllegalAccessException e) {
-                    throw new IllegalStateException("Failed to reset @MockitoBean field: " + field.getName(), e);
+                Object candidate = ReflectionTestUtils.getField(this, field.getName());
+                if (candidate != null && Mockito.mockingDetails(candidate).isMock()) {
+                    Mockito.reset(candidate);
                 }
             }
             current = current.getSuperclass();

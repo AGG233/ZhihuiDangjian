@@ -113,6 +113,10 @@ class AtLeastOneNoBlankValidatorTest {
         public NonStringObject(Integer count) {
             this.count = count;
         }
+
+        public Integer getCount() {
+            return count;
+        }
     }
 
     @Test

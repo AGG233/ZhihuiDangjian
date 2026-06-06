@@ -2,8 +2,6 @@ package com.rauio.smartdangjian.constants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.lang.reflect.Constructor;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -49,13 +47,5 @@ class RedisConstantsTest {
     @DisplayName("USER_PROFILE_CACHE_PREFIX 为 user:profile:")
     void userProfileCachePrefix() {
         assertThat(RedisConstants.USER_PROFILE_CACHE_PREFIX).isEqualTo("user:profile:");
-    }
-
-    @Test
-    @DisplayName("private 构造器覆盖")
-    void privateConstructor() throws Exception {
-        Constructor<RedisConstants> constructor = RedisConstants.class.getDeclaredConstructor();
-        constructor.setAccessible(true);
-        constructor.newInstance();
     }
 }

@@ -12,20 +12,20 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.model.ToolContext;
 
-import com.rauio.smartdangjian.server.user.service.UserService;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
 
 @ExtendWith(MockitoExtension.class)
 class ToolContextUtilTest {
 
     @Mock
-    private UserService userService;
+    private CurrentUserProvider currentUserProvider;
 
     @Test
     @DisplayName("从 ToolContext metadata 提取 userId")
     void getUserIdFromToolContext() {
         ToolContext context = new ToolContext(Map.of("userId", "user-123", "sessionId", "session-abc"));
 
-        String userId = ToolContextUtil.getUserId(context, userService);
+        String userId = ToolContextUtil.getUserId(context, currentUserProvider);
 
         assertThat(userId).isEqualTo("user-123");
     }
@@ -34,9 +34,9 @@ class ToolContextUtilTest {
     @DisplayName("ToolContext 无 userId 时回退到 SecurityContext")
     void getUserIdFallbackToSecurityContext() {
         ToolContext context = new ToolContext(Map.of());
-        when(userService.getCurrentUserId()).thenReturn("fallback-user");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("fallback-user");
 
-        String userId = ToolContextUtil.getUserId(context, userService);
+        String userId = ToolContextUtil.getUserId(context, currentUserProvider);
 
         assertThat(userId).isEqualTo("fallback-user");
     }

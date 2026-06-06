@@ -13,17 +13,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.server.search.service.RecommendService;
-import com.rauio.smartdangjian.server.user.service.UserService;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
+import com.rauio.smartdangjian.server.search.api.SearchQueryFacade;
 
 @ExtendWith(MockitoExtension.class)
 class RecommendToolTest {
 
     @Mock
-    private RecommendService recommendService;
+    private SearchQueryFacade searchQueryFacade;
 
     @Mock
-    private UserService userService;
+    private CurrentUserProvider currentUserProvider;
 
     @InjectMocks
     private RecommendTool recommendTool;
@@ -31,10 +31,10 @@ class RecommendToolTest {
     @Test
     @DisplayName("getRecommendedCourses 返回推荐课程 ID 列表字符串")
     void getRecommendedCourses() {
-        when(userService.getCurrentUserId()).thenReturn("1");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
         Page<Long> page = new Page<>();
         page.setRecords(List.of(1L, 2L, 3L));
-        when(recommendService.recommend(1L, 1, 5)).thenReturn(page);
+        when(searchQueryFacade.recommend(1L, 1, 5)).thenReturn(page);
 
         String result = recommendTool.getRecommendedCourses(5);
 
@@ -44,10 +44,10 @@ class RecommendToolTest {
     @Test
     @DisplayName("getRecommendedCourses 默认返回 10 条推荐")
     void getRecommendedCoursesDefaultLimit() {
-        when(userService.getCurrentUserId()).thenReturn("1");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
         Page<Long> page = new Page<>();
         page.setRecords(List.of(1L));
-        when(recommendService.recommend(1L, 1, 10)).thenReturn(page);
+        when(searchQueryFacade.recommend(1L, 1, 10)).thenReturn(page);
 
         String result = recommendTool.getRecommendedCourses(null);
 
@@ -57,10 +57,10 @@ class RecommendToolTest {
     @Test
     @DisplayName("getRecommendedCourses with limit=0 falls back to default 10")
     void getRecommendedCoursesZeroLimit() {
-        when(userService.getCurrentUserId()).thenReturn("1");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
         Page<Long> page = new Page<>();
         page.setRecords(List.of(1L));
-        when(recommendService.recommend(1L, 1, 10)).thenReturn(page);
+        when(searchQueryFacade.recommend(1L, 1, 10)).thenReturn(page);
 
         String result = recommendTool.getRecommendedCourses(0);
 
@@ -70,10 +70,10 @@ class RecommendToolTest {
     @Test
     @DisplayName("getRecommendedCourses no recommendation returns hint message")
     void getRecommendedCoursesEmpty() {
-        when(userService.getCurrentUserId()).thenReturn("1");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
         Page<Long> page = new Page<>();
         page.setRecords(List.of());
-        when(recommendService.recommend(1L, 1, 10)).thenReturn(page);
+        when(searchQueryFacade.recommend(1L, 1, 10)).thenReturn(page);
 
         String result = recommendTool.getRecommendedCourses(null);
 
@@ -85,7 +85,7 @@ class RecommendToolTest {
     void getRecommendedCoursesWithMissingCurrentUser() {
         Page<Long> page = new Page<>();
         page.setRecords(List.of(9L));
-        when(recommendService.recommend(null, 1, 3)).thenReturn(page);
+        when(searchQueryFacade.recommend(null, 1, 3)).thenReturn(page);
 
         String result = recommendTool.getRecommendedCourses(3);
 
@@ -95,10 +95,10 @@ class RecommendToolTest {
     @Test
     @DisplayName("getRecommendedCourses 负数 limit 回退到默认 10")
     void getRecommendedCoursesNegativeLimit() {
-        when(userService.getCurrentUserId()).thenReturn("1");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
         Page<Long> page = new Page<>();
         page.setRecords(List.of(1L));
-        when(recommendService.recommend(1L, 1, 10)).thenReturn(page);
+        when(searchQueryFacade.recommend(1L, 1, 10)).thenReturn(page);
 
         String result = recommendTool.getRecommendedCourses(-1);
 

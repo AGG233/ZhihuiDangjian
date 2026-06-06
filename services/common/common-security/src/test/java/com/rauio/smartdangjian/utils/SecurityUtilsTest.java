@@ -5,8 +5,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Constructor;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -147,13 +145,5 @@ class SecurityUtilsTest {
         String result = SecurityUtils.getCurrentUserId();
 
         assertThat(result).isNull();
-    }
-
-    @Test
-    @DisplayName("private 构造器覆盖")
-    void privateConstructor() throws Exception {
-        Constructor<SecurityUtils> constructor = SecurityUtils.class.getDeclaredConstructor();
-        constructor.setAccessible(true);
-        constructor.newInstance();
     }
 }

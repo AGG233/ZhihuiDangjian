@@ -15,7 +15,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -242,7 +241,6 @@ class AdminChapterControllerRealServiceIntegrationTest extends CrossLayerTestBas
         }
 
         @Bean
-        @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
         ChapterService chapterService(
                 ChapterContentBlockService chapterContentBlockService,
                 ChapterConvertor chapterConvertor,
@@ -251,9 +249,7 @@ class AdminChapterControllerRealServiceIntegrationTest extends CrossLayerTestBas
             ChapterService service =
                     new ChapterService(chapterContentBlockService, chapterConvertor, chapterContentBlockConvertor);
             try {
-                Field field = findBaseMapperField(service.getClass());
-                field.setAccessible(true);
-                field.set(service, chapterMapper);
+                org.springframework.test.util.ReflectionTestUtils.setField(service, "baseMapper", chapterMapper);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to set baseMapper on ChapterService", e);
             }
@@ -288,18 +284,6 @@ class AdminChapterControllerRealServiceIntegrationTest extends CrossLayerTestBas
                     // no-op
                 }
             };
-        }
-
-        private static Field findBaseMapperField(Class<?> clazz) throws NoSuchFieldException {
-            Class<?> current = clazz;
-            while (current != null) {
-                try {
-                    return current.getDeclaredField("baseMapper");
-                } catch (NoSuchFieldException e) {
-                    current = current.getSuperclass();
-                }
-            }
-            throw new NoSuchFieldException("baseMapper");
         }
     }
 }

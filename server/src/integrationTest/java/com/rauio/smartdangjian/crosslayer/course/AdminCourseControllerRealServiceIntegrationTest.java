@@ -14,7 +14,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -256,7 +255,6 @@ class AdminCourseControllerRealServiceIntegrationTest extends CrossLayerTestBase
         }
 
         @Bean
-        @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
         CourseService courseService(
                 UserService userService,
                 CourseConvertor courseConvertor,
@@ -273,9 +271,7 @@ class AdminCourseControllerRealServiceIntegrationTest extends CrossLayerTestBase
                     permissionValidator,
                     userMapper);
             try {
-                Field field = findBaseMapperField(service.getClass());
-                field.setAccessible(true);
-                field.set(service, courseMapper);
+                org.springframework.test.util.ReflectionTestUtils.setField(service, "baseMapper", courseMapper);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to set baseMapper on CourseService", e);
             }
@@ -316,18 +312,6 @@ class AdminCourseControllerRealServiceIntegrationTest extends CrossLayerTestBase
                     // no-op
                 }
             };
-        }
-
-        private static Field findBaseMapperField(Class<?> clazz) throws NoSuchFieldException {
-            Class<?> current = clazz;
-            while (current != null) {
-                try {
-                    return current.getDeclaredField("baseMapper");
-                } catch (NoSuchFieldException e) {
-                    current = current.getSuperclass();
-                }
-            }
-            throw new NoSuchFieldException("baseMapper");
         }
     }
 }

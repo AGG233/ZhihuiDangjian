@@ -18,8 +18,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.chapter.api.ChapterQueryFacade;
 import com.rauio.smartdangjian.server.chapter.pojo.response.ChapterResponse;
-import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
-import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
+import com.rauio.smartdangjian.server.content.api.ContentQueryFacade;
+import com.rauio.smartdangjian.server.content.api.dto.ContentBlockSummary;
 import com.rauio.smartdangjian.server.course.api.CourseQueryFacade;
 import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.quiz.api.QuizDataFacade;
@@ -36,7 +36,7 @@ class ContentReviewToolTest {
     private ChapterQueryFacade chapterQueryFacade;
 
     @Mock
-    private ChapterContentBlockService contentBlockService;
+    private ContentQueryFacade contentQueryFacade;
 
     @Mock
     private QuizDataFacade quizDataFacade;
@@ -59,11 +59,12 @@ class ContentReviewToolTest {
                 .description("章节描述")
                 .orderIndex(1)
                 .build();
-        ContentBlockResponse block = new ContentBlockResponse();
+        ContentBlockSummary block =
+                ContentBlockSummary.builder().textContent("正文").build();
 
         when(courseQueryFacade.get(1L)).thenReturn(course);
         when(chapterQueryFacade.getByCourseId(1L)).thenReturn(List.of(chapter));
-        when(contentBlockService.getByChapterId(1L)).thenReturn(List.of(block));
+        when(contentQueryFacade.getByChapterId(1L)).thenReturn(List.of(block));
 
         Map<String, Object> result = contentReviewTool.reviewCourseContent("1");
 

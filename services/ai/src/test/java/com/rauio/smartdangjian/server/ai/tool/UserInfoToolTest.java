@@ -1,7 +1,6 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.DisplayName;
@@ -11,19 +10,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
+import com.rauio.smartdangjian.server.user.api.UserProfileQueryFacade;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
-import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 class UserInfoToolTest {
 
     @Mock
-    private UserService userService;
+    private UserProfileQueryFacade userProfileQueryFacade;
 
     @Mock
-    private UserConvertor userConvertor;
+    private CurrentUserProvider currentUserProvider;
 
     @InjectMocks
     private UserInfoTool userInfoTool;
@@ -31,16 +29,12 @@ class UserInfoToolTest {
     @Test
     @DisplayName("getUserInfo 返回用户基本信息")
     void getUserInfo() {
-        User user = new User();
-        user.setId(1L);
-        user.setUsername("testuser");
-
         UserResponse userVO = new UserResponse();
         userVO.setId(1L);
         userVO.setUsername("testuser");
 
-        when(userService.getById(any())).thenReturn(user);
-        when(userConvertor.toResponse(user)).thenReturn(userVO);
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
+        when(userProfileQueryFacade.getUserById("1")).thenReturn(userVO);
 
         UserResponse result = userInfoTool.getUserInfo();
 

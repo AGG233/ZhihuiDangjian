@@ -14,7 +14,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.lang.reflect.Field;
 import java.time.Clock;
 import java.util.Date;
 import java.util.List;
@@ -210,14 +209,11 @@ class UserChapterProgressControllerRealServiceIntegrationTest extends CrossLayer
         }
 
         @Bean
-        @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
         UserChapterProgressService userChapterProgressService(
                 UserChapterProgressConvertor convertor, UserChapterProgressMapper progressMapper) {
             UserChapterProgressService service = new UserChapterProgressService(convertor, Clock.systemUTC());
             try {
-                Field field = findBaseMapperField(service.getClass());
-                field.setAccessible(true);
-                field.set(service, progressMapper);
+                org.springframework.test.util.ReflectionTestUtils.setField(service, "baseMapper", progressMapper);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to set baseMapper on UserChapterProgressService", e);
             }
@@ -254,18 +250,6 @@ class UserChapterProgressControllerRealServiceIntegrationTest extends CrossLayer
                     // no-op
                 }
             };
-        }
-
-        private static Field findBaseMapperField(Class<?> clazz) throws NoSuchFieldException {
-            Class<?> current = clazz;
-            while (current != null) {
-                try {
-                    return current.getDeclaredField("baseMapper");
-                } catch (NoSuchFieldException e) {
-                    current = current.getSuperclass();
-                }
-            }
-            throw new NoSuchFieldException("baseMapper");
         }
     }
 }

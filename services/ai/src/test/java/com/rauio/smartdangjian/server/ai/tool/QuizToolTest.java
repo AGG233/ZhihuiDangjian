@@ -13,9 +13,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
 import com.rauio.smartdangjian.server.ai.service.AiChatMessageService;
-import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 class QuizToolTest {
@@ -24,7 +24,7 @@ class QuizToolTest {
     private AiChatMessageService messageService;
 
     @Mock
-    private UserService userService;
+    private CurrentUserProvider currentUserProvider;
 
     @InjectMocks
     private QuizTool quizTool;
@@ -43,7 +43,7 @@ class QuizToolTest {
                     .metadata(metadata)
                     .build();
 
-            when(userService.getCurrentUserId()).thenReturn("1");
+            when(currentUserProvider.getCurrentUserId()).thenReturn("1");
             when(messageService.findLatestBySessionIdAndUserId("session-1", 1L)).thenReturn(message);
 
             Object result = quizTool.getQuizReasoning("session-1");
@@ -70,7 +70,7 @@ class QuizToolTest {
         @Test
         @DisplayName("未找到消息时返回 null")
         void returnsNullWhenMessageNotFound() {
-            when(userService.getCurrentUserId()).thenReturn("1");
+            when(currentUserProvider.getCurrentUserId()).thenReturn("1");
             when(messageService.findLatestBySessionIdAndUserId("nonexistent-session", 1L))
                     .thenReturn(null);
 

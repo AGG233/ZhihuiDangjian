@@ -8,8 +8,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.lang.reflect.Field;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -58,7 +56,6 @@ class CategoryRootCreateTest extends CrossLayerTestBase {
         }
 
         @Bean
-        @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
         CategoryService categoryService(
                 CategoryConvertor convertor,
                 CategoryMapper categoryMapper,
@@ -67,27 +64,12 @@ class CategoryRootCreateTest extends CrossLayerTestBase {
             CategoryService service = new CategoryService(convertor, dataScopeService, currentUserProvider);
             try {
                 // baseMapper 声明在 CrudRepository 中（MyBatis-Plus 3.5.14）
-                Field field = findBaseMapperField(service.getClass());
-                field.setAccessible(true);
-                field.set(service, categoryMapper);
+                org.springframework.test.util.ReflectionTestUtils.setField(service, "baseMapper", categoryMapper);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to set baseMapper on CategoryService", e);
             }
             return service;
         }
-
-        private static Field findBaseMapperField(Class<?> clazz) throws NoSuchFieldException {
-            Class<?> current = clazz;
-            while (current != null) {
-                try {
-                    return current.getDeclaredField("baseMapper");
-                } catch (NoSuchFieldException e) {
-                    current = current.getSuperclass();
-                }
-            }
-            throw new NoSuchFieldException("baseMapper");
-        }
-
         /**
          * 提供空事务管理器，防止 @Transactional 触发 Neo4j 真实连接。
          * Neo4jDataAutoConfiguration 的 transactionManager 方法带有

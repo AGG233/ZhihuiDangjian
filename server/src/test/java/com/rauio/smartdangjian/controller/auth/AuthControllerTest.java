@@ -372,7 +372,7 @@ class AuthControllerTest extends BaseControllerTest {
         private RegisterRequest createValidRequest() {
             RegisterRequest req = new RegisterRequest();
             req.setUsername("testuser");
-            req.setPassword("Test1234!");
+            req.setPassword(AuthTestDataFactory.createValidPassword());
             req.setRealName("张三");
             req.setIdCard("110101199001011234");
             req.setPhone("13800138000");

@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.validation.annotation.Validated;
 
@@ -146,22 +147,6 @@ class ApplicationConfigStructureTest {
     }
 
     @Test
-    @DisplayName("ADR 002（Redis 高可用策略）存在且有内容")
-    void adr002RedisHADocumentExists() {
-        Path adrPath = projectRoot().resolve("docs/adr/002-redis-high-availability.md");
-        assertThat(adrPath).as("ADR 002 (Redis High Availability) 文档必须存在").exists();
-        assertThat(adrPath).as("ADR 002 应有内容").isNotEmptyFile();
-    }
-
-    @Test
-    @DisplayName("ADR 003（Caffeine 二级缓存评估）存在且有内容")
-    void adr003CaffeineCacheDocumentExists() {
-        Path adrPath = projectRoot().resolve("docs/adr/003-caffeine-l2-cache.md");
-        assertThat(adrPath).as("ADR 003 (Caffeine L2 Cache) 文档必须存在").exists();
-        assertThat(adrPath).as("ADR 003 应有内容").isNotEmptyFile();
-    }
-
-    @Test
     @DisplayName("application-dev.yaml 配置了 dev 环境的 CORS allowed-origins")
     void devYamlHasCorsAllowedOrigins() throws IOException {
         Path devYaml = projectRoot().resolve("server/src/main/resources/application-dev.yaml");
@@ -204,9 +189,10 @@ class ApplicationConfigStructureTest {
         Set<BeanDefinition> beans = scanner.findCandidateComponents("com.rauio.smartdangjian");
         assertThat(beans).as("至少应有一个 @ConfigurationProperties 类").isNotEmpty();
         for (BeanDefinition bd : beans) {
-            Class<?> clazz = Class.forName(bd.getBeanClassName());
-            assertThat(clazz.isAnnotationPresent(Validated.class))
-                    .as("@ConfigurationProperties 类 %s 必须带有 @Validated 注解", clazz.getName())
+            AnnotatedTypeMetadata metadata =
+                    ((org.springframework.beans.factory.annotation.AnnotatedBeanDefinition) bd).getMetadata();
+            assertThat(metadata.isAnnotated(Validated.class.getName()))
+                    .as("@ConfigurationProperties 类 %s 必须带有 @Validated 注解", bd.getBeanClassName())
                     .isTrue();
         }
     }

@@ -14,8 +14,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.lang.reflect.Field;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -209,14 +207,11 @@ class AdminResourceMetaControllerRealServiceIntegrationTest extends CrossLayerTe
         }
 
         @Bean
-        @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
         ResourceMetaService resourceMetaService(
                 ResourceMetaMapper resourceMetaMapper, PermissionValidator permissionValidator) {
             ResourceMetaService service = new ResourceMetaService(permissionValidator);
             try {
-                Field field = findBaseMapperField(service.getClass());
-                field.setAccessible(true);
-                field.set(service, resourceMetaMapper);
+                org.springframework.test.util.ReflectionTestUtils.setField(service, "baseMapper", resourceMetaMapper);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to set baseMapper on ResourceMetaService", e);
             }
@@ -251,18 +246,6 @@ class AdminResourceMetaControllerRealServiceIntegrationTest extends CrossLayerTe
                     // no-op
                 }
             };
-        }
-
-        private static Field findBaseMapperField(Class<?> clazz) throws NoSuchFieldException {
-            Class<?> current = clazz;
-            while (current != null) {
-                try {
-                    return current.getDeclaredField("baseMapper");
-                } catch (NoSuchFieldException e) {
-                    current = current.getSuperclass();
-                }
-            }
-            throw new NoSuchFieldException("baseMapper");
         }
     }
 }

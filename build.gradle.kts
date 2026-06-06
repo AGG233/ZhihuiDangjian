@@ -6,8 +6,8 @@ plugins {
 description = "Zhihuidangjian Demo project for Spring Boot"
 
 repositories {
-    maven { url = uri("https://maven.aliyun.com/repository/public") }
     mavenCentral()
+    maven { url = uri("https://maven.aliyun.com/repository/public") }
 }
 
 tasks.register<JacocoReport>("jacocoRootReport") {

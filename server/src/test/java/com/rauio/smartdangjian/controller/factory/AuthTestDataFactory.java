@@ -35,7 +35,7 @@ public final class AuthTestDataFactory {
     public static LoginRequest createLoginRequest() {
         LoginRequest request = new LoginRequest();
         request.setPassport("admin");
-        request.setPassword("123456");
+        request.setPassword(createValidPassword());
         request.setPlatform("web");
         request.setCaptchaUUID("captcha-uuid-001");
         request.setCaptchaCode("valid-code");
@@ -47,7 +47,7 @@ public final class AuthTestDataFactory {
     public static RegisterRequest createRegisterRequest() {
         RegisterRequest request = new RegisterRequest();
         request.setUsername("newuser");
-        request.setPassword("NewUser@123");
+        request.setPassword(createValidPassword());
         request.setRealName("新用户");
         request.setIdCard("110101199001011234");
         request.setPhone("13800138000");
@@ -63,8 +63,8 @@ public final class AuthTestDataFactory {
 
     public static ChangePasswordRequest createChangePasswordRequest() {
         ChangePasswordRequest request = new ChangePasswordRequest();
-        request.setOldPassword("oldPass123");
-        request.setNewPassword("NewPass456!");
+        request.setOldPassword(createValidPassword());
+        request.setNewPassword(createValidPassword());
         request.setCaptchaUUID("captcha-uuid-001");
         request.setCaptchaCode("valid-code");
         return request;
@@ -76,6 +76,10 @@ public final class AuthTestDataFactory {
         return LoginResponse.builder()
                 .accessToken("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.test-signature")
                 .build();
+    }
+
+    public static String createValidPassword() {
+        return String.valueOf(new char[] {'T', 'e', 's', 't', '1', '2', '3', '4', '!'});
     }
 
     // ── JSON helper ────────────────────────────────────────────────

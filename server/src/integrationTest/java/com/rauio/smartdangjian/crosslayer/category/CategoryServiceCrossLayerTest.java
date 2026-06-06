@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 
@@ -64,7 +63,6 @@ class CategoryServiceCrossLayerTest extends CrossLayerTestBase {
         }
 
         @Bean
-        @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
         CategoryService categoryService(
                 CategoryConvertor convertor,
                 CategoryMapper categoryMapper,
@@ -72,25 +70,11 @@ class CategoryServiceCrossLayerTest extends CrossLayerTestBase {
                 com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
             CategoryService service = new CategoryService(convertor, dataScopeService, currentUserProvider);
             try {
-                Field field = findBaseMapperField(service.getClass());
-                field.setAccessible(true);
-                field.set(service, categoryMapper);
+                org.springframework.test.util.ReflectionTestUtils.setField(service, "baseMapper", categoryMapper);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to set baseMapper on CategoryService", e);
             }
             return service;
-        }
-
-        private static Field findBaseMapperField(Class<?> clazz) throws NoSuchFieldException {
-            Class<?> current = clazz;
-            while (current != null) {
-                try {
-                    return current.getDeclaredField("baseMapper");
-                } catch (NoSuchFieldException e) {
-                    current = current.getSuperclass();
-                }
-            }
-            throw new NoSuchFieldException("baseMapper");
         }
 
         @Bean

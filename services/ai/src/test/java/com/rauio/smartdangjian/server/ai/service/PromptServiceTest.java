@@ -136,13 +136,14 @@ class PromptServiceTest {
     @Test
     @DisplayName("无效角色抛出 IllegalArgumentException")
     void invalidRoleThrowsException() {
-        assertThatThrownBy(() -> {
-                    var method = PromptService.class.getDeclaredMethod("parsePromptRole", String.class);
-                    method.setAccessible(true);
-                    method.invoke(promptService, "INVALID_ROLE");
-                })
-                .hasCauseInstanceOf(IllegalArgumentException.class)
-                .getCause()
+        AiPromptCreateRequest request = new AiPromptCreateRequest();
+        request.setAgentType("CHAT");
+        request.setName("测试提示词");
+        request.setContent("提示词内容");
+        request.setRole("INVALID_ROLE");
+
+        assertThatThrownBy(() -> promptService.create(request))
+                .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("无效的提示词角色");
     }
 

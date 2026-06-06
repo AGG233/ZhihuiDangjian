@@ -24,9 +24,9 @@ import com.rauio.smartdangjian.server.chapter.api.ChapterQueryFacade;
 import com.rauio.smartdangjian.server.chapter.api.dto.ChapterSummary;
 import com.rauio.smartdangjian.server.chapter.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.api.ArticleQueryFacade;
+import com.rauio.smartdangjian.server.content.api.ContentQueryFacade;
 import com.rauio.smartdangjian.server.content.api.dto.ArticleSummary;
-import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
-import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
+import com.rauio.smartdangjian.server.content.api.dto.ContentBlockSummary;
 import com.rauio.smartdangjian.server.course.api.CourseQueryFacade;
 import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 
@@ -43,7 +43,7 @@ class ContentSearchToolTest {
     private ChapterQueryFacade chapterQueryFacade;
 
     @Mock
-    private ChapterContentBlockService chapterContentBlockService;
+    private ContentQueryFacade contentQueryFacade;
 
     @InjectMocks
     private ContentSearchTool contentSearchTool;
@@ -255,10 +255,11 @@ class ContentSearchToolTest {
                     .courseId(10L)
                     .orderIndex(1)
                     .build();
-            ContentBlockResponse block = new ContentBlockResponse();
+            ContentBlockSummary block =
+                    ContentBlockSummary.builder().textContent("正文").build();
 
             when(chapterQueryFacade.get(1L)).thenReturn(chapter);
-            when(chapterContentBlockService.getByChapterId(1L)).thenReturn(List.of(block));
+            when(contentQueryFacade.getByChapterId(1L)).thenReturn(List.of(block));
 
             Map<String, Object> result = contentSearchTool.getChapterDetail("1");
 
@@ -271,9 +272,9 @@ class ContentSearchToolTest {
             assertThat(result).containsKey("contentBlocks");
 
             @SuppressWarnings("unchecked")
-            List<ContentBlockResponse> blocks = (List<ContentBlockResponse>) result.get("contentBlocks");
+            List<ContentBlockSummary> blocks = (List<ContentBlockSummary>) result.get("contentBlocks");
             assertThat(blocks).hasSize(1);
-            verify(chapterContentBlockService, times(1)).getByChapterId(1L);
+            verify(contentQueryFacade, times(1)).getByChapterId(1L);
         }
 
         @Test

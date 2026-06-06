@@ -18,15 +18,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rauio.smartdangjian.server.graph.api.GraphQueryFacade;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphNodeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
-import com.rauio.smartdangjian.server.graph.service.PartyHistoryQueryService;
 
 @ExtendWith(MockitoExtension.class)
 class PartyHistoryToolTest {
 
     @Mock
-    private PartyHistoryQueryService queryService;
+    private GraphQueryFacade graphQueryFacade;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -49,7 +49,7 @@ class PartyHistoryToolTest {
     @DisplayName("搜索党史返回序列化结果")
     void searchPartyHistory() throws Exception {
         var graph = mockGraph("Person", "person-1", "毛泽东");
-        when(queryService.searchEntities(anyString(), anyList(), anyInt(), anyInt()))
+        when(graphQueryFacade.searchEntities(anyString(), anyList(), anyInt(), anyInt()))
                 .thenReturn(graph);
         when(objectMapper.writeValueAsString(graph)).thenReturn("{\"nodes\":[{\"name\":\"毛泽东\"}]}");
 
@@ -62,7 +62,7 @@ class PartyHistoryToolTest {
     @DisplayName("limit为null默认使用10")
     void searchWithNullLimit() throws Exception {
         var graph = mockGraph("Person", "person-1", "测试");
-        when(queryService.searchEntities(anyString(), anyList(), anyInt(), anyInt()))
+        when(graphQueryFacade.searchEntities(anyString(), anyList(), anyInt(), anyInt()))
                 .thenReturn(graph);
         when(objectMapper.writeValueAsString(any())).thenReturn("{}");
 
@@ -75,7 +75,7 @@ class PartyHistoryToolTest {
     @DisplayName("entityTypes为null使用空列表")
     void searchWithNullTypes() throws Exception {
         var graph = mockGraph("Event", "event-1", "长征");
-        when(queryService.searchEntities(anyString(), anyList(), anyInt(), anyInt()))
+        when(graphQueryFacade.searchEntities(anyString(), anyList(), anyInt(), anyInt()))
                 .thenReturn(graph);
         when(objectMapper.writeValueAsString(any())).thenReturn("{}");
 
@@ -89,8 +89,8 @@ class PartyHistoryToolTest {
     void getPersonDetail() throws Exception {
         var searchResult = mockGraph("Person", "person-1", "邓小平");
         var detail = mockGraph("Person", "person-1", "邓小平");
-        when(queryService.searchEntities("邓小平", List.of("Person"), 1, 1)).thenReturn(searchResult);
-        when(queryService.getEntityDetail("person-1")).thenReturn(detail);
+        when(graphQueryFacade.searchEntities("邓小平", List.of("Person"), 1, 1)).thenReturn(searchResult);
+        when(graphQueryFacade.getEntityDetail("person-1")).thenReturn(detail);
         when(objectMapper.writeValueAsString(detail)).thenReturn("{\"nodes\":[{\"name\":\"邓小平\"}]}");
 
         String result = tool.getPersonDetail("邓小平");
@@ -105,7 +105,7 @@ class PartyHistoryToolTest {
                 .nodes(List.of())
                 .edges(List.of())
                 .build();
-        when(queryService.searchEntities(anyString(), anyList(), anyInt(), anyInt()))
+        when(graphQueryFacade.searchEntities(anyString(), anyList(), anyInt(), anyInt()))
                 .thenReturn(empty);
 
         String result = tool.getPersonDetail("不存在");
@@ -118,8 +118,8 @@ class PartyHistoryToolTest {
     void traceTheoryEvolution() throws Exception {
         var searchResult = mockGraph("Theory", "theory-1", "邓小平理论");
         var evolution = mockGraph("Theory", "theory-1", "邓小平理论");
-        when(queryService.searchEntities("邓小平理论", List.of("Theory"), 1, 1)).thenReturn(searchResult);
-        when(queryService.getTheoryEvolution("theory-1")).thenReturn(evolution);
+        when(graphQueryFacade.searchEntities("邓小平理论", List.of("Theory"), 1, 1)).thenReturn(searchResult);
+        when(graphQueryFacade.getTheoryEvolution("theory-1")).thenReturn(evolution);
         when(objectMapper.writeValueAsString(evolution)).thenReturn("{\"nodes\":[{\"name\":\"邓小平理论\"}]}");
 
         String result = tool.traceTheoryEvolution("邓小平理论");
@@ -132,8 +132,8 @@ class PartyHistoryToolTest {
     void getEventTimeline() throws Exception {
         var searchResult = mockGraph("Event", "event-1", "十一届三中全会");
         var timeline = mockGraph("Event", "event-1", "十一届三中全会");
-        when(queryService.searchEntities("十一届三中全会", List.of("Event"), 1, 1)).thenReturn(searchResult);
-        when(queryService.getEventTimeline("event-1", 3)).thenReturn(timeline);
+        when(graphQueryFacade.searchEntities("十一届三中全会", List.of("Event"), 1, 1)).thenReturn(searchResult);
+        when(graphQueryFacade.getEventTimeline("event-1", 3)).thenReturn(timeline);
         when(objectMapper.writeValueAsString(timeline)).thenReturn("{\"nodes\":[{\"name\":\"十一届三中全会\"}]}");
 
         String result = tool.getEventTimeline("十一届三中全会");
@@ -145,7 +145,7 @@ class PartyHistoryToolTest {
     @DisplayName("序列化失败返回空JSON")
     void serializationError() throws Exception {
         var graph = mockGraph("Person", "person-1", "测试");
-        when(queryService.searchEntities(anyString(), anyList(), anyInt(), anyInt()))
+        when(graphQueryFacade.searchEntities(anyString(), anyList(), anyInt(), anyInt()))
                 .thenReturn(graph);
         when(objectMapper.writeValueAsString(any())).thenThrow(new JsonProcessingException("error") {});
 

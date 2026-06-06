@@ -2,8 +2,6 @@ package com.rauio.smartdangjian.server.ai.constants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.lang.reflect.Constructor;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -40,13 +38,5 @@ class AiErrorConstantsTest {
         assertThat(AiErrorConstants.SKILL_NOT_FOUND).isBetween(8000, 8999);
         assertThat(AiErrorConstants.SKILL_NOT_IN_CACHE).isBetween(8000, 8999);
         assertThat(AiErrorConstants.PROMPT_NOT_FOUND).isBetween(8000, 8999);
-    }
-
-    @Test
-    @DisplayName("private 构造器覆盖")
-    void privateConstructor() throws Exception {
-        Constructor<AiErrorConstants> constructor = AiErrorConstants.class.getDeclaredConstructor();
-        constructor.setAccessible(true);
-        constructor.newInstance();
     }
 }

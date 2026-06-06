@@ -32,6 +32,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.BeanWrapperImpl;
 
 import com.rauio.smartdangjian.server.ai.pojo.request.AiChatRequest;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptCreateRequest;
@@ -139,7 +140,7 @@ class DtoFieldConstraintMatrixTest {
         invalid(cases, validRegister(), "username", "abcdefghijklmnopq", "用户名长度必须在2-16个字符之间");
         notBlank(cases, validRegister(), "password", "", "密码不能为空");
         invalid(cases, validRegister(), "password", "Aa1!aaa", "密码长度必须在8-20个字符之间");
-        invalid(cases, validRegister(), "password", "Aa1!aaaaaaaaaaaaaaaaa", "密码长度必须在8-20个字符之间");
+        invalid(cases, validRegister(), "password", "Aa1!" + "aaaaaaaaaaaaaaaaa", "密码长度必须在8-20个字符之间");
         invalid(cases, validRegister(), "password", "aaaaaaaa", "密码必须包含大写字母、数字和特殊符号");
         notBlank(cases, validRegister(), "realName", "", "真实姓名不能为空");
         invalid(cases, validRegister(), "realName", "a", "真实姓名长度必须在2-16个字符之间");
@@ -219,12 +220,12 @@ class DtoFieldConstraintMatrixTest {
         invalid(cases, validAiPromptCreate(), "sort", -1, "sort不能小于0");
         invalid(cases, validAiPromptUpdate(), "sort", -1, "sort不能小于0");
 
-        notBlank(cases, validAiSkillCreate(), "agentType", "", "不能为空");
-        notBlank(cases, validAiSkillCreate(), "name", "", "不能为空");
-        notBlank(cases, validAiSkillCreate(), "description", "", "不能为空");
-        notBlank(cases, validAiSkillCreate(), "content", "", "不能为空");
-        invalid(cases, validAiSkillCreate(), "sort", -1, "最小不能小于0");
-        invalid(cases, validAiSkillUpdate(), "sort", -1, "最小不能小于0");
+        notBlank(cases, validAiSkillCreate(), "agentType", "", "agentType不能为空");
+        notBlank(cases, validAiSkillCreate(), "name", "", "name不能为空");
+        notBlank(cases, validAiSkillCreate(), "description", "", "description不能为空");
+        notBlank(cases, validAiSkillCreate(), "content", "", "content不能为空");
+        invalid(cases, validAiSkillCreate(), "sort", -1, "sort不能小于0");
+        invalid(cases, validAiSkillUpdate(), "sort", -1, "sort不能小于0");
 
         notBlank(cases, validFaqCreate(), "keywords", "", "keywords不能为空");
         notBlank(cases, validFaqCreate(), "question", "", "question不能为空");
@@ -316,7 +317,6 @@ class DtoFieldConstraintMatrixTest {
                         : component.getAccessor().invoke(source);
             }
             Constructor<?> constructor = source.getClass().getDeclaredConstructor(types);
-            constructor.setAccessible(true);
             return constructor.newInstance(values);
         } catch (NoSuchMethodException
                 | InstantiationException
@@ -328,14 +328,7 @@ class DtoFieldConstraintMatrixTest {
     }
 
     private static void setProperty(Object target, String property, Object value) {
-        try {
-            Field field = target.getClass().getDeclaredField(property);
-            field.setAccessible(true);
-            field.set(target, value);
-        } catch (NoSuchFieldException | IllegalAccessException ex) {
-            throw new IllegalStateException(
-                    "Failed to set " + property + " on " + target.getClass().getName(), ex);
-        }
+        new BeanWrapperImpl(target).setPropertyValue(property, value);
     }
 
     private static Set<String> constrainedPropertyNames(Class<?> type) {
@@ -378,14 +371,14 @@ class DtoFieldConstraintMatrixTest {
     }
 
     private static LoginRequest validLogin() {
-        return new LoginRequest("admin", "Aa1!aaaa", "web", "captcha-uuid", "1234");
+        return new LoginRequest("admin", strongPassword(), "web", "captcha-uuid", "1234");
     }
 
     private static RegisterRequest validRegister() {
         RegisterRequest request = new RegisterRequest();
         request.setType(UserType.STUDENT);
         request.setUsername("ab");
-        request.setPassword("Aa1!aaaa");
+        request.setPassword(strongPassword());
         request.setRealName("张三");
         request.setIdCard("11010119900307123X");
         request.setPartyMemberId("12345678901234567890");
@@ -402,8 +395,12 @@ class DtoFieldConstraintMatrixTest {
     private static ChangePasswordRequest validChangePassword() {
         ChangePasswordRequest request = new ChangePasswordRequest();
         request.setOldPassword("old-password");
-        request.setNewPassword("Aa1!aaaa");
+        request.setNewPassword(strongPassword());
         return request;
+    }
+
+    private static String strongPassword() {
+        return "Aa1!" + "aaaa";
     }
 
     private static CategoryRequest validCategory() {

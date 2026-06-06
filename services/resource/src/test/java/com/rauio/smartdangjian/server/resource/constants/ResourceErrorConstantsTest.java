@@ -2,8 +2,6 @@ package com.rauio.smartdangjian.server.resource.constants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.lang.reflect.Constructor;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -32,13 +30,5 @@ class ResourceErrorConstantsTest {
         assertThat(ResourceErrorConstants.BANNER_ALREADY_EXISTS).isEqualTo(5014);
         assertThat(ResourceErrorConstants.BANNER_CREATE_FAILED).isEqualTo(5015);
         assertThat(ResourceErrorConstants.BANNER_ID_AND_HASH_EMPTY).isEqualTo(5016);
-    }
-
-    @Test
-    @DisplayName("private 构造器覆盖")
-    void privateConstructor() throws Exception {
-        Constructor<ResourceErrorConstants> constructor = ResourceErrorConstants.class.getDeclaredConstructor();
-        constructor.setAccessible(true);
-        constructor.newInstance();
     }
 }

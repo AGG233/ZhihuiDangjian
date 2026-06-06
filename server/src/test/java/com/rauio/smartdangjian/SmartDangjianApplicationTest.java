@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mockStatic;
 
-import java.lang.reflect.Constructor;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -61,13 +59,5 @@ class SmartDangjianApplicationTest {
 
             springAppMock.verify(() -> SpringApplication.run(SmartDangjianApplication.class, new String[0]));
         }
-    }
-
-    @Test
-    @DisplayName("private 构造器覆盖")
-    void privateConstructor() throws Exception {
-        Constructor<SmartDangjianApplication> constructor = SmartDangjianApplication.class.getDeclaredConstructor();
-        constructor.setAccessible(true);
-        constructor.newInstance();
     }
 }

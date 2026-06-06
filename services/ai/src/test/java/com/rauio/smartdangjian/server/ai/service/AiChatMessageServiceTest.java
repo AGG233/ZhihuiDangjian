@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +16,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -41,14 +41,9 @@ class AiChatMessageServiceTest {
     private static final Long USER_ID = 100L;
 
     @BeforeEach
-    void setUp() throws Exception {
-        // Create real service and manually set baseMapper via reflection
-        // (no public setter in MyBatis-Plus 3.5.x CrudRepository)
+    void setUp() {
         AiChatMessageService realService = new AiChatMessageService();
-        Field baseMapperField =
-                com.baomidou.mybatisplus.extension.repository.CrudRepository.class.getDeclaredField("baseMapper");
-        baseMapperField.setAccessible(true);
-        baseMapperField.set(realService, mapper);
+        ReflectionTestUtils.setField(realService, "baseMapper", mapper);
 
         aiChatMessageService = Mockito.spy(realService);
     }

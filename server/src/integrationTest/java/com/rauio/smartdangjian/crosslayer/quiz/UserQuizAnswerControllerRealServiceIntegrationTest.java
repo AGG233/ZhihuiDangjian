@@ -14,7 +14,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -146,13 +145,10 @@ class UserQuizAnswerControllerRealServiceIntegrationTest extends CrossLayerTestB
         }
 
         @Bean
-        @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
         UserQuizAnswerService userQuizAnswerService(UserQuizAnswerMapper answerMapper) {
             UserQuizAnswerService service = new UserQuizAnswerService();
             try {
-                Field field = findBaseMapperField(service.getClass());
-                field.setAccessible(true);
-                field.set(service, answerMapper);
+                org.springframework.test.util.ReflectionTestUtils.setField(service, "baseMapper", answerMapper);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to set baseMapper on UserQuizAnswerService", e);
             }
@@ -194,18 +190,6 @@ class UserQuizAnswerControllerRealServiceIntegrationTest extends CrossLayerTestB
                     // no-op
                 }
             };
-        }
-
-        private static Field findBaseMapperField(Class<?> clazz) throws NoSuchFieldException {
-            Class<?> current = clazz;
-            while (current != null) {
-                try {
-                    return current.getDeclaredField("baseMapper");
-                } catch (NoSuchFieldException e) {
-                    current = current.getSuperclass();
-                }
-            }
-            throw new NoSuchFieldException("baseMapper");
         }
     }
 }

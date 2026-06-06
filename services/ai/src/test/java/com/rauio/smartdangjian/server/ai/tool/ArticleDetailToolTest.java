@@ -19,8 +19,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.api.ArticleQueryFacade;
+import com.rauio.smartdangjian.server.content.api.ContentQueryFacade;
 import com.rauio.smartdangjian.server.content.api.dto.ArticleSummary;
-import com.rauio.smartdangjian.server.content.service.ArticleContentBlockService;
 
 @ExtendWith(MockitoExtension.class)
 class ArticleDetailToolTest {
@@ -29,7 +29,7 @@ class ArticleDetailToolTest {
     private ArticleQueryFacade articleQueryFacade;
 
     @Mock
-    private ArticleContentBlockService contentBlockService;
+    private ContentQueryFacade contentQueryFacade;
 
     @InjectMocks
     private ArticleDetailTool articleDetailTool;
@@ -75,7 +75,7 @@ class ArticleDetailToolTest {
                 .build();
 
         when(articleQueryFacade.getById(1L)).thenReturn(article);
-        when(contentBlockService.getByArticleId(1L)).thenReturn(List.of());
+        when(contentQueryFacade.getByArticleId(1L)).thenReturn(List.of());
 
         Map<String, Object> result = articleDetailTool.getArticleDetail("1");
 
@@ -83,7 +83,7 @@ class ArticleDetailToolTest {
         assertThat(result).containsEntry("title", "党建理论学习");
         assertThat(result).containsKey("contentBlocks");
         verify(articleQueryFacade, times(1)).getById(1L);
-        verify(contentBlockService, times(1)).getByArticleId(1L);
+        verify(contentQueryFacade, times(1)).getByArticleId(1L);
     }
 
     @Test

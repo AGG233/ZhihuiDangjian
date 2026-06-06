@@ -3,7 +3,6 @@ package com.rauio.smartdangjian.config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Method;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -41,18 +40,8 @@ class StartupInfoPrinterTest {
 
         printer.run(new DefaultApplicationArguments());
 
-        assertThat(output.getOut()).contains("启动时间: 2026-06-01 16:15:30");
-    }
-
-    @Test
-    @DisplayName("敏感连接串只保留前缀")
-    void maskSensitiveKeepsPrefixOnly() throws Exception {
-        StartupInfoPrinter printer = new StartupInfoPrinter(org.mockito.Mockito.mock(Environment.class), FIXED_CLOCK);
-        Method method = StartupInfoPrinter.class.getDeclaredMethod("maskSensitive", String.class);
-        method.setAccessible(true);
-
-        Object masked = method.invoke(printer, "jdbc:mysql://127.0.0.1:3306/zhdj?password=secret");
-
-        assertThat(masked).isEqualTo("jdbc:mysql://127.0.0****");
+        assertThat(output.getOut())
+                .contains("启动时间: 2026-06-01 16:15:30")
+                .contains("MySQL:    jdbc:mysql://localho****");
     }
 }

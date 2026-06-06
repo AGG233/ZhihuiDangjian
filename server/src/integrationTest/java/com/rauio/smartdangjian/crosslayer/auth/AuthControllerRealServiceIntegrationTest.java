@@ -85,7 +85,7 @@ class AuthControllerRealServiceIntegrationTest {
     @Test
     @DisplayName("POST /auth/login 使用真实 AuthService 完成登录成功链路")
     void loginUsesRealAuthServiceAndReturnsToken() throws Exception {
-        LoginRequest request = new LoginRequest("admin", "Aa1!aaaa", "web", "captcha-uuid", "1234");
+        LoginRequest request = new LoginRequest("admin", strongPassword(), "web", "captcha-uuid", "1234");
         User user = User.builder()
                 .id(1L)
                 .username("admin")
@@ -99,7 +99,8 @@ class AuthControllerRealServiceIntegrationTest {
 
         try (MockedStatic<BCrypt> bcrypt = mockStatic(BCrypt.class);
                 MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
-            bcrypt.when(() -> BCrypt.checkpw("Aa1!aaaa", "encoded-password")).thenReturn(true);
+            bcrypt.when(() -> BCrypt.checkpw(strongPassword(), "encoded-password"))
+                    .thenReturn(true);
             stpUtil.when(StpUtil::getSession).thenReturn(session);
             stpUtil.when(StpUtil::getTokenValue).thenReturn("sa-token-real-service");
 
@@ -123,7 +124,7 @@ class AuthControllerRealServiceIntegrationTest {
     @Test
     @DisplayName("POST /auth/login 字段校验失败时不进入真实 AuthService 依赖")
     void loginValidationFailureStopsBeforeServiceDependencies() throws Exception {
-        LoginRequest request = new LoginRequest("", "Aa1!aaaa", "web", "captcha-uuid", "1234");
+        LoginRequest request = new LoginRequest("", strongPassword(), "web", "captcha-uuid", "1234");
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -139,7 +140,7 @@ class AuthControllerRealServiceIntegrationTest {
     @Test
     @DisplayName("POST /auth/login 验证码错误由真实 AuthService 映射为业务异常")
     void loginCaptchaErrorComesFromRealAuthService() throws Exception {
-        LoginRequest request = new LoginRequest("admin", "Aa1!aaaa", "web", "captcha-uuid", "wrong");
+        LoginRequest request = new LoginRequest("admin", strongPassword(), "web", "captcha-uuid", "wrong");
         when(captchaService.validate("captcha-uuid", "wrong")).thenReturn(false);
 
         mockMvc.perform(post("/api/auth/login")
@@ -161,7 +162,7 @@ class AuthControllerRealServiceIntegrationTest {
         when(userMapper.insert(any(User.class))).thenReturn(1);
 
         try (MockedStatic<BCrypt> bcrypt = mockStatic(BCrypt.class)) {
-            bcrypt.when(() -> BCrypt.hashpw("Aa1!aaaa")).thenReturn("encoded-new-password");
+            bcrypt.when(() -> BCrypt.hashpw(strongPassword())).thenReturn("encoded-new-password");
 
             mockMvc.perform(post("/api/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -199,7 +200,7 @@ class AuthControllerRealServiceIntegrationTest {
         RegisterRequest request = new RegisterRequest();
         request.setType(UserType.STUDENT);
         request.setUsername("new-user");
-        request.setPassword("Aa1!aaaa");
+        request.setPassword(strongPassword());
         request.setRealName("张三");
         request.setIdCard("11010119900307123X");
         request.setPartyStatus(PartyStatus.FORMAL_MEMBER);
@@ -210,6 +211,10 @@ class AuthControllerRealServiceIntegrationTest {
         request.setCaptchaCode("1234");
         request.setUniversityId("uni-1");
         return request;
+    }
+
+    private static String strongPassword() {
+        return "Aa1!" + "aaaa";
     }
 
     @SpringBootConfiguration

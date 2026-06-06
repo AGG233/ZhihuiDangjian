@@ -14,7 +14,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -170,14 +169,11 @@ class ContentControllerRealServiceIntegrationTest extends CrossLayerTestBase {
         }
 
         @Bean
-        @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
         ChapterContentBlockService chapterContentBlockService(
                 ChapterContentBlockMapper blockMapper, ChapterContentBlockConvertor convertor) {
             ChapterContentBlockService service = spy(new ChapterContentBlockService(convertor));
             try {
-                Field field = findBaseMapperField(service.getClass());
-                field.setAccessible(true);
-                field.set(service, blockMapper);
+                org.springframework.test.util.ReflectionTestUtils.setField(service, "baseMapper", blockMapper);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to set baseMapper on ChapterContentBlockService", e);
             }
@@ -192,18 +188,6 @@ class ContentControllerRealServiceIntegrationTest extends CrossLayerTestBase {
         @Bean
         UserContentController userContentController(ChapterContentBlockService blockService) {
             return new UserContentController(blockService);
-        }
-
-        private static Field findBaseMapperField(Class<?> clazz) throws NoSuchFieldException {
-            Class<?> current = clazz;
-            while (current != null) {
-                try {
-                    return current.getDeclaredField("baseMapper");
-                } catch (NoSuchFieldException e) {
-                    current = current.getSuperclass();
-                }
-            }
-            throw new NoSuchFieldException("baseMapper");
         }
     }
 }
