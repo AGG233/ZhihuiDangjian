@@ -3,7 +3,6 @@ package com.rauio.smartdangjian.server.social.support;
 import org.springframework.stereotype.Component;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.api.ArticleQueryFacade;
 import com.rauio.smartdangjian.server.content.mapper.ArticleMapper;

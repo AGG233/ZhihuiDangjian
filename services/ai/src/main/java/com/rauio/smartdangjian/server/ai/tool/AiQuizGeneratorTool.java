@@ -118,7 +118,8 @@ public class AiQuizGeneratorTool {
                 if (optionText == null || optionText.isBlank()) {
                     continue;
                 }
-                boolean isCorrect = optNode.has("isCorrect") ? optNode.path("isCorrect").asBoolean() : false;
+                boolean isCorrect =
+                        optNode.has("isCorrect") ? optNode.path("isCorrect").asBoolean() : false;
                 Map<String, Object> optData = new HashMap<>();
                 optData.put("optionText", optionText);
                 optData.put("isCorrect", isCorrect);
@@ -127,11 +128,12 @@ public class AiQuizGeneratorTool {
             }
         }
 
-        int score = switch (effectiveDifficulty) {
-            case "easy" -> 5;
-            case "hard" -> 15;
-            default -> 10;
-        };
+        int score =
+                switch (effectiveDifficulty) {
+                    case "easy" -> 5;
+                    case "hard" -> 15;
+                    default -> 10;
+                };
 
         Long quizId = quizDataFacade.createQuiz(
                 effectiveChapterId != null ? IdUtil.parse(effectiveChapterId) : null,

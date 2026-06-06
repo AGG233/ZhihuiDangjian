@@ -49,7 +49,8 @@ class SaTokenConfigureTest {
                 .excludePathPatterns(
                         "/api/auth/login", "/api/auth/captcha/**", "/api/auth/register", "/api/schools/list", "/error");
         verify(registration)
-                .excludePathPatterns("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/doc.html", "/webjars/**");
+                .excludePathPatterns(
+                        "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/doc.html", "/webjars/**");
     }
 
     @Test
@@ -68,6 +69,7 @@ class SaTokenConfigureTest {
                 .excludePathPatterns(
                         "/api/auth/login", "/api/auth/captcha/**", "/api/auth/register", "/api/schools/list", "/error");
         verify(registration, never())
-                .excludePathPatterns("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/doc.html", "/webjars/**");
+                .excludePathPatterns(
+                        "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/doc.html", "/webjars/**");
     }
 }

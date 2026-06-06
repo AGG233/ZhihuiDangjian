@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
 import com.rauio.smartdangjian.server.graph.api.GraphQueryFacade;
+import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

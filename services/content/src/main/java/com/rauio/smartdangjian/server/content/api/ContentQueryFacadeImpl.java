@@ -56,7 +56,10 @@ public class ContentQueryFacadeImpl implements ContentQueryFacade {
                 .id(id)
                 .chapterId(chapterId)
                 .articleId(articleId)
-                .blockType(response.getBlockType() != null ? response.getBlockType().toString() : null)
+                .blockType(
+                        response.getBlockType() != null
+                                ? response.getBlockType().toString()
+                                : null)
                 .textContent(response.getTextContent())
                 .parentId(response.getParentId())
                 .resourceId(response.getResourceId())
