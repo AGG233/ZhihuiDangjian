@@ -37,9 +37,15 @@
 ### 模块一览
 
 - server — 聚合 JAR 入口
-- services/common — 共享基础库
+- services/common — 共享基础库（已拆分为 5 个子模块，见下文）
+- services/common/common-core — 核心工具、异常、安全角色常量、全局响应、枚举
+- services/common/common-web — Web 公共配置（CORS、Jackson、全局异常处理）
+- services/common/common-data-mybatis — MyBatis-Plus 数据层公共配置（分页、自动填充）
+- services/common/common-redis — Redis 公共配置（Redisson、序列化）
+- services/common/common-security — 安全公共模块（CurrentUserProvider、LoginUser）
 - services/ai — Spring AI Alibaba Agent
 - services/auth — Sa-Token 认证授权
+- services/social — 社交模块（评论 + 点赞）
 - services/quiz — 测验模块
 - services/user — 用户管理
 - services/content — 内容管理
@@ -65,6 +71,8 @@
 | AI | Spring AI Alibaba（Qwen / DeepSeek 兼容）|
 | 对象映射 | MapStruct（生成代码被 JaCoCo 排除）|
 | 文件存储 | 腾讯云 COS（X-File-Storage 封装）|
+| 熔断降级 | Resilience4j（CircuitBreaker）|
+| 链追踪 | Micrometer Tracing（MDC traceId/spanId）|
 
 ### AI 模块架构（services/ai）
 
@@ -80,19 +88,22 @@
 ### 安全架构
 
 - 认证：Sa-Token Token 认证（Header: Authorization: Bearer <token>）
-- 角色层级：MANAGER > SCHOOL > STUDENT
+- 角色层级：MANAGER > SCHOOL > STUDENT（角色常量统一引用 `RoleConstants`）
 - AOP 注解：@ResourceAccess（资源归属校验）、@DataScopeAccess（数据范围过滤）
 - 全局异常处理：GlobalExceptionHandler，统一返回 Result<T>
 
 ### 约定插件（buildSrc/，Kotlin DSL）
 
-- service-conventions — java-library + Spring 依赖管理 + Java 21 工具链 + Spotless（Palantir 格式）+ JaCoCo + 集成测试源码集，仓库使用阿里云 Maven 镜像
+- service-conventions — java-library + Spring 依赖管理 + Java 21 工具链 + Spotless（Palantir 格式）+ JaCoCo + ArchUnit + 集成测试源码集，仓库使用阿里云 Maven 镜像
 - boot-application-conventions — 继承 service-conventions + org.springframework.boot 插件 + BootJar 命名
 
-### 自动配置（common 模块）
+### 自动配置
 
-通过 AutoConfiguration.imports 注册：
-AsyncConfig（4 个线程池）、BeanConfig（Tika）、MybatisConfig（分页 + 自动填充 createdAt/updatedAt）、OpenApiConfig、RedisConfig、SecurityCoreAutoConfiguration（CORS）、TransactionConfig、WebConfig
+通过 AutoConfiguration.imports 注册（分布在 common 子模块中）：
+- common-core：AsyncConfig（4 个线程池）、BeanConfig（Tika）、MybatisConfig（分页 + 自动填充 createdAt/updatedAt）
+- common-web：WebConfig、SecurityCoreAutoConfiguration（CORS）、OpenApiConfig、TransactionConfig
+- common-data-mybatis：MyBatis-Plus 分页插件配置（独立于 common-core 的 MybatisConfig）
+- common-redis：RedisConfig、Redisson 配置
 
 ### 环境变量
 
@@ -115,7 +126,7 @@ AsyncConfig（4 个线程池）、BeanConfig（Tika）、MybatisConfig（分页 
 | COS_BUCKET | COS 存储桶 | — |
 | COS_LINK | COS 访问域名 | — |
 | TENCENT_CLOUD_COS_ENABLED | COS 启用开关 | `true`（测试环境 `false`）|
-| AUTH_TEST_CAPTCHA_CODE | 验证码测试码 | 测试环境 `TEST8888` / `CI8888` |
+| AUTH_TEST_CAPTCHA_CODE | 验证码测试码 | 测试环境 `TEST8888` / CI 环境 `CI8888` |
 
 ### 代码模式
 
@@ -127,6 +138,7 @@ AsyncConfig（4 个线程池）、BeanConfig（Tika）、MybatisConfig（分页 
 - 全局 Mapper 扫描：@MapperScan(basePackages = "com.rauio.smartdangjian")
 - Entity 设计：继承 MyBatis-Plus `Model<T>`，主键 `@TableId(type = ASSIGN_ID)`，MybatisConfig 自动填充 `created_at`/`updated_at`
 - 枚举序列化：业务枚举使用 `@JsonValue` 标注（如 `UserType.STUDENT` → `"学生"`），VO 敏感字段使用 `@Sensitive` 脱敏
+- 角色字符串：**禁止硬编码**，统一使用 `RoleConstants.MANAGER` / `RoleConstants.SCHOOL` / `RoleConstants.STUDENT`
 
 ## 开发工作流
 
@@ -134,7 +146,7 @@ AsyncConfig（4 个线程池）、BeanConfig（Tika）、MybatisConfig（分页 
 
 ```bash
 dev（日常开发，随时推送）
-  └── 创建 PR → CI(SonarQube) → 合并
+  └── 创建 PR → CI → 合并
 product（发布基线，通过打标签触发发布流水线）
 ```
 
@@ -148,7 +160,7 @@ git push origin dev
 
 # 发版：创建 dev → product PR
 gh pr create --base product --head dev --title "合并 dev 到 product"
-# PR 触发 CI（编译 + 测试 + JaCoCo + bootJar + SonarQube）
+# PR 触发 CI（编译 + 测试 + JaCoCo + bootJar + API 烟雾测试）
 # 全部通过后在 GitHub 上合并 PR
 ```
 
@@ -179,6 +191,7 @@ git merge product
 | category | CategoryErrorConstants | 3000-3099 |
 | chapter | ChapterErrorConstants | 3100-3199 |
 | course | CourseErrorConstants | 3200-3299 |
+| social | SocialErrorConstants | 3500-3599 |
 | learning | LearningErrorConstants | 4000-4999 |
 | resource | ResourceErrorConstants | 5000-5999 |
 | quiz | QuizErrorConstants | 6000-6999 |
@@ -193,30 +206,62 @@ git merge product
 - V2：种子数据（学校列表）
 - V3：AI agent 相关表
 - V4：增量字段（source_url），使用 `INFORMATION_SCHEMA.COLUMNS` 做幂等检查
+- V5：载荷测试种子用户
+- V6：category 表 university_id 改为可空
+- V7：AI FAQ 问答表
+- V8：社交模块（评论 + 点赞）
+- V9：article 和 course 表添加点赞数字段
+- V10：复合索引优化 + option_id NOT NULL 修复
 
-新增迁移规则：增量 DDL 必须幂等（IF NOT EXISTS / INFORMATION_SCHEMA 检查），禁止修改已发布的 V1-V4 文件。
+新增迁移规则：增量 DDL 必须幂等（IF NOT EXISTS / INFORMATION_SCHEMA 检查），禁止修改已发布的 V1-V10 文件。
 
 ### 测试规范
 
-- BaseControllerTest — Controller MockMvc 测试：mock SaToken，排除 DataSource 自动配置
-- CrossLayerTestBase — 跨层回归测试：H2 内存数据库，Flyway 禁用，连接真实 Service + Mapper
-- Controller mock 测试只验证路由、参数校验、响应包装
-- Service 层测试使用 @Spy + @InjectMocks mock MyBatis-Plus 父类方法
-- AOP 切面测试使用 @ExtendWith(MockitoExtension.class)，不启动 Spring 上下文
-- 新增 bugfix 须同时满足：service 层单元测试 + 至少一个跨层回归测试
-- CI 必须运行 ./gradlew test --continue
-- 独立模块测试：./gradlew :services:ai:test
-- 测试数据工厂：UserTestDataFactory 提供可复用的 VO/DTO 构建方法
-- 详细测试编写指南见 docs/测试编写指南.md
+项目使用三层测试体系：
 
-测试环境：application-test.yaml（H2 + Redis + Neo4j + 验证码测试码 TEST8888）
+**1. Controller Mock 测试** (`server/src/test/`) — `BaseControllerTest`
+- MockMvc 测试，排除 DataSource/Redis/Neo4j 自动配置，Mock SaToken 认证
+- 依赖：`application-test.yaml`（禁用 Flyway、COS、敏感词）
+- 只验证路由、参数校验、响应包装
+
+**2. 跨层集成测试** (`server/src/integrationTest/`) — `CrossLayerTestBase`
+- MockMvc 测试，排除 DataSource/Redis/Neo4j 自动配置
+- 使用 `@MockitoBean` 模拟数据层依赖，连接真实 Service 逻辑
+- 适合验证业务编排而不启动完整基础设施
+
+**3. 真实数据库集成测试** (`server/src/test/`) — `RealDatabaseIntegrationTestBase`
+- 基于 **Testcontainers** 自动启动 MySQL 8.4 + Neo4j 5 容器
+- 使用 `@ServiceConnection` 自动注入容器连接信息
+- `@Transactional` 确保测试隔离
+- 适用于涉及真实数据库的测试场景
+
+**4. 架构测试** (`server/src/test/`) — ArchUnit
+- `ModuleDependencyRulesTest`：验证模块依赖边界（禁止跨模块 Mapper/Entity 依赖、禁止 Controller→Entity）
+- `SqlFragmentUsageRulesTest`：验证 SQL 片段使用规则
+- 运行在 `test` 阶段，不依赖基础设施
+
+**5. 配置与可观测性测试** (`server/src/test/`)
+- `ApplicationConfigStructureTest`：验证所有 `@ConfigurationProperties` 带有 `@Validated` 注解
+- `ObservabilityConfigTest`：验证 Actuator 暴露策略、日志配置、链路追踪 MDC、熔断配置
+
+**通用规则：**
+- Service 层单元测试使用 `@Spy` + `@InjectMocks` mock MyBatis-Plus 父类方法
+- AOP 切面测试使用 `@ExtendWith(MockitoExtension.class)`，不启动 Spring 上下文
+- 新增 bugfix 须同时满足：service 层单元测试 + 至少一个跨层回归测试
+- CI 必须运行 `./gradlew test --continue` + `./gradlew integrationTest --continue`
+- 测试数据工厂：`UserTestDataFactory` 提供可复用的 VO/DTO 构建方法
+- 详细测试编写指南见 `docs/测试编写指南.md`
+
+测试环境：`application-test.yaml`（Testcontainers MySQL + 本地 Redis + 验证码测试码 TEST8888）
 
 ## CI/CD
 
 | 工作流 | 触发条件 | 执行内容 |
 |--------|----------|----------|
-| ci.yml | PR dev→product | compileJava → test + integrationTest + JaCoCo（LINE/BRANCH ≥ 85%）→ Codacy → bootJar → API 烟雾测试 |
+| ci.yml | PR dev→product **或** dev 分支 | 三个并行 job：(1) compileJava + spotlessCheck → (2) unit test (`test --continue`) → (3) integrationTest + JaCoCo（LINE/BRANCH ≥ 85%）→ Codacy → bootJar → API 烟雾测试 |
 | release.yml | 推送版本标签 (`v*`) | bootJar → Docker 多架构镜像（linux/amd64 + linux/arm64）→ 推送 GHCR → 自托管 Runner 部署 |
+
+CI 使用 GitHub Actions Service Container 提供 MySQL 8.4 + Redis 7 + Neo4j 5 基础设施，测试阶段不使用 Testcontainers。
 
 ### 查看 PR CI 状态
 
@@ -300,23 +345,27 @@ dev 专属的多阶段构建和本地编排使用 `.dev` 后缀，合并到 prod
 
 ## 架构修复计划（602）
 
+状态：**四个阶段已完成，剩余阶段 3/4 待执行。**
+
 当前正在进行的架构修复计划位于 `.claude/plans/602/`，包含 20+ 个问题点，分 5 个阶段执行：
 
 | 阶段 | 内容 | 状态 |
 |------|------|------|
-| 阶段1 | 建规则和边界：ArchUnit 规则扩展、测试分层分离、角色常量 | 进行中 |
-| 阶段2 | 拆 common：拆分为 common-core/web/data-mybatis/redis/security 子模块 | 待开始 |
-| 阶段3 | 收敛横向依赖：search/ai 移除跨模块 Mapper/Entity 依赖 | 待开始 |
-| 阶段4 | 配置治理：ai/auth/quiz 改为 library 模块，配置集中到 server | 待开始 |
-| 阶段5 | 包名整理：category/chapter/course 的包名与模块名一致性 | 待开始 |
+| 阶段1 | 建规则和边界：ArchUnit 规则扩展、测试分层分离、角色常量 | ✅ 已完成 |
+| 阶段2 | 拆 common：拆分为 common-core/web/data-mybatis/redis/security 子模块 | ✅ 已完成 |
+| 阶段3 | 收敛横向依赖：search/ai 移除跨模块 Mapper/Entity 依赖 | ❌ 未完成 — search 的 Mapper/Entity 依赖已清理，但 ai 模块仍大量直接依赖其他模块的 Service/Entity/Convertor，social 模块也存在跨模块 Mapper 依赖 |
+| 阶段4 | 配置治理：ai/auth/quiz 改为 library 模块，配置集中到 server | ✅ 已完成 |
+| 阶段5 | 包名整理：category/chapter/course 的包名与模块名一致性 | ✅ 已完成 |
 
-### 阶段1 任务清单
+### 阶段1 完成项
 
-1. **扩展 ArchUnit 架构测试**：禁止 Controller→Entity 依赖、禁止跨模块 Mapper 访问
-2. **迁移 crosslayer 测试**：从 `src/test` → `src/integrationTest`，分离单元/集成测试生命周期
-3. **替换硬编码角色字符串**：`@SaCheckRole("MANAGER")` → `@SaCheckRole(RoleConstants.MANAGER)`
+1. ✅ **扩展 ArchUnit 架构测试**：`ModuleDependencyRulesTest` 覆盖 Controller→Entity、跨模块 Mapper 等规则
+2. ✅ **迁移 crosslayer 测试**：从 `src/test` → `src/integrationTest`，分离单元/集成测试生命周期
+3. ✅ **替换硬编码角色字符串**：`@SaCheckRole("MANAGER")` → `@SaCheckRole(RoleConstants.MANAGER)`，新增 `RoleConstants` 常量类
 
-阶段1 执行使用 `plan-execute` 工作流（纯编码任务，无需PR）。
+### 阶段5 完成项
+
+5. ✅ **包名重命名**：category、chapter、course 包的路径从旧不一致命名统一为与模块名一致（`com.rauio.smartdangjian.server.{category|chapter|course}`）
 
 ## 依赖管理
 
@@ -342,3 +391,4 @@ common、ai（spring-ai）、sa-token、datasource-core、file-storage（腾讯�
 - 配置分为 dev/prod/test 三套 profile，环境变量注入敏感信息
 - 可独立运行模块：server（聚合 JAR）、ai、auth、quiz
 - 推送后去 GitHub Actions 页面查看 CI/CD 状态
+- 角色字符串禁止硬编码，统一使用 `RoleConstants.*`

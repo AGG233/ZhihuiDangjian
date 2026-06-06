@@ -71,15 +71,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-
       - name: Validate version matches tag
         shell: bash
         run: |
@@ -91,9 +82,6 @@ jobs:
           fi
           echo "Version OK: v$GRADLE_VERSION"
 
-      - name: Grant execute permission
-        run: chmod +x gradlew
-
       - name: Resolve version
         id: meta
         shell: bash
@@ -101,9 +89,6 @@ jobs:
           VERSION=$(grep '^projectVersion=' gradle.properties | cut -d= -f2)
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Using version: ${VERSION}"
-
-      - name: Build bootJar
-        run: ./gradlew :server:bootJar -x test -x integrationTest -x spotlessCheck -x jacocoRootReport -x jacocoRootCoverageVerification
 
       - name: Set lowercase image name
         run: echo "IMAGE_NAME=${GITHUB_REPOSITORY_OWNER,,}/zhihuidangjian" >> "$GITHUB_ENV"
