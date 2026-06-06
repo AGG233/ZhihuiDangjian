@@ -83,6 +83,34 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("认证相关用户实体查询不使用 Spring Cache")
+    void credentialUserLookupsAreNotCacheable() throws NoSuchMethodException {
+        assertThat(UserService.class.getMethod("getByPassport", String.class).getAnnotation(Cacheable.class))
+                .isNull();
+        assertThat(UserService.class.getMethod("getByUsername", String.class).getAnnotation(Cacheable.class))
+                .isNull();
+        assertThat(UserService.class.getMethod("getByEmail", String.class).getAnnotation(Cacheable.class))
+                .isNull();
+        assertThat(UserService.class.getMethod("getByPhone", String.class).getAnnotation(Cacheable.class))
+                .isNull();
+        assertThat(UserService.class
+                        .getMethod("getByPartyMemberId", String.class)
+                        .getAnnotation(Cacheable.class))
+                .isNull();
+    }
+
+    @Test
+    @DisplayName("仅用户展示响应保留 user:data 缓存")
+    void userResponseLookupKeepsCacheable() throws NoSuchMethodException {
+        Method method = UserService.class.getMethod("get", Long.class);
+        Cacheable cacheable = method.getAnnotation(Cacheable.class);
+
+        assertThat(cacheable).isNotNull();
+        assertThat(cacheable.value()).contains("user:data:");
+        assertThat(cacheable.key()).isEqualTo("#id");
+    }
+
+    @Test
     @DisplayName("用户写操作通过 Spring Cache 注解驱逐对应用户缓存")
     void userWriteMethodsEvictUserCacheEntries() throws NoSuchMethodException {
         assertUserCacheEvictsKeys(

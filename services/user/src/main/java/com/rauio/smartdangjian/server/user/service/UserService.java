@@ -39,7 +39,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @return 用户实体
      * @throws BusinessException 如果通行凭证为空
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#passport", sync = true)
     public User getByPassport(String passport) {
         if (passport == null || passport.isEmpty()) {
             throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "通行凭证不能为空");
@@ -97,7 +96,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param username 用户名
      * @return 用户实体
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#username", sync = true)
     public User getByUsername(String username) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username));
     }
@@ -108,7 +106,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param email 邮箱
      * @return 用户实体
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#email", sync = true)
     public User getByEmail(String email) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getEmail, email));
     }
@@ -119,7 +116,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param phone 手机号
      * @return 用户实体
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#phone", sync = true)
     public User getByPhone(String phone) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone));
     }
@@ -130,7 +126,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param partyMemberId 党员编号
      * @return 用户实体
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#partyMemberId", sync = true)
     public User getByPartyMemberId(String partyMemberId) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getPartyMemberId, partyMemberId));
     }
