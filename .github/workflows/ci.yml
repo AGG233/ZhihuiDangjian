@@ -310,10 +310,6 @@ jobs:
         continue-on-error: true
         run: bash .github/scripts/wait-for-app.sh http://127.0.0.1:9000/actuator/health
 
-      - name: Dump app logs on failure
-        if: steps.wait-for-app.outcome != 'success'
-        run: cat server/build/api-smoke-app.log || true
-
       - name: Check wait result
         if: steps.wait-for-app.outcome != 'success'
         run: exit 1
@@ -346,6 +342,10 @@ jobs:
           TEST_SCHOOL_LOGIN_PASSPORT: ci_smoke_school
           TEST_MANAGER_LOGIN_PASSPORT: ci_smoke_manager
         run: node .github/scripts/api-smoke-openapi.mjs
+
+      - name: Dump app logs on smoke failure
+        if: failure()
+        run: cat server/build/api-smoke-app.log || true
 
       - name: Stop API smoke app
         if: always()
