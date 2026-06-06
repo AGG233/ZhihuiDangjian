@@ -23,6 +23,7 @@ hutool = "5.8.40"
 sensitive-word = "0.29.5"
 
 springdoc = "2.8.13"
+knife4j = "5.0.8"
 
 
 resilience4j = "2.2.0"
@@ -83,6 +84,7 @@ xfile = { module = "org.dromara.x-file-storage:x-file-storage-spring", version.r
 
 # Documentation
 springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+knife4j-openapi3-jakarta-spring-boot-starter = { module = "com.baizhukui:knife4j-openapi3-jakarta-spring-boot-starter", version.ref = "knife4j" }
 
 # Flyway
 flyway-core = { module = "org.flywaydb:flyway-core" }

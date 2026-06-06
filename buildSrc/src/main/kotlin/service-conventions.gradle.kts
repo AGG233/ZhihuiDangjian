@@ -17,6 +17,14 @@ java {
 }
 
 repositories {
+    exclusiveContent {
+        forRepository {
+            mavenCentral()
+        }
+        filter {
+            includeGroup("com.baizhukui")
+        }
+    }
     mavenCentral()
     maven { url = uri("https://maven.aliyun.com/repository/public") }
 }
