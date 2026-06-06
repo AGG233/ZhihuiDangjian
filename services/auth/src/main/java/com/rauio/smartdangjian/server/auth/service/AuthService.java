@@ -9,12 +9,12 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.security.SessionUserPrincipal;
 import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
 import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.RegisterRequest;
 import com.rauio.smartdangjian.server.auth.pojo.response.LoginResponse;
+import com.rauio.smartdangjian.server.auth.security.SessionPrincipalFactory;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
@@ -33,6 +33,7 @@ public class AuthService {
     private final CaptchaService captchaService;
     private final UserMapper userMapper;
     private final UserService userService;
+    private final SessionPrincipalFactory sessionPrincipalFactory;
     private final Clock clock;
 
     public LoginResponse login(LoginRequest loginRequest) {
@@ -61,7 +62,7 @@ public class AuthService {
 
         StpUtil.login(user.getId(), SaLoginModel.create().setDevice(platform).setTimeout(timeout));
 
-        StpUtil.getSession().set("user", toSessionPrincipal(user));
+        sessionPrincipalFactory.bindCurrentSession(user);
 
         return LoginResponse.builder().accessToken(StpUtil.getTokenValue()).build();
     }
@@ -123,15 +124,7 @@ public class AuthService {
         if (userMapper.updateById(user) <= 0) {
             throw new BusinessException(AuthErrorConstants.PASSWORD_CHANGE_ERROR, "密码修改失败");
         }
-        StpUtil.getSession().set("user", toSessionPrincipal(user));
-    }
-
-    private SessionUserPrincipal toSessionPrincipal(User user) {
-        return SessionUserPrincipal.builder()
-                .id(user.getId())
-                .userType(user.getUserType())
-                .universityId(user.getUniversityId())
-                .build();
+        sessionPrincipalFactory.bindCurrentSession(user);
     }
 
     private void checkEmailRegistered(String email) {
