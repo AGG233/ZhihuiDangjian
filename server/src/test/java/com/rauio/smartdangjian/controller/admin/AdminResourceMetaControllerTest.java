@@ -17,33 +17,22 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.BannerTestDataFactory;
 import com.rauio.smartdangjian.controller.factory.ResourceMetaTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.resource.controller.admin.AdminResourceMetaController;
+import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminResourceMetaControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("管理员资源元数据接口测试")
 class AdminResourceMetaControllerTest extends BaseControllerTest {
-
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public AdminResourceMetaController adminResourceMetaController(ResourceMetaService resourceMetaService) {
-            return new AdminResourceMetaController(resourceMetaService);
-        }
-    }
 
     @MockitoBean
     private ResourceMetaService resourceMetaService;
@@ -145,11 +134,12 @@ class AdminResourceMetaControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 400")
         void serviceThrowsBusinessException() throws Exception {
-            when(resourceMetaService.get(9999L)).thenThrow(new BusinessException(4000, "资源不存在"));
+            when(resourceMetaService.get(9999L))
+                    .thenThrow(new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在"));
 
             mockMvc.perform(get("/api/admin/resource/files/9999"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("5002"))
                     .andExpect(jsonPath("$.message").value("资源不存在"));
         }
 

@@ -20,6 +20,13 @@ reviews:
     - "!**/src/main/resources/sql/**"
     - "!**/*.sql"
     - "!**/src/test/**"
+    - "!server/src/integrationTest/**"
+    - "!docs/**"
+    - "!scripts/**"
+    - "!.claude/**"
+    - "!CLAUDE.md"
+    - "!AGENTS.md"
+    - "!API迁移文档-v0.6.6到1.0.0.md"
   path_instructions:
     - path: "**/*.java"
       instructions: |

@@ -6,8 +6,8 @@ plugins {
 description = "Zhihuidangjian Demo project for Spring Boot"
 
 repositories {
-    maven { url = uri("https://maven.aliyun.com/repository/public") }
     mavenCentral()
+    maven { url = uri("https://maven.aliyun.com/repository/public") }
 }
 
 tasks.register<JacocoReport>("jacocoRootReport") {
@@ -46,6 +46,9 @@ tasks.register<JacocoCoverageVerification>("jacocoRootCoverageVerification") {
 }
 
 gradle.projectsEvaluated {
+    val coverageFromUnitArtifacts = providers.gradleProperty("coverageFromUnitArtifacts")
+        .map(String::toBoolean)
+        .getOrElse(false)
     val coverageProjects = subprojects.filter { project ->
         project.plugins.hasPlugin("java")
     }
@@ -78,7 +81,9 @@ gradle.projectsEvaluated {
     }
 
     tasks.named<JacocoReport>("jacocoRootReport") {
-        dependsOn(coverageProjects.map { it.tasks.named("test") })
+        if (!coverageFromUnitArtifacts) {
+            dependsOn(coverageProjects.map { it.tasks.named("test") })
+        }
         dependsOn(itProjects.map { it.tasks.named("integrationTest") })
         executionData.from(coverageExecutionData)
         executionData.from(itExecutionData)

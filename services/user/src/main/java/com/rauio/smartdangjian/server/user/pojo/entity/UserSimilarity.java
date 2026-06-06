@@ -3,6 +3,7 @@ package com.rauio.smartdangjian.server.user.pojo.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -42,6 +43,7 @@ public class UserSimilarity {
     private String dataVersion;
 
     @Schema(description = "计算时间")
+    @TableField(exist = false)
     private LocalDateTime calculatedAt;
 
     @Schema(description = "是否有效")
@@ -51,5 +53,6 @@ public class UserSimilarity {
     private LocalDateTime expiresAt;
 
     @Schema(description = "更新时间")
+    @TableField("updated_at")
     private LocalDateTime updateTime;
 }

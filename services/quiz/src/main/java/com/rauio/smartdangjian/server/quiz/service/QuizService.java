@@ -1,6 +1,10 @@
 package com.rauio.smartdangjian.server.quiz.service;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -8,6 +12,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.server.quiz.mapper.QuizMapper;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
+import com.rauio.smartdangjian.server.quiz.pojo.request.QuizRequest;
 
 import lombok.RequiredArgsConstructor;
 
@@ -37,6 +42,18 @@ public class QuizService extends ServiceImpl<QuizMapper, Quiz> {
         return this.list(wrapper);
     }
 
+    public Map<Long, String> getDifficultyMapByIds(Collection<Long> quizIds) {
+        if (quizIds == null || quizIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return this.list(new LambdaQueryWrapper<Quiz>()
+                        .in(Quiz::getId, quizIds)
+                        .select(Quiz::getId, Quiz::getDifficulty))
+                .stream()
+                .filter(quiz -> quiz.getId() != null && quiz.getDifficulty() != null)
+                .collect(Collectors.toMap(Quiz::getId, Quiz::getDifficulty, (a, b) -> a));
+    }
+
     /**
      * 更新测验信息。
      *
@@ -47,6 +64,12 @@ public class QuizService extends ServiceImpl<QuizMapper, Quiz> {
         return this.updateById(quiz);
     }
 
+    public Boolean update(Long quizId, QuizRequest request) {
+        Quiz quiz = request.toEntity();
+        quiz.setId(quizId);
+        return update(quiz);
+    }
+
     /**
      * 创建测验。
      *
@@ -55,6 +78,10 @@ public class QuizService extends ServiceImpl<QuizMapper, Quiz> {
      */
     public Boolean create(Quiz quiz) {
         return this.save(quiz);
+    }
+
+    public Boolean create(QuizRequest request) {
+        return create(request.toEntity());
     }
 
     /**

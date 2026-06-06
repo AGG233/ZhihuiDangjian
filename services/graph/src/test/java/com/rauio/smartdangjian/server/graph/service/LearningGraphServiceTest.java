@@ -32,10 +32,10 @@ import org.neo4j.driver.types.Type;
 import org.springframework.data.neo4j.core.Neo4jClient;
 
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.chapter.pojo.entity.Chapter;
+import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
+import com.rauio.smartdangjian.server.course.pojo.entity.Course;
+import com.rauio.smartdangjian.server.course.service.course.CourseService;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphEdgeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphNodeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;

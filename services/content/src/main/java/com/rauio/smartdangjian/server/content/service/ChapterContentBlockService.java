@@ -1,7 +1,6 @@
 package com.rauio.smartdangjian.server.content.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -10,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.server.content.mapper.ChapterContentBlockMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterContentBlockConvertor;
 import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
+import com.rauio.smartdangjian.server.content.pojo.request.ChapterContentBlockRequest;
 import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ChapterContentBlockService extends ServiceImpl<ChapterContentBlockMapper, ChapterContentBlock> {
+
+    private static final Long CAROUSEL_PARENT_ID = 1145141919810L;
 
     private final ChapterContentBlockConvertor convertor;
 
@@ -37,12 +39,19 @@ public class ChapterContentBlockService extends ServiceImpl<ChapterContentBlockM
      * @return 保存结果
      */
     public Boolean createBatch(List<ChapterContentBlock> blocks) {
-        for (ChapterContentBlock block : blocks) {
-            if (!create(block)) {
-                return false;
-            }
+        if (blocks == null || blocks.isEmpty()) {
+            return true;
         }
-        return true;
+        return this.saveBatch(blocks);
+    }
+
+    public Boolean createCarouselBatch(List<ChapterContentBlockRequest> requests) {
+        if (requests == null || requests.isEmpty()) {
+            return true;
+        }
+        return createBatch(requests.stream()
+                .map(request -> request.toEntity(CAROUSEL_PARENT_ID))
+                .toList());
     }
 
     /**
@@ -63,6 +72,10 @@ public class ChapterContentBlockService extends ServiceImpl<ChapterContentBlockM
      */
     public Boolean update(ChapterContentBlock entity) {
         return this.updateById(entity);
+    }
+
+    public Boolean updateCarousel(ChapterContentBlockRequest request) {
+        return update(request.toEntity(CAROUSEL_PARENT_ID));
     }
 
     /**
@@ -93,6 +106,9 @@ public class ChapterContentBlockService extends ServiceImpl<ChapterContentBlockM
      * @return 所有内容块
      */
     public List<ContentBlockResponse> getByResourceIds(List<Long> ids) {
-        return convertor.toResponseList(ids.stream().map(this::getById).collect(Collectors.toList()));
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return convertor.toResponseList(this.listByIds(ids));
     }
 }

@@ -11,33 +11,25 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.controller.user.UserCourseController;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
-import com.rauio.smartdangjian.server.content.pojo.response.PageResponse;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.course.pojo.entity.Course;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.course.pojo.response.PageResponse;
+import com.rauio.smartdangjian.server.course.service.course.CourseService;
+import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = UserCourseControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("用户课程接口测试")
 class UserCourseControllerTest extends BaseControllerTest {
-
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public UserCourseController userCourseController(CourseService courseService) {
-            return new UserCourseController(courseService);
-        }
-    }
 
     @MockitoBean
     private CourseService courseService;
@@ -92,12 +84,12 @@ class UserCourseControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("GET /learned/{id} - 获取用户已学习课程")
+        @DisplayName("GET /learned/me - 获取用户已学习课程")
         void getLearnedCoursesSuccess() throws Exception {
             Course course = CourseTestDataFactory.createCourse(1L);
             when(courseService.getByUserId(1L)).thenReturn(List.of(course));
 
-            mockMvc.perform(get("/api/content/courses/learned/1"))
+            mockMvc.perform(get("/api/content/courses/learned/me"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data[0].id").value("1"))
@@ -143,13 +135,14 @@ class UserCourseControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("GET /learned/{id} - Service 抛出 BusinessException 返回 400")
+        @DisplayName("GET /learned/me - Service 抛出 BusinessException 返回 400")
         void getLearnedThrowsBusinessException() throws Exception {
-            when(courseService.getByUserId(1L)).thenThrow(new BusinessException(4000, "用户不存在"));
+            when(courseService.getByUserId(1L))
+                    .thenThrow(new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户不存在"));
 
-            mockMvc.perform(get("/api/content/courses/learned/1"))
+            mockMvc.perform(get("/api/content/courses/learned/me"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("2005"))
                     .andExpect(jsonPath("$.message").value("用户不存在"));
         }
     }
@@ -172,11 +165,11 @@ class UserCourseControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("GET /learned/{id} - 返回空列表")
+        @DisplayName("GET /learned/me - 返回空列表")
         void getLearnedCoursesEmpty() throws Exception {
             when(courseService.getByUserId(1L)).thenReturn(List.of());
 
-            mockMvc.perform(get("/api/content/courses/learned/1"))
+            mockMvc.perform(get("/api/content/courses/learned/me"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").isArray())
@@ -199,37 +192,30 @@ class UserCourseControllerTest extends BaseControllerTest {
     @DisplayName("安全场景")
     class SecurityTests {
 
-        @Test
-        @DisplayName("XSS 尝试在路径参数中")
-        void xssInPath() throws Exception {
-            mockMvc.perform(get("/api/content/courses/1")).andExpect(status().isOk());
+        @ParameterizedTest(name = "course id={0}")
+        @ValueSource(strings = {"<script>alert('xss')", "' OR '1'='1", "3.14", "课程"})
+        @DisplayName("非法课程 ID 路径参数返回 400")
+        void invalidCourseIdInPathReturns400(String id) throws Exception {
+            mockMvc.perform(get("/api/content/courses/{id}", id)).andExpect(status().isBadRequest());
+        }
+
+        @ParameterizedTest(name = "{0} {1}")
+        @CsvSource({"POST,/api/content/courses/course-1", "DELETE,/api/content/courses"})
+        @DisplayName("错误 HTTP 方法返回 405")
+        void wrongMethodReturns405(String method, String path) throws Exception {
+            if ("POST".equals(method)) {
+                mockMvc.perform(post(path)).andExpect(status().isMethodNotAllowed());
+            } else if ("DELETE".equals(method)) {
+                mockMvc.perform(delete(path)).andExpect(status().isMethodNotAllowed());
+            } else {
+                throw new IllegalArgumentException("Unsupported method: " + method);
+            }
         }
 
         @Test
-        @DisplayName("SQL 注入尝试在路径参数中")
-        void sqlInjectionInPath() throws Exception {
-            mockMvc.perform(get("/api/content/courses/1")).andExpect(status().isOk());
-        }
-
-        @Test
-        @DisplayName("POST 请求获取接口返回 405")
-        void getWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/content/courses/course-1")).andExpect(status().isMethodNotAllowed());
-        }
-
-        @Test
-        @DisplayName("DELETE 请求分页接口返回 405")
-        void getPageWithWrongMethod() throws Exception {
-            mockMvc.perform(delete("/api/content/courses")).andExpect(status().isMethodNotAllowed());
-        }
-
-        @Test
-        @DisplayName("查看其他用户学习课程返回 403")
-        void viewOtherUserLearnedCoursesReturns403() throws Exception {
-            mockMvc.perform(get("/api/content/courses/learned/2"))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("403"))
-                    .andExpect(jsonPath("$.message").value("无权查看其他用户的学习课程"));
+        @DisplayName("旧的用户 ID 学习课程路径不可用")
+        void oldUserIdLearnedCoursesPathIsUnavailable() throws Exception {
+            mockMvc.perform(get("/api/content/courses/learned/2")).andExpect(status().isNotFound());
         }
     }
 }

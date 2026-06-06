@@ -1,9 +1,13 @@
 package com.rauio.smartdangjian;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mockStatic;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 class SmartDangjianApplicationTest {
@@ -41,5 +45,19 @@ class SmartDangjianApplicationTest {
                 .isTrue();
         assertThat(java.lang.reflect.Modifier.isStatic(mainMethod.getModifiers()))
                 .isTrue();
+    }
+
+    @Test
+    @DisplayName("main 方法可执行（不启动 Spring 上下文）")
+    void mainMethodInvocation() {
+        try (MockedStatic<SpringApplication> springAppMock = mockStatic(SpringApplication.class)) {
+            springAppMock
+                    .when(() -> SpringApplication.run(any(Class.class), any(String[].class)))
+                    .thenReturn(null);
+
+            SmartDangjianApplication.main(new String[0]);
+
+            springAppMock.verify(() -> SpringApplication.run(SmartDangjianApplication.class, new String[0]));
+        }
     }
 }

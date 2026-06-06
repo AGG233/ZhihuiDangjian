@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
 
@@ -18,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/learning/records")
 @RequiredArgsConstructor
-@SaCheckRole("SCHOOL")
+@SaCheckRole(RoleConstants.SCHOOL)
 public class AdminLearningRecordController {
 
     private final UserLearningRecordService recordService;

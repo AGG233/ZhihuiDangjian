@@ -1,11 +1,20 @@
 package com.rauio.smartdangjian.server.search.controller;
 
+import static com.rauio.smartdangjian.constants.ValidationConstants.PAGE_NUM_MIN;
+import static com.rauio.smartdangjian.constants.ValidationConstants.PAGE_SIZE_MAX;
+import static com.rauio.smartdangjian.constants.ValidationConstants.PAGE_SIZE_MIN;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.security.RoleConstants;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 import com.rauio.smartdangjian.server.search.service.RecommendService;
 import com.rauio.smartdangjian.server.search.service.SearchService;
@@ -21,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/search")
 @RequiredArgsConstructor
+@Validated
 public class SearchController {
 
     private final SearchService searchService;
@@ -29,32 +39,47 @@ public class SearchController {
 
     @Operation(summary = "搜索课程", description = "支持关键词全文检索，可按分类和难度过滤")
     @GetMapping("/courses")
-    @SaCheckRole("STUDENT")
+    @SaCheckRole(RoleConstants.STUDENT)
     public Result<Page<CourseResponse>> searchCourses(
             @Parameter(name = "keyword", description = "搜索关键词") @RequestParam(required = false) String keyword,
             @Parameter(name = "categoryId", description = "分类ID") @RequestParam(required = false) String categoryId,
             @Parameter(name = "difficulty", description = "难度") @RequestParam(required = false) String difficulty,
-            @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
-            @Parameter(name = "pageSize", description = "每页条数") @RequestParam(defaultValue = "10") int pageSize) {
+            @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") @Min(PAGE_NUM_MIN)
+                    int pageNum,
+            @Parameter(name = "pageSize", description = "每页条数")
+                    @RequestParam(defaultValue = "10")
+                    @Min(PAGE_SIZE_MIN)
+                    @Max(PAGE_SIZE_MAX)
+                    int pageSize) {
         return Result.ok(searchService.searchCourses(keyword, categoryId, difficulty, pageNum, pageSize));
     }
 
     @Operation(summary = "混合搜索", description = "全文检索 + 个性化推荐补充")
     @GetMapping("/hybrid")
-    @SaCheckRole("STUDENT")
+    @SaCheckRole(RoleConstants.STUDENT)
     public Result<Page<CourseResponse>> hybridSearch(
             @Parameter(name = "keyword", description = "搜索关键词") @RequestParam String keyword,
-            @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
-            @Parameter(name = "pageSize", description = "每页条数") @RequestParam(defaultValue = "10") int pageSize) {
+            @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") @Min(PAGE_NUM_MIN)
+                    int pageNum,
+            @Parameter(name = "pageSize", description = "每页条数")
+                    @RequestParam(defaultValue = "10")
+                    @Min(PAGE_SIZE_MIN)
+                    @Max(PAGE_SIZE_MAX)
+                    int pageSize) {
         return Result.ok(searchService.hybridSearch(keyword, pageNum, pageSize));
     }
 
     @Operation(summary = "获取个性化推荐课程", description = "融合协同过滤、知识图谱和画像的综合推荐")
     @GetMapping("/recommend")
-    @SaCheckRole("STUDENT")
+    @SaCheckRole(RoleConstants.STUDENT)
     public Result<Page<Long>> recommend(
-            @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
-            @Parameter(name = "pageSize", description = "每页条数") @RequestParam(defaultValue = "10") int pageSize) {
+            @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") @Min(PAGE_NUM_MIN)
+                    int pageNum,
+            @Parameter(name = "pageSize", description = "每页条数")
+                    @RequestParam(defaultValue = "10")
+                    @Min(PAGE_SIZE_MIN)
+                    @Max(PAGE_SIZE_MAX)
+                    int pageSize) {
         String userIdStr = userProfileService.getCurrentUserProfile().getUserId();
         Long userId = IdUtil.parse(userIdStr);
         return Result.ok(recommendService.recommend(userId, pageNum, pageSize));
@@ -62,7 +87,7 @@ public class SearchController {
 
     @Operation(summary = "获取当前用户画像", description = "返回用户学习统计、知识掌握、兴趣分类、答题统计")
     @GetMapping("/profile")
-    @SaCheckRole("STUDENT")
+    @SaCheckRole(RoleConstants.STUDENT)
     public Result<UserProfileResponse> getProfile() {
         return Result.ok(userProfileService.getCurrentUserProfile());
     }

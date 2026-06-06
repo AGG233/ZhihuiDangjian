@@ -3,10 +3,12 @@ package com.rauio.smartdangjian.server.resource.service;
 import static com.rauio.smartdangjian.server.resource.constants.ResourceConstant.BANNER_MAX_SIZE;
 import static com.rauio.smartdangjian.server.resource.constants.ResourceConstant.BANNER_PREFIX;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -30,11 +32,15 @@ public class BannerService {
     private final FileService fileService;
     private final ResourceMetaService resourceMetaService;
 
+    @Value("${app.banner.cache-ttl:7d}")
+    private Duration bannerCacheTtl;
+
     public List<ResourceMeta> getList() {
         List<Object> hashList = redisTemplate.opsForList().range(BANNER_PREFIX, BANNER_LIST_START, BANNER_LIST_END);
         if (hashList == null || hashList.isEmpty()) {
             return Collections.emptyList();
         }
+        refreshBannerTtl();
 
         List<ResourceMeta> banners = new ArrayList<>(hashList.size());
         for (Object item : hashList) {
@@ -135,6 +141,7 @@ public class BannerService {
         if (result == null) {
             throw new BusinessException(ResourceErrorConstants.BANNER_CREATE_FAILED, "轮播图创建失败");
         }
+        refreshBannerTtl();
     }
 
     private void replaceBanner(int order, String hash) {
@@ -149,6 +156,13 @@ public class BannerService {
             throw new BusinessException(ResourceErrorConstants.BANNER_ALREADY_EXISTS, "该资源已存在于轮播图中");
         }
         redisTemplate.opsForList().set(BANNER_PREFIX, order, hash);
+        refreshBannerTtl();
+    }
+
+    private void refreshBannerTtl() {
+        if (bannerCacheTtl != null && !bannerCacheTtl.isNegative() && !bannerCacheTtl.isZero()) {
+            redisTemplate.expire(BANNER_PREFIX, bannerCacheTtl);
+        }
     }
 
     private boolean contains(String hash) {

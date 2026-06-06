@@ -1,10 +1,13 @@
 HELP.md
 .gradle
-.claude
+.claude/
+.codex/
 .venv
 .env
 .env.*
 build/
+BOOT-INF/
+META-INF/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
@@ -48,4 +51,8 @@ out/
 /docs/
 /TODO.md
 /CLAUDE.md
+/API迁移文档-*.md
 .codegraph/
+scripts/loadtest/credentials.json
+.env
+workflow-*.html

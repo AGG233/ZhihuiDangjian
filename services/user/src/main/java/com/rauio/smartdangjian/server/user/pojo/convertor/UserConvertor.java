@@ -7,6 +7,7 @@ import org.mapstruct.ReportingPolicy;
 
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
+import com.rauio.smartdangjian.server.user.pojo.request.UserUpdateRequest;
 import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 
@@ -17,6 +18,8 @@ public interface UserConvertor {
     UserPublicResponse toPublicResponse(User user);
 
     User toEntity(UserRequest userRequest);
+
+    User toEntity(UserUpdateRequest userUpdateRequest);
 
     User toEntity(UserResponse userResponse);
 

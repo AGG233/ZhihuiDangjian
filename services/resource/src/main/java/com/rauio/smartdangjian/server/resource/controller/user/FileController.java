@@ -9,12 +9,13 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.resource.pojo.request.UploadFileRequest;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
+import com.rauio.smartdangjian.server.resource.pojo.response.ResourceMetaResponse;
 import com.rauio.smartdangjian.server.resource.service.FileService;
-import com.rauio.smartdangjian.utils.SecurityUtils;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckPermission;
@@ -32,15 +33,16 @@ import lombok.RequiredArgsConstructor;
 public class FileController {
 
     private final FileService fileService;
+    private final CurrentUserProvider currentUserProvider;
 
     @Operation(
             summary = "获取文件上传预签名URL",
             description =
                     "前端调用本接口获取预签名PUT上传地址。服务端会创建ResourceMeta记录（状态为UPLOADING）并返回预签名URL。前端拿到uploadUrl后，应直接对该地址发起HTTP PUT请求，把文件二进制内容作为请求体上传。上传完成后，需调用confirm接口确认。")
     @PostMapping("/upload")
-    @SaCheckRole("STUDENT")
+    @SaCheckRole(RoleConstants.STUDENT)
     public Result<FileUploadResponse> upload(@RequestBody @Valid UploadFileRequest request) {
-        request.setUserId(SecurityUtils.getCurrentUserId());
+        request.setUserId(currentUserProvider.getCurrentUserId());
         return Result.ok(fileService.upload(request));
     }
 
@@ -49,7 +51,7 @@ public class FileController {
             description = "当 COS 不可用时，upload 接口返回的 uploadUrl 指向本端点。前端应直接对该地址发起 HTTP PUT 请求，将文件二进制内容作为请求体上传。")
     @PutMapping("/upload/callback/{resourceId}")
     @SaCheckLogin
-    @SaCheckRole("STUDENT")
+    @SaCheckRole(RoleConstants.STUDENT)
     @SaCheckPermission("file:write")
     public Result<Void> uploadCallback(@PathVariable Long resourceId, HttpServletRequest request) throws IOException {
         fileService.handleUploadCallback(resourceId, request.getInputStream());
@@ -61,10 +63,10 @@ public class FileController {
             description = "前端通过预签名URL成功上传文件到COS后，调用本接口通知服务端。服务端会将ResourceMeta状态从UPLOADING更新为PUBLIC，此后文件即为可用资源。")
     @SaCheckLogin
     @PostMapping("/confirm/{resourceId}")
-    @SaCheckRole("STUDENT")
+    @SaCheckRole(RoleConstants.STUDENT)
     @SaCheckPermission("file:write")
-    public Result<ResourceMeta> confirmUpload(@PathVariable Long resourceId) {
-        return Result.ok(fileService.confirmUpload(resourceId));
+    public Result<ResourceMetaResponse> confirmUpload(@PathVariable Long resourceId) {
+        return Result.ok(ResourceMetaResponse.from(fileService.confirmUpload(resourceId)));
     }
 
     @Operation(summary = "根据资源ID获取文件信息", description = "根据资源ID查询文件元数据，并返回包含预签名下载链接的文件信息。下载链接具有时效性，过期后需重新调用。")
@@ -107,7 +109,7 @@ public class FileController {
     @Operation(summary = "删除文件", description = "根据资源ID删除文件。服务端会先从COS删除文件对象，再删除resource_meta数据库记录。")
     @SaCheckLogin
     @DeleteMapping("/{id}")
-    @SaCheckRole("STUDENT")
+    @SaCheckRole(RoleConstants.STUDENT)
     @SaCheckPermission("file:delete")
     public Result<Boolean> delete(@PathVariable Long id) {
         fileService.delete(id);

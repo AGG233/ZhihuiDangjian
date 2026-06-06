@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
+import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -128,6 +129,41 @@ public final class UserTestDataFactory {
         page.setSize(size);
         page.setTotal(0);
         return page;
+    }
+
+    public static Page<UserResponse> createResponsePage(List<User> records, int current, int size, long total) {
+        Page<UserResponse> page = new Page<>();
+        page.setRecords(records.stream().map(UserTestDataFactory::toResponse).toList());
+        page.setCurrent(current);
+        page.setSize(size);
+        page.setTotal(total);
+        return page;
+    }
+
+    public static Page<UserResponse> createEmptyResponsePage(int current, int size) {
+        Page<UserResponse> page = new Page<>();
+        page.setRecords(List.of());
+        page.setCurrent(current);
+        page.setSize(size);
+        page.setTotal(0);
+        return page;
+    }
+
+    public static UserResponse toResponse(User user) {
+        UserResponse response = new UserResponse();
+        response.setId(user.getId());
+        response.setUsername(user.getUsername());
+        response.setRealName(user.getRealName());
+        response.setPartyMemberId(user.getPartyMemberId());
+        response.setPartyStatus(user.getPartyStatus());
+        response.setBranchName(user.getBranchName());
+        response.setUserType(user.getUserType());
+        response.setStatus(user.getStatus());
+        response.setUniversityId(user.getUniversityId());
+        response.setJoinPartyDate(user.getJoinPartyDate());
+        response.setEmail(user.getEmail());
+        response.setPhone(user.getPhone());
+        return response;
     }
 
     // ── UserRequest helpers ──────────────────────────────────────────

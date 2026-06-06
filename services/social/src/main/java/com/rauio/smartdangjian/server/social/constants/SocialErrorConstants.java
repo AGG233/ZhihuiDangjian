@@ -6,4 +6,5 @@ public class SocialErrorConstants {
     public static final int COMMENT_CONTENT_EMPTY = 9003;
     public static final int LIKE_TARGET_NOT_FOUND = 9004;
     public static final int COMMENT_PERMISSION_DENIED = 9005;
+    public static final int LIKE_TARGET_TYPE_INVALID = 9006;
 }

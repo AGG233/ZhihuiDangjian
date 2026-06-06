@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -16,34 +17,27 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
+import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
-import com.rauio.smartdangjian.server.search.controller.SearchController;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 import com.rauio.smartdangjian.server.search.service.RecommendService;
 import com.rauio.smartdangjian.server.search.service.SearchService;
 import com.rauio.smartdangjian.server.search.service.UserProfileService;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = SearchControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("搜索与推荐接口测试")
 class SearchControllerTest extends BaseControllerTest {
-
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public SearchController searchController(
-                SearchService searchService, RecommendService recommendService, UserProfileService userProfileService) {
-            return new SearchController(searchService, recommendService, userProfileService);
-        }
-    }
 
     @MockitoBean
     private SearchService searchService;
@@ -124,7 +118,6 @@ class SearchControllerTest extends BaseControllerTest {
                             .avgDuration(600)
                             .totalRecords(6)
                             .completedChapters(4)
-                            .preferredDevice("web")
                             .build())
                     .build();
             when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
@@ -144,11 +137,11 @@ class SearchControllerTest extends BaseControllerTest {
         @DisplayName("Service 抛出 BusinessException 返回 400")
         void serviceThrowsBusinessException() throws Exception {
             when(searchService.searchCourses(anyString(), any(), any(), anyInt(), anyInt()))
-                    .thenThrow(new BusinessException(4000, "搜索服务异常"));
+                    .thenThrow(new BusinessException(ErrorConstants.RESOURCE_NOT_AVAILABLE, "搜索服务异常"));
 
             mockMvc.perform(get("/api/search/courses").param("keyword", "test"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("12"))
                     .andExpect(jsonPath("$.message").value("搜索服务异常"));
         }
 
@@ -217,38 +210,25 @@ class SearchControllerTest extends BaseControllerTest {
     @DisplayName("安全场景")
     class SecurityTests {
 
-        @Test
-        @DisplayName("XSS 注入在 keyword 参数")
-        void xssInKeyword() throws Exception {
+        @ParameterizedTest(name = "keyword={0}")
+        @ValueSource(strings = {"<script>alert('xss')</script>", "' OR '1'='1"})
+        @DisplayName("特殊 keyword 参数作为字面量透传给搜索服务")
+        void specialKeywordIsPassedAsLiteral(String keyword) throws Exception {
             when(searchService.searchCourses(anyString(), any(), any(), anyInt(), anyInt()))
                     .thenReturn(createCoursePage(0));
 
-            mockMvc.perform(get("/api/search/courses").param("keyword", "<script>alert('xss')</script>"))
+            mockMvc.perform(get("/api/search/courses").param("keyword", keyword))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));
+
+            verify(searchService).searchCourses(eq(keyword), any(), any(), eq(1), eq(10));
         }
 
-        @Test
-        @DisplayName("SQL 注入在 keyword 参数")
-        void sqlInjectionInKeyword() throws Exception {
-            when(searchService.searchCourses(anyString(), any(), any(), anyInt(), anyInt()))
-                    .thenReturn(createCoursePage(0));
-
-            mockMvc.perform(get("/api/search/courses").param("keyword", "' OR '1'='1"))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"));
-        }
-
-        @Test
-        @DisplayName("POST 请求搜索接口返回 405")
-        void searchWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/search/courses")).andExpect(status().isMethodNotAllowed());
-        }
-
-        @Test
-        @DisplayName("POST 请求推荐接口返回 405")
-        void recommendWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/search/recommend")).andExpect(status().isMethodNotAllowed());
+        @ParameterizedTest(name = "POST {0}")
+        @CsvSource({"/api/search/courses", "/api/search/recommend"})
+        @DisplayName("POST 请求 GET-only 接口返回 405")
+        void postToGetOnlyEndpointReturns405(String path) throws Exception {
+            mockMvc.perform(post(path)).andExpect(status().isMethodNotAllowed());
         }
     }
 }

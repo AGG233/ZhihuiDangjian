@@ -12,34 +12,26 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.user.controller.user.UserController;
+import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
+import com.rauio.smartdangjian.server.user.pojo.request.UserUpdateRequest;
 import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = UserControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("用户管理接口测试")
 class UserControllerTest extends BaseControllerTest {
-
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public UserController userController(UserService userService) {
-            return new UserController(userService);
-        }
-    }
 
     @MockitoBean
     private UserService userService;
@@ -99,7 +91,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - 更新用户成功")
         void updateSuccess() throws Exception {
-            when(userService.update(eq(1L), any()))
+            when(userService.update(eq(1L), any(UserUpdateRequest.class)))
                     .thenReturn(new com.rauio.smartdangjian.server.user.pojo.entity.User());
             ;
 
@@ -132,11 +124,11 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - Service 抛出 BusinessException 返回 400")
         void getThrowsBusinessException() throws Exception {
-            when(userService.get(1L)).thenThrow(new BusinessException(4000, "用户不存在"));
+            when(userService.get(1L)).thenThrow(new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户不存在"));
 
             mockMvc.perform(get("/api/user/users/1"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("2005"))
                     .andExpect(jsonPath("$.message").value("用户不存在"));
         }
 
@@ -180,20 +172,22 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - Service 抛出 BusinessException 返回 400")
         void updateThrowsBusinessException() throws Exception {
-            doThrow(new BusinessException(4000, "更新用户失败")).when(userService).update(eq(1L), any());
+            doThrow(new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "更新用户失败"))
+                    .when(userService)
+                    .update(eq(1L), any(UserUpdateRequest.class));
 
             mockMvc.perform(put("/api/user/users/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"realName\":\"新名称\"}"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("2005"))
                     .andExpect(jsonPath("$.message").value("更新用户失败"));
         }
 
         @Test
         @DisplayName("PUT /{id} - Service 抛出 RuntimeException 返回 500")
         void updateThrowsRuntimeException() throws Exception {
-            doThrow(new RuntimeException("数据库异常")).when(userService).update(eq(1L), any());
+            doThrow(new RuntimeException("数据库异常")).when(userService).update(eq(1L), any(UserUpdateRequest.class));
 
             mockMvc.perform(put("/api/user/users/1")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -205,7 +199,7 @@ class UserControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - Service 正常返回 200 OK")
         void updateNormalSuccess() throws Exception {
-            when(userService.update(eq(1L), any()))
+            when(userService.update(eq(1L), any(UserUpdateRequest.class)))
                     .thenReturn(new com.rauio.smartdangjian.server.user.pojo.entity.User());
             ;
 

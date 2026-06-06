@@ -5,8 +5,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.time.Duration;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.resource.constants.ResourceConstant;
@@ -43,6 +46,12 @@ class BannerServiceTest {
     private static final String HASH = "abc123";
     private static final String HASH2 = "def456";
     private static final String DOWNLOAD_URL = "https://example.com/download";
+    private static final Duration BANNER_TTL = Duration.ofDays(7);
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(bannerService, "bannerCacheTtl", BANNER_TTL);
+    }
 
     @SuppressWarnings("unchecked")
     @Test
@@ -61,6 +70,7 @@ class BannerServiceTest {
         List<ResourceMeta> result = bannerService.getList();
 
         assertThat(result).hasSize(2);
+        verify(redisTemplate).expire(ResourceConstant.BANNER_PREFIX, BANNER_TTL);
     }
 
     @SuppressWarnings("unchecked")
@@ -103,7 +113,9 @@ class BannerServiceTest {
 
         ResourceMeta result = bannerService.get(0);
 
-        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getHash()).isEqualTo(HASH);
+        verify(resourceMetaService).getByHash(HASH);
     }
 
     @SuppressWarnings("unchecked")
@@ -129,7 +141,8 @@ class BannerServiceTest {
 
         ResourceMeta result = bannerService.get(HASH);
 
-        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getHash()).isEqualTo(HASH);
     }
 
     @SuppressWarnings("unchecked")
@@ -204,6 +217,7 @@ class BannerServiceTest {
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(1L);
+        verify(redisTemplate).expire(ResourceConstant.BANNER_PREFIX, BANNER_TTL);
     }
 
     @SuppressWarnings("unchecked")
@@ -220,7 +234,10 @@ class BannerServiceTest {
 
         ResourceMeta result = bannerService.createByHash(HASH);
 
-        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getHash()).isEqualTo(HASH);
+        verify(listOperations).rightPush(ResourceConstant.BANNER_PREFIX, HASH);
+        verify(redisTemplate).expire(ResourceConstant.BANNER_PREFIX, BANNER_TTL);
     }
 
     @SuppressWarnings("unchecked")
@@ -235,6 +252,7 @@ class BannerServiceTest {
         assertThatThrownBy(() -> bannerService.create("1"))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("数量已达上限");
+        verify(listOperations, never()).rightPush(anyString(), any());
     }
 
     @SuppressWarnings("unchecked")
@@ -251,6 +269,7 @@ class BannerServiceTest {
         assertThatThrownBy(() -> bannerService.create("1"))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("该资源已存在于轮播图中");
+        verify(listOperations, never()).rightPush(anyString(), any());
     }
 
     @SuppressWarnings("unchecked")
@@ -267,8 +286,10 @@ class BannerServiceTest {
 
         ResourceMeta result = bannerService.update(2, "1");
 
-        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getHash()).isEqualTo(HASH);
         verify(listOperations).set(ResourceConstant.BANNER_PREFIX, 2, HASH);
+        verify(redisTemplate).expire(ResourceConstant.BANNER_PREFIX, BANNER_TTL);
     }
 
     @SuppressWarnings("unchecked")
@@ -375,7 +396,8 @@ class BannerServiceTest {
 
         ResourceMeta result = bannerService.updateByHash(2, HASH);
 
-        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getHash()).isEqualTo(HASH);
         verify(listOperations).set(ResourceConstant.BANNER_PREFIX, 2, HASH);
     }
 
@@ -395,6 +417,7 @@ class BannerServiceTest {
         assertThatThrownBy(() -> bannerService.update(2, "1"))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("该资源已存在于轮播图中");
+        verify(listOperations, never()).set(anyString(), anyLong(), any());
     }
 
     // ==================== getUserList empty ====================

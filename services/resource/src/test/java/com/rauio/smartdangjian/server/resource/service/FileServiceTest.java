@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -23,18 +24,23 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 import com.rauio.smartdangjian.server.resource.constants.ResourceStatusConstants;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
+import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaCreateRequest;
 import com.rauio.smartdangjian.server.resource.pojo.request.UploadFileRequest;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
 import com.rauio.smartdangjian.server.user.service.UserService;
+import com.rauio.smartdangjian.service.PermissionValidator;
 
 @ExtendWith(MockitoExtension.class)
 class FileServiceTest {
@@ -47,6 +53,9 @@ class FileServiceTest {
 
     @Mock
     private ResourceMetaService resourceMetaService;
+
+    @Mock
+    private PermissionValidator permissionValidator;
 
     @InjectMocks
     private FileService fileService;
@@ -61,6 +70,7 @@ class FileServiceTest {
 
     @BeforeEach
     void setUp() {
+        ReflectionTestUtils.setField(fileService, "localStorageRoot", "./uploads");
         pretreatment = mock(GeneratePresignedUrlPretreatment.class);
         lenient().when(pretreatment.setPlatform(anyString())).thenReturn(pretreatment);
         lenient().when(pretreatment.setPath(anyString())).thenReturn(pretreatment);
@@ -125,6 +135,14 @@ class FileServiceTest {
             assertThat(response.getUploadUrl()).isEqualTo(COS_URL);
             assertThat(response.getObjectKey()).startsWith("image/").endsWith(".png");
             assertThat(response.getExpiration()).isPositive();
+
+            ArgumentCaptor<ResourceMetaCreateRequest> requestCaptor =
+                    ArgumentCaptor.forClass(ResourceMetaCreateRequest.class);
+            verify(resourceMetaService).create(requestCaptor.capture());
+            assertThat(requestCaptor.getValue().getUploaderId()).isEqualTo("1");
+            assertThat(requestCaptor.getValue().getOriginalName()).isEqualTo(FILE_NAME);
+            assertThat(requestCaptor.getValue().getResourceType()).isZero();
+            assertThat(requestCaptor.getValue().getStatus()).isEqualTo(ResourceStatusConstants.UPLOADING);
         }
 
         @Test
@@ -144,7 +162,17 @@ class FileServiceTest {
             assertThat(response.getUploadUrl()).startsWith("/api/resource/files/upload/callback/");
             assertThat(response.getUploadUrl()).endsWith("1");
             assertThat(response.getExpiration()).isEqualTo(-1L);
+            assertThat(response.getObjectKey()).startsWith("image/").endsWith(".png");
 
+            ArgumentCaptor<ResourceMetaCreateRequest> requestCaptor =
+                    ArgumentCaptor.forClass(ResourceMetaCreateRequest.class);
+            verify(resourceMetaService).create(requestCaptor.capture());
+            assertThat(response.getObjectKey())
+                    .isEqualTo(requestCaptor.getValue().getObjectKey());
+            assertThat(requestCaptor.getValue().getUploaderId()).isEqualTo("1");
+            assertThat(requestCaptor.getValue().getOriginalName()).isEqualTo(FILE_NAME);
+            assertThat(requestCaptor.getValue().getResourceType()).isZero();
+            assertThat(requestCaptor.getValue().getStatus()).isEqualTo(ResourceStatusConstants.UPLOADING);
             verify(resourceMetaService, never()).delete(any());
         }
 
@@ -168,6 +196,11 @@ class FileServiceTest {
             FileUploadResponse response = fileService.upload(request);
 
             assertThat(response).isNotNull();
+            assertThat(response.getResourceId()).isEqualTo("1");
+            ArgumentCaptor<ResourceMetaCreateRequest> requestCaptor =
+                    ArgumentCaptor.forClass(ResourceMetaCreateRequest.class);
+            verify(resourceMetaService).create(requestCaptor.capture());
+            assertThat(requestCaptor.getValue().getUploaderId()).isEqualTo("2");
             verify(userService).getCurrentUserId();
         }
 
@@ -194,7 +227,38 @@ class FileServiceTest {
 
             FileUploadResponse response = fileService.upload(request);
             assertThat(response).isNotNull();
+            assertThat(response.getResourceId()).isEqualTo("2");
             assertThat(response.getObjectKey()).startsWith("video/");
+            ArgumentCaptor<ResourceMetaCreateRequest> requestCaptor =
+                    ArgumentCaptor.forClass(ResourceMetaCreateRequest.class);
+            verify(resourceMetaService).create(requestCaptor.capture());
+            assertThat(requestCaptor.getValue().getResourceType()).isEqualTo(1);
+            assertThat(requestCaptor.getValue().getOriginalName()).isEqualTo("test.mp4");
+        }
+
+        @Test
+        @DisplayName("上传不支持的 MIME 类型时拒绝")
+        void uploadUnsupportedMimeType() {
+            UploadFileRequest request = createUploadRequest();
+            request.setMimeType("text/html");
+
+            assertThatThrownBy(() -> fileService.upload(request))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("code", ResourceErrorConstants.RESOURCE_INVALID_FILE)
+                    .hasMessageContaining("不支持的文件类型");
+        }
+
+        @Test
+        @DisplayName("上传 MIME 与扩展名不匹配时拒绝")
+        void uploadMimeExtensionMismatch() {
+            UploadFileRequest request = createUploadRequest();
+            request.setFileName("test.exe");
+            request.setMimeType("image/png");
+
+            assertThatThrownBy(() -> fileService.upload(request))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("code", ResourceErrorConstants.RESOURCE_INVALID_FILE)
+                    .hasMessageContaining("不支持的文件类型");
         }
     }
 
@@ -263,12 +327,33 @@ class FileServiceTest {
                     .status(ResourceStatusConstants.UPLOADING)
                     .build();
             when(resourceMetaService.get(RESOURCE_ID)).thenReturn(meta);
+            doNothing().when(permissionValidator).requireResourceAccess(1L, "无权确认该文件");
             when(fileStorageService.exists(any(FileInfo.class))).thenReturn(true);
 
             ResourceMeta result = fileService.confirmUpload(RESOURCE_ID);
 
             assertThat(result.getStatus()).isEqualTo(ResourceStatusConstants.PUBLIC);
-            verify(resourceMetaService).updateById(meta);
+            verify(resourceMetaService).markPublic(RESOURCE_ID);
+        }
+
+        @Test
+        @DisplayName("非上传者确认文件时抛出权限异常")
+        void confirmUploadRejectsNonOwner() {
+            ResourceMeta meta = ResourceMeta.builder()
+                    .id(RESOURCE_ID)
+                    .uploaderId(99L)
+                    .objectKey(OBJECT_KEY)
+                    .status(ResourceStatusConstants.UPLOADING)
+                    .build();
+            when(resourceMetaService.get(RESOURCE_ID)).thenReturn(meta);
+            doThrow(new BusinessException(403, "无权确认该文件"))
+                    .when(permissionValidator)
+                    .requireResourceAccess(99L, "无权确认该文件");
+
+            assertThatThrownBy(() -> fileService.confirmUpload(RESOURCE_ID))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("无权确认该文件");
+            verify(fileStorageService, never()).exists(any(FileInfo.class));
         }
 
         @Test
@@ -306,6 +391,21 @@ class FileServiceTest {
             fileService.handleUploadCallback(RESOURCE_ID, mock(InputStream.class));
 
             verify(resourceMetaService).get(RESOURCE_ID);
+        }
+
+        @Test
+        @DisplayName("objectKey 路径遍历时拒绝保存")
+        void handleUploadCallbackRejectsPathTraversal() {
+            ResourceMeta meta = ResourceMeta.builder()
+                    .id(RESOURCE_ID)
+                    .objectKey("../evil.png")
+                    .build();
+            when(resourceMetaService.get(RESOURCE_ID)).thenReturn(meta);
+
+            assertThatThrownBy(() -> fileService.handleUploadCallback(RESOURCE_ID, mock(InputStream.class)))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("code", ResourceErrorConstants.RESOURCE_CREATE_FAILED)
+                    .hasMessageContaining("文件保存失败");
         }
     }
 
@@ -371,6 +471,24 @@ class FileServiceTest {
         }
 
         @Test
+        @DisplayName("非上传者删除文件时抛出权限异常且不删除 COS 文件")
+        void deleteRejectsNonOwner() {
+            ResourceMeta meta = createResourceMeta();
+            meta.setUploaderId(99L);
+            when(resourceMetaService.get(RESOURCE_ID)).thenReturn(meta);
+            doThrow(new BusinessException(403, "无权删除该文件"))
+                    .when(permissionValidator)
+                    .requireResourceAccess(99L, "无权删除该文件");
+
+            assertThatThrownBy(() -> fileService.delete(RESOURCE_ID))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("无权删除该文件");
+
+            verify(fileStorageService, never()).delete(any(FileInfo.class));
+            verify(resourceMetaService, never()).delete(any());
+        }
+
+        @Test
         @DisplayName("COS 删除异常时抛出业务异常并保留本地记录")
         void deleteCosException() {
             ResourceMeta meta = createResourceMeta();
@@ -398,8 +516,7 @@ class FileServiceTest {
                     ResourceMeta.builder().id(1L).objectKey("image/a.png").build();
             ResourceMeta meta2 =
                     ResourceMeta.builder().id(2L).objectKey("image/b.png").build();
-            when(resourceMetaService.get(1L)).thenReturn(meta1);
-            when(resourceMetaService.get(2L)).thenReturn(meta2);
+            when(resourceMetaService.listByIds(List.of(1L, 2L))).thenReturn(List.of(meta1, meta2));
             when(fileStorageService.generatePresignedUrl()).thenReturn(pretreatment);
 
             GeneratePresignedUrlResult urlResult = new GeneratePresignedUrlResult();
@@ -414,13 +531,14 @@ class FileServiceTest {
 
         @Test
         @DisplayName("getBatchByHashes 返回多个URL")
+        @SuppressWarnings("unchecked")
         void getBatchByHashes() {
             ResourceMeta meta = ResourceMeta.builder()
                     .id(1L)
                     .hash("hash1")
                     .objectKey("image/a.png")
                     .build();
-            when(resourceMetaService.getByHash("hash1")).thenReturn(meta);
+            when(resourceMetaService.list(any(LambdaQueryWrapper.class))).thenReturn(List.of(meta));
             // Use lazy answer for repeated calls
             when(fileStorageService.generatePresignedUrl()).thenReturn(pretreatment);
 
@@ -431,6 +549,56 @@ class FileServiceTest {
             List<String> urls = fileService.getBatchByHashes(List.of("hash1"));
 
             assertThat(urls).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("getBatchByIds 返回空列表时不调用外部服务")
+        void getBatchByIdsEmptyReturnsEmpty() {
+            List<String> urls = fileService.getBatchByIds(List.of());
+
+            assertThat(urls).isEmpty();
+        }
+
+        @Test
+        @DisplayName("getBatchByIds 传入 null 返回空列表")
+        void getBatchByIdsNullReturnsEmpty() {
+            List<String> urls = fileService.getBatchByIds(null);
+
+            assertThat(urls).isEmpty();
+        }
+
+        @Test
+        @DisplayName("getBatchByHashes 返回空列表时不调用外部服务")
+        void getBatchByHashesEmptyReturnsEmpty() {
+            List<String> urls = fileService.getBatchByHashes(List.of());
+
+            assertThat(urls).isEmpty();
+        }
+
+        @Test
+        @DisplayName("getBatchByHashes 传入 null 返回空列表")
+        void getBatchByHashesNullReturnsEmpty() {
+            List<String> urls = fileService.getBatchByHashes(null);
+
+            assertThat(urls).isEmpty();
+        }
+
+        @Test
+        @DisplayName("getBatchByIds 重复 ID 去重")
+        void getBatchByIdsDeduplicatesIds() {
+            ResourceMeta meta =
+                    ResourceMeta.builder().id(1L).objectKey("image/a.png").build();
+            when(resourceMetaService.listByIds(List.of(1L))).thenReturn(List.of(meta));
+            when(fileStorageService.generatePresignedUrl()).thenReturn(pretreatment);
+
+            GeneratePresignedUrlResult urlResult = new GeneratePresignedUrlResult();
+            urlResult.setUrl(COS_URL);
+            when(pretreatment.generatePresignedUrl()).thenReturn(urlResult);
+
+            List<String> urls = fileService.getBatchByIds(List.of(1L, 1L));
+
+            assertThat(urls).hasSize(2);
+            verify(resourceMetaService).listByIds(List.of(1L));
         }
     }
 

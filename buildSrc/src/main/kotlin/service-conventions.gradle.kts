@@ -17,8 +17,8 @@ java {
 }
 
 repositories {
-    maven { url = uri("https://maven.aliyun.com/repository/public") }
     mavenCentral()
+    maven { url = uri("https://maven.aliyun.com/repository/public") }
 }
 
 spotless {
@@ -59,7 +59,7 @@ tasks.withType<JavaCompile>().configureEach {
 val integrationTestSourceSet = sourceSets.create("integrationTest") {
     java.srcDir("src/integrationTest/java")
     resources.srcDir("src/integrationTest/resources")
-    compileClasspath += sourceSets.main.get().output + configurations.testRuntimeClasspath.get()
+    compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output + configurations.testRuntimeClasspath.get()
     runtimeClasspath += output + compileClasspath
 }
 
@@ -75,14 +75,31 @@ val integrationTest = tasks.register<Test>("integrationTest") {
     useJUnitPlatform()
 }
 
+val unitTestForks = (project.findProperty("unitTestForks") as String? ?: "2").toInt().coerceAtLeast(1)
+val integrationTestForks = (project.findProperty("integrationTestForks") as String? ?: "1").toInt().coerceAtLeast(1)
+
+tasks.named<Test>("test") {
+    useJUnitPlatform()
+    maxParallelForks = unitTestForks
+    forkEvery = 100
+}
+
+tasks.named<Test>("integrationTest") {
+    maxParallelForks = integrationTestForks
+    forkEvery = 100
+}
+
 tasks.check {
     dependsOn(integrationTest)
 }
 
+dependencies {
+    testImplementation(libs.findLibrary("archunit-junit5").get())
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
 configurations.configureEach {
     resolutionStrategy {
-        force(libs.findLibrary("logback-classic").get().get().toString())
-        force(libs.findLibrary("logback-core").get().get().toString())
         force(libs.findLibrary("springdoc-openapi-starter-webmvc-ui").get().get().toString())
     }
 }

@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptCreateRequest;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptUpdateRequest;
 import com.rauio.smartdangjian.server.ai.pojo.response.AiPromptResponse;
@@ -21,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/ai/prompts")
 @RequiredArgsConstructor
-@SaCheckRole("MANAGER")
+@SaCheckRole(RoleConstants.MANAGER)
 public class AdminPromptController {
 
     private final PromptService promptService;

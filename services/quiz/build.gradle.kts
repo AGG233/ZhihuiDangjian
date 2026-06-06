@@ -1,9 +1,11 @@
 plugins {
-    id("boot-application-conventions")
+    id("service-conventions")
 }
 
 dependencies {
-    implementation(project(":services:common"))
+    implementation(project(":services:common:common-core"))
+    implementation(project(":services:common:common-web"))
+    implementation(project(":services:common:common-security"))
     implementation(project(":services:user"))
     implementation(project(":services:course"))
     implementation(project(":services:chapter"))
@@ -16,4 +18,5 @@ dependencies {
     annotationProcessor(libs.mapstruct.processor)
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

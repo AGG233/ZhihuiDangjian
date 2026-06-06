@@ -1,0 +1,269 @@
+package com.rauio.smartdangjian.server.category.service.category;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
+import com.rauio.smartdangjian.security.LoginUser;
+import com.rauio.smartdangjian.server.category.constants.CategoryErrorConstants;
+import com.rauio.smartdangjian.server.category.mapper.CategoryMapper;
+import com.rauio.smartdangjian.server.category.pojo.convertor.CategoryConvertor;
+import com.rauio.smartdangjian.server.category.pojo.entity.Category;
+import com.rauio.smartdangjian.server.category.pojo.request.CategoryRequest;
+import com.rauio.smartdangjian.server.category.pojo.response.CategoryResponse;
+import com.rauio.smartdangjian.service.DataScopeService;
+import com.rauio.smartdangjian.utils.spec.UserType;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
+
+    private final CategoryConvertor convertor;
+    private final DataScopeService dataScopeService;
+    private final CurrentUserProvider currentUserProvider;
+
+    public final int MAX_LEVEL = 3;
+
+    /** 单次创建允许的最大目录节点数，防止大事务 */
+    public final int MAX_NODES_PER_CREATE = 100;
+
+    /**
+     * 根据目录 ID 获取目录树详情。
+     *
+     * @param id 目录id
+     * @return  目录以及它的子目录
+     */
+    @Transactional(readOnly = true)
+    public CategoryResponse get(Long id) {
+        Category category = super.getById(id);
+        List<CategoryResponse> children;
+        if (category == null) {
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_NOT_FOUND, "目录不存在");
+        }
+        dataScopeService.requireSameUniversity(category.getUniversityId());
+
+        CategoryResponse parent = convertor.toResponse(category);
+        children = parent.getChildren();
+
+        if (children != null && !children.isEmpty()) {
+            for (CategoryResponse node : children) {
+                if (!node.getChildren().isEmpty()) {
+                    get(node.getId());
+                }
+            }
+            parent.setChildren(children);
+        }
+        return parent;
+    }
+
+    /**
+     * 获取所有顶级目录。
+     *
+     * @return 所有顶级目录
+     */
+    @Transactional(readOnly = true)
+    public List<CategoryResponse> getRootList() {
+        LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<Category>().eq(Category::getLevel, 0);
+        LoginUser currentUser = currentUserProvider.getCurrentUser();
+        if (currentUser != null && currentUser.getUserType() != UserType.MANAGER) {
+            wrapper.and(w -> w.eq(Category::getUniversityId, currentUser.getUniversityId())
+                    .or()
+                    .isNull(Category::getUniversityId));
+        }
+        return convertor.toResponseList(this.list(wrapper));
+    }
+
+    /**
+     * 获取指定父目录下的直接子目录。
+     *
+     * @param categoryId 父目录Id
+     * @return 父目录的子目录
+     * */
+    @Transactional(readOnly = true)
+    public List<CategoryResponse> getByParentId(Long categoryId) {
+        Category parent = super.getById(categoryId);
+        if (parent == null) {
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_NOT_FOUND, "目录不存在");
+        }
+        dataScopeService.requireSameUniversity(parent.getUniversityId());
+
+        LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<Category>().eq(Category::getParentId, categoryId);
+        LoginUser currentUser = currentUserProvider.getCurrentUser();
+        if (currentUser != null && currentUser.getUserType() != UserType.MANAGER) {
+            wrapper.and(w -> w.eq(Category::getUniversityId, currentUser.getUniversityId())
+                    .or()
+                    .isNull(Category::getUniversityId));
+        }
+        return convertor.toResponseList(this.list(wrapper));
+    }
+
+    /**
+     * 创建根目录及其子目录。
+     *
+     * @param dto 前端传入的目录
+     * @return 添加结果
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean create(CategoryRequest dto) {
+        if (dto == null) {
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_ARGS_ERROR, "参数错误");
+        }
+
+        Category category = convertor.toEntity(dto);
+        category.setLevel(0);
+        category.setParentId(null);
+
+        LoginUser currentUser = currentUserProvider.getCurrentUser();
+        if (currentUser == null) {
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_USER_NOT_FOUND, "当前用户不存在");
+        }
+        if (currentUser.getUserType() != UserType.MANAGER) {
+            String universityId = currentUser.getUniversityId();
+            if (universityId == null) {
+                throw new BusinessException(CategoryErrorConstants.CATEGORY_ARGS_ERROR, "不能获取当前用户所属学校");
+            }
+            category.setUniversityId(universityId);
+        }
+        // MANAGER: 不设置 universityId → 公共分类（DB 中为 NULL）
+        this.save(category);
+
+        List<CategoryRequest> childrenNode = dto.getChildrenNode();
+        if (childrenNode == null || childrenNode.isEmpty()) {
+            return true;
+        }
+        return createByParentId(childrenNode, category.getId());
+    }
+
+    /**
+     * 递归为父目录创建子目录。
+     *
+     * @param children    子目录列表
+     * @param parentId    子目录列表所属的父目录的ID
+     * @return 添加结构
+     * */
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean createByParentId(List<CategoryRequest> children, Long parentId) {
+        Category parent = super.getById(parentId);
+        if (parent == null || children == null) {
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_OR_CHILD_NOT_FOUND, "目录或子目录不存在");
+        }
+        if (parent.getLevel() >= MAX_LEVEL) {
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_MAX_LEVEL, "目录层级不能超过3级");
+        }
+
+        // Pre-validate total node count to prevent large transactions
+        int totalNodes = countTreeNodes(children);
+        if (totalNodes > MAX_NODES_PER_CREATE) {
+            throw new BusinessException(
+                    CategoryErrorConstants.CATEGORY_MAX_LEVEL, "单次创建目录数量不能超过" + MAX_NODES_PER_CREATE + "个");
+        }
+
+        for (CategoryRequest dto : children) {
+            Category node = convertor.toEntity(dto);
+            node.setLevel(parent.getLevel() + 1);
+            node.setParentId(parent.getId());
+            node.setUniversityId(parent.getUniversityId());
+
+            if (node.getLevel() < MAX_LEVEL) {
+                this.save(node);
+            } else {
+                throw new BusinessException(CategoryErrorConstants.CATEGORY_MAX_LEVEL, "目录层级不能超过3级");
+            }
+
+            List<CategoryRequest> nodeChildren = dto.getChildrenNode();
+            if (nodeChildren != null && !nodeChildren.isEmpty()) {
+                createByParentId(nodeChildren, node.getId());
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 递归统计目录树节点总数。
+     *
+     * @param children 子目录列表
+     * @return 节点总数
+     */
+    private int countTreeNodes(List<CategoryRequest> children) {
+        if (children == null || children.isEmpty()) {
+            return 0;
+        }
+        int count = 0;
+        for (CategoryRequest child : children) {
+            count++;
+            if (child.getChildrenNode() != null) {
+                count += countTreeNodes(child.getChildrenNode());
+            }
+        }
+        return count;
+    }
+
+    /**
+     * 删除不含子目录的目录。
+     *
+     * @param categoryId 目录id
+     * @return 删除结果
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean delete(Long categoryId) {
+        if (!this.list(new LambdaQueryWrapper<Category>().eq(Category::getParentId, categoryId))
+                .isEmpty()) {
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_HAS_CHILDREN, "该目录有子目录，请先删除子目录");
+        }
+        return this.removeById(categoryId);
+    }
+
+    /**
+     * 递归删除目录及其全部子目录。
+     *
+     * @param categoryId 目录id
+     * @return 删除结果
+     * */
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean deleteByIdWithChildren(Long categoryId) {
+        Category category = super.getById(categoryId);
+        if (category == null) {
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_NOT_FOUND, "目录不存在");
+        }
+
+        List<Category> children = this.list(new LambdaQueryWrapper<Category>().eq(Category::getParentId, categoryId));
+        if (children == null || children.isEmpty()) {
+            return this.removeById(categoryId);
+        }
+        for (Category child : children) {
+            deleteByIdWithChildren(child.getId());
+        }
+        return this.removeById(categoryId);
+    }
+
+    /**
+     * 更新目录信息。
+     *
+     * @param dto 前端传入的目录
+     * @return 修改结果
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean update(CategoryRequest dto, Long id) {
+        if (dto == null) {
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_ARGS_ERROR, "参数错误");
+        }
+        Category existing = super.getById(id);
+        if (existing == null) {
+            throw new BusinessException(CategoryErrorConstants.CATEGORY_NOT_FOUND, "目录不存在");
+        }
+
+        Category category = convertor.toEntity(dto);
+        category.setId(id);
+        category.setUniversityId(existing.getUniversityId());
+        category.setLevel(existing.getLevel());
+        category.setParentId(existing.getParentId());
+        return this.updateById(category);
+    }
+}

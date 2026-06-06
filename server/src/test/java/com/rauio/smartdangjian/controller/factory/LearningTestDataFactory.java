@@ -46,6 +46,8 @@ public final class LearningTestDataFactory {
     public static UserChapterProgressRequest createChapterProgressUpdateDto(Long id) {
         return UserChapterProgressRequest.builder()
                 .id(id)
+                .userId(1L)
+                .chapterId(1L)
                 .progress(100)
                 .status("completed")
                 .build();

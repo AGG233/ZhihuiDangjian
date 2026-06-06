@@ -12,38 +12,25 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.CategoryTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
-import com.rauio.smartdangjian.server.content.controller.user.UserCategoryController;
+import com.rauio.smartdangjian.server.category.pojo.response.CategoryResponse;
+import com.rauio.smartdangjian.server.category.service.category.CategoryService;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryArticle;
-import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
-import com.rauio.smartdangjian.server.content.pojo.response.CategoryResponse;
 import com.rauio.smartdangjian.server.content.service.article.ArticleService;
-import com.rauio.smartdangjian.server.content.service.category.CategoryService;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.course.pojo.entity.CategoryCourse;
+import com.rauio.smartdangjian.server.course.service.course.CourseService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = UserCategoryControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("用户目录接口测试")
 class UserCategoryControllerTest extends BaseControllerTest {
-
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public UserCategoryController userCategoryController(
-                CategoryService categoryService, CourseService courseService, ArticleService articleService) {
-            return new UserCategoryController(categoryService, courseService, articleService);
-        }
-    }
 
     @MockitoBean
     private CategoryService categoryService;

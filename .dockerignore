@@ -33,10 +33,10 @@ replay_pid*
 gradle-app.setting
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
-!gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
 
 # Avoid ignore Gradle wrappper properties
-!gradle-wrapper.properties
+!gradle/wrapper/gradle-wrapper.properties
 
 # Cache of project
 .gradletasknamecache
@@ -46,16 +46,21 @@ gradle-app.setting
 .github
 .git/
 .idea
-!server/build/libs/*.jar
 *.md
 docs/
 tests/
 src/test/
+**/src/test/
+**/src/integrationTest/
 docker-compose*.yml
 .env
 .env.*
 .codegraph/
 .claude/
+.codex/
+scripts/
+/BOOT-INF/
+/META-INF/
 node_modules/
 .venv/
 *.db

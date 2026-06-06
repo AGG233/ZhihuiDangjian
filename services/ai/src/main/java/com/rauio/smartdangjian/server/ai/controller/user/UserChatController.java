@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiChatRequest;
 import com.rauio.smartdangjian.server.ai.pojo.response.AiChatMessageResponse;
 import com.rauio.smartdangjian.server.ai.pojo.response.AiChatResponse;
@@ -31,7 +32,7 @@ import reactor.core.publisher.Flux;
 @RestController
 @RequestMapping("/api/ai/chat")
 @RequiredArgsConstructor
-@SaCheckRole("STUDENT")
+@SaCheckRole(RoleConstants.STUDENT)
 public class UserChatController {
 
     private final LLMService llmService;

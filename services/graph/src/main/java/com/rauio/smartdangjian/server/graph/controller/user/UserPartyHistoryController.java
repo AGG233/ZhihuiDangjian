@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
 import com.rauio.smartdangjian.server.graph.service.PartyHistoryQueryService;
 
@@ -22,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/graph/party-history")
 @RequiredArgsConstructor
-@SaCheckRole("STUDENT")
+@SaCheckRole(RoleConstants.STUDENT)
 public class UserPartyHistoryController {
 
     private final PartyHistoryQueryService queryService;

@@ -1,7 +1,7 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
@@ -13,40 +13,46 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.ai.chat.model.ToolContext;
 
-import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
-import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
-import com.rauio.smartdangjian.server.user.service.UserService;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
+import com.rauio.smartdangjian.server.quiz.api.UserQuizQueryFacade;
+import com.rauio.smartdangjian.server.quiz.pojo.dto.UserQuizAnswerDto;
 
 @ExtendWith(MockitoExtension.class)
 class UserQuizAnswerToolTest {
 
     @Mock
-    private UserQuizAnswerService userQuizAnswerService;
+    private CurrentUserProvider currentUserProvider;
 
     @Mock
-    private UserService userService;
+    private UserQuizQueryFacade userQuizQueryFacade;
 
     @InjectMocks
     private UserQuizAnswerTool userQuizAnswerTool;
 
+    private UserQuizAnswerDto createAnswer(LocalDateTime answerTime) {
+        return UserQuizAnswerDto.builder()
+                .id(1L)
+                .userId(1L)
+                .quizId(1L)
+                .optionId(1L)
+                .isCorrect(1)
+                .timeSpent(10)
+                .answerTime(answerTime)
+                .build();
+    }
+
     @Test
     @DisplayName("getRecentQuizAnswers 返回最近答题记录（按时间倒序）")
     void getRecentQuizAnswers() {
-        ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
 
-        UserQuizAnswer answer1 = mock(UserQuizAnswer.class);
-        when(answer1.getAnswerTime()).thenReturn(LocalDateTime.now().minusDays(2));
+        UserQuizAnswerDto answer1 = createAnswer(LocalDateTime.now().minusDays(2));
+        UserQuizAnswerDto answer2 = createAnswer(LocalDateTime.now());
 
-        UserQuizAnswer answer2 = mock(UserQuizAnswer.class);
-        when(answer2.getAnswerTime()).thenReturn(LocalDateTime.now());
+        when(userQuizQueryFacade.listByUserId(1L)).thenReturn(List.of(answer1, answer2));
 
-        when(userQuizAnswerService.getByUserId(1L)).thenReturn(List.of(answer1, answer2));
-
-        List<UserQuizAnswer> result = userQuizAnswerTool.getRecentQuizAnswers(10, toolContext);
+        List<UserQuizAnswerDto> result = userQuizAnswerTool.getRecentQuizAnswers(10);
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0)).isEqualTo(answer2);
@@ -56,12 +62,11 @@ class UserQuizAnswerToolTest {
     @Test
     @DisplayName("getRecentQuizAnswers limit 为 null 时默认返回 10 条")
     void getRecentQuizAnswersDefaultLimit() {
-        ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
 
-        when(userQuizAnswerService.getByUserId(1L)).thenReturn(List.of());
+        when(userQuizQueryFacade.listByUserId(1L)).thenReturn(List.of());
 
-        List<UserQuizAnswer> result = userQuizAnswerTool.getRecentQuizAnswers(null, toolContext);
+        List<UserQuizAnswerDto> result = userQuizAnswerTool.getRecentQuizAnswers(null);
 
         assertThat(result).isEmpty();
     }
@@ -69,12 +74,11 @@ class UserQuizAnswerToolTest {
     @Test
     @DisplayName("getRecentQuizAnswers with limit=0 defaults to 10")
     void getRecentQuizAnswersZeroLimit() {
-        ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
 
-        when(userQuizAnswerService.getByUserId(1L)).thenReturn(List.of());
+        when(userQuizQueryFacade.listByUserId(1L)).thenReturn(List.of());
 
-        List<UserQuizAnswer> result = userQuizAnswerTool.getRecentQuizAnswers(0, toolContext);
+        List<UserQuizAnswerDto> result = userQuizAnswerTool.getRecentQuizAnswers(0);
 
         assertThat(result).isEmpty();
     }
@@ -82,12 +86,11 @@ class UserQuizAnswerToolTest {
     @Test
     @DisplayName("getRecentQuizAnswers with negative limit defaults to 10")
     void getRecentQuizAnswersNegativeLimit() {
-        ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
 
-        when(userQuizAnswerService.getByUserId(1L)).thenReturn(List.of());
+        when(userQuizQueryFacade.listByUserId(1L)).thenReturn(List.of());
 
-        List<UserQuizAnswer> result = userQuizAnswerTool.getRecentQuizAnswers(-5, toolContext);
+        List<UserQuizAnswerDto> result = userQuizAnswerTool.getRecentQuizAnswers(-5);
 
         assertThat(result).isEmpty();
     }
@@ -95,14 +98,30 @@ class UserQuizAnswerToolTest {
     @Test
     @DisplayName("getQuizAnswersByQuizId returns answers for quiz")
     void getQuizAnswersByQuizId() {
-        ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("1");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
 
-        UserQuizAnswer answer = mock(UserQuizAnswer.class);
-        when(userQuizAnswerService.getByUserIdAndQuizId(1L, 1L)).thenReturn(List.of(answer));
+        UserQuizAnswerDto answer = createAnswer(LocalDateTime.now());
+        when(userQuizQueryFacade.listByUserIdAndQuizId(1L, 1L)).thenReturn(List.of(answer));
 
-        List<UserQuizAnswer> result = userQuizAnswerTool.getQuizAnswersByQuizId("1", toolContext);
+        List<UserQuizAnswerDto> result = userQuizAnswerTool.getQuizAnswersByQuizId("1");
 
         assertThat(result).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("getQuizAnswersByQuizId quizId 非数字时抛出参数异常")
+    void getQuizAnswersByQuizIdInvalidQuizId() {
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
+
+        assertThatThrownBy(() -> userQuizAnswerTool.getQuizAnswersByQuizId("not-a-number"))
+                .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    @DisplayName("getRecentQuizAnswers 当前用户缺失时返回空列表")
+    void getRecentQuizAnswersWithMissingCurrentUser() {
+        List<UserQuizAnswerDto> result = userQuizAnswerTool.getRecentQuizAnswers(5);
+
+        assertThat(result).isEmpty();
     }
 }

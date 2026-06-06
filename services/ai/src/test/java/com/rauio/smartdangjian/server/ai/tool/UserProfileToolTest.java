@@ -10,21 +10,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.ai.chat.model.ToolContext;
 
-import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
+import com.rauio.smartdangjian.server.search.api.SearchQueryFacade;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
-import com.rauio.smartdangjian.server.search.service.UserProfileService;
-import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 class UserProfileToolTest {
 
     @Mock
-    private UserProfileService userProfileService;
+    private SearchQueryFacade searchQueryFacade;
 
     @Mock
-    private UserService userService;
+    private CurrentUserProvider currentUserProvider;
 
     @InjectMocks
     private UserProfileTool userProfileTool;
@@ -32,13 +30,11 @@ class UserProfileToolTest {
     @Test
     @DisplayName("getUserProfile 返回用户画像数据")
     void getUserProfile() {
-        ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-1");
-
+        when(currentUserProvider.getCurrentUserId()).thenReturn("user-1");
         UserProfileResponse profile = mock(UserProfileResponse.class);
-        when(userProfileService.getProfile("user-1")).thenReturn(profile);
+        when(searchQueryFacade.getProfile("user-1")).thenReturn(profile);
 
-        UserProfileResponse result = userProfileTool.getUserProfile(toolContext);
+        UserProfileResponse result = userProfileTool.getUserProfile();
 
         assertThat(result).isSameAs(profile);
     }

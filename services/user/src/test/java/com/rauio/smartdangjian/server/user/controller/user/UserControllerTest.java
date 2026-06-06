@@ -14,8 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
+import com.rauio.smartdangjian.server.user.pojo.request.UserUpdateRequest;
 import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 import com.rauio.smartdangjian.server.user.service.UserService;
@@ -76,14 +76,14 @@ class UserControllerTest {
     @Test
     @DisplayName("update 委托 service 更新用户信息")
     void update() {
-        User user = User.builder().realName("新名字").build();
-        when(userService.update(1L, user)).thenReturn(user);
+        UserUpdateRequest request = new UserUpdateRequest();
+        request.setRealName("新名字");
 
-        var result = controller.update(1L, user);
+        var result = controller.update(1L, request);
 
         assertThat(result).isNotNull();
         assertThat(result.getCode()).isEqualTo("200");
-        verify(userService).update(1L, user);
+        verify(userService).update(1L, request);
     }
 
     @Test

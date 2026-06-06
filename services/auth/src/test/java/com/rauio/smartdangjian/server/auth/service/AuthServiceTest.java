@@ -6,20 +6,25 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.SessionUserPrincipal;
 import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
 import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
@@ -49,8 +54,16 @@ class AuthServiceTest {
     @Mock
     private UserService userService;
 
-    @InjectMocks
     private AuthService authService;
+
+    @org.junit.jupiter.api.BeforeEach
+    void setUp() {
+        authService = new AuthService(
+                captchaService,
+                userMapper,
+                userService,
+                Clock.fixed(Instant.parse("2026-05-31T10:15:30Z"), ZoneId.of("UTC")));
+    }
 
     // ================================================================
     // login
@@ -91,6 +104,15 @@ class AuthServiceTest {
             LoginResponse result = authService.login(request);
 
             assertThat(result.getAccessToken()).isEqualTo("sa-token-abc");
+            ArgumentCaptor<Object> principalCaptor = ArgumentCaptor.forClass(Object.class);
+            verify(session).set(org.mockito.Mockito.eq("user"), principalCaptor.capture());
+            assertThat(principalCaptor.getValue()).isInstanceOf(SessionUserPrincipal.class);
+            assertThat((SessionUserPrincipal) principalCaptor.getValue())
+                    .extracting(
+                            SessionUserPrincipal::getId,
+                            SessionUserPrincipal::getUserType,
+                            SessionUserPrincipal::getUniversityId)
+                    .containsExactly(user.getId(), user.getUserType(), user.getUniversityId());
         }
     }
 
@@ -331,6 +353,10 @@ class AuthServiceTest {
 
             assertThat(result).isNotNull();
             assertThat(result.getCode()).isEqualTo("200");
+            assertThat(result.getMessage()).isEqualTo("OK");
+            ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+            verify(userMapper).insert(userCaptor.capture());
+            assertThat(userCaptor.getValue().getEmail()).isNull();
         }
     }
 
@@ -414,7 +440,9 @@ class AuthServiceTest {
 
             assertThat(user.getPassword()).isEqualTo(encodedNewPassword);
             verify(userMapper).updateById(user);
-            verify(session).set("user", user);
+            ArgumentCaptor<Object> principalCaptor = ArgumentCaptor.forClass(Object.class);
+            verify(session).set(org.mockito.Mockito.eq("user"), principalCaptor.capture());
+            assertThat(principalCaptor.getValue()).isInstanceOf(SessionUserPrincipal.class);
         }
     }
 
@@ -446,6 +474,46 @@ class AuthServiceTest {
     // ================================================================
     // helpers
     // ================================================================
+
+    @Test
+    @DisplayName("changePassword 弱密码抛出 BusinessException(PASSWORD_WEAK)")
+    void changePasswordThrowsWhenNewPasswordWeak() {
+        ChangePasswordRequest request = createChangePasswordRequest();
+        request.setNewPassword("weak");
+        User user = createUser(1L, "testuser");
+        user.setPassword(newEncodedPassword());
+
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("u1");
+            when(userMapper.selectById("u1")).thenReturn(user);
+
+            assertThatThrownBy(() -> authService.changePassword(request))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("code")
+                    .isEqualTo(UserErrorConstants.PASSWORD_WEAK);
+            verify(userMapper, never()).updateById(any(com.rauio.smartdangjian.server.user.pojo.entity.User.class));
+        }
+    }
+
+    @Test
+    @DisplayName("changePassword 弱密码不调用 updateById")
+    void changePasswordDoesNotCallUpdateByIdWhenWeakPassword() {
+        ChangePasswordRequest request = createChangePasswordRequest();
+        request.setNewPassword("onlylowercase1");
+        User user = createUser(1L, "testuser");
+        user.setPassword(newEncodedPassword());
+
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("u1");
+            when(userMapper.selectById("u1")).thenReturn(user);
+
+            assertThatThrownBy(() -> authService.changePassword(request))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("code")
+                    .isEqualTo(UserErrorConstants.PASSWORD_WEAK);
+            verify(userMapper, never()).updateById(any(com.rauio.smartdangjian.server.user.pojo.entity.User.class));
+        }
+    }
 
     private static String newEncodedPassword() {
         return "enc_" + UUID.randomUUID();
@@ -481,8 +549,8 @@ class AuthServiceTest {
 
     private ChangePasswordRequest createChangePasswordRequest() {
         ChangePasswordRequest request = new ChangePasswordRequest();
-        request.setOldPassword(UUID.randomUUID().toString());
-        request.setNewPassword(UUID.randomUUID().toString());
+        request.setOldPassword("OldP@ss1");
+        request.setNewPassword("NewP@ss1");
         return request;
     }
 
@@ -512,6 +580,10 @@ class AuthServiceTest {
 
             assertThat(result).isNotNull();
             assertThat(result.getCode()).isEqualTo("200");
+            assertThat(result.getMessage()).isEqualTo("OK");
+            ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+            verify(userMapper).insert(userCaptor.capture());
+            assertThat(userCaptor.getValue().getEmail()).isEmpty();
         }
     }
 
@@ -531,6 +603,10 @@ class AuthServiceTest {
 
             assertThat(result).isNotNull();
             assertThat(result.getCode()).isEqualTo("200");
+            assertThat(result.getMessage()).isEqualTo("OK");
+            ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+            verify(userMapper).insert(userCaptor.capture());
+            assertThat(userCaptor.getValue().getPartyMemberId()).isNull();
         }
     }
 
@@ -550,6 +626,10 @@ class AuthServiceTest {
 
             assertThat(result).isNotNull();
             assertThat(result.getCode()).isEqualTo("200");
+            assertThat(result.getMessage()).isEqualTo("OK");
+            ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+            verify(userMapper).insert(userCaptor.capture());
+            assertThat(userCaptor.getValue().getPartyMemberId()).isEmpty();
         }
     }
 }

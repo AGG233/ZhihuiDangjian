@@ -1,7 +1,19 @@
 spring:
+  data:
+    redis:
+      password: ${REDIS_PASSWORD}
   ai:
     openai:
       api-key: ${AI_KEY}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
 
 logging:
   level:

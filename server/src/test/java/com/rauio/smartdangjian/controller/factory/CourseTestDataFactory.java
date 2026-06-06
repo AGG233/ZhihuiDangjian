@@ -7,14 +7,14 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.rauio.smartdangjian.server.chapter.pojo.request.ChapterRequest;
+import com.rauio.smartdangjian.server.chapter.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.pojo.dto.ContentBlockDto;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
-import com.rauio.smartdangjian.server.content.pojo.request.CourseRequest;
-import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
-import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
-import com.rauio.smartdangjian.server.content.pojo.response.PageResponse;
 import com.rauio.smartdangjian.server.content.spec.BlockType;
+import com.rauio.smartdangjian.server.course.pojo.entity.Course;
+import com.rauio.smartdangjian.server.course.pojo.request.CourseRequest;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.course.pojo.response.PageResponse;
 
 /**
  * Static factory for course/chapter test data — produces CourseRequest, CourseResponse,

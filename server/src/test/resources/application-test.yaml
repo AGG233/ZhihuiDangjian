@@ -3,20 +3,11 @@ spring:
     name: server
   flyway:
     enabled: false
-  datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
   data:
     redis:
       host: localhost
       port: 6379
-  neo4j:
-    uri: bolt://localhost:7687
-    authentication:
-      username: neo4j
-      password: password
+      timeout: 100ms
   ai:
     openai:
       base-url: https://api.deepseek.com
@@ -28,6 +19,10 @@ spring:
 auth:
   captcha:
     test-code: TEST8888
+
+app:
+  sensitive-word:
+    enabled: false
 
 dromara:
   x-file-storage:

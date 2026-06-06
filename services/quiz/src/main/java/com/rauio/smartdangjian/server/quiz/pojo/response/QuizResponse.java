@@ -2,6 +2,8 @@ package com.rauio.smartdangjian.server.quiz.pojo.response;
 
 import java.time.LocalDateTime;
 
+import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,4 +46,22 @@ public class QuizResponse {
 
     @Schema(description = "更新时间")
     private LocalDateTime updatedAt;
+
+    public static QuizResponse from(Quiz quiz) {
+        if (quiz == null) {
+            return null;
+        }
+        return QuizResponse.builder()
+                .id(quiz.getId())
+                .chapterId(quiz.getChapterId())
+                .question(quiz.getQuestion())
+                .questionType(quiz.getQuestionType())
+                .score(quiz.getScore())
+                .difficulty(quiz.getDifficulty())
+                .explanation(quiz.getExplanation())
+                .isActive(quiz.getIsActive())
+                .createdAt(quiz.getCreatedAt())
+                .updatedAt(quiz.getUpdatedAt())
+                .build();
+    }
 }

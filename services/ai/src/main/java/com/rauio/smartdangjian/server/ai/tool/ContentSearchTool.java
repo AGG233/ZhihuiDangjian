@@ -11,19 +11,18 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.pojo.entity.Article;
-import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
-import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
-import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
-import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
-import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
-import com.rauio.smartdangjian.server.content.service.article.ArticleService;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
-import com.rauio.smartdangjian.server.content.service.course.CourseService;
+import com.rauio.smartdangjian.server.chapter.api.ChapterQueryFacade;
+import com.rauio.smartdangjian.server.chapter.api.dto.ChapterSummary;
+import com.rauio.smartdangjian.server.chapter.pojo.response.ChapterResponse;
+import com.rauio.smartdangjian.server.content.api.ArticleQueryFacade;
+import com.rauio.smartdangjian.server.content.api.ContentQueryFacade;
+import com.rauio.smartdangjian.server.content.api.dto.ArticleSummary;
+import com.rauio.smartdangjian.server.content.api.dto.ContentBlockSummary;
+import com.rauio.smartdangjian.server.course.api.CourseQueryFacade;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,15 +30,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ContentSearchTool {
 
-    private final CourseService courseService;
-    private final ArticleService articleService;
-    private final ChapterService chapterService;
-    private final ChapterContentBlockService chapterContentBlockService;
+    private final CourseQueryFacade courseQueryFacade;
+    private final ArticleQueryFacade articleQueryFacade;
+    private final ChapterQueryFacade chapterQueryFacade;
+    private final ContentQueryFacade contentQueryFacade;
 
     @Tool(name = "searchCourses", description = "根据关键词搜索课程（匹配标题）")
     public List<Map<String, Object>> searchCourses(@ToolParam(description = "搜索关键词") String keyword) {
-        List<Course> courses = courseService.list(new LambdaQueryWrapper<Course>().like(Course::getTitle, keyword));
-        return courses.stream()
+        Page<CourseResponse> page = courseQueryFacade.searchPublishedCourses(keyword, null, null, 1, 1000);
+        return page.getRecords().stream()
                 .map(course -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("id", course.getId());
@@ -52,8 +51,7 @@ public class ContentSearchTool {
 
     @Tool(name = "searchArticles", description = "根据关键词搜索文章（匹配标题）")
     public List<Map<String, Object>> searchArticles(@ToolParam(description = "搜索关键词") String keyword) {
-        List<Article> articles =
-                articleService.list(new LambdaQueryWrapper<Article>().like(Article::getTitle, keyword));
+        List<ArticleSummary> articles = articleQueryFacade.searchByKeyword(keyword);
         return articles.stream()
                 .map(article -> {
                     Map<String, Object> map = new HashMap<>();
@@ -67,8 +65,7 @@ public class ContentSearchTool {
 
     @Tool(name = "searchChapters", description = "根据关键词搜索章节（匹配标题）")
     public List<Map<String, Object>> searchChapters(@ToolParam(description = "搜索关键词") String keyword) {
-        List<Chapter> chapters =
-                chapterService.list(new LambdaQueryWrapper<Chapter>().like(Chapter::getTitle, keyword));
+        List<ChapterSummary> chapters = chapterQueryFacade.searchByTitle(keyword);
         return chapters.stream()
                 .map(chapter -> {
                     Map<String, Object> map = new HashMap<>();
@@ -82,11 +79,11 @@ public class ContentSearchTool {
 
     @Tool(name = "getCourseDetail", description = "获取课程详情及其章节列表")
     public Map<String, Object> getCourseDetail(@ToolParam(description = "课程ID") String courseId) {
-        CourseResponse course = courseService.get(IdUtil.parse(courseId));
+        CourseResponse course = courseQueryFacade.get(IdUtil.parse(courseId));
         if (course == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "课程不存在");
         }
-        List<ChapterResponse> chapters = chapterService.getByCourseId(IdUtil.parse(courseId));
+        List<ChapterResponse> chapters = chapterQueryFacade.getByCourseId(IdUtil.parse(courseId));
 
         Map<String, Object> result = new HashMap<>();
         result.put("id", course.getId());
@@ -110,11 +107,11 @@ public class ContentSearchTool {
 
     @Tool(name = "getChapterDetail", description = "获取章节详情及其内容块")
     public Map<String, Object> getChapterDetail(@ToolParam(description = "章节ID") String chapterId) {
-        ChapterResponse chapter = chapterService.get(IdUtil.parse(chapterId));
+        ChapterResponse chapter = chapterQueryFacade.get(IdUtil.parse(chapterId));
         if (chapter == null) {
             throw new BusinessException(RESOURCE_NOT_EXISTS, "章节不存在");
         }
-        List<ContentBlockResponse> blocks = chapterContentBlockService.getByChapterId(IdUtil.parse(chapterId));
+        List<ContentBlockSummary> blocks = contentQueryFacade.getByChapterId(IdUtil.parse(chapterId));
 
         Map<String, Object> result = new HashMap<>();
         result.put("id", chapter.getId());

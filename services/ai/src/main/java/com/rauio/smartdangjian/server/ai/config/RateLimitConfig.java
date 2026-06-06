@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -24,28 +24,25 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
+@EnableConfigurationProperties(AiProperties.class)
 public class RateLimitConfig implements WebMvcConfigurer {
 
     private final UserService userService;
     private final ObjectMapper objectMapper;
-
-    @Value("${ai.rate-limit.enabled:true}")
-    private boolean enabled;
-
-    @Value("${ai.rate-limit.requests-per-minute:10}")
-    private int requestsPerMinute;
+    private final AiProperties aiProperties;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        if (!enabled) {
+        if (!aiProperties.getRateLimit().isEnabled()) {
             return;
         }
-        registry.addInterceptor(new RateLimitInterceptor()).addPathPatterns("/api/ai/chat/**");
+        registry.addInterceptor(new RateLimitInterceptor())
+                .addPathPatterns(aiProperties.getRateLimit().getPathPatterns());
     }
 
     private class RateLimitInterceptor implements HandlerInterceptor {
 
-        private final Map<String, ConcurrentHashMap<Long, AtomicInteger>> userCounters = new ConcurrentHashMap<>();
+        private final Map<String, WindowCounter> userCounters = new ConcurrentHashMap<>();
 
         @Override
         public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
@@ -61,15 +58,16 @@ public class RateLimitConfig implements WebMvcConfigurer {
             }
 
             long windowKey = System.currentTimeMillis() / 60_000;
-            ConcurrentHashMap<Long, AtomicInteger> counters =
-                    userCounters.computeIfAbsent(userId, k -> new ConcurrentHashMap<>());
+            WindowCounter counter = userCounters.compute(userId, (key, current) -> {
+                if (current == null || current.windowKey() != windowKey) {
+                    return new WindowCounter(windowKey, new AtomicInteger(1));
+                }
+                current.counter().incrementAndGet();
+                return current;
+            });
+            int count = counter.counter().get();
 
-            counters.entrySet().removeIf(e -> e.getKey() < windowKey - 1);
-
-            AtomicInteger counter = counters.computeIfAbsent(windowKey, k -> new AtomicInteger(0));
-            int count = counter.incrementAndGet();
-
-            if (count > requestsPerMinute) {
+            if (count > aiProperties.getRateLimit().getRequestsPerMinute()) {
                 log.warn("AI请求限流触发 userId={} count={}", userId, count);
                 response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
                 response.setContentType("application/json;charset=UTF-8");
@@ -79,4 +77,6 @@ public class RateLimitConfig implements WebMvcConfigurer {
             return true;
         }
     }
+
+    private record WindowCounter(long windowKey, AtomicInteger counter) {}
 }

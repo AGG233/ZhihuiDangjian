@@ -7,8 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
 import com.rauio.smartdangjian.server.quiz.mapper.QuizOptionMapper;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
+import com.rauio.smartdangjian.server.quiz.pojo.request.QuizOptionRequest;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -17,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption> {
 
     private final UserQuizAnswerService userQuizAnswerService;
@@ -30,9 +32,15 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
      * @param quizOption 选项实体
      * @return 是否更新成功
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean update(Long id, QuizOption quizOption) {
         quizOption.setId(id);
         return this.updateById(quizOption);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean update(Long id, QuizOptionRequest request) {
+        return update(id, request.toEntity());
     }
 
     /**
@@ -42,9 +50,15 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
      * @param option 选项实体
      * @return 是否创建成功
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean create(Long quizId, QuizOption option) {
         option.setQuizId(quizId);
         return this.save(option);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean create(Long quizId, QuizOptionRequest request) {
+        return create(quizId, request.toEntity());
     }
 
     /**
@@ -53,6 +67,7 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
      * @param quizId 测验 ID
      * @return 选项列表
      */
+    @Transactional(readOnly = true)
     public List<QuizOption> getByQuizId(Long quizId) {
         LambdaQueryWrapper<QuizOption> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(QuizOption::getQuizId, quizId);
@@ -65,9 +80,13 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
      * @param id 选项 ID
      * @return 选项实体；学生未答题时会隐藏正确答案字段
      */
+    @Transactional(readOnly = true)
     public QuizOption get(Long id) {
         User user = userService.getCurrentUser();
         QuizOption quizOption = this.getById(id);
+        if (quizOption == null) {
+            throw new BusinessException(QuizErrorConstants.QUIZ_OPTION_NOT_FOUND, "选项不存在");
+        }
 
         if (user.getUserType() == UserType.STUDENT
                 && userQuizAnswerService
@@ -84,6 +103,7 @@ public class QuizOptionService extends ServiceImpl<QuizOptionMapper, QuizOption>
      * @param optionId 选项 ID
      * @return 是否删除成功
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean delete(Long optionId) {
         return this.removeById(optionId);
     }

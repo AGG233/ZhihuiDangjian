@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
@@ -18,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/quiz/answers")
 @RequiredArgsConstructor
-@SaCheckRole("MANAGER")
+@SaCheckRole(RoleConstants.MANAGER)
 public class AdminQuizAnswerController {
 
     private final UserQuizAnswerService userQuizAnswerService;

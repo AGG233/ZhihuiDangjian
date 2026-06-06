@@ -1,9 +1,12 @@
 plugins {
-    id("boot-application-conventions")
+    id("service-conventions")
 }
 
 dependencies {
-    implementation(project(":services:common"))
+    implementation(project(":services:common:common-core"))
+    implementation(project(":services:common:common-web"))
+    implementation(project(":services:common:common-redis"))
+    implementation(project(":services:common:common-security"))
     implementation(project(":services:content"))
     implementation(project(":services:chapter"))
     implementation(project(":services:course"))
@@ -20,6 +23,7 @@ dependencies {
     implementation(libs.spring.boot.starter.data.redis)
     implementation(libs.springdoc.openapi.starter.webmvc.ui)
     implementation(libs.mapstruct)
+    implementation(libs.resilience4j.annotations)
 
     compileOnly(libs.lombok)
 

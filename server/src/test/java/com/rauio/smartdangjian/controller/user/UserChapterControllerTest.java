@@ -10,31 +10,23 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.controller.user.UserChapterController;
-import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
+import com.rauio.smartdangjian.server.chapter.constants.ChapterErrorConstants;
+import com.rauio.smartdangjian.server.chapter.pojo.response.ChapterResponse;
+import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = UserChapterControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("用户章节接口测试")
 class UserChapterControllerTest extends BaseControllerTest {
-
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public UserChapterController userChapterController(ChapterService chapterService) {
-            return new UserChapterController(chapterService);
-        }
-    }
 
     @MockitoBean
     private ChapterService chapterService;
@@ -82,11 +74,12 @@ class UserChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 章节不存在返回 BusinessException（4000）")
         void getChapterNotExists() throws Exception {
-            when(chapterService.get(999L)).thenThrow(new BusinessException(4000, "章节不存在"));
+            when(chapterService.get(999L))
+                    .thenThrow(new BusinessException(ChapterErrorConstants.CHAPTER_NOT_FOUND, "章节不存在"));
 
             mockMvc.perform(get("/api/content/chapters/999"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("3101"))
                     .andExpect(jsonPath("$.message").value("章节不存在"));
         }
 
@@ -144,28 +137,24 @@ class UserChapterControllerTest extends BaseControllerTest {
     @DisplayName("安全场景")
     class SecurityTests {
 
-        @Test
-        @DisplayName("XSS 尝试在路径参数中")
-        void xssInPath() throws Exception {
-            mockMvc.perform(get("/api/content/chapters/1")).andExpect(status().isOk());
+        @ParameterizedTest(name = "chapter id={0}")
+        @ValueSource(strings = {"<script>alert('xss')", "' OR '1'='1", "3.14", "章节"})
+        @DisplayName("非法章节 ID 路径参数返回 400")
+        void invalidChapterIdInPathReturns400(String id) throws Exception {
+            mockMvc.perform(get("/api/content/chapters/{id}", id)).andExpect(status().isBadRequest());
         }
 
-        @Test
-        @DisplayName("SQL 注入尝试在路径参数中")
-        void sqlInjectionInPath() throws Exception {
-            mockMvc.perform(get("/api/content/chapters/1")).andExpect(status().isOk());
-        }
-
-        @Test
-        @DisplayName("POST 请求获取接口返回 405")
-        void getWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/content/chapters/ch-1")).andExpect(status().isMethodNotAllowed());
-        }
-
-        @Test
-        @DisplayName("PUT 请求列表接口返回 405")
-        void getByCourseWithWrongMethod() throws Exception {
-            mockMvc.perform(put("/api/content/chapters/by-course/course-1")).andExpect(status().isMethodNotAllowed());
+        @ParameterizedTest(name = "{0} {1}")
+        @CsvSource({"POST,/api/content/chapters/ch-1", "PUT,/api/content/chapters/by-course/course-1"})
+        @DisplayName("错误 HTTP 方法返回 405")
+        void wrongMethodReturns405(String method, String path) throws Exception {
+            if ("POST".equals(method)) {
+                mockMvc.perform(post(path)).andExpect(status().isMethodNotAllowed());
+            } else if ("PUT".equals(method)) {
+                mockMvc.perform(put(path)).andExpect(status().isMethodNotAllowed());
+            } else {
+                throw new IllegalArgumentException("Unsupported method: " + method);
+            }
         }
     }
 }

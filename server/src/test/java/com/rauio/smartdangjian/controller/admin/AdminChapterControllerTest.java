@@ -11,32 +11,21 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.controller.admin.AdminChapterController;
-import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
-import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
+import com.rauio.smartdangjian.server.chapter.constants.ChapterErrorConstants;
+import com.rauio.smartdangjian.server.chapter.pojo.request.ChapterRequest;
+import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminChapterControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("管理员章节接口测试")
 class AdminChapterControllerTest extends BaseControllerTest {
-
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public AdminChapterController adminChapterController(ChapterService chapterService) {
-            return new AdminChapterController(chapterService);
-        }
-    }
 
     @MockitoBean
     private ChapterService chapterService;
@@ -53,7 +42,9 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterRequest())))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").value(true));
         }
 
         @Test
@@ -64,7 +55,9 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(put("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterRequest())))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").value(true));
         }
 
         @Test
@@ -127,12 +120,15 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 500")
         void createThrowsBusinessException() throws Exception {
-            when(chapterService.create(any(ChapterRequest.class))).thenThrow(new BusinessException(4000, "课程至少需要一个章节"));
+            when(chapterService.create(any(ChapterRequest.class)))
+                    .thenThrow(new BusinessException(ChapterErrorConstants.CHAPTER_MIN_REQUIRED, "课程至少需要一个章节"));
 
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterRequest())))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("3104"))
+                    .andExpect(jsonPath("$.message").value("课程至少需要一个章节"));
         }
 
         @Test
@@ -155,7 +151,10 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(put("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterRequest())))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").value(false))
+                    .andExpect(jsonPath("$.message").value("OK"));
         }
 
         @Test
@@ -177,6 +176,21 @@ class AdminChapterControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{invalid json"))
                     .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("创建章节 - 空请求体返回 400")
+        void createWithEmptyBody() throws Exception {
+            mockMvc.perform(post("/api/admin/content/chapters")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(""))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("删除章节 - 非数字路径参数返回 400")
+        void deleteWithNonNumericId() throws Exception {
+            mockMvc.perform(delete("/api/admin/content/chapters/not-a-number")).andExpect(status().isBadRequest());
         }
     }
 
@@ -200,7 +214,9 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").value(true));
         }
 
         @Test
@@ -219,7 +235,9 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").value(true));
         }
 
         @Test
@@ -238,7 +256,9 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").value(true));
         }
 
         private com.rauio.smartdangjian.server.content.pojo.dto.ContentBlockDto createSimpleContentBlock() {
@@ -269,7 +289,9 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").value(true));
         }
 
         @Test
@@ -288,7 +310,9 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").value(true));
         }
 
         @Test

@@ -4,7 +4,6 @@ plugins {
 
 dependencies {
     api(project(":services:common"))
-    implementation(project(":services:content"))
     implementation(project(":services:chapter"))
     implementation(project(":services:course"))
     implementation(project(":services:learning"))

@@ -1,5 +1,6 @@
 package com.rauio.smartdangjian.server.social.controller.user;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -18,11 +19,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.server.social.pojo.response.CommentResponse;
 import com.rauio.smartdangjian.server.social.pojo.response.LikeStatusResponse;
 import com.rauio.smartdangjian.server.social.service.CommentService;
 import com.rauio.smartdangjian.server.social.service.LikeService;
-import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 class UserSocialControllerTest {
@@ -34,7 +35,7 @@ class UserSocialControllerTest {
     private LikeService likeService;
 
     @Mock
-    private UserService userService;
+    private CurrentUserProvider currentUserProvider;
 
     @InjectMocks
     private UserSocialController controller;
@@ -65,7 +66,7 @@ class UserSocialControllerTest {
 
             var result = controller.getComments("article", 1L, null, 1, 10, "latest");
 
-            assert result.getData().getRecords().size() == 1;
+            assertThat(result.getData().getRecords()).hasSize(1);
         }
     }
 
@@ -76,7 +77,7 @@ class UserSocialControllerTest {
         @Test
         @DisplayName("查询点赞状态")
         void getLikeStatus() {
-            when(userService.getCurrentUserId()).thenReturn("1");
+            when(currentUserProvider.getCurrentUserId()).thenReturn("1");
             var response = LikeStatusResponse.builder()
                     .liked(false)
                     .likeCount(5)
@@ -87,7 +88,7 @@ class UserSocialControllerTest {
 
             var result = controller.getLikeStatus("comment", 1L);
 
-            assert result.getData().getLikeCount() == 5;
+            assertThat(result.getData().getLikeCount()).isEqualTo(5);
         }
     }
 }

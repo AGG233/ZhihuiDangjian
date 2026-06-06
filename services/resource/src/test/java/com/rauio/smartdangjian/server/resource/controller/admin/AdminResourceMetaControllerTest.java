@@ -41,7 +41,7 @@ class AdminResourceMetaControllerTest {
 
         var result = controller.create(request);
 
-        assertThat(result.getData().getId()).isEqualTo(1L);
+        assertThat(result.getData().id()).isEqualTo("1");
     }
 
     @Test
@@ -52,7 +52,7 @@ class AdminResourceMetaControllerTest {
 
         var result = controller.get(1L);
 
-        assertThat(result.getData().getId()).isEqualTo(1L);
+        assertThat(result.getData().id()).isEqualTo("1");
     }
 
     @Test

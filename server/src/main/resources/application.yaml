@@ -12,23 +12,33 @@ spring:
       idle-timeout: 30000
       username: ${DATABASE_USERNAME}
       password: ${DATABASE_PASSWORD}
-    url: ${DATABASE_URL:jdbc:mysql://127.0.0.1:3306/zhihuidangjian?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    url: ${DATABASE_URL:jdbc:mysql://127.0.0.1:3306/zhihuidangjian?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
   flyway:
     baseline-on-migrate: true
+  # Spring Data Redis (Spring Boot 3.x 新命名空间)
   data:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       database: ${REDIS_DATABASE}
+      password: ${REDIS_PASSWORD:}
+      timeout: 5s
+      connect-timeout: 2s
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 4
+          max-wait: 2s
   neo4j:
     uri: ${NEO4J_URI:bolt://localhost:7687}
     authentication:
       username: ${NEO4J_USERNAME:neo4j}
-      password: ${NEO4J_PASSWORD:password}
+      password: ${NEO4J_PASSWORD}
   ai:
     openai:
       base-url: https://api.deepseek.com
-      api-key: ${AI_KEY:dummy-key}
+      api-key: ${AI_KEY}
       chat:
         options:
           model: deepseek-chat
@@ -65,7 +75,13 @@ dromara:
 server:
   port: 9000
 
+# MyBatis-Plus 配置
+mybatis-plus:
+  type-aliases-package: com.rauio.smartdangjian.server.content.pojo.entity,com.rauio.smartdangjian.server.category.pojo.entity,com.rauio.smartdangjian.server.chapter.pojo.entity,com.rauio.smartdangjian.server.course.pojo.entity
+
 logging:
   level:
     root: INFO
     com.rauio.smartdangjian: DEBUG
+  pattern:
+    level: "%5p [%X{traceId:-} %X{spanId:-}]"

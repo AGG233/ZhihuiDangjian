@@ -1,9 +1,5 @@
 package com.rauio.smartdangjian.server.user.service;
 
-import static com.rauio.smartdangjian.constants.RedisConstants.USER_VO_CACHE_PREFIX;
-
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -11,15 +7,16 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
+import com.rauio.smartdangjian.server.user.pojo.request.UserUpdateRequest;
 import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 
-import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class UserService extends ServiceImpl<UserMapper, User> {
 
     private final UserConvertor convertor;
+    private final CurrentUserProvider currentUserProvider;
 
     /**
      * 根据通行凭证识别并查询用户。
@@ -36,7 +34,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @return 用户实体
      * @throws BusinessException 如果通行凭证为空
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#passport")
     public User getByPassport(String passport) {
         if (passport == null || passport.isEmpty()) {
             throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "通行凭证不能为空");
@@ -57,7 +54,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param id 用户 ID
      * @return 用户视图对象
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#id")
     public UserResponse get(Long id) {
         return convertor.toResponse(this.getById(id));
     }
@@ -68,11 +64,11 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @return 当前调用接口的用户
      */
     public User getCurrentUser() {
-        if (!StpUtil.isLogin()) {
+        String userId = getCurrentUserId();
+        if (userId == null) {
             return null;
         }
-        Object user = StpUtil.getSession().get("user");
-        return user instanceof User ? (User) user : null;
+        return this.getById(userId);
     }
 
     /**
@@ -81,10 +77,11 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @return 当前用户 ID，未登录时返回开发环境默认值（如有配置）
      */
     public String getCurrentUserId() {
-        if (!StpUtil.isLogin()) {
+        String currentUserId = currentUserProvider.getCurrentUserId();
+        if (currentUserId == null || currentUserId.isEmpty()) {
             return null;
         }
-        return StpUtil.getLoginIdAsString();
+        return currentUserId;
     }
 
     /**
@@ -93,7 +90,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param username 用户名
      * @return 用户实体
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#username")
     public User getByUsername(String username) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username));
     }
@@ -104,7 +100,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param email 邮箱
      * @return 用户实体
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#email")
     public User getByEmail(String email) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getEmail, email));
     }
@@ -115,7 +110,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param phone 手机号
      * @return 用户实体
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#phone")
     public User getByPhone(String phone) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone));
     }
@@ -126,7 +120,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param partyMemberId 党员编号
      * @return 用户实体
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#partyMemberId")
     public User getByPartyMemberId(String partyMemberId) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getPartyMemberId, partyMemberId));
     }
@@ -138,7 +131,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param user 用户实体
      * @throws BusinessException 如果更新失败
      */
-    @CacheEvict(value = USER_VO_CACHE_PREFIX, allEntries = true)
     public User update(Long id, User user) {
         user.setId(id);
         if (StringUtils.isNotBlank(user.getPassword())) {
@@ -150,13 +142,22 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         return this.getById(id);
     }
 
+    public User update(Long id, UserUpdateRequest request) {
+        User user = convertor.toEntity(request);
+        return update(id, user);
+    }
+
+    public User update(Long id, UserRequest request) {
+        User user = convertor.toEntity(request);
+        return update(id, user);
+    }
+
     /**
      * 删除用户。
      *
      * @param id 用户 ID
      * @throws BusinessException 如果删除失败
      */
-    @CacheEvict(value = USER_VO_CACHE_PREFIX, allEntries = true)
     public void delete(Long id) {
         if (!this.removeById(id)) {
             throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户删除失败");
@@ -170,6 +171,9 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @throws BusinessException 如果注册失败
      */
     public void register(User user) {
+        if (user == null) {
+            throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "有空参数");
+        }
         checkEmailRegistered(user.getEmail());
         checkPhoneRegistered(user.getPhone());
         checkUsernameOccupied(user.getUsername());
@@ -180,6 +184,10 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         }
     }
 
+    public void register(UserRequest request) {
+        register(convertor.toEntity(request));
+    }
+
     /**
      * 修改当前用户密码。
      *
@@ -187,12 +195,25 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param newPassword 新密码
      * @throws BusinessException 如果修改失败
      */
-    @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#root.target.getCurrentUser().id")
     public void changePassword(String oldPassword, String newPassword) {
         if (oldPassword == null || oldPassword.isEmpty()) {
             throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "有空参数");
         }
-        User user = getCurrentUser();
+        String currentUserId = getCurrentUserId();
+        if (currentUserId == null) {
+            throw new BusinessException(UserErrorConstants.PASSWORD_CHANGE_ERROR, "未登录或登录已过期");
+        }
+        changePasswordForUser(currentUserId, oldPassword, newPassword);
+    }
+
+    public void changePasswordForUser(String userId, String oldPassword, String newPassword) {
+        if (oldPassword == null || oldPassword.isEmpty()) {
+            throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "有空参数");
+        }
+        User user = this.getById(userId);
+        if (user == null) {
+            throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户不存在");
+        }
         if (BCrypt.checkpw(oldPassword, user.getPassword())) {
             user.setPassword(BCrypt.hashpw(newPassword));
             if (!this.updateById(user)) {
@@ -238,15 +259,22 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     /**
      * 按条件分页查询用户（管理员侧，返回完整信息）。
      *
-     * @param dto 查询条件
+     * @param request 查询条件
      * @param pageNum 页码
      * @param pageSize 每页条数
      * @return 用户完整信息分页结果
      */
     public Page<User> getAdminPage(UserRequest request, int pageNum, int pageSize) {
         Page<User> pageInfo = new Page<>(pageNum, pageSize);
-        LambdaQueryWrapper<User> wrapper = buildQueryWrapper(request);
+        LambdaQueryWrapper<User> wrapper = buildAdminQueryWrapper(request);
         return this.page(pageInfo, wrapper);
+    }
+
+    public Page<UserResponse> getAdminResponsePage(UserRequest request, int pageNum, int pageSize) {
+        Page<User> result = getAdminPage(request, pageNum, pageSize);
+        Page<UserResponse> responsePage = new Page<>(result.getCurrent(), result.getSize(), result.getTotal());
+        responsePage.setRecords(convertor.toResponse(result.getRecords()));
+        return responsePage;
     }
 
     private LambdaQueryWrapper<User> buildQueryWrapper(UserRequest request) {
@@ -258,8 +286,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
                         StringUtils.isNotBlank(request.getPartyMemberId()),
                         User::getPartyMemberId,
                         request.getPartyMemberId())
-                .like(StringUtils.isNotBlank(request.getEmail()), User::getEmail, request.getEmail())
-                .like(StringUtils.isNotBlank(request.getPhone()), User::getPhone, request.getPhone())
                 .eq(request.getUserType() != null, User::getUserType, request.getUserType())
                 .eq(request.getPartyStatus() != null, User::getPartyStatus, request.getPartyStatus())
                 .eq(StringUtils.isNotBlank(request.getUniversityId()), User::getUniversityId, request.getUniversityId())
@@ -314,5 +340,22 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         if (this.exists(queryWrapper)) {
             throw new BusinessException(UserErrorConstants.PARTY_MEMBER_ID_EXISTS, "党员编号已存在");
         }
+    }
+
+    private LambdaQueryWrapper<User> buildAdminQueryWrapper(UserRequest request) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(StringUtils.isNotBlank(request.getUsername()), User::getUsername, request.getUsername())
+                .like(StringUtils.isNotBlank(request.getRealName()), User::getRealName, request.getRealName())
+                .like(
+                        StringUtils.isNotBlank(request.getPartyMemberId()),
+                        User::getPartyMemberId,
+                        request.getPartyMemberId())
+                .eq(StringUtils.isNotBlank(request.getEmail()), User::getEmail, request.getEmail())
+                .eq(StringUtils.isNotBlank(request.getPhone()), User::getPhone, request.getPhone())
+                .eq(request.getUserType() != null, User::getUserType, request.getUserType())
+                .eq(request.getPartyStatus() != null, User::getPartyStatus, request.getPartyStatus())
+                .eq(StringUtils.isNotBlank(request.getUniversityId()), User::getUniversityId, request.getUniversityId())
+                .like(StringUtils.isNotBlank(request.getBranchName()), User::getBranchName, request.getBranchName());
+        return wrapper;
     }
 }

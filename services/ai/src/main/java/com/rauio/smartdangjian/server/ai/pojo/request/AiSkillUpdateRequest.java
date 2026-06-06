@@ -21,7 +21,7 @@ public class AiSkillUpdateRequest {
 
     private Boolean enabled;
 
-    @Min(0)
+    @Min(value = 0, message = "sort不能小于0")
     private Integer sort;
 
     private List<String> toolGroups;

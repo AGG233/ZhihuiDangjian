@@ -2,8 +2,6 @@ package com.rauio.smartdangjian.server.resource.service;
 
 import java.util.List;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,11 +22,11 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, ResourceMeta> {
 
     private final PermissionValidator permissionValidator;
 
+    @Transactional(rollbackFor = Exception.class)
     public ResourceMeta create(ResourceMetaCreateRequest request) {
         validateDuplicate(null, request.getHash(), request.getObjectKey());
         ResourceMeta meta = ResourceMeta.builder()
@@ -45,6 +43,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return meta;
     }
 
+    @Transactional(readOnly = true)
     public ResourceMeta get(Long id) {
         ResourceMeta meta = this.getById(id);
         if (meta == null) {
@@ -53,21 +52,21 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return meta;
     }
 
-    @Cacheable(value = "resourceMeta", key = "#hash")
+    @Transactional(readOnly = true)
     public ResourceMeta getByHash(String hash) {
-        ResourceMeta meta = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
-                .eq(ResourceMeta::getHash, hash)
-                .last("limit 1"));
+        ResourceMeta meta = this.getOne(new LambdaQueryWrapper<ResourceMeta>().eq(ResourceMeta::getHash, hash));
         if (meta == null) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在");
         }
         return meta;
     }
 
+    @Transactional(readOnly = true)
     public boolean existsByHash(String hash) {
         return this.exists(new LambdaQueryWrapper<ResourceMeta>().eq(ResourceMeta::getHash, hash));
     }
 
+    @Transactional(readOnly = true)
     public List<ResourceMeta> list(
             Long uploaderId, String originalName, String hash, Integer resourceType, Integer status) {
         LambdaQueryWrapper<ResourceMeta> wrapper = new LambdaQueryWrapper<>();
@@ -80,7 +79,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return this.list(wrapper);
     }
 
-    @CacheEvict(value = "resourceMeta", key = "#root.target.getById(#id).hash")
+    @Transactional(rollbackFor = Exception.class)
     public Boolean update(Long id, ResourceMetaUpdateRequest request) {
         ResourceMeta existing = this.get(id);
         permissionValidator.requireResourceAccess(existing.getUploaderId());
@@ -109,7 +108,7 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return true;
     }
 
-    @CacheEvict(value = "resourceMeta", key = "#root.target.getById(#id).hash", beforeInvocation = true)
+    @Transactional(rollbackFor = Exception.class)
     public Boolean delete(Long id) {
         ResourceMeta meta = this.get(id);
         permissionValidator.requireResourceAccess(meta.getUploaderId());
@@ -120,19 +119,20 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return true;
     }
 
-    @CacheEvict(value = "resourceMeta", key = "#hash")
+    @Transactional(rollbackFor = Exception.class)
     public Boolean deleteByHash(String hash) {
-        ResourceMeta meta = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
-                .eq(ResourceMeta::getHash, hash)
-                .last("limit 1"));
+        ResourceMeta meta = this.getOne(new LambdaQueryWrapper<ResourceMeta>().eq(ResourceMeta::getHash, hash));
         if (meta == null) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在");
         }
         permissionValidator.requireResourceAccess(meta.getUploaderId());
-        return delete(meta.getId());
+        if (!this.removeById(meta.getId())) {
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_DELETE_FAILED, "删除资源失败");
+        }
+        return true;
     }
 
-    @CacheEvict(value = "resourceMeta", allEntries = true)
+    @Transactional(rollbackFor = Exception.class)
     public Boolean deleteByHashes(List<String> hashes) {
         for (String hash : hashes) {
             deleteByHash(hash);
@@ -140,17 +140,25 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return true;
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public boolean markPublic(Long id) {
+        ResourceMeta existing = this.get(id);
+        existing.setStatus(ResourceStatusConstants.PUBLIC);
+        if (!this.updateById(existing)) {
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_UPDATE_FAILED, "更新资源失败");
+        }
+        return true;
+    }
+
     private void validateDuplicate(Long currentId, String hash, String objectKey) {
-        ResourceMeta sameHash = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
-                .eq(StringUtils.isNotBlank(hash), ResourceMeta::getHash, hash)
-                .last("limit 1"));
+        ResourceMeta sameHash = this.getOne(
+                new LambdaQueryWrapper<ResourceMeta>().eq(StringUtils.isNotBlank(hash), ResourceMeta::getHash, hash));
         if (sameHash != null && !sameHash.getId().equals(currentId)) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_HASH_EXISTS, "资源哈希已存在");
         }
 
         ResourceMeta sameObjectKey = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
-                .eq(StringUtils.isNotBlank(objectKey), ResourceMeta::getObjectKey, objectKey)
-                .last("limit 1"));
+                .eq(StringUtils.isNotBlank(objectKey), ResourceMeta::getObjectKey, objectKey));
         if (sameObjectKey != null && !sameObjectKey.getId().equals(currentId)) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_OBJECT_KEY_EXISTS, "对象存储键已存在");
         }

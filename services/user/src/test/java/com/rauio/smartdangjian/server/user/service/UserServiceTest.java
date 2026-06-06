@@ -6,26 +6,34 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
 
+import org.apache.ibatis.builder.MapperBuilderAssistant;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.annotation.Cacheable;
 
+import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
@@ -35,19 +43,49 @@ import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
-import cn.dev33.satoken.session.SaSession;
-import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.crypto.digest.BCrypt;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
+    @BeforeAll
+    static void initTableInfo() {
+        MybatisConfiguration config = new MybatisConfiguration();
+        MapperBuilderAssistant assistant = new MapperBuilderAssistant(config, "");
+        TableInfoHelper.initTableInfo(assistant, User.class);
+    }
+
     @Mock
     private UserConvertor convertor;
+
+    @Mock
+    private CurrentUserProvider currentUserProvider;
 
     @Spy
     @InjectMocks
     private UserService userService;
+
+    @BeforeEach
+    void resetSpy() {
+        reset(userService);
+    }
+
+    @Test
+    @DisplayName("认证相关用户实体查询不使用 Spring Cache")
+    void credentialUserLookupsAreNotCacheable() throws NoSuchMethodException {
+        assertThat(UserService.class.getMethod("getByPassport", String.class).getAnnotation(Cacheable.class))
+                .isNull();
+        assertThat(UserService.class.getMethod("getByUsername", String.class).getAnnotation(Cacheable.class))
+                .isNull();
+        assertThat(UserService.class.getMethod("getByEmail", String.class).getAnnotation(Cacheable.class))
+                .isNull();
+        assertThat(UserService.class.getMethod("getByPhone", String.class).getAnnotation(Cacheable.class))
+                .isNull();
+        assertThat(UserService.class
+                        .getMethod("getByPartyMemberId", String.class)
+                        .getAnnotation(Cacheable.class))
+                .isNull();
+    }
 
     // ---------- helpers ----------
 
@@ -144,47 +182,37 @@ class UserServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("getCurrentUser 已登录且session中有User时返回该User")
+    @DisplayName("getCurrentUser 已登录时按登录 ID 查询用户")
     void getCurrentUserAuthenticatedReturnsUser() {
         User user = createUser(1L, "testuser", "test@example.com", "13800138000");
 
-        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
-            SaSession session = mock(SaSession.class);
-            when(session.get("user")).thenReturn(user);
-            stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
-            stpUtilMock.when(StpUtil::getSession).thenReturn(session);
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
+        doReturn(user).when(userService).getById("1");
 
-            User result = userService.getCurrentUser();
+        User result = userService.getCurrentUser();
 
-            assertThat(result).isEqualTo(user);
-        }
+        assertThat(result).isEqualTo(user);
     }
 
     @Test
-    @DisplayName("getCurrentUser session中的user不是User实例时返回null")
-    void getCurrentUserPrincipalNotUserReturnsNull() {
-        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
-            SaSession session = mock(SaSession.class);
-            when(session.get("user")).thenReturn("not-a-user-instance");
-            stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
-            stpUtilMock.when(StpUtil::getSession).thenReturn(session);
+    @DisplayName("getCurrentUser 已登录但用户不存在时返回null")
+    void getCurrentUserUserNotFoundReturnsNull() {
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
+        doReturn(null).when(userService).getById("1");
 
-            User result = userService.getCurrentUser();
+        User result = userService.getCurrentUser();
 
-            assertThat(result).isNull();
-        }
+        assertThat(result).isNull();
     }
 
     @Test
     @DisplayName("getCurrentUser 未登录时返回null")
     void getCurrentUserNullAuthenticationReturnsNull() {
-        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
-            stpUtilMock.when(StpUtil::isLogin).thenReturn(false);
+        when(currentUserProvider.getCurrentUserId()).thenReturn(null);
 
-            User result = userService.getCurrentUser();
+        User result = userService.getCurrentUser();
 
-            assertThat(result).isNull();
-        }
+        assertThat(result).isNull();
     }
 
     // ================================================================
@@ -194,26 +222,21 @@ class UserServiceTest {
     @Test
     @DisplayName("getCurrentUserId 已登录时返回用户ID")
     void getCurrentUserIdAuthenticatedReturnsId() {
-        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
-            stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
-            stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("user-id-123");
+        when(currentUserProvider.getCurrentUserId()).thenReturn("user-id-123");
 
-            String result = userService.getCurrentUserId();
+        String result = userService.getCurrentUserId();
 
-            assertThat(result).isEqualTo("user-id-123");
-        }
+        assertThat(result).isEqualTo("user-id-123");
     }
 
     @Test
     @DisplayName("getCurrentUserId 未登录时返回null")
     void getCurrentUserIdNotAuthenticatedReturnsDefaultId() {
-        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
-            stpUtilMock.when(StpUtil::isLogin).thenReturn(false);
+        when(currentUserProvider.getCurrentUserId()).thenReturn(null);
 
-            String result = userService.getCurrentUserId();
+        String result = userService.getCurrentUserId();
 
-            assertThat(result).isNull();
-        }
+        assertThat(result).isNull();
     }
 
     // ================================================================
@@ -409,6 +432,15 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("register 用户为 null 时抛出BusinessException(EMPTY_ARGS)")
+    void registerThrowsWhenUserIsNull() {
+        assertThatThrownBy(() -> userService.register((User) null))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(UserErrorConstants.EMPTY_ARGS);
+    }
+
+    @Test
     @DisplayName("register 手机号已注册时抛出BusinessException(PHONE_EXISTS)")
     void registerThrowsWhenPhoneExists() {
         User user = createUser(null, "newuser", "new@example.com", "13900139000");
@@ -498,7 +530,8 @@ class UserServiceTest {
         User user = createUser(1L, "testuser", "test@example.com", "13800138000");
         user.setPassword("encodedOldPassword");
 
-        doReturn(user).when(userService).getCurrentUser();
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
+        doReturn(user).when(userService).getById("1");
         doReturn(true).when(userService).updateById(any(User.class));
 
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
@@ -522,7 +555,8 @@ class UserServiceTest {
         User user = createUser(1L, "testuser", "test@example.com", "13800138000");
         user.setPassword("encodedOldPassword");
 
-        doReturn(user).when(userService).getCurrentUser();
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
+        doReturn(user).when(userService).getById("1");
 
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
             bcryptMock
@@ -545,7 +579,8 @@ class UserServiceTest {
         User user = createUser(1L, "testuser", "test@example.com", "13800138000");
         user.setPassword("encodedOldPassword");
 
-        doReturn(user).when(userService).getCurrentUser();
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
+        doReturn(user).when(userService).getById("1");
         doReturn(false).when(userService).updateById(any(User.class));
 
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
@@ -632,6 +667,8 @@ class UserServiceTest {
     void getPageCallsConvertor() {
         UserRequest request = new UserRequest();
         request.setUsername("test");
+        request.setEmail("test@example.com");
+        request.setPhone("13800138000");
 
         List<User> userList = List.of(createUser(1L, "testuser", "test@example.com", "13800138000"));
         Page<User> userPage = new Page<>(1, 10, 1);
@@ -646,6 +683,17 @@ class UserServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getRecords()).isEqualTo(responseList);
         verify(convertor).toPublicResponse(userList);
+        ArgumentCaptor<LambdaQueryWrapper<User>> wrapperCaptor = ArgumentCaptor.forClass(LambdaQueryWrapper.class);
+        verify(userService).page(any(Page.class), wrapperCaptor.capture());
+        assertThat(wrapperCaptor.getValue().getSqlSegment()).contains("username LIKE");
+        // PII 保护：user-facing 查询不包含 email/phone LIKE 或 = 条件
+        assertThat(wrapperCaptor.getValue().getSqlSegment())
+                .doesNotContain("email")
+                .doesNotContain("phone");
+        assertThat(wrapperCaptor.getValue().getParamNameValuePairs())
+                .containsValue("%test%")
+                .doesNotContainValue("%test@example.com%")
+                .doesNotContainValue("%13800138000%");
     }
 
     @Test

@@ -1,0 +1,25 @@
+package com.rauio.smartdangjian.server.course.mapper;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.github.yulichang.base.MPJBaseMapper;
+import com.rauio.smartdangjian.server.course.pojo.entity.Course;
+
+@Mapper
+public interface CourseMapper extends BaseMapper<Course>, MPJBaseMapper<Course> {
+
+    @Select(
+            """
+            SELECT DISTINCT c.*
+            FROM course c
+            JOIN chapter ch ON ch.course_id = c.id
+            JOIN user_chapter_progress ucp ON ucp.chapter_id = ch.id
+            WHERE ucp.user_id = #{userId}
+            """)
+    List<Course> selectLearnedCoursesByUserId(@Param("userId") Long userId);
+}

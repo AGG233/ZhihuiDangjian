@@ -10,4 +10,5 @@ public class GraphErrorConstants {
     public static final int COURSE_NOT_FOUND = 7003;
     public static final int GRAPH_INVALID_RELATIONSHIP = 7004;
     public static final int GRAPH_ENTITY_NOT_FOUND = 7005;
+    public static final int LEARNING_GRAPH_SYNC_FAILED = 7006;
 }

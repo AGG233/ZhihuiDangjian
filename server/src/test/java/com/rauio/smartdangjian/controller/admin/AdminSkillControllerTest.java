@@ -15,32 +15,21 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.AiTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.ai.controller.admin.AdminSkillController;
+import com.rauio.smartdangjian.server.ai.constants.AiErrorConstants;
 import com.rauio.smartdangjian.server.ai.pojo.entity.AiSkill;
 import com.rauio.smartdangjian.server.ai.service.SkillService;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminSkillControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("管理员AI技能接口测试")
 class AdminSkillControllerTest extends BaseControllerTest {
-
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public AdminSkillController adminSkillController(SkillService skillService) {
-            return new AdminSkillController(skillService);
-        }
-    }
 
     @MockitoBean
     private SkillService skillService;
@@ -118,11 +107,12 @@ class AdminSkillControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 400")
         void serviceThrowsBusinessException() throws Exception {
-            when(skillService.getById("nonexistent")).thenThrow(new BusinessException(4000, "技能不存在"));
+            when(skillService.getById("nonexistent"))
+                    .thenThrow(new BusinessException(AiErrorConstants.SKILL_NOT_FOUND, "技能不存在"));
 
             mockMvc.perform(get("/api/admin/ai/skills/nonexistent"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("8002"))
                     .andExpect(jsonPath("$.message").value("技能不存在"));
         }
 

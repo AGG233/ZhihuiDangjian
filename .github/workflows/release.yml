@@ -22,63 +22,121 @@ jobs:
   release:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    services:
-      mysql:
-        image: mysql:8.4
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: zhdj
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=10
-          --memory=1g
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd="redis-cli ping"
-          --health-interval=5s
-          --health-timeout=3s
-          --health-retries=10
-          --memory=256m
-      neo4j:
-        image: neo4j:5-community
-        env:
-          NEO4J_AUTH: none
-          NEO4J_server_memory_heap_max__size: 512m
-        ports:
-          - 7687:7687
-        options: >-
-          --health-cmd="cypher-shell 'RETURN 1'"
-          --health-interval=10s
-          --health-timeout=10s
-          --health-retries=15
-          --health-start-period=30s
-          --memory=2g
+    timeout-minutes: 60
     permissions:
       contents: read
       security-events: write
       packages: write
+      checks: read
+      statuses: read
     needs: []
     outputs:
       version: ${{ steps.meta.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
+      - name: Wait for CI checks before release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
+          REQUIRED_CHECKS: |
+            Compile & Format Check
+            Unit Tests
+            Integration, Coverage & Smoke
+            Codacy Static Code Analysis
+            Codacy Diff Coverage
+          REQUIRED_STATUSES: |
+            CodeRabbit
+        shell: bash
+        run: |
+          set -euo pipefail
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+          check_required_runs() {
+            local all_ready=true
+            while IFS= read -r check_name; do
+              [ -n "$check_name" ] || continue
+              local encoded_name
+              encoded_name="$(printf '%s' "$check_name" | jq -sRr @uri)"
+              local run
+              run="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${SHA}/check-runs?check_name=${encoded_name}" \
+                | jq --arg name "$check_name" '[.check_runs[] | select(.name == $name) | {status, conclusion, started_at}] | sort_by(.started_at) | last // empty')"
+              if [ -z "$run" ]; then
+                echo "Waiting for check to appear: ${check_name}"
+                all_ready=false
+                continue
+              fi
+
+              local status conclusion
+              status="$(jq -r '.status' <<<"$run")"
+              conclusion="$(jq -r '.conclusion // ""' <<<"$run")"
+              if [ "$status" != "completed" ]; then
+                echo "Waiting for check to complete: ${check_name} (${status})"
+                all_ready=false
+                continue
+              fi
+              if [ "$conclusion" != "success" ]; then
+                echo "Required check failed: ${check_name} (${conclusion})"
+                return 1
+              fi
+            done <<<"$REQUIRED_CHECKS"
+
+            if [ "$all_ready" = true ]; then
+              return 0
+            fi
+            return 2
+          }
+
+          check_required_statuses() {
+            local all_ready=true
+            while IFS= read -r context_name; do
+              [ -n "$context_name" ] || continue
+              local state
+              state="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${SHA}/status" \
+                | jq -r --arg name "$context_name" '.statuses[] | select(.context == $name) | .state' | head -n 1)"
+              if [ -z "$state" ]; then
+                echo "Waiting for status to appear: ${context_name}"
+                all_ready=false
+                continue
+              fi
+              if [ "$state" = "pending" ]; then
+                echo "Waiting for status to complete: ${context_name}"
+                all_ready=false
+                continue
+              fi
+              if [ "$state" != "success" ]; then
+                echo "Required status failed: ${context_name} (${state})"
+                return 1
+              fi
+            done <<<"$REQUIRED_STATUSES"
+
+            if [ "$all_ready" = true ]; then
+              return 0
+            fi
+            return 2
+          }
+
+          deadline=$((SECONDS + 1800))
+          while true; do
+            runs_result=0
+            check_required_runs || runs_result=$?
+            statuses_result=0
+            check_required_statuses || statuses_result=$?
+
+            if [ "$runs_result" -eq 0 ] && [ "$statuses_result" -eq 0 ]; then
+              echo "All required CI checks passed for ${SHA}; release may continue."
+              exit 0
+            fi
+            if [ "$runs_result" -eq 1 ] || [ "$statuses_result" -eq 1 ]; then
+              echo "Release blocked because required CI checks did not pass."
+              exit 1
+            fi
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "Timed out waiting for required CI checks before release."
+              exit 1
+            fi
+            sleep 15
+          done
 
       - name: Validate version matches tag
         shell: bash
@@ -91,9 +149,6 @@ jobs:
           fi
           echo "Version OK: v$GRADLE_VERSION"
 
-      - name: Grant execute permission
-        run: chmod +x gradlew
-
       - name: Resolve version
         id: meta
         shell: bash
@@ -101,9 +156,6 @@ jobs:
           VERSION=$(grep '^projectVersion=' gradle.properties | cut -d= -f2)
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Using version: ${VERSION}"
-
-      - name: Build bootJar
-        run: ./gradlew :server:bootJar -x test -x integrationTest -x spotlessCheck -x jacocoRootReport -x jacocoRootCoverageVerification
 
       - name: Set lowercase image name
         run: echo "IMAGE_NAME=${GITHUB_REPOSITORY_OWNER,,}/zhihuidangjian" >> "$GITHUB_ENV"
@@ -152,7 +204,7 @@ jobs:
 
       - name: Upload Trivy results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: always() && hashFiles('trivy-results.sarif') != ''
         with:
           sarif_file: trivy-results.sarif
           category: trivy

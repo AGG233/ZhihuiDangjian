@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -14,67 +15,49 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.resource.controller.user.FileController;
+import com.rauio.smartdangjian.security.CurrentUserProvider;
+import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
 import com.rauio.smartdangjian.server.resource.service.FileService;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = FileControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @AutoConfigureMockMvc(addFilters = false)
 @TestPropertySource(
         locations = "classpath:application-test.yaml",
-        properties = {
-            "REDIS_HOST=localhost",
-            "REDIS_PORT=6379",
-            "REDIS_DATABASE=0",
-            "DATABASE_URL=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
-            "DATABASE_USERNAME=sa",
-            "DATABASE_PASSWORD=",
-            "NEO4J_URI=bolt://localhost:7687",
-            "NEO4J_USERNAME=neo4j",
-            "NEO4J_PASSWORD=password"
-        })
+        properties = {"REDIS_HOST=localhost", "REDIS_PORT=6379", "REDIS_DATABASE=0"})
 @DisplayName("文件资源接口测试 (FileController)")
 class FileControllerTest {
-
-    @SpringBootConfiguration
-    @EnableAutoConfiguration(
-            exclude = {
-                DataSourceAutoConfiguration.class,
-                HibernateJpaAutoConfiguration.class,
-                com.rauio.smartdangjian.config.TransactionConfig.class
-            })
-    @EnableWebMvc
-    static class TestConfig {
-        @Bean
-        public FileController fileController(FileService fileService) {
-            return new FileController(fileService);
-        }
-    }
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
     private FileService fileService;
+
+    @MockitoBean
+    private CurrentUserProvider currentUserProvider;
+
+    @BeforeEach
+    void resetMocks() {
+        reset(fileService);
+        reset(currentUserProvider);
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
+    }
 
     // ═══════════════════════════════════════════════════════════════
     // NormalUploadFlowTests
@@ -310,11 +293,13 @@ class FileControllerTest {
         @Test
         @DisplayName("DELETE /{id} — 删除不存在的资源返回 400")
         void deleteNonExistentResource() throws Exception {
-            doThrow(new BusinessException(4000, "资源不存在")).when(fileService).delete(999999L);
+            doThrow(new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在"))
+                    .when(fileService)
+                    .delete(999999L);
 
             mockMvc.perform(delete("/api/resource/files/999999"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("5002"))
                     .andExpect(jsonPath("$.message").value("资源不存在"));
         }
     }
@@ -350,44 +335,48 @@ class FileControllerTest {
         @Test
         @DisplayName("POST /confirm/{id} — 确认不存在的资源返回 400")
         void confirmUploadResourceNotFound() throws Exception {
-            when(fileService.confirmUpload(999999L)).thenThrow(new BusinessException(4000, "资源不存在"));
+            when(fileService.confirmUpload(999999L))
+                    .thenThrow(new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在"));
 
             mockMvc.perform(post("/api/resource/files/confirm/999999"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("5002"))
                     .andExpect(jsonPath("$.message").value("资源不存在"));
         }
 
         @Test
         @DisplayName("GET /by-id/{id} — 根据不存在的 ID 查询返回 400")
         void getByIdResourceNotFound() throws Exception {
-            when(fileService.getFileInfo(999999L)).thenThrow(new BusinessException(4000, "资源不存在"));
+            when(fileService.getFileInfo(999999L))
+                    .thenThrow(new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在"));
 
             mockMvc.perform(get("/api/resource/files/by-id/999999"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("5002"))
                     .andExpect(jsonPath("$.message").value("资源不存在"));
         }
 
         @Test
         @DisplayName("GET /by-hash/{hash} — 根据不存在的哈希查询返回 400")
         void getByHashResourceNotFound() throws Exception {
-            when(fileService.getFileInfoByHash("ghost-hash")).thenThrow(new BusinessException(4000, "资源不存在"));
+            when(fileService.getFileInfoByHash("ghost-hash"))
+                    .thenThrow(new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在"));
 
             mockMvc.perform(get("/api/resource/files/by-hash/ghost-hash"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("5002"))
                     .andExpect(jsonPath("$.message").value("资源不存在"));
         }
 
         @Test
         @DisplayName("GET /{id}/download — 不存在的资源下载返回 400")
         void getDownloadUrlResourceNotFound() throws Exception {
-            when(fileService.getDownloadUrl(999999L)).thenThrow(new BusinessException(4000, "资源不存在"));
+            when(fileService.getDownloadUrl(999999L))
+                    .thenThrow(new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在"));
 
             mockMvc.perform(get("/api/resource/files/999999/download"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("5002"))
                     .andExpect(jsonPath("$.message").value("资源不存在"));
         }
 
@@ -509,7 +498,8 @@ class FileControllerTest {
         @Test
         @DisplayName("GET /by-hash/{hash} — SQL 注入在 hash 参数中被当作字面量处理")
         void sqlInjectionInHash() throws Exception {
-            when(fileService.getFileInfoByHash(any())).thenThrow(new BusinessException(4000, "资源不存在"));
+            when(fileService.getFileInfoByHash(any()))
+                    .thenThrow(new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在"));
 
             mockMvc.perform(get("/api/resource/files/by-hash/'%20OR%20'1'='1")).andExpect(status().isBadRequest());
         }

@@ -1,27 +1,19 @@
 package com.rauio.smartdangjian.server.search.service;
 
-import static com.rauio.smartdangjian.constants.RedisConstants.USER_PROFILE_CACHE_PREFIX;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
-import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
-import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
-import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
-import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
-import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
-import com.rauio.smartdangjian.server.learning.pojo.entity.UserChapterProgress;
-import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
-import com.rauio.smartdangjian.server.quiz.mapper.QuizMapper;
-import com.rauio.smartdangjian.server.quiz.mapper.UserQuizAnswerMapper;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
-import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
+import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
+import com.rauio.smartdangjian.server.course.service.course.CourseService;
+import com.rauio.smartdangjian.server.learning.pojo.dto.ChapterProgressSummaryDto;
+import com.rauio.smartdangjian.server.learning.pojo.dto.LearningRecordSummaryDto;
+import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
+import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
+import com.rauio.smartdangjian.server.quiz.pojo.dto.UserQuizAnswerSummaryDto;
+import com.rauio.smartdangjian.server.quiz.service.QuizService;
+import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 import com.rauio.smartdangjian.server.user.service.UserService;
 
@@ -35,15 +27,14 @@ public class UserProfileService {
 
     private static final int QUIZ_ANSWER_CORRECT = 1;
 
-    private final UserLearningRecordMapper learningRecordMapper;
-    private final UserChapterProgressMapper chapterProgressMapper;
-    private final UserQuizAnswerMapper quizAnswerMapper;
-    private final QuizMapper quizMapper;
-    private final ChapterMapper chapterMapper;
-    private final CategoryCourseMapper categoryCourseMapper;
+    private final UserLearningRecordService learningRecordService;
+    private final UserChapterProgressService chapterProgressService;
+    private final UserQuizAnswerService quizAnswerService;
+    private final QuizService quizService;
+    private final ChapterService chapterService;
+    private final CourseService courseService;
     private final UserService userService;
 
-    @Cacheable(value = USER_PROFILE_CACHE_PREFIX, key = "#userId")
     public UserProfileResponse getProfile(String userId) {
         return UserProfileResponse.builder()
                 .userId(userId)
@@ -60,120 +51,79 @@ public class UserProfileService {
     }
 
     private UserProfileResponse.LearningStats buildLearningStats(String userId) {
-        List<UserLearningRecord> records = learningRecordMapper.selectList(
-                new LambdaQueryWrapper<UserLearningRecord>().eq(UserLearningRecord::getUserId, userId));
+        Long numericUserId = Long.valueOf(userId);
+        List<LearningRecordSummaryDto> records = learningRecordService.listRecordSummariesByUserId(numericUserId);
 
         int totalDuration = records.stream()
-                .mapToInt(r -> r.getDuration() != null ? r.getDuration() : 0)
+                .mapToInt(r -> r.duration() != null ? r.duration() : 0)
                 .sum();
 
         double avgDuration = records.isEmpty() ? 0 : (double) totalDuration / records.size();
 
-        // 统计常用设备
-        String preferredDevice = records.stream()
-                .filter(r -> r.getDeviceType() != null)
-                .collect(Collectors.groupingBy(UserLearningRecord::getDeviceType, Collectors.counting()))
-                .entrySet()
-                .stream()
-                .max(Map.Entry.comparingByValue())
-                .map(Map.Entry::getKey)
-                .orElse(null);
-
         // 统计已完成章节数
-        Long completedCount = chapterProgressMapper.selectCount(new LambdaQueryWrapper<UserChapterProgress>()
-                .eq(UserChapterProgress::getUserId, userId)
-                .eq(UserChapterProgress::getStatus, "completed"));
+        long completedCount = chapterProgressService.countCompletedByUserId(numericUserId);
 
         return UserProfileResponse.LearningStats.builder()
                 .totalDuration(totalDuration)
                 .avgDuration(avgDuration)
                 .totalRecords(records.size())
-                .completedChapters(completedCount.intValue())
-                .preferredDevice(preferredDevice)
+                .completedChapters(Math.toIntExact(completedCount))
                 .build();
     }
 
     private UserProfileResponse.KnowledgeStats buildKnowledgeStats(String userId) {
-        List<UserChapterProgress> progresses = chapterProgressMapper.selectList(
-                new LambdaQueryWrapper<UserChapterProgress>().eq(UserChapterProgress::getUserId, userId));
+        List<ChapterProgressSummaryDto> progresses =
+                chapterProgressService.listProgressSummariesByUserId(Long.valueOf(userId));
 
         double avgProgress = progresses.isEmpty()
                 ? 0
                 : progresses.stream()
-                        .mapToInt(p -> p.getProgress() != null ? p.getProgress() : 0)
+                        .mapToInt(p -> p.progress() != null ? p.progress() : 0)
                         .average()
                         .orElse(0);
 
-        long completedCount = progresses.stream()
-                .filter(p -> "completed".equals(p.getStatus()))
-                .count();
+        long completedCount =
+                progresses.stream().filter(p -> "completed".equals(p.status())).count();
         double completionRate = progresses.isEmpty() ? 0 : (double) completedCount / progresses.size();
-
-        List<Long> weakChapterIds = progresses.stream()
-                .filter(p -> p.getProgress() != null && p.getProgress() < 50)
-                .map(UserChapterProgress::getChapterId)
-                .toList();
 
         return UserProfileResponse.KnowledgeStats.builder()
                 .avgProgress(avgProgress)
                 .completionRate(completionRate)
-                .weakChapterIds(weakChapterIds)
                 .build();
     }
 
     private List<Long> buildInterestCategoryIds(String userId) {
         // 获取用户学过的章节对应的课程分类
-        List<UserLearningRecord> records = learningRecordMapper.selectList(new LambdaQueryWrapper<UserLearningRecord>()
-                .eq(UserLearningRecord::getUserId, userId)
-                .select(UserLearningRecord::getChapterId));
+        List<LearningRecordSummaryDto> records =
+                learningRecordService.listRecordSummariesByUserId(Long.valueOf(userId));
 
         if (records.isEmpty()) return Collections.emptyList();
 
         Set<Long> chapterIds = records.stream()
-                .map(UserLearningRecord::getChapterId)
+                .map(LearningRecordSummaryDto::chapterId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
         if (chapterIds.isEmpty()) return Collections.emptyList();
 
-        List<Chapter> chapters = chapterMapper.selectList(
-                new LambdaQueryWrapper<Chapter>().in(Chapter::getId, chapterIds).select(Chapter::getCourseId));
-
-        Set<Long> courseIds = chapters.stream()
-                .map(Chapter::getCourseId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+        List<Long> courseIds = chapterService.listCourseIdsByChapterIds(chapterIds);
 
         if (courseIds.isEmpty()) return Collections.emptyList();
 
-        List<CategoryCourse> relations = categoryCourseMapper.selectList(
-                new LambdaQueryWrapper<CategoryCourse>().in(CategoryCourse::getCourseId, courseIds));
-
-        // 按分类出现频次排序
-        return relations.stream()
-                .map(CategoryCourse::getCategoryId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.groupingBy(categoryId -> categoryId, Collectors.counting()))
-                .entrySet()
-                .stream()
-                .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
-                .map(Map.Entry::getKey)
-                .limit(5)
-                .toList();
+        return courseService.listTopCategoryIdsByCourseIds(courseIds, 5);
     }
 
     private UserProfileResponse.QuizStats buildQuizStats(String userId) {
-        List<UserQuizAnswer> answers = quizAnswerMapper.selectList(
-                new LambdaQueryWrapper<UserQuizAnswer>().eq(UserQuizAnswer::getUserId, userId));
+        List<UserQuizAnswerSummaryDto> answers = quizAnswerService.listAnswerSummariesByUserId(Long.valueOf(userId));
 
         int totalAnswers = answers.size();
         int correctCount = (int) answers.stream()
-                .filter(a -> Integer.valueOf(QUIZ_ANSWER_CORRECT).equals(a.getIsCorrect()))
+                .filter(a -> Integer.valueOf(QUIZ_ANSWER_CORRECT).equals(a.isCorrect()))
                 .count();
         double correctRate = totalAnswers == 0 ? 0 : (double) correctCount / totalAnswers;
         double avgTimeSpent = answers.stream()
-                .filter(a -> a.getTimeSpent() != null)
-                .mapToInt(UserQuizAnswer::getTimeSpent)
+                .filter(a -> a.timeSpent() != null)
+                .mapToInt(UserQuizAnswerSummaryDto::timeSpent)
                 .average()
                 .orElse(0);
 
@@ -181,25 +131,20 @@ public class UserProfileService {
         Map<String, Double> byDifficulty = new HashMap<>();
         if (!answers.isEmpty()) {
             Set<Long> quizIds = answers.stream()
-                    .map(UserQuizAnswer::getQuizId)
+                    .map(UserQuizAnswerSummaryDto::quizId)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
             if (!quizIds.isEmpty()) {
-                List<Quiz> quizzes = quizMapper.selectList(new LambdaQueryWrapper<Quiz>()
-                        .in(Quiz::getId, quizIds)
-                        .select(Quiz::getId, Quiz::getDifficulty));
-                Map<Long, String> quizDifficultyMap = quizzes.stream()
-                        .filter(q -> q.getDifficulty() != null)
-                        .collect(Collectors.toMap(Quiz::getId, Quiz::getDifficulty));
+                Map<Long, String> quizDifficultyMap = quizService.getDifficultyMapByIds(quizIds);
 
-                Map<String, List<UserQuizAnswer>> byDiff = answers.stream()
-                        .filter(a -> quizDifficultyMap.containsKey(a.getQuizId()))
-                        .collect(Collectors.groupingBy(a -> quizDifficultyMap.get(a.getQuizId())));
+                Map<String, List<UserQuizAnswerSummaryDto>> byDiff = answers.stream()
+                        .filter(a -> quizDifficultyMap.containsKey(a.quizId()))
+                        .collect(Collectors.groupingBy(a -> quizDifficultyMap.get(a.quizId())));
 
-                for (Map.Entry<String, List<UserQuizAnswer>> entry : byDiff.entrySet()) {
-                    List<UserQuizAnswer> group = entry.getValue();
+                for (Map.Entry<String, List<UserQuizAnswerSummaryDto>> entry : byDiff.entrySet()) {
+                    List<UserQuizAnswerSummaryDto> group = entry.getValue();
                     long correct = group.stream()
-                            .filter(a -> Integer.valueOf(QUIZ_ANSWER_CORRECT).equals(a.getIsCorrect()))
+                            .filter(a -> Integer.valueOf(QUIZ_ANSWER_CORRECT).equals(a.isCorrect()))
                             .count();
                     byDifficulty.put(entry.getKey(), group.isEmpty() ? 0 : (double) correct / group.size());
                 }
@@ -215,8 +160,7 @@ public class UserProfileService {
                 .build();
     }
 
-    @CacheEvict(value = USER_PROFILE_CACHE_PREFIX, key = "#userId")
     public void evictProfile(String userId) {
-        // Evicts cached user profile when underlying data changes
+        // Hook kept for callers that notify profile-affecting data changes.
     }
 }

@@ -11,31 +11,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
-import com.rauio.smartdangjian.server.quiz.controller.admin.AdminQuizAnswerController;
+import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
 import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminQuizAnswerControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("管理员答题记录接口测试")
 class AdminQuizAnswerControllerTest extends BaseControllerTest {
-
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public AdminQuizAnswerController adminQuizAnswerController(UserQuizAnswerService userQuizAnswerService) {
-            return new AdminQuizAnswerController(userQuizAnswerService);
-        }
-    }
 
     @MockitoBean
     private UserQuizAnswerService userQuizAnswerService;
@@ -70,11 +59,11 @@ class AdminQuizAnswerControllerTest extends BaseControllerTest {
         @DisplayName("删除答题记录 - Service 抛出 BusinessException 返回 400")
         void deleteThrowsBusinessException() throws Exception {
             when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(anyLong(), anyLong(), anyLong()))
-                    .thenThrow(new BusinessException(4000, "删除答题记录失败"));
+                    .thenThrow(new BusinessException(QuizErrorConstants.QUIZ_NOT_FOUND, "删除答题记录失败"));
 
             mockMvc.perform(delete("/api/admin/quiz/answers/users/1/quizzes/1/options/1"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("6001"))
                     .andExpect(jsonPath("$.message").value("删除答题记录失败"));
         }
 

@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserLearningRecordRequest;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
@@ -22,6 +23,9 @@ class UserLearningRecordControllerTest {
     @Mock
     private UserLearningRecordService recordService;
 
+    @Mock
+    private CurrentUserProvider currentUserProvider;
+
     @InjectMocks
     private UserLearningRecordController controller;
 
@@ -30,7 +34,8 @@ class UserLearningRecordControllerTest {
     void get() {
         UserLearningRecordResponse vo =
                 UserLearningRecordResponse.builder().id(1L).build();
-        when(recordService.get(1L)).thenReturn(vo);
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
+        when(recordService.getForUser(1L, 1L)).thenReturn(vo);
 
         var result = controller.get(1L);
 
@@ -40,10 +45,11 @@ class UserLearningRecordControllerTest {
     @Test
     @DisplayName("getByUserId 委托 service 获取用户所有记录")
     void getByUserId() {
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
         when(recordService.getByUserId(1L))
                 .thenReturn(List.of(UserLearningRecordResponse.builder().id(1L).build()));
 
-        var result = controller.getByUserId(1L);
+        var result = controller.getMine();
 
         assertThat(result.getData()).hasSize(1);
     }
@@ -51,10 +57,11 @@ class UserLearningRecordControllerTest {
     @Test
     @DisplayName("getByUserIdAndChapterId 委托 service 获取用户章节记录")
     void getByUserIdAndChapterId() {
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
         when(recordService.getByUserIdAndChapterId(1L, 2L))
                 .thenReturn(List.of(UserLearningRecordResponse.builder().id(1L).build()));
 
-        var result = controller.getByUserIdAndChapterId(1L, 2L);
+        var result = controller.getMineByChapterId(2L);
 
         assertThat(result.getData()).hasSize(1);
     }
@@ -64,7 +71,8 @@ class UserLearningRecordControllerTest {
     void create() {
         UserLearningRecordRequest dto =
                 UserLearningRecordRequest.builder().userId(1L).chapterId(1L).build();
-        when(recordService.create(dto)).thenReturn(true);
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
+        when(recordService.createForUser(dto, 1L)).thenReturn(true);
 
         var result = controller.create(dto);
 
@@ -76,7 +84,8 @@ class UserLearningRecordControllerTest {
     void update() {
         UserLearningRecordRequest dto =
                 UserLearningRecordRequest.builder().id(1L).build();
-        when(recordService.update(dto)).thenReturn(true);
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
+        when(recordService.updateForUser(dto, 1L)).thenReturn(true);
 
         var result = controller.update(dto);
 

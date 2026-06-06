@@ -7,13 +7,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.quiz.mapper.UserQuizAnswerMapper;
+import com.rauio.smartdangjian.server.quiz.pojo.dto.UserQuizAnswerSummaryDto;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
 
 @Service
-@Transactional
 public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, UserQuizAnswer> {
 
     /**
@@ -22,8 +23,19 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param userQuizAnswer 用户答题实体
      * @return 是否创建成功
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean create(UserQuizAnswer userQuizAnswer) {
         return this.save(userQuizAnswer);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean createForUser(Long userId, Long quizId, Long optionId) {
+        UserQuizAnswer userQuizAnswer = UserQuizAnswer.builder()
+                .userId(userId)
+                .quizId(quizId)
+                .optionId(optionId)
+                .build();
+        return create(userQuizAnswer);
     }
 
     /**
@@ -32,7 +44,8 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param userQuizAnswer 用户答题实体
      * @return 是否更新成功
      */
-    @SaCheckRole("SCHOOL")
+    @SaCheckRole(RoleConstants.SCHOOL)
+    @Transactional(rollbackFor = Exception.class)
     public Boolean update(UserQuizAnswer userQuizAnswer) {
         return this.updateById(userQuizAnswer);
     }
@@ -43,7 +56,7 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param userQuizAnswer 用户答题实体
      * @return 是否更新成功
      */
-    @SaCheckRole("SCHOOL")
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateByUserIdAndQuizIdAndOptionId(UserQuizAnswer userQuizAnswer) {
         UserQuizAnswer existing = getByUserIdAndQuizIdAndOptionId(
                 userQuizAnswer.getUserId(), userQuizAnswer.getQuizId(), userQuizAnswer.getOptionId());
@@ -54,13 +67,24 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
         return this.updateById(userQuizAnswer);
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateByUserIdAndQuizIdAndOptionId(Long userId, Long quizId, Long optionId) {
+        UserQuizAnswer userQuizAnswer = UserQuizAnswer.builder()
+                .userId(userId)
+                .quizId(quizId)
+                .optionId(optionId)
+                .build();
+        return updateByUserIdAndQuizIdAndOptionId(userQuizAnswer);
+    }
+
     /**
      * 根据记录 ID 删除答题记录。
      *
      * @param id 记录 ID
      * @return 是否删除成功
      */
-    @SaCheckRole("MANAGER")
+    @SaCheckRole(RoleConstants.MANAGER)
+    @Transactional(rollbackFor = Exception.class)
     public Boolean delete(Long id) {
         return this.removeById(id);
     }
@@ -73,7 +97,8 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param optionId 选项 ID
      * @return 是否删除成功
      */
-    @SaCheckRole("MANAGER")
+    @SaCheckRole(RoleConstants.MANAGER)
+    @Transactional(rollbackFor = Exception.class)
     public Boolean deleteByUserIdAndQuizIdAndOptionId(Long userId, Long quizId, Long optionId) {
         UserQuizAnswer existing = getByUserIdAndQuizIdAndOptionId(userId, quizId, optionId);
         if (existing == null) {
@@ -88,6 +113,7 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param quizId 测验 ID
      * @return 答题记录列表
      */
+    @Transactional(readOnly = true)
     public List<UserQuizAnswer> getByQuizId(Long quizId) {
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
         wrapper.eq(UserQuizAnswer::getQuizId, quizId);
@@ -100,6 +126,7 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param optionId 选项 ID
      * @return 答题记录
      */
+    @Transactional(readOnly = true)
     public UserQuizAnswer getByOptionId(Long optionId) {
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
         wrapper.eq(UserQuizAnswer::getOptionId, optionId);
@@ -112,10 +139,26 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param userId 用户 ID
      * @return 答题记录列表
      */
+    @Transactional(readOnly = true)
     public List<UserQuizAnswer> getByUserId(Long userId) {
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
         wrapper.eq(UserQuizAnswer::getUserId, userId);
         return this.list(wrapper);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserQuizAnswerSummaryDto> listAnswerSummariesByUserId(Long userId) {
+        return this.list(new LambdaQueryWrapper<UserQuizAnswer>()
+                        .eq(UserQuizAnswer::getUserId, userId)
+                        .select(
+                                UserQuizAnswer::getUserId,
+                                UserQuizAnswer::getQuizId,
+                                UserQuizAnswer::getIsCorrect,
+                                UserQuizAnswer::getTimeSpent))
+                .stream()
+                .map(answer -> new UserQuizAnswerSummaryDto(
+                        answer.getUserId(), answer.getQuizId(), answer.getIsCorrect(), answer.getTimeSpent()))
+                .toList();
     }
 
     /**
@@ -125,6 +168,7 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param quizId 测验 ID
      * @return 答题记录列表
      */
+    @Transactional(readOnly = true)
     public List<UserQuizAnswer> getByUserIdAndQuizId(Long userId, Long quizId) {
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
         wrapper.eq(UserQuizAnswer::getUserId, userId);
@@ -140,6 +184,7 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
      * @param optionId 选项 ID
      * @return 答题记录
      */
+    @Transactional(readOnly = true)
     public UserQuizAnswer getByUserIdAndQuizIdAndOptionId(Long userId, Long quizId, Long optionId) {
         LambdaQueryWrapper<UserQuizAnswer> wrapper = new LambdaQueryWrapper<UserQuizAnswer>();
         wrapper.eq(UserQuizAnswer::getUserId, userId);

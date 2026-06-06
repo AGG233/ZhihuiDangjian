@@ -1,11 +1,19 @@
 package com.rauio.smartdangjian.server.ai.controller.admin;
 
-import jakarta.validation.Valid;
+import static com.rauio.smartdangjian.constants.ValidationConstants.PAGE_NUM_MIN;
+import static com.rauio.smartdangjian.constants.ValidationConstants.PAGE_SIZE_MAX;
+import static com.rauio.smartdangjian.constants.ValidationConstants.PAGE_SIZE_MIN;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.ai.pojo.request.FaqCreateRequest;
 import com.rauio.smartdangjian.server.ai.pojo.request.FaqUpdateRequest;
 import com.rauio.smartdangjian.server.ai.pojo.response.AiFaqResponse;
@@ -20,7 +28,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/ai/faqs")
 @RequiredArgsConstructor
-@SaCheckRole("MANAGER")
+@SaCheckRole(RoleConstants.MANAGER)
+@Validated
 public class AdminFaqController {
 
     private final FaqService faqService;
@@ -40,7 +49,8 @@ public class AdminFaqController {
     @Operation(summary = "分页查询FAQ", description = "分页查询FAQ列表，按sort升序")
     @GetMapping
     public Result<IPage<AiFaqResponse>> page(
-            @RequestParam(defaultValue = "1") int pageNum, @RequestParam(defaultValue = "10") int pageSize) {
+            @RequestParam(defaultValue = "1") @Min(PAGE_NUM_MIN) int pageNum,
+            @RequestParam(defaultValue = "10") @Min(PAGE_SIZE_MIN) @Max(PAGE_SIZE_MAX) int pageSize) {
         return Result.ok(faqService.pageFaqs(pageNum, pageSize));
     }
 

@@ -11,32 +11,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.QuizTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.quiz.controller.admin.AdminQuizController;
+import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
+import com.rauio.smartdangjian.server.quiz.pojo.request.QuizOptionRequest;
+import com.rauio.smartdangjian.server.quiz.pojo.request.QuizRequest;
 import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
 import com.rauio.smartdangjian.server.quiz.service.QuizService;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = AdminQuizControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("管理员试题接口测试")
 class AdminQuizControllerTest extends BaseControllerTest {
-
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public AdminQuizController adminQuizController(QuizService quizService, QuizOptionService quizOptionService) {
-            return new AdminQuizController(quizService, quizOptionService);
-        }
-    }
 
     @MockitoBean
     private QuizService quizService;
@@ -51,7 +44,7 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /api/admin/quiz/quizzes - 创建试题成功")
         void createQuizSuccess() throws Exception {
-            when(quizService.create(any(Quiz.class))).thenReturn(true);
+            when(quizService.create(any(QuizRequest.class))).thenReturn(true);
 
             mockMvc.perform(post("/api/admin/quiz/quizzes")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -64,7 +57,7 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /api/admin/quiz/quizzes/{id} - 更新试题成功")
         void updateQuizSuccess() throws Exception {
-            when(quizService.update(any(Quiz.class))).thenReturn(true);
+            when(quizService.update(anyLong(), any(QuizRequest.class))).thenReturn(true);
 
             mockMvc.perform(put("/api/admin/quiz/quizzes/1")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -88,7 +81,8 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /api/admin/quiz/quizzes/{id}/options - 创建选项成功")
         void createQuizOptionSuccess() throws Exception {
-            when(quizOptionService.create(anyLong(), any(QuizOption.class))).thenReturn(true);
+            when(quizOptionService.create(anyLong(), any(QuizOptionRequest.class)))
+                    .thenReturn(true);
 
             mockMvc.perform(post("/api/admin/quiz/quizzes/1/options")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -101,7 +95,7 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /api/admin/quiz/quizzes/{quizId}/options/{optionId} - 更新选项成功")
         void updateQuizOptionSuccess() throws Exception {
-            when(quizOptionService.update(eq(1L), any(QuizOption.class))).thenReturn(true);
+            when(quizOptionService.update(eq(1L), any(QuizOptionRequest.class))).thenReturn(true);
 
             mockMvc.perform(put("/api/admin/quiz/quizzes/1/options/1")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -130,20 +124,21 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("创建试题 - Service 抛出 BusinessException 返回 400")
         void createQuizThrowsBusinessException() throws Exception {
-            when(quizService.create(any(Quiz.class))).thenThrow(new BusinessException(4000, "试题创建失败"));
+            when(quizService.create(any(QuizRequest.class)))
+                    .thenThrow(new BusinessException(QuizErrorConstants.QUIZ_NOT_FOUND, "试题创建失败"));
 
             mockMvc.perform(post("/api/admin/quiz/quizzes")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(QuizTestDataFactory.toJson(QuizTestDataFactory.createQuiz())))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("6001"))
                     .andExpect(jsonPath("$.message").value("试题创建失败"));
         }
 
         @Test
         @DisplayName("创建试题 - Service 抛出 RuntimeException 返回 500")
         void createQuizThrowsRuntimeException() throws Exception {
-            when(quizService.create(any(Quiz.class))).thenThrow(new RuntimeException("数据库连接失败"));
+            when(quizService.create(any(QuizRequest.class))).thenThrow(new RuntimeException("数据库连接失败"));
 
             mockMvc.perform(post("/api/admin/quiz/quizzes")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -155,7 +150,7 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("更新试题 - Service 返回 false 则 code 为 400")
         void updateQuizReturnsFalse() throws Exception {
-            when(quizService.update(any(Quiz.class))).thenReturn(false);
+            when(quizService.update(anyLong(), any(QuizRequest.class))).thenReturn(false);
 
             mockMvc.perform(put("/api/admin/quiz/quizzes/9999")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -181,7 +176,8 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("创建选项 - Service 返回 false 则 code 为 400")
         void createQuizOptionReturnsFalse() throws Exception {
-            when(quizOptionService.create(anyLong(), any(QuizOption.class))).thenReturn(false);
+            when(quizOptionService.create(anyLong(), any(QuizOptionRequest.class)))
+                    .thenReturn(false);
 
             mockMvc.perform(post("/api/admin/quiz/quizzes/1/options")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -195,7 +191,8 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("更新选项 - Service 返回 false 则 code 为 400")
         void updateQuizOptionReturnsFalse() throws Exception {
-            when(quizOptionService.update(anyLong(), any(QuizOption.class))).thenReturn(false);
+            when(quizOptionService.update(anyLong(), any(QuizOptionRequest.class)))
+                    .thenReturn(false);
 
             mockMvc.perform(put("/api/admin/quiz/quizzes/1/options/9999")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -226,6 +223,39 @@ class AdminQuizControllerTest extends BaseControllerTest {
                             .content("{invalid json"))
                     .andExpect(status().isBadRequest());
         }
+
+        @Test
+        @DisplayName("创建试题 - 空请求体返回 400")
+        void createWithEmptyBody() throws Exception {
+            mockMvc.perform(post("/api/admin/quiz/quizzes")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(""))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("更新试题 - 非数字路径参数返回 400")
+        void updateWithNonNumericId() throws Exception {
+            mockMvc.perform(put("/api/admin/quiz/quizzes/not-a-number")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(QuizTestDataFactory.toJson(QuizTestDataFactory.createQuiz())))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("删除试题 - 非数字路径参数返回 400")
+        void deleteWithNonNumericId() throws Exception {
+            mockMvc.perform(delete("/api/admin/quiz/quizzes/not-a-number")).andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("创建选项 - 空请求体返回 400")
+        void createOptionWithEmptyBody() throws Exception {
+            mockMvc.perform(post("/api/admin/quiz/quizzes/1/options")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(""))
+                    .andExpect(status().isBadRequest());
+        }
     }
 
     @Nested
@@ -235,7 +265,7 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("创建试题 - question 含中文正常处理")
         void createWithChineseQuestion() throws Exception {
-            when(quizService.create(any(Quiz.class))).thenReturn(true);
+            when(quizService.create(any(QuizRequest.class))).thenReturn(true);
             Quiz quiz = Quiz.builder()
                     .chapterId(1L)
                     .question("习近平新时代中国特色社会主义思想的核心要义是什么？")
@@ -253,7 +283,7 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("创建试题 - question 含特殊字符正常处理")
         void createWithSpecialChars() throws Exception {
-            when(quizService.create(any(Quiz.class))).thenReturn(true);
+            when(quizService.create(any(QuizRequest.class))).thenReturn(true);
             Quiz quiz = Quiz.builder()
                     .chapterId(1L)
                     .question("test_@#$%^&*()")
@@ -271,7 +301,7 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("创建试题 - question 超长字符串（1000 字符）正常处理")
         void createWithLongQuestion() throws Exception {
-            when(quizService.create(any(Quiz.class))).thenReturn(true);
+            when(quizService.create(any(QuizRequest.class))).thenReturn(true);
             Quiz quiz = Quiz.builder()
                     .chapterId(1L)
                     .question("a".repeat(1000))
@@ -289,7 +319,7 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("创建试题 - explanation 为空字符串正常处理")
         void createWithEmptyExplanation() throws Exception {
-            when(quizService.create(any(Quiz.class))).thenReturn(true);
+            when(quizService.create(any(QuizRequest.class))).thenReturn(true);
             Quiz quiz = Quiz.builder()
                     .chapterId(1L)
                     .question("test question")
@@ -308,7 +338,8 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("创建选项 - optionText 含超长文本正常处理")
         void createOptionWithLongText() throws Exception {
-            when(quizOptionService.create(anyLong(), any(QuizOption.class))).thenReturn(true);
+            when(quizOptionService.create(anyLong(), any(QuizOptionRequest.class)))
+                    .thenReturn(true);
             QuizOption option = QuizOption.builder()
                     .optionText("a".repeat(500))
                     .isCorrect(true)
@@ -330,7 +361,7 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 注入在 question 字段")
         void xssInQuestion() throws Exception {
-            when(quizService.create(any(Quiz.class))).thenReturn(true);
+            when(quizService.create(any(QuizRequest.class))).thenReturn(true);
             Quiz quiz = Quiz.builder()
                     .chapterId(1L)
                     .question("<script>alert('xss')</script>")
@@ -347,7 +378,7 @@ class AdminQuizControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入在 question 字段")
         void sqlInjectionInQuestion() throws Exception {
-            when(quizService.create(any(Quiz.class))).thenReturn(true);
+            when(quizService.create(any(QuizRequest.class))).thenReturn(true);
             Quiz quiz = Quiz.builder()
                     .chapterId(1L)
                     .question("' OR '1'='1")

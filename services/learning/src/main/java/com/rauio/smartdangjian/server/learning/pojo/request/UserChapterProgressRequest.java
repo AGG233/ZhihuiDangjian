@@ -2,6 +2,10 @@ package com.rauio.smartdangjian.server.learning.pojo.request;
 
 import java.time.LocalDateTime;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
@@ -20,13 +24,17 @@ public class UserChapterProgressRequest {
 
     @Schema(description = "用户ID")
     @JsonSerialize(using = ToStringSerializer.class)
+    @NotNull(message = "用户ID不能为空")
     private Long userId;
 
     @Schema(description = "章节ID")
     @JsonSerialize(using = ToStringSerializer.class)
+    @NotNull(message = "章节ID不能为空")
     private Long chapterId;
 
     @Schema(description = "学习进度（0-100）", example = "75")
+    @Min(value = 0, message = "学习进度不能小于0")
+    @Max(value = 100, message = "学习进度不能大于100")
     private Integer progress;
 
     @Schema(

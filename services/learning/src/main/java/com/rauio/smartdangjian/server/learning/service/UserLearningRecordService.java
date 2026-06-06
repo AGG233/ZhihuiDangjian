@@ -1,8 +1,11 @@
 package com.rauio.smartdangjian.server.learning.service;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +20,11 @@ import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 import com.rauio.smartdangjian.server.learning.constants.LearningErrorConstants;
 import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
 import com.rauio.smartdangjian.server.learning.pojo.convertor.UserLearningRecordConvertor;
+import com.rauio.smartdangjian.server.learning.pojo.dto.HotCategorySummaryDto;
+import com.rauio.smartdangjian.server.learning.pojo.dto.HotCourseSummaryDto;
+import com.rauio.smartdangjian.server.learning.pojo.dto.LearningRecordSummaryDto;
+import com.rauio.smartdangjian.server.learning.pojo.dto.TrendSummaryDto;
+import com.rauio.smartdangjian.server.learning.pojo.dto.UserBehaviorDto;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserLearningRecordRequest;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
@@ -25,11 +33,11 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMapper, UserLearningRecord> {
 
     private final UserLearningRecordConvertor convertor;
     private final KnowledgeGraphService knowledgeGraphService;
+    private final Clock clock;
 
     /**
      * 根据学习记录 ID 获取详情。
@@ -37,8 +45,20 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @param id 学习记录 ID
      * @return 学习记录视图对象
      */
+    @Transactional(readOnly = true)
     public UserLearningRecordResponse get(Long id) {
         UserLearningRecord record = this.getById(id);
+        if (record == null) {
+            throw new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "学习记录不存在");
+        }
+        return convertor.toResponse(record);
+    }
+
+    @Transactional(readOnly = true)
+    public UserLearningRecordResponse getForUser(Long id, Long userId) {
+        QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
+        wrapper.eq("id", id).eq("user_id", userId);
+        UserLearningRecord record = this.getOne(wrapper);
         if (record == null) {
             throw new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "学习记录不存在");
         }
@@ -53,6 +73,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @param pageSize 每页条数
      * @return 用户分页结果
      */
+    @Transactional(readOnly = true)
     public Page<UserLearningRecord> getPage(UserLearningRecordRequest dto, int pageNum, int pageSize) {
 
         Page<UserLearningRecord> pageInfo = new Page<>(pageNum, pageSize);
@@ -72,6 +93,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @param userId 用户 ID
      * @return 学习记录列表
      */
+    @Transactional(readOnly = true)
     public List<UserLearningRecordResponse> getByUserId(Long userId) {
         QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId).orderByDesc("created_at");
@@ -86,14 +108,70 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @param recentDays 最近天数
      * @return 学习记录列表
      */
+    @Transactional(readOnly = true)
     public List<UserLearningRecord> getRecentByUserId(String userId, Integer recentDays) {
         int days = recentDays == null || recentDays <= 0 ? 7 : recentDays;
-        LocalDateTime threshold = LocalDateTime.now().minusDays(days);
+        LocalDateTime threshold = LocalDateTime.now(clock).minusDays(days);
 
         return this.list(new LambdaQueryWrapper<UserLearningRecord>()
                 .eq(UserLearningRecord::getUserId, userId)
                 .ge(UserLearningRecord::getCreatedAt, threshold)
                 .orderByDesc(UserLearningRecord::getCreatedAt));
+    }
+
+    @Transactional(readOnly = true)
+    public List<LearningRecordSummaryDto> listRecordSummariesByUserId(Long userId) {
+        return this.list(new LambdaQueryWrapper<UserLearningRecord>()
+                        .eq(UserLearningRecord::getUserId, userId)
+                        .select(
+                                UserLearningRecord::getUserId,
+                                UserLearningRecord::getChapterId,
+                                UserLearningRecord::getDuration))
+                .stream()
+                .map(record ->
+                        new LearningRecordSummaryDto(record.getUserId(), record.getChapterId(), record.getDuration()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<LearningRecordSummaryDto> listChapterRecordSummariesByUserIds(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return List.of();
+        }
+        return this.list(new LambdaQueryWrapper<UserLearningRecord>()
+                        .in(UserLearningRecord::getUserId, userIds)
+                        .select(UserLearningRecord::getChapterId, UserLearningRecord::getUserId))
+                .stream()
+                .map(record ->
+                        new LearningRecordSummaryDto(record.getUserId(), record.getChapterId(), record.getDuration()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserBehaviorDto> listAllUserBehaviors() {
+        return this.baseMapper.getAllUserBehaviors();
+    }
+
+    @Transactional(readOnly = true)
+    public List<HotCourseSummaryDto> getHotCourses(int limit) {
+        return this.baseMapper.selectHotCourses(limit).stream()
+                .map(raw -> new HotCourseSummaryDto(raw.getCourseId(), raw.getCourseTitle(), raw.getLearnerCount()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<HotCategorySummaryDto> getHotCategories(int limit) {
+        return this.baseMapper.selectHotCategories(limit).stream()
+                .map(raw ->
+                        new HotCategorySummaryDto(raw.getCategoryId(), raw.getCategoryName(), raw.getLearnerCount()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<TrendSummaryDto> getDailyTrend(LocalDateTime since) {
+        return this.baseMapper.selectDailyTrend(since).stream()
+                .map(raw -> new TrendSummaryDto(raw.getDate(), raw.getCount()))
+                .toList();
     }
 
     /**
@@ -102,6 +180,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @param chapterId 章节 ID
      * @return 学习记录列表
      */
+    @Transactional(readOnly = true)
     public List<UserLearningRecordResponse> getByChapterId(Long chapterId) {
         QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
         wrapper.eq("chapter_id", chapterId).orderByDesc("created_at");
@@ -116,6 +195,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @param chapterId 章节 ID
      * @return 学习记录列表
      */
+    @Transactional(readOnly = true)
     public List<UserLearningRecordResponse> getByUserIdAndChapterId(Long userId, Long chapterId) {
         QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId).eq("chapter_id", chapterId).orderByDesc("created_at");
@@ -130,6 +210,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @param courseId 课程 ID
      * @return 学习记录列表
      */
+    @Transactional(readOnly = true)
     public List<UserLearningRecord> getByUserIdAndCourseId(Long userId, Long courseId) {
         if (courseId == null) {
             return List.of();
@@ -137,7 +218,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
 
         QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId)
-                .inSql("chapter_id", "select id from chapter where course_id = " + courseId)
+                .apply("chapter_id in (select id from chapter where course_id = {0})", courseId)
                 .orderByDesc("created_at");
         return this.list(wrapper);
     }
@@ -150,6 +231,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @param chapterId 章节 ID
      * @return 学习记录列表
      */
+    @Transactional(readOnly = true)
     public List<UserLearningRecord> getByUserIdAndCourseIdAndChapterId(Long userId, Long courseId, Long chapterId) {
         if (courseId == null || chapterId == null) {
             return List.of();
@@ -158,20 +240,30 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
         QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId)
                 .eq("chapter_id", chapterId)
-                .inSql("chapter_id", "select id from chapter where course_id = " + courseId)
+                .apply("chapter_id in (select id from chapter where course_id = {0})", courseId)
                 .orderByDesc("created_at");
         return this.list(wrapper);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public int syncUserLearningGraph(Long userId) {
-        QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
-        wrapper.eq("user_id", userId);
+        LambdaQueryWrapper<UserLearningRecord> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserLearningRecord::getUserId, userId);
         List<UserLearningRecord> records = this.list(wrapper);
-        for (UserLearningRecord record : records) {
-            if (record.getUserId() != null && record.getChapterId() != null) {
-                knowledgeGraphService.upsertLearningGraph(record.getUserId(), record.getChapterId());
-            }
+        if (records.isEmpty()) {
+            return 0;
         }
+
+        List<Long> chapterIds = records.stream()
+                .map(UserLearningRecord::getChapterId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        if (chapterIds.isEmpty()) {
+            return 0;
+        }
+
+        knowledgeGraphService.batchUpsertLearningGraph(userId, chapterIds);
         return records.size();
     }
 
@@ -181,11 +273,12 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @param dto 学习记录创建参数
      * @return 是否创建成功
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean create(UserLearningRecordRequest dto) {
         UserLearningRecord record = convertor.toEntity(dto);
 
         if (record.getCreatedAt() == null) {
-            record.setCreatedAt(LocalDateTime.now());
+            record.setCreatedAt(LocalDateTime.now(clock));
         }
 
         if (record.getStartTime() != null && record.getEndTime() != null) {
@@ -204,12 +297,19 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
         return result;
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean createForUser(UserLearningRecordRequest dto, Long userId) {
+        dto.setUserId(userId);
+        return create(dto);
+    }
+
     /**
      * 更新学习记录。
      *
      * @param dto 学习记录更新参数
      * @return 是否更新成功
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean update(UserLearningRecordRequest dto) {
         if (dto.getId() == null) {
             throw new BusinessException(LearningErrorConstants.RECORD_ID_REQUIRED, "更新时必须提供记录ID");
@@ -219,7 +319,6 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
         if (existing == null) {
             throw new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "学习记录不存在");
         }
-
         UserLearningRecord record = convertor.toEntity(dto);
 
         // 自动计算学习时长（如果提供了开始和结束时间）
@@ -236,12 +335,30 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
         return result;
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateForUser(UserLearningRecordRequest dto, Long userId) {
+        if (dto.getId() == null) {
+            throw new BusinessException(LearningErrorConstants.RECORD_ID_REQUIRED, "更新时必须提供记录ID");
+        }
+
+        QueryWrapper<UserLearningRecord> wrapper = new QueryWrapper<>();
+        wrapper.eq("id", dto.getId()).eq("user_id", userId);
+        UserLearningRecord existing = this.getOne(wrapper);
+        if (existing == null) {
+            throw new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "学习记录不存在");
+        }
+
+        dto.setUserId(userId);
+        return update(dto);
+    }
+
     /**
      * 删除学习记录。
      *
      * @param id 学习记录 ID
      * @return 是否删除成功
      */
+    @Transactional(rollbackFor = Exception.class)
     public Boolean delete(Long id) {
         UserLearningRecord existing = this.getById(id);
         if (existing == null) {

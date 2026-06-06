@@ -12,32 +12,21 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.graph.controller.user.UserKnowledgeGraphController;
+import com.rauio.smartdangjian.server.graph.constants.GraphErrorConstants;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphEdgeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphNodeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
 import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = UserKnowledgeGraphControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("知识图谱接口测试")
 class UserKnowledgeGraphControllerTest extends BaseControllerTest {
-
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public UserKnowledgeGraphController knowledgeGraphController(KnowledgeGraphService knowledgeGraphService) {
-            return new UserKnowledgeGraphController(knowledgeGraphService);
-        }
-    }
 
     @MockitoBean
     private KnowledgeGraphService knowledgeGraphService;
@@ -124,22 +113,24 @@ class UserKnowledgeGraphControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /users/{userId} - Service 抛出 BusinessException 返回 400")
         void getUserGraphThrowsBusinessException() throws Exception {
-            when(knowledgeGraphService.getUserGraph("user-001")).thenThrow(new BusinessException(4000, "用户不存在"));
+            when(knowledgeGraphService.getUserGraph("user-001"))
+                    .thenThrow(new BusinessException(GraphErrorConstants.USER_NOT_FOUND, "用户不存在"));
 
             mockMvc.perform(get("/api/graph/knowledge-graphs/users/user-001"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("7001"))
                     .andExpect(jsonPath("$.message").value("用户不存在"));
         }
 
         @Test
         @DisplayName("GET /courses/{courseId} - Service 抛出 BusinessException 返回 400")
         void getCourseGraphThrowsBusinessException() throws Exception {
-            when(knowledgeGraphService.getCourseGraph("course-001")).thenThrow(new BusinessException(4000, "课程不存在"));
+            when(knowledgeGraphService.getCourseGraph("course-001"))
+                    .thenThrow(new BusinessException(GraphErrorConstants.COURSE_NOT_FOUND, "课程不存在"));
 
             mockMvc.perform(get("/api/graph/knowledge-graphs/courses/course-001"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("7003"))
                     .andExpect(jsonPath("$.message").value("课程不存在"));
         }
 
@@ -277,7 +268,7 @@ class UserKnowledgeGraphControllerTest extends BaseControllerTest {
         @DisplayName("XSS 注入在路径参数中")
         void xssInPath() throws Exception {
             when(knowledgeGraphService.getUserGraph("<script>alert('xss')</script>"))
-                    .thenThrow(new BusinessException(4000, "用户不存在"));
+                    .thenThrow(new BusinessException(GraphErrorConstants.USER_NOT_FOUND, "用户不存在"));
 
             mockMvc.perform(get(
                             URI.create("/api/graph/knowledge-graphs/users/%3Cscript%3Ealert('xss')%3C%2Fscript%3E")))
@@ -287,7 +278,8 @@ class UserKnowledgeGraphControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入在路径参数中")
         void sqlInjectionInPath() throws Exception {
-            when(knowledgeGraphService.getUserGraph("' OR '1'='1")).thenThrow(new BusinessException(4000, "用户不存在"));
+            when(knowledgeGraphService.getUserGraph("' OR '1'='1"))
+                    .thenThrow(new BusinessException(GraphErrorConstants.USER_NOT_FOUND, "用户不存在"));
 
             mockMvc.perform(get("/api/graph/knowledge-graphs/users/{userId}", "' OR '1'='1"))
                     .andExpect(status().isBadRequest());

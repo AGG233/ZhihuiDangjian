@@ -17,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.rauio.smartdangjian.security.CurrentUserProvider;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.UploadFileRequest;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
@@ -31,6 +32,9 @@ class FileControllerTest {
 
     @Mock
     private HttpServletRequest httpServletRequest;
+
+    @Mock
+    private CurrentUserProvider currentUserProvider;
 
     @InjectMocks
     private FileController controller;
@@ -47,10 +51,12 @@ class FileControllerTest {
                         .resourceId("1")
                         .uploadUrl("https://example.com/upload")
                         .build());
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
 
         var result = controller.upload(request);
 
         assertThat(result.getData().getResourceId()).isEqualTo("1");
+        assertThat(request.getUserId()).isEqualTo("1");
     }
 
     @Test
@@ -61,7 +67,7 @@ class FileControllerTest {
 
         var result = controller.confirmUpload(1L);
 
-        assertThat(result.getData().getId()).isEqualTo(1L);
+        assertThat(result.getData().id()).isEqualTo("1");
     }
 
     @Test

@@ -14,34 +14,22 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.CategoryTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
-import com.rauio.smartdangjian.server.content.controller.admin.AdminCategoryController;
-import com.rauio.smartdangjian.server.content.pojo.request.CategoryRequest;
-import com.rauio.smartdangjian.server.content.service.category.CategoryService;
+import com.rauio.smartdangjian.server.category.pojo.request.CategoryRequest;
+import com.rauio.smartdangjian.server.category.service.category.CategoryService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminCategoryControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("管理员目录接口测试")
 class AdminCategoryControllerTest extends BaseControllerTest {
-
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public AdminCategoryController adminCategoryController(CategoryService categoryService) {
-            return new AdminCategoryController(categoryService);
-        }
-    }
 
     @MockitoBean
     private CategoryService categoryService;

@@ -1,12 +1,15 @@
 package com.rauio.smartdangjian.server.auth.service;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.security.SessionUserPrincipal;
 import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
 import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
@@ -30,6 +33,7 @@ public class AuthService {
     private final CaptchaService captchaService;
     private final UserMapper userMapper;
     private final UserService userService;
+    private final Clock clock;
 
     public LoginResponse login(LoginRequest loginRequest) {
         if (!captchaService.validate(loginRequest.getCaptchaUUID(), loginRequest.getCaptchaCode())) {
@@ -57,7 +61,7 @@ public class AuthService {
 
         StpUtil.login(user.getId(), SaLoginModel.create().setDevice(platform).setTimeout(timeout));
 
-        StpUtil.getSession().set("user", user);
+        StpUtil.getSession().set("user", toSessionPrincipal(user));
 
         return LoginResponse.builder().accessToken(StpUtil.getTokenValue()).build();
     }
@@ -90,8 +94,8 @@ public class AuthService {
                 .joinPartyDate(registerRequest.getJoinPartyDate())
                 .userType(registerRequest.getType())
                 .status(AccountStatus.ACTIVE)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now(clock))
+                .updatedAt(LocalDateTime.now(clock))
                 .build();
 
         userMapper.insert(user);
@@ -109,16 +113,25 @@ public class AuthService {
             throw new BusinessException(AuthErrorConstants.USER_NOT_FOUND, "用户不存在");
         }
 
+        validatePasswordStrength(request.getNewPassword());
         if (!BCrypt.checkpw(request.getOldPassword(), user.getPassword())) {
             throw new BusinessException(AuthErrorConstants.OLD_PASSWORD_ERROR, "旧密码错误");
         }
 
         user.setPassword(BCrypt.hashpw(request.getNewPassword()));
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setUpdatedAt(LocalDateTime.now(clock));
         if (userMapper.updateById(user) <= 0) {
             throw new BusinessException(AuthErrorConstants.PASSWORD_CHANGE_ERROR, "密码修改失败");
         }
-        StpUtil.getSession().set("user", user);
+        StpUtil.getSession().set("user", toSessionPrincipal(user));
+    }
+
+    private SessionUserPrincipal toSessionPrincipal(User user) {
+        return SessionUserPrincipal.builder()
+                .id(user.getId())
+                .userType(user.getUserType())
+                .universityId(user.getUniversityId())
+                .build();
     }
 
     private void checkEmailRegistered(String email) {
@@ -152,6 +165,15 @@ public class AuthService {
         boolean exists = userMapper.exists(new LambdaQueryWrapper<User>().eq(User::getPartyMemberId, partyMemberId));
         if (exists) {
             throw new BusinessException(UserErrorConstants.PARTY_MEMBER_ID_EXISTS, "党员编号已存在");
+        }
+    }
+
+    private static final Pattern PASSWORD_PATTERN =
+            Pattern.compile("^(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,20}$");
+
+    private void validatePasswordStrength(String password) {
+        if (password == null || !PASSWORD_PATTERN.matcher(password).matches()) {
+            throw new BusinessException(UserErrorConstants.PASSWORD_WEAK, "密码强度不足，密码必须包含大写字母、数字和特殊符号，长度8-20位");
         }
     }
 }

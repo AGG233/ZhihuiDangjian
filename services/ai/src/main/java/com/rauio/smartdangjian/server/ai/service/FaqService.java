@@ -5,8 +5,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +12,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.rauio.smartdangjian.constants.RedisConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.ai.constants.AiErrorConstants;
 import com.rauio.smartdangjian.server.ai.mapper.AiFaqMapper;
@@ -27,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-@Transactional(transactionManager = "dataSourceTransactionManager")
 public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
 
     /**
@@ -36,6 +32,7 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
      * @param input 用户输入文本（已通过安全过滤）
      * @return 匹配到的FAQ，无匹配返回Optional.empty()
      */
+    @Transactional(transactionManager = "dataSourceTransactionManager", readOnly = true)
     public Optional<AiFaq> match(String input) {
         if (input == null || input.isBlank()) {
             return Optional.empty();
@@ -60,7 +57,7 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
                 .anyMatch(k -> normalized.contains(normalize(k)));
     }
 
-    @Cacheable(value = RedisConstants.AI_FAQ_CACHE_PREFIX, unless = "#result.isEmpty()")
+    @Transactional(transactionManager = "dataSourceTransactionManager", readOnly = true)
     public List<AiFaq> getAllEnabledFaqs() {
         return lambdaQuery()
                 .eq(AiFaq::getEnabled, true)
@@ -68,7 +65,7 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
                 .list();
     }
 
-    @CacheEvict(value = RedisConstants.AI_FAQ_CACHE_PREFIX, allEntries = true)
+    @Transactional(transactionManager = "dataSourceTransactionManager", rollbackFor = Exception.class)
     public AiFaqResponse createFaq(FaqCreateRequest request) {
         AiFaq faq = AiFaq.builder()
                 .keywords(request.getKeywords())
@@ -82,7 +79,7 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
         return toResponse(faq);
     }
 
-    @CacheEvict(value = RedisConstants.AI_FAQ_CACHE_PREFIX, allEntries = true)
+    @Transactional(transactionManager = "dataSourceTransactionManager", rollbackFor = Exception.class)
     public AiFaqResponse updateFaq(FaqUpdateRequest request) {
         AiFaq faq = this.getById(request.getId());
         if (faq == null) {
@@ -108,7 +105,7 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
         return toResponse(faq);
     }
 
-    @CacheEvict(value = RedisConstants.AI_FAQ_CACHE_PREFIX, allEntries = true)
+    @Transactional(transactionManager = "dataSourceTransactionManager", rollbackFor = Exception.class)
     public void deleteFaq(Long id) {
         boolean removed = this.removeById(id);
         if (!removed) {
@@ -117,6 +114,7 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
         log.info("FAQ删除成功 id={}", id);
     }
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", readOnly = true)
     public AiFaqResponse getFaqResponse(Long id) {
         AiFaq faq = this.getById(id);
         if (faq == null) {
@@ -125,6 +123,7 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
         return toResponse(faq);
     }
 
+    @Transactional(transactionManager = "dataSourceTransactionManager", readOnly = true)
     public IPage<AiFaqResponse> pageFaqs(int pageNum, int pageSize) {
         Page<AiFaq> page = new Page<>(pageNum, pageSize);
         IPage<AiFaq> result = this.page(page, new LambdaQueryWrapper<AiFaq>().orderByAsc(AiFaq::getSort));

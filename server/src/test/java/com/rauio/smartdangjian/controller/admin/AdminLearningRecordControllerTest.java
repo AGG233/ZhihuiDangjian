@@ -13,33 +13,22 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.ControllerTestConfiguration;
 import com.rauio.smartdangjian.controller.factory.LearningTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
-import com.rauio.smartdangjian.server.learning.controller.admin.AdminLearningRecordController;
+import com.rauio.smartdangjian.server.learning.constants.LearningErrorConstants;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = AdminLearningRecordControllerTest.TestConfig.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = ControllerTestConfiguration.class)
 @DisplayName("管理员学习记录接口测试")
 class AdminLearningRecordControllerTest extends BaseControllerTest {
-
-    @SpringBootConfiguration
-    static class TestConfig extends CommonTestConfig {
-        @Bean
-        public AdminLearningRecordController adminLearningRecordController(UserLearningRecordService recordService) {
-            return new AdminLearningRecordController(recordService);
-        }
-    }
 
     @MockitoBean
     private UserLearningRecordService recordService;
@@ -89,22 +78,24 @@ class AdminLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /chapter/{chapterId} - Service 抛出 BusinessException 返回 400")
         void getByChapterIdThrowsBusinessException() throws Exception {
-            when(recordService.getByChapterId(1L)).thenThrow(new BusinessException(4000, "章节不存在"));
+            when(recordService.getByChapterId(1L))
+                    .thenThrow(new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "章节不存在"));
 
             mockMvc.perform(get("/api/admin/learning/records/chapter/1"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("4001"))
                     .andExpect(jsonPath("$.message").value("章节不存在"));
         }
 
         @Test
         @DisplayName("DELETE /{id} - Service 抛出 BusinessException 返回 400")
         void deleteThrowsBusinessException() throws Exception {
-            when(recordService.delete(9999L)).thenThrow(new BusinessException(4000, "学习记录不存在"));
+            when(recordService.delete(9999L))
+                    .thenThrow(new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "学习记录不存在"));
 
             mockMvc.perform(delete("/api/admin/learning/records/9999"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.code").value("4001"))
                     .andExpect(jsonPath("$.message").value("学习记录不存在"));
         }
 
@@ -220,7 +211,8 @@ class AdminLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入在路径参数中")
         void sqlInjectionInPath() throws Exception {
-            when(recordService.getByChapterId(anyLong())).thenThrow(new BusinessException(4000, "章节不存在"));
+            when(recordService.getByChapterId(anyLong()))
+                    .thenThrow(new BusinessException(LearningErrorConstants.RECORD_NOT_FOUND, "章节不存在"));
 
             mockMvc.perform(get("/api/admin/learning/records/chapter/' OR '1'='1"))
                     .andExpect(status().isBadRequest());

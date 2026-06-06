@@ -2,12 +2,17 @@ package com.rauio.smartdangjian.server.quiz.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.rauio.smartdangjian.server.quiz.mapper.UserQuizAnswerMapper;
@@ -29,6 +35,45 @@ class UserQuizAnswerServiceTest {
     @Spy
     @InjectMocks
     private UserQuizAnswerService userQuizAnswerService;
+
+    @BeforeEach
+    void resetSpy() {
+        reset(userQuizAnswerService);
+    }
+
+    @Test
+    @DisplayName("事务边界按方法声明：读方法只读，写方法显式回滚")
+    void transactionalBoundariesAreMethodLevel() throws NoSuchMethodException {
+        assertThat(UserQuizAnswerService.class.getAnnotation(Transactional.class))
+                .isNull();
+        assertReadOnlyTransaction("getByQuizId", Long.class);
+        assertReadOnlyTransaction("getByOptionId", Long.class);
+        assertReadOnlyTransaction("getByUserId", Long.class);
+        assertReadOnlyTransaction("getByUserIdAndQuizId", Long.class, Long.class);
+        assertReadOnlyTransaction("getByUserIdAndQuizIdAndOptionId", Long.class, Long.class, Long.class);
+        assertWriteTransaction("create", UserQuizAnswer.class);
+        assertWriteTransaction("update", UserQuizAnswer.class);
+        assertWriteTransaction("updateByUserIdAndQuizIdAndOptionId", UserQuizAnswer.class);
+        assertWriteTransaction("delete", Long.class);
+        assertWriteTransaction("deleteByUserIdAndQuizIdAndOptionId", Long.class, Long.class, Long.class);
+    }
+
+    private void assertReadOnlyTransaction(String methodName, Class<?>... parameterTypes) throws NoSuchMethodException {
+        Method method = UserQuizAnswerService.class.getMethod(methodName, parameterTypes);
+        Transactional transactional = method.getAnnotation(Transactional.class);
+
+        assertThat(transactional).isNotNull();
+        assertThat(transactional.readOnly()).isTrue();
+    }
+
+    private void assertWriteTransaction(String methodName, Class<?>... parameterTypes) throws NoSuchMethodException {
+        Method method = UserQuizAnswerService.class.getMethod(methodName, parameterTypes);
+        Transactional transactional = method.getAnnotation(Transactional.class);
+
+        assertThat(transactional).isNotNull();
+        assertThat(transactional.readOnly()).isFalse();
+        assertThat(transactional.rollbackFor()).contains(Exception.class);
+    }
 
     // ==================== create ====================
 
@@ -120,6 +165,7 @@ class UserQuizAnswerServiceTest {
         Boolean result = userQuizAnswerService.updateByUserIdAndQuizIdAndOptionId(input);
 
         assertThat(result).isFalse();
+        verify(userQuizAnswerService, never()).updateById(any(UserQuizAnswer.class));
     }
 
     // ==================== delete ====================
@@ -173,6 +219,7 @@ class UserQuizAnswerServiceTest {
         Boolean result = userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(1L, 1L, 1L);
 
         assertThat(result).isFalse();
+        verify(userQuizAnswerService, never()).removeById(anyLong());
     }
 
     // ==================== getByQuizId ====================
@@ -187,6 +234,7 @@ class UserQuizAnswerServiceTest {
         List<UserQuizAnswer> result = userQuizAnswerService.getByQuizId(1L);
 
         assertThat(result).hasSize(2);
+        assertThat(result).extracting(UserQuizAnswer::getQuizId).containsOnly(1L);
     }
 
     @Test

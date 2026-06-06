@@ -3,12 +3,15 @@ plugins {
 }
 
 dependencies {
-    api(project(":services:common"))
+    api(project(":services:common:common-core"))
+    implementation(project(":services:common:common-web"))
+    implementation(project(":services:common:common-security"))
     implementation(project(":services:course"))
     implementation(project(":services:chapter"))
     implementation(project(":services:user"))
     implementation(libs.mybatis.plus.join.starter)
     implementation(libs.spring.boot.starter.data.neo4j)
+    implementation(libs.resilience4j.annotations)
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)

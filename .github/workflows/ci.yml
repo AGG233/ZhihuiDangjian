@@ -15,10 +15,172 @@ permissions:
   contents: read
 
 jobs:
-  ci:
-    name: Compile, Test & Build
+  compile-and-format:
+    name: Compile & Format Check
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: Compile sources and check formatting
+        run: ./gradlew compileJava spotlessCheck
+
+      - name: Upload compile reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compile-format-reports
+          path: |
+            **/build/reports/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  service-unit-tests:
+    name: Service Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: Run service unit tests
+        run: ./gradlew test -x :server:test --continue
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: service-unit-test-reports
+          path: |
+            services/**/build/reports/tests/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Package unit coverage data
+        if: success()
+        run: |
+          mapfile -t coverage_files < <(find services -path '*/build/jacoco/test.exec' -type f | sort)
+          if [ "${#coverage_files[@]}" -eq 0 ]; then
+            echo "No JaCoCo unit coverage data found"
+            exit 1
+          fi
+          tar -cf service-unit-coverage-exec.tar "${coverage_files[@]}"
+
+      - name: Upload unit coverage data
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: service-unit-coverage-exec
+          path: service-unit-coverage-exec.tar
+          if-no-files-found: error
+          retention-days: 7
+
+  server-unit-tests:
+    name: Server Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: Run server unit tests
+        run: ./gradlew :server:test --continue
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-unit-test-reports
+          path: |
+            server/build/reports/tests/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Package unit coverage data
+        if: success()
+        run: |
+          if [ ! -f server/build/jacoco/test.exec ]; then
+            echo "No server JaCoCo unit coverage data found"
+            exit 1
+          fi
+          tar -cf server-unit-coverage-exec.tar server/build/jacoco/test.exec
+
+      - name: Upload unit coverage data
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-unit-coverage-exec
+          path: server-unit-coverage-exec.tar
+          if-no-files-found: error
+          retention-days: 7
+
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    needs: [service-unit-tests, server-unit-tests]
+    if: always()
+
+    steps:
+      - name: Check unit test jobs
+        run: |
+          if [ "${{ needs.service-unit-tests.result }}" != "success" ] || [ "${{ needs.server-unit-tests.result }}" != "success" ]; then
+            echo "Service unit tests: ${{ needs.service-unit-tests.result }}"
+            echo "Server unit tests: ${{ needs.server-unit-tests.result }}"
+            exit 1
+          fi
+
+  integration-and-smoke:
+    name: Integration, Coverage & Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [compile-and-format, unit-test]
 
     services:
       mysql:
@@ -77,14 +239,25 @@ jobs:
       - name: Grant execute permission
         run: chmod +x gradlew
 
-      - name: Compile sources
-        run: ./gradlew compileJava
+      - name: Download service unit coverage data
+        uses: actions/download-artifact@v4
+        with:
+          name: service-unit-coverage-exec
+          path: .
 
-      - name: Spotless check (fail fast)
-        run: ./gradlew spotlessCheck
+      - name: Download server unit coverage data
+        uses: actions/download-artifact@v4
+        with:
+          name: server-unit-coverage-exec
+          path: .
 
-      - name: Run tests with coverage
-        run: ./gradlew test integrationTest jacocoRootReport jacocoRootCoverageVerification --continue
+      - name: Restore unit coverage data
+        run: |
+          tar -xf service-unit-coverage-exec.tar
+          tar -xf server-unit-coverage-exec.tar
+
+      - name: Run integration tests and coverage
+        run: ./gradlew jacocoRootReport jacocoRootCoverageVerification -PcoverageFromUnitArtifacts=true --continue
 
       - name: Upload coverage to Codacy
         if: success() || failure()
@@ -96,7 +269,19 @@ jobs:
           force-coverage-parser: jacoco
 
       - name: Build server bootJar
-        run: ./gradlew :server:bootJar -x test
+        run: ./gradlew :server:bootJar -x test -x integrationTest
+
+      - name: Enable Redis password for API smoke
+        env:
+          REDIS_PASSWORD: password
+        run: |
+          REDIS_CONTAINER=$(docker ps --filter "ancestor=redis:7-alpine" --format "{{.ID}}" | head -n 1)
+          if [ -z "$REDIS_CONTAINER" ]; then
+            echo "Redis service container not found"
+            exit 1
+          fi
+          docker exec "$REDIS_CONTAINER" redis-cli CONFIG SET requirepass "$REDIS_PASSWORD"
+          docker exec "$REDIS_CONTAINER" redis-cli -a "$REDIS_PASSWORD" ping
 
       - name: Start server for API smoke
         env:
@@ -107,9 +292,11 @@ jobs:
           REDIS_HOST: 127.0.0.1
           REDIS_PORT: 6379
           REDIS_DATABASE: 0
+          REDIS_PASSWORD: password
           NEO4J_URI: bolt://127.0.0.1:7687
           NEO4J_USERNAME: neo4j
           NEO4J_PASSWORD: password
+          APP_CORS_ALLOWED_ORIGINS: http://127.0.0.1:9000
           AI_KEY: dummy-key
           AUTH_TEST_CAPTCHA_CODE: CI8888
           TENCENT_CLOUD_COS_ENABLED: false
@@ -123,10 +310,6 @@ jobs:
         continue-on-error: true
         run: bash .github/scripts/wait-for-app.sh http://127.0.0.1:9000/actuator/health
 
-      - name: Dump app logs on failure
-        if: steps.wait-for-app.outcome != 'success'
-        run: cat server/build/api-smoke-app.log || true
-
       - name: Check wait result
         if: steps.wait-for-app.outcome != 'success'
         run: exit 1
@@ -137,6 +320,19 @@ jobs:
           MYSQL_PWD: root
         run: mysql -h127.0.0.1 -P3306 -uroot zhdj < .github/sql/ci-seed.sql
 
+      - name: Seed smoke captcha
+        if: steps.wait-for-app.outcome == 'success'
+        env:
+          REDIS_PASSWORD: password
+          AUTH_TEST_CAPTCHA_CODE: CI8888
+        run: |
+          REDIS_CONTAINER=$(docker ps --filter "ancestor=redis:7-alpine" --format "{{.ID}}" | head -n 1)
+          if [ -z "$REDIS_CONTAINER" ]; then
+            echo "Redis service container not found"
+            exit 1
+          fi
+          docker exec "$REDIS_CONTAINER" redis-cli -a "$REDIS_PASSWORD" SET captcha:ci-smoke "\"$AUTH_TEST_CAPTCHA_CODE\"" EX 300
+
       - name: Run OpenAPI smoke
         env:
           API_SMOKE_BASE_URL: http://127.0.0.1:9000
@@ -146,6 +342,10 @@ jobs:
           TEST_SCHOOL_LOGIN_PASSPORT: ci_smoke_school
           TEST_MANAGER_LOGIN_PASSPORT: ci_smoke_manager
         run: node .github/scripts/api-smoke-openapi.mjs
+
+      - name: Dump app logs on smoke failure
+        if: failure()
+        run: cat server/build/api-smoke-app.log || true
 
       - name: Stop API smoke app
         if: always()
