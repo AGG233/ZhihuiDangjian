@@ -50,11 +50,17 @@ gradle-app.setting
 docs/
 tests/
 src/test/
+**/src/test/
+**/src/integrationTest/
 docker-compose*.yml
 .env
 .env.*
 .codegraph/
 .claude/
+.codex/
+scripts/
+/BOOT-INF/
+/META-INF/
 node_modules/
 .venv/
 *.db

@@ -38,11 +38,8 @@ jobs:
       - name: Grant execute permission
         run: chmod +x gradlew
 
-      - name: Compile sources
-        run: ./gradlew compileJava
-
-      - name: Spotless check
-        run: ./gradlew spotlessCheck
+      - name: Compile sources and check formatting
+        run: ./gradlew compileJava spotlessCheck
 
       - name: Upload compile reports
         if: failure()
@@ -54,11 +51,10 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-  unit-test:
-    name: Unit Tests
+  service-unit-tests:
+    name: Service Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: compile-and-format
 
     steps:
       - name: Checkout
@@ -78,24 +74,113 @@ jobs:
       - name: Grant execute permission
         run: chmod +x gradlew
 
-      - name: Run unit tests
-        run: ./gradlew test --continue
+      - name: Run service unit tests
+        run: ./gradlew test -x :server:test --continue
 
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: unit-test-reports
+          name: service-unit-test-reports
           path: |
-            **/build/reports/tests/**
+            services/**/build/reports/tests/**
           if-no-files-found: ignore
           retention-days: 7
+
+      - name: Package unit coverage data
+        if: success()
+        run: |
+          mapfile -t coverage_files < <(find services -path '*/build/jacoco/test.exec' -type f | sort)
+          if [ "${#coverage_files[@]}" -eq 0 ]; then
+            echo "No JaCoCo unit coverage data found"
+            exit 1
+          fi
+          tar -cf service-unit-coverage-exec.tar "${coverage_files[@]}"
+
+      - name: Upload unit coverage data
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: service-unit-coverage-exec
+          path: service-unit-coverage-exec.tar
+          if-no-files-found: error
+          retention-days: 7
+
+  server-unit-tests:
+    name: Server Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: Run server unit tests
+        run: ./gradlew :server:test --continue
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-unit-test-reports
+          path: |
+            server/build/reports/tests/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Package unit coverage data
+        if: success()
+        run: |
+          if [ ! -f server/build/jacoco/test.exec ]; then
+            echo "No server JaCoCo unit coverage data found"
+            exit 1
+          fi
+          tar -cf server-unit-coverage-exec.tar server/build/jacoco/test.exec
+
+      - name: Upload unit coverage data
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-unit-coverage-exec
+          path: server-unit-coverage-exec.tar
+          if-no-files-found: error
+          retention-days: 7
+
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    needs: [service-unit-tests, server-unit-tests]
+    if: always()
+
+    steps:
+      - name: Check unit test jobs
+        run: |
+          if [ "${{ needs.service-unit-tests.result }}" != "success" ] || [ "${{ needs.server-unit-tests.result }}" != "success" ]; then
+            echo "Service unit tests: ${{ needs.service-unit-tests.result }}"
+            echo "Server unit tests: ${{ needs.server-unit-tests.result }}"
+            exit 1
+          fi
 
   integration-and-smoke:
     name: Integration, Coverage & Smoke
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    needs: unit-test
+    needs: [compile-and-format, unit-test]
 
     services:
       mysql:
@@ -154,8 +239,25 @@ jobs:
       - name: Grant execute permission
         run: chmod +x gradlew
 
+      - name: Download service unit coverage data
+        uses: actions/download-artifact@v4
+        with:
+          name: service-unit-coverage-exec
+          path: .
+
+      - name: Download server unit coverage data
+        uses: actions/download-artifact@v4
+        with:
+          name: server-unit-coverage-exec
+          path: .
+
+      - name: Restore unit coverage data
+        run: |
+          tar -xf service-unit-coverage-exec.tar
+          tar -xf server-unit-coverage-exec.tar
+
       - name: Run integration tests and coverage
-        run: ./gradlew integrationTest jacocoRootReport jacocoRootCoverageVerification --continue
+        run: ./gradlew jacocoRootReport jacocoRootCoverageVerification -PcoverageFromUnitArtifacts=true --continue
 
       - name: Upload coverage to Codacy
         if: success() || failure()
@@ -221,6 +323,19 @@ jobs:
         env:
           MYSQL_PWD: root
         run: mysql -h127.0.0.1 -P3306 -uroot zhdj < .github/sql/ci-seed.sql
+
+      - name: Seed smoke captcha
+        if: steps.wait-for-app.outcome == 'success'
+        env:
+          REDIS_PASSWORD: password
+          AUTH_TEST_CAPTCHA_CODE: CI8888
+        run: |
+          REDIS_CONTAINER=$(docker ps --filter "ancestor=redis:7-alpine" --format "{{.ID}}" | head -n 1)
+          if [ -z "$REDIS_CONTAINER" ]; then
+            echo "Redis service container not found"
+            exit 1
+          fi
+          docker exec "$REDIS_CONTAINER" redis-cli -a "$REDIS_PASSWORD" SET captcha:ci-smoke "\"$AUTH_TEST_CAPTCHA_CODE\"" EX 300
 
       - name: Run OpenAPI smoke
         env:

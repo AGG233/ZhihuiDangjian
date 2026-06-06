@@ -4,13 +4,13 @@ plugins {
     id("jacoco")
 }
 
-tasks.withType<Test> {
+tasks.named<Test>("test") {
     useJUnitPlatform()
-    finalizedBy(tasks.withType<JacocoReport>())
+    finalizedBy(tasks.named<JacocoReport>("jacocoTestReport"))
 }
 
-tasks.withType<JacocoReport>().configureEach {
-    dependsOn(tasks.withType<Test>())
+tasks.named<JacocoReport>("jacocoTestReport") {
+    dependsOn(tasks.named<Test>("test"))
     reports {
         xml.required.set(true)
         csv.required.set(false)
