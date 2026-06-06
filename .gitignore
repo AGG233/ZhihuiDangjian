@@ -51,6 +51,7 @@ out/
 /docs/
 /TODO.md
 /CLAUDE.md
+/API迁移文档-*.md
 .codegraph/
 scripts/loadtest/credentials.json
 .env
