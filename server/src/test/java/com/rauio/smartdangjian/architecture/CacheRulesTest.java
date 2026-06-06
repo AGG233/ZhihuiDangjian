@@ -2,7 +2,6 @@ package com.rauio.smartdangjian.architecture;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.temporal.Temporal;
@@ -12,10 +11,10 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 
@@ -44,9 +43,9 @@ class CacheRulesTest {
     @DisplayName("@Cacheable 方法不得缓存复杂对象、实体、响应 DTO 或集合类型")
     void cacheableMethodsShouldOnlyReturnSimpleTypes() {
         List<String> violations = cacheableMethods()
-                .filter(method -> isComplexCacheReturnType(method.getReturnType()))
-                .map(method -> methodDescription(method) + " returns "
-                        + method.getReturnType().getTypeName())
+                .filter(method -> isComplexCacheReturnType(method.getRawReturnType()))
+                .map(method -> method.getFullName() + " returns "
+                        + method.getReturnType().getName())
                 .sorted()
                 .toList();
 
@@ -61,7 +60,7 @@ class CacheRulesTest {
         Map<String, Set<String>> returnTypesByCacheName = new TreeMap<>();
         cacheableMethods().forEach(method -> cacheNames(method).forEach(cacheName -> returnTypesByCacheName
                 .computeIfAbsent(cacheName, ignored -> new TreeSet<>())
-                .add(method.getGenericReturnType().getTypeName())));
+                .add(method.getReturnType().getName())));
 
         List<String> violations = returnTypesByCacheName.entrySet().stream()
                 .filter(entry -> entry.getValue().size() > 1)
@@ -73,35 +72,26 @@ class CacheRulesTest {
                 .isEmpty();
     }
 
-    private Stream<Method> cacheableMethods() {
+    private Stream<JavaMethod> cacheableMethods() {
         return productionClasses.stream()
-                .map(JavaClass::getName)
-                .flatMap(CacheRulesTest::declaredMethods)
-                .filter(method -> !method.isSynthetic() && !method.isBridge())
+                .flatMap(javaClass -> javaClass.getMethods().stream())
                 .filter(CacheRulesTest::hasCacheableAnnotation);
     }
 
-    private static Stream<Method> declaredMethods(String className) {
-        try {
-            Class<?> type =
-                    Class.forName(className, false, Thread.currentThread().getContextClassLoader());
-            return Arrays.stream(type.getDeclaredMethods());
-        } catch (ClassNotFoundException | NoClassDefFoundError ex) {
-            return Stream.empty();
-        }
+    private static boolean hasCacheableAnnotation(JavaMethod method) {
+        return method.isAnnotatedWith(Cacheable.class)
+                || method.tryGetAnnotationOfType("org.springframework.cache.annotation.Caching")
+                        .flatMap(annotation -> annotation.get("cacheable"))
+                        .filter(CacheRulesTest::hasNestedCacheableAnnotation)
+                        .isPresent();
     }
 
-    private static boolean hasCacheableAnnotation(Method method) {
-        Caching caching = method.getAnnotation(Caching.class);
-        return method.getAnnotation(Cacheable.class) != null || (caching != null && caching.cacheable().length > 0);
-    }
-
-    private static Stream<String> cacheNames(Method method) {
-        Stream<String> direct = Optional.ofNullable(method.getAnnotation(Cacheable.class)).stream()
-                .flatMap(CacheRulesTest::cacheNames);
-        Stream<String> nested = Optional.ofNullable(method.getAnnotation(Caching.class)).stream()
-                .flatMap(caching -> Arrays.stream(caching.cacheable()))
-                .flatMap(CacheRulesTest::cacheNames);
+    private static Stream<String> cacheNames(JavaMethod method) {
+        Stream<String> direct =
+                method.tryGetAnnotationOfType(Cacheable.class).stream().flatMap(CacheRulesTest::cacheNames);
+        Stream<String> nested = method.tryGetAnnotationOfType("org.springframework.cache.annotation.Caching").stream()
+                .flatMap(annotation -> annotation.get("cacheable").stream())
+                .flatMap(CacheRulesTest::nestedCacheNames);
         return Stream.concat(direct, nested).filter(name -> !name.isBlank());
     }
 
@@ -109,23 +99,41 @@ class CacheRulesTest {
         return Stream.concat(Arrays.stream(cacheable.value()), Arrays.stream(cacheable.cacheNames()));
     }
 
-    private static boolean isComplexCacheReturnType(Class<?> returnType) {
-        if (returnType.isPrimitive() || returnType == Void.TYPE || SIMPLE_CACHE_TYPES.contains(returnType)) {
+    private static boolean hasNestedCacheableAnnotation(Object value) {
+        return nestedCacheNames(value).findAny().isPresent();
+    }
+
+    private static Stream<String> nestedCacheNames(Object value) {
+        if (value instanceof Cacheable cacheable) {
+            return cacheNames(cacheable);
+        }
+        if (value instanceof Cacheable[] cacheables) {
+            return Arrays.stream(cacheables).flatMap(CacheRulesTest::cacheNames);
+        }
+        if (value instanceof Collection<?> annotations) {
+            return annotations.stream()
+                    .filter(Cacheable.class::isInstance)
+                    .map(Cacheable.class::cast)
+                    .flatMap(CacheRulesTest::cacheNames);
+        }
+        return Stream.empty();
+    }
+
+    private static boolean isComplexCacheReturnType(JavaClass returnType) {
+        if (returnType.isPrimitive()
+                || returnType.isEquivalentTo(Void.TYPE)
+                || SIMPLE_CACHE_TYPES.stream().anyMatch(returnType::isEquivalentTo)) {
             return false;
         }
-        if (returnType.isEnum() || Temporal.class.isAssignableFrom(returnType)) {
+        if (returnType.isEnum() || returnType.isAssignableTo(Temporal.class)) {
             return false;
         }
         if (returnType.isArray()
-                || Collection.class.isAssignableFrom(returnType)
-                || Map.class.isAssignableFrom(returnType)) {
+                || returnType.isAssignableTo(Collection.class)
+                || returnType.isAssignableTo(Map.class)) {
             return true;
         }
         String packageName = returnType.getPackageName();
         return packageName.contains(".pojo.entity.") || packageName.contains(".pojo.response.");
-    }
-
-    private static String methodDescription(Method method) {
-        return method.getDeclaringClass().getName() + "#" + method.getName();
     }
 }
