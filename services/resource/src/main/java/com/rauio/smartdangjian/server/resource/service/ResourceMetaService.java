@@ -2,8 +2,6 @@ package com.rauio.smartdangjian.server.resource.service;
 
 import java.util.List;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,7 +52,6 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return meta;
     }
 
-    @Cacheable(value = "resourceMeta", key = "#hash", sync = true)
     @Transactional(readOnly = true)
     public ResourceMeta getByHash(String hash) {
         ResourceMeta meta = this.getOne(new LambdaQueryWrapper<ResourceMeta>().eq(ResourceMeta::getHash, hash));
@@ -82,7 +79,6 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return this.list(wrapper);
     }
 
-    @CacheEvict(value = "resourceMeta", allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public Boolean update(Long id, ResourceMetaUpdateRequest request) {
         ResourceMeta existing = this.get(id);
@@ -112,7 +108,6 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return true;
     }
 
-    @CacheEvict(value = "resourceMeta", allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public Boolean delete(Long id) {
         ResourceMeta meta = this.get(id);
@@ -124,7 +119,6 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return true;
     }
 
-    @CacheEvict(value = "resourceMeta", key = "#hash")
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteByHash(String hash) {
         ResourceMeta meta = this.getOne(new LambdaQueryWrapper<ResourceMeta>().eq(ResourceMeta::getHash, hash));
@@ -138,7 +132,6 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return true;
     }
 
-    @CacheEvict(value = "resourceMeta", allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteByHashes(List<String> hashes) {
         for (String hash : hashes) {
@@ -147,7 +140,6 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return true;
     }
 
-    @CacheEvict(value = "resourceMeta", allEntries = true)
     @Transactional(rollbackFor = Exception.class)
     public boolean markPublic(Long id) {
         ResourceMeta existing = this.get(id);

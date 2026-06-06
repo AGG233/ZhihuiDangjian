@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -22,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.cache.annotation.Cacheable;
 
 import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.course.service.course.CourseService;
@@ -51,19 +49,6 @@ class LearningHotspotServiceTest {
     @BeforeEach
     void setUp() {
         learningHotspotService = new LearningHotspotService(userLearningRecordService, courseService, FIXED_CLOCK);
-    }
-
-    @Test
-    @DisplayName("缓存入口启用 sync，避免热点 key 并发击穿")
-    void cacheableMethodsUseSync() throws NoSuchMethodException {
-        assertCacheableSync("getHotCourses", int.class);
-        assertCacheableSync("getHotCategories", int.class);
-        assertCacheableSync("getTrends", int.class);
-    }
-
-    private void assertCacheableSync(String methodName, Class<?>... parameterTypes) throws NoSuchMethodException {
-        Method method = LearningHotspotService.class.getMethod(methodName, parameterTypes);
-        assertThat(method.getAnnotation(Cacheable.class).sync()).isTrue();
     }
 
     // ==================== getHotCourses ====================

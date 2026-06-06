@@ -5,8 +5,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +12,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.rauio.smartdangjian.constants.RedisConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.ai.constants.AiErrorConstants;
 import com.rauio.smartdangjian.server.ai.mapper.AiFaqMapper;
@@ -61,7 +58,6 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
     }
 
     @Transactional(transactionManager = "dataSourceTransactionManager", readOnly = true)
-    @Cacheable(value = RedisConstants.AI_FAQ_CACHE_PREFIX, unless = "#result.isEmpty()")
     public List<AiFaq> getAllEnabledFaqs() {
         return lambdaQuery()
                 .eq(AiFaq::getEnabled, true)
@@ -70,7 +66,6 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
     }
 
     @Transactional(transactionManager = "dataSourceTransactionManager", rollbackFor = Exception.class)
-    @CacheEvict(value = RedisConstants.AI_FAQ_CACHE_PREFIX, key = "#result.id")
     public AiFaqResponse createFaq(FaqCreateRequest request) {
         AiFaq faq = AiFaq.builder()
                 .keywords(request.getKeywords())
@@ -85,7 +80,6 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
     }
 
     @Transactional(transactionManager = "dataSourceTransactionManager", rollbackFor = Exception.class)
-    @CacheEvict(value = RedisConstants.AI_FAQ_CACHE_PREFIX, key = "#request.id")
     public AiFaqResponse updateFaq(FaqUpdateRequest request) {
         AiFaq faq = this.getById(request.getId());
         if (faq == null) {
@@ -112,7 +106,6 @@ public class FaqService extends ServiceImpl<AiFaqMapper, AiFaq> {
     }
 
     @Transactional(transactionManager = "dataSourceTransactionManager", rollbackFor = Exception.class)
-    @CacheEvict(value = RedisConstants.AI_FAQ_CACHE_PREFIX, key = "#id")
     public void deleteFaq(Long id) {
         boolean removed = this.removeById(id);
         if (!removed) {

@@ -1,10 +1,5 @@
 package com.rauio.smartdangjian.server.user.service;
 
-import static com.rauio.smartdangjian.constants.RedisConstants.USER_VO_CACHE_PREFIX;
-
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -59,7 +54,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param id 用户 ID
      * @return 用户视图对象
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#id", sync = true)
     public UserResponse get(Long id) {
         return convertor.toResponse(this.getById(id));
     }
@@ -137,17 +131,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param user 用户实体
      * @throws BusinessException 如果更新失败
      */
-    @Caching(
-            evict = {
-                @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#id"),
-                @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#user.username", condition = "#user.username != null"),
-                @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#user.email", condition = "#user.email != null"),
-                @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#user.phone", condition = "#user.phone != null"),
-                @CacheEvict(
-                        value = USER_VO_CACHE_PREFIX,
-                        key = "#user.partyMemberId",
-                        condition = "#user.partyMemberId != null")
-            })
     public User update(Long id, User user) {
         user.setId(id);
         if (StringUtils.isNotBlank(user.getPassword())) {
@@ -159,35 +142,11 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         return this.getById(id);
     }
 
-    @Caching(
-            evict = {
-                @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#id"),
-                @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#request.email", condition = "#request.email != null"),
-                @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#request.phone", condition = "#request.phone != null"),
-                @CacheEvict(
-                        value = USER_VO_CACHE_PREFIX,
-                        key = "#request.partyMemberId",
-                        condition = "#request.partyMemberId != null")
-            })
     public User update(Long id, UserUpdateRequest request) {
         User user = convertor.toEntity(request);
         return update(id, user);
     }
 
-    @Caching(
-            evict = {
-                @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#id"),
-                @CacheEvict(
-                        value = USER_VO_CACHE_PREFIX,
-                        key = "#request.username",
-                        condition = "#request.username != null"),
-                @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#request.email", condition = "#request.email != null"),
-                @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#request.phone", condition = "#request.phone != null"),
-                @CacheEvict(
-                        value = USER_VO_CACHE_PREFIX,
-                        key = "#request.partyMemberId",
-                        condition = "#request.partyMemberId != null")
-            })
     public User update(Long id, UserRequest request) {
         User user = convertor.toEntity(request);
         return update(id, user);
@@ -199,7 +158,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param id 用户 ID
      * @throws BusinessException 如果删除失败
      */
-    @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#id")
     public void delete(Long id) {
         if (!this.removeById(id)) {
             throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户删除失败");
@@ -212,16 +170,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param user 用户实体
      * @throws BusinessException 如果注册失败
      */
-    @Caching(
-            evict = {
-                @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#user.username", condition = "#user.username != null"),
-                @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#user.email", condition = "#user.email != null"),
-                @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#user.phone", condition = "#user.phone != null"),
-                @CacheEvict(
-                        value = USER_VO_CACHE_PREFIX,
-                        key = "#user.partyMemberId",
-                        condition = "#user.partyMemberId != null")
-            })
     public void register(User user) {
         if (user == null) {
             throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "有空参数");
@@ -236,19 +184,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         }
     }
 
-    @Caching(
-            evict = {
-                @CacheEvict(
-                        value = USER_VO_CACHE_PREFIX,
-                        key = "#request.username",
-                        condition = "#request.username != null"),
-                @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#request.email", condition = "#request.email != null"),
-                @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#request.phone", condition = "#request.phone != null"),
-                @CacheEvict(
-                        value = USER_VO_CACHE_PREFIX,
-                        key = "#request.partyMemberId",
-                        condition = "#request.partyMemberId != null")
-            })
     public void register(UserRequest request) {
         register(convertor.toEntity(request));
     }
@@ -271,7 +206,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         changePasswordForUser(currentUserId, oldPassword, newPassword);
     }
 
-    @CacheEvict(value = USER_VO_CACHE_PREFIX, key = "#userId")
     public void changePasswordForUser(String userId, String oldPassword, String newPassword) {
         if (oldPassword == null || oldPassword.isEmpty()) {
             throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "有空参数");

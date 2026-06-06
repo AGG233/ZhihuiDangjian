@@ -1,12 +1,8 @@
 package com.rauio.smartdangjian.server.search.service;
 
-import static com.rauio.smartdangjian.constants.RedisConstants.USER_PROFILE_CACHE_PREFIX;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
@@ -39,7 +35,6 @@ public class UserProfileService {
     private final CourseService courseService;
     private final UserService userService;
 
-    @Cacheable(value = USER_PROFILE_CACHE_PREFIX, key = "#userId", sync = true)
     public UserProfileResponse getProfile(String userId) {
         return UserProfileResponse.builder()
                 .userId(userId)
@@ -165,8 +160,7 @@ public class UserProfileService {
                 .build();
     }
 
-    @CacheEvict(value = USER_PROFILE_CACHE_PREFIX, key = "#userId")
     public void evictProfile(String userId) {
-        // Evicts cached user profile when underlying data changes
+        // Hook kept for callers that notify profile-affecting data changes.
     }
 }

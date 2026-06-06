@@ -6,10 +6,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import com.rauio.smartdangjian.constants.RedisConstants;
 import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.course.service.course.CourseService;
 import com.rauio.smartdangjian.server.learning.pojo.dto.HotCategorySummaryDto;
@@ -35,7 +33,6 @@ public class LearningHotspotService {
     private final CourseService courseService;
     private final Clock clock;
 
-    @Cacheable(value = RedisConstants.LEARNING_HOTSPOT_CACHE_PREFIX, key = "'courses:' + #limit", sync = true)
     public List<HotCourseResponse> getHotCourses(int limit) {
         int clampedLimit = clampLimit(limit);
         List<HotCourseSummaryDto> rawList = userLearningRecordService.getHotCourses(clampedLimit);
@@ -58,7 +55,6 @@ public class LearningHotspotService {
                 .toList();
     }
 
-    @Cacheable(value = RedisConstants.LEARNING_HOTSPOT_CACHE_PREFIX, key = "'categories:' + #limit", sync = true)
     public List<HotCategoryResponse> getHotCategories(int limit) {
         int clampedLimit = clampLimit(limit);
         List<HotCategorySummaryDto> rawList = userLearningRecordService.getHotCategories(clampedLimit);
@@ -72,7 +68,6 @@ public class LearningHotspotService {
                 .toList();
     }
 
-    @Cacheable(value = RedisConstants.LEARNING_HOTSPOT_CACHE_PREFIX, key = "'trends:' + #days", sync = true)
     public LearningTrendResponse getTrends(int days) {
         LocalDateTime since = LocalDateTime.now(clock).minusDays(days);
         List<TrendSummaryDto> rawList = userLearningRecordService.getDailyTrend(since);

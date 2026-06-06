@@ -12,7 +12,6 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Method;
 import java.util.List;
 
 import org.apache.ibatis.builder.MapperBuilderAssistant;
@@ -27,9 +26,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -41,7 +38,6 @@ import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.pojo.convertor.UserConvertor;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
-import com.rauio.smartdangjian.server.user.pojo.request.UserUpdateRequest;
 import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
@@ -75,14 +71,6 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("get 缓存启用 sync，避免用户视图并发击穿")
-    void getCacheUsesSync() throws NoSuchMethodException {
-        Method method = UserService.class.getMethod("get", Long.class);
-
-        assertThat(method.getAnnotation(Cacheable.class).sync()).isTrue();
-    }
-
-    @Test
     @DisplayName("认证相关用户实体查询不使用 Spring Cache")
     void credentialUserLookupsAreNotCacheable() throws NoSuchMethodException {
         assertThat(UserService.class.getMethod("getByPassport", String.class).getAnnotation(Cacheable.class))
@@ -97,53 +85,6 @@ class UserServiceTest {
                         .getMethod("getByPartyMemberId", String.class)
                         .getAnnotation(Cacheable.class))
                 .isNull();
-    }
-
-    @Test
-    @DisplayName("仅用户展示响应保留 user:data 缓存")
-    void userResponseLookupKeepsCacheable() throws NoSuchMethodException {
-        Method method = UserService.class.getMethod("get", Long.class);
-        Cacheable cacheable = method.getAnnotation(Cacheable.class);
-
-        assertThat(cacheable).isNotNull();
-        assertThat(cacheable.value()).contains("user:data:");
-        assertThat(cacheable.key()).isEqualTo("#id");
-    }
-
-    @Test
-    @DisplayName("用户写操作通过 Spring Cache 注解驱逐对应用户缓存")
-    void userWriteMethodsEvictUserCacheEntries() throws NoSuchMethodException {
-        assertUserCacheEvictsKeys(
-                "update", new Class<?>[] {Long.class, User.class}, "#id", "#user.email", "#user.phone");
-        assertUserCacheEvictsKeys(
-                "update",
-                new Class<?>[] {Long.class, UserUpdateRequest.class},
-                "#id",
-                "#request.email",
-                "#request.phone");
-        assertUserCacheEvictsKeys("delete", new Class<?>[] {Long.class}, "#id");
-        assertUserCacheEvictsKeys("register", new Class<?>[] {User.class}, "#user.email", "#user.phone");
-        assertUserCacheEvictsKeys(
-                "changePasswordForUser", new Class<?>[] {String.class, String.class, String.class}, "#userId");
-    }
-
-    private void assertUserCacheEvictsKeys(String methodName, Class<?>[] parameterTypes, String... keys)
-            throws NoSuchMethodException {
-        Method method = UserService.class.getMethod(methodName, parameterTypes);
-        List<CacheEvict> evicts = userCacheEvicts(method);
-
-        assertThat(evicts).isNotEmpty();
-        assertThat(evicts).noneMatch(CacheEvict::allEntries);
-        assertThat(evicts).allMatch(cacheEvict -> List.of(cacheEvict.value()).contains("user:data:"));
-        assertThat(evicts).extracting(CacheEvict::key).contains(keys);
-    }
-
-    private List<CacheEvict> userCacheEvicts(Method method) {
-        CacheEvict cacheEvict = method.getAnnotation(CacheEvict.class);
-        if (cacheEvict != null) {
-            return List.of(cacheEvict);
-        }
-        return List.of(method.getAnnotation(Caching.class).evict());
     }
 
     // ---------- helpers ----------

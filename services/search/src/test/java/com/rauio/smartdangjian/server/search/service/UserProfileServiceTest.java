@@ -5,7 +5,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.cache.annotation.Cacheable;
 
 import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
 import com.rauio.smartdangjian.server.course.service.course.CourseService;
@@ -60,14 +58,6 @@ class UserProfileServiceTest {
     private UserProfileService userProfileService;
 
     // ==================== getProfile ====================
-
-    @Test
-    @DisplayName("getProfile 缓存启用 sync，避免用户画像并发击穿")
-    void getProfileCacheUsesSync() throws NoSuchMethodException {
-        Method method = UserProfileService.class.getMethod("getProfile", String.class);
-
-        assertThat(method.getAnnotation(Cacheable.class).sync()).isTrue();
-    }
 
     @Test
     @DisplayName("有完整学习数据时返回所有画像统计")
