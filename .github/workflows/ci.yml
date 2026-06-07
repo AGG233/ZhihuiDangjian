@@ -5,6 +5,9 @@ on:
     branches:
       - product
       - dev
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 concurrency:
