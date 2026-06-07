@@ -10,9 +10,9 @@ import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.redisson.config.Config;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;

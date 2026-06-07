@@ -20,3 +20,7 @@ logging:
     path: ${LOG_PATH:/app/logs}
   level:
     root: WARN
+
+app:
+  cors:
+    allowed-origins: ${CORS_ORIGINS}

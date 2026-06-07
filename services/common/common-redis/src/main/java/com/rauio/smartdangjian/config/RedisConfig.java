@@ -5,8 +5,8 @@ import java.util.Map;
 
 import jakarta.annotation.PostConstruct;
 
-import org.redisson.spring.starter.RedissonAutoConfigurationV2;
 import org.redisson.spring.starter.RedissonAutoConfigurationCustomizer;
+import org.redisson.spring.starter.RedissonAutoConfigurationV2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
