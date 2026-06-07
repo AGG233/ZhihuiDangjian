@@ -75,8 +75,6 @@ class ApplicationConfigStructureTest {
     @DisplayName("application-prod.yaml 中 spring.data.redis.password 从环境变量读取，空默认值由 RedisConfig 归一化为 null")
     void prodRedisPasswordMustUseEnvVarWithEmptyDefault() throws IOException {
         String content = Files.readString(PROD_YAML);
-        // 允许 ${REDIS_PASSWORD} 或 ${REDIS_PASSWORD:}（空默认），两者均为安全配置
-        // 空字符串默认值由 RedisConfig.normalizeEmptyPassword() 归一化为 null，避免 Redisson 发送 AUTH
         boolean hasSafePassword = content.lines()
                 .filter(line -> line.strip().startsWith("password:"))
                 .anyMatch(line -> {

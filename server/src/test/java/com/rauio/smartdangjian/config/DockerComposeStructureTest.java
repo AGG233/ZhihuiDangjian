@@ -29,31 +29,32 @@ class DockerComposeStructureTest {
     }
 
     @Test
-    @DisplayName("docker-compose.yml 中 Redis 服务无密码模式（仅内网访问）")
-    void prodRedisNoPassword() throws IOException {
+    @DisplayName("docker-compose.yml 中 Redis 服务使用环境变量密码认证")
+    void prodRedisPasswordAuth() throws IOException {
         String content = Files.readString(PROD_COMPOSE);
         assertThat(content)
-                .as("生产 Redis 绑定 127.0.0.1，无需密码")
+                .as("生产 Redis 使用环境变量密码认证")
                 .contains("redis-server")
-                .doesNotContain("requirepass");
+                .contains("requirepass")
+                .contains("${REDIS_PASSWORD");
     }
 
     @Test
-    @DisplayName("docker-compose.yml 中 Redis healthcheck 使用无密码 ping")
-    void prodRedisHealthcheckNoPassword() throws IOException {
+    @DisplayName("docker-compose.yml 中 Redis healthcheck 使用密码参数")
+    void prodRedisHealthcheckWithPassword() throws IOException {
         String content = Files.readString(PROD_COMPOSE);
         assertThat(content)
-                .as("Redis healthcheck 不传密码参数")
+                .as("Redis healthcheck 应传递密码参数")
                 .contains("redis-cli")
-                .contains("ping")
-                .doesNotContain("redis-cli\", \"-a\"");
+                .contains("-a")
+                .contains("ping");
     }
 
     @Test
-    @DisplayName("docker-compose.yml 中 App 服务不传递 REDIS_PASSWORD（无密码模式）")
-    void prodAppNoRedisPasswordEnv() throws IOException {
+    @DisplayName("docker-compose.yml 中 App 服务传递 REDIS_PASSWORD 环境变量")
+    void prodAppHasRedisPasswordEnv() throws IOException {
         String content = Files.readString(PROD_COMPOSE);
-        assertThat(content).as("生产 Redis 无密码，App 不传 REDIS_PASSWORD").doesNotContain("REDIS_PASSWORD");
+        assertThat(content).as("生产 Compose App 服务应传递 REDIS_PASSWORD 环境变量").contains("REDIS_PASSWORD");
     }
 
     @Test

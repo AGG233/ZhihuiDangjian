@@ -6,6 +6,7 @@ import java.util.Map;
 import jakarta.annotation.PostConstruct;
 
 import org.redisson.spring.starter.RedissonAutoConfigurationV2;
+import org.redisson.spring.starter.RedissonAutoConfigurationCustomizer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -45,9 +46,16 @@ public class RedisConfig {
     @PostConstruct
     void normalizeEmptyPassword() {
         String password = redisProperties.getPassword();
-        if (password != null && password.isEmpty()) {
-            redisProperties.setPassword(null);
-        }
+        redisProperties.setPassword(normalizePassword(password));
+    }
+
+    @Bean
+    public RedissonAutoConfigurationCustomizer redissonEmptyPasswordCustomizer() {
+        return config -> config.setPassword(normalizePassword(config.getPassword()));
+    }
+
+    static String normalizePassword(String password) {
+        return password != null && password.isEmpty() ? null : password;
     }
 
     static final Duration DEFAULT_CACHE_TTL = Duration.ofHours(1);

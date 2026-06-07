@@ -10,6 +10,8 @@ import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.redisson.config.Config;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 
@@ -21,7 +23,8 @@ import com.rauio.smartdangjian.constants.RedisConstants;
 @ExtendWith(MockitoExtension.class)
 class RedisConfigTest {
 
-    private final RedisConfig redisConfig = new RedisConfig();
+    private final RedisProperties redisProperties = new RedisProperties();
+    private final RedisConfig redisConfig = new RedisConfig(redisProperties);
 
     @Test
     @DisplayName("redisObjectMapper 不启用全局 default typing，避免反序列化任意类型")
@@ -75,6 +78,17 @@ class RedisConfigTest {
                         RedisConstants.AI_FAQ_CACHE_PREFIX,
                         RedisConstants.USER_VO_CACHE_PREFIX,
                         RedisConfig.RESOURCE_META_CACHE));
+    }
+
+    @Test
+    @DisplayName("Redisson 空密码归一化为 null，避免无密码 Redis 收到 AUTH")
+    void shouldNormalizeEmptyPasswordForRedissonConfig() {
+        Config config = new Config().setPassword("");
+
+        redisConfig.redissonEmptyPasswordCustomizer().customize(config);
+
+        assertThat(config.getPassword()).isNull();
+        assertThat(RedisConfig.normalizePassword("secret")).isEqualTo("secret");
     }
 
     public static class WriteOnlyTestBean {
