@@ -59,13 +59,16 @@ class DockerComposeStructureTest {
     }
 
     @Test
-    @DisplayName("docker-compose.yml 中 App 服务将日志路径指向容器挂载目录")
-    void prodAppLogPathUsesMountedDirectory() throws IOException {
+    @DisplayName("docker-compose.yml 中 App 服务将日志路径指向已修正权限的挂载目录")
+    void prodAppLogPathUsesWritableMountedDirectory() throws IOException {
         String content = Files.readString(PROD_COMPOSE);
         assertThat(content)
                 .as("docker-compose.yml 中 App 服务日志应写入 /app/logs")
                 .contains("LOG_PATH: /app/logs")
-                .contains("./logs:/app/logs");
+                .contains("./logs:/app/logs")
+                .contains("app-permissions:")
+                .contains("chown -R 1000:1000 /app/logs /app/uploads")
+                .contains("condition: service_completed_successfully");
     }
 
     @Test
@@ -100,12 +103,15 @@ class DockerComposeStructureTest {
     }
 
     @Test
-    @DisplayName("docker-compose.dev.yml 中 App 服务将日志路径指向容器挂载目录")
-    void devAppLogPathUsesMountedDirectory() throws IOException {
+    @DisplayName("docker-compose.dev.yml 中 App 服务将日志路径指向已修正权限的挂载目录")
+    void devAppLogPathUsesWritableMountedDirectory() throws IOException {
         String content = Files.readString(DEV_COMPOSE);
         assertThat(content)
                 .as("docker-compose.dev.yml 中 App 服务日志应写入 /app/logs")
                 .contains("LOG_PATH: /app/logs")
-                .contains("./logs:/app/logs");
+                .contains("./logs:/app/logs")
+                .contains("app-permissions:")
+                .contains("chown -R 1000:1000 /app/logs")
+                .contains("condition: service_completed_successfully");
     }
 }
