@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
+import com.rauio.smartdangjian.security.RoleConstants;
 
 import cn.dev33.satoken.stp.StpInterface;
 import cn.dev33.satoken.stp.StpUtil;
@@ -14,12 +15,12 @@ public class SaTokenPermissionImpl implements StpInterface {
 
     @Override
     public List<String> getRoleList(Object loginId, String loginType) {
-        Object userObj = StpUtil.getSession().get("user");
+        Object userObj = StpUtil.getSession().get(SessionPrincipalFactory.SESSION_USER_KEY);
         if (userObj instanceof CurrentUserPrincipal user && user.getUserType() != null) {
             return switch (user.getUserType()) {
-                case MANAGER -> List.of("STUDENT", "SCHOOL", "MANAGER");
-                case SCHOOL -> List.of("STUDENT", "SCHOOL");
-                case STUDENT -> List.of("STUDENT");
+                case MANAGER -> List.of(RoleConstants.STUDENT, RoleConstants.SCHOOL, RoleConstants.MANAGER);
+                case SCHOOL -> List.of(RoleConstants.STUDENT, RoleConstants.SCHOOL);
+                case STUDENT -> List.of(RoleConstants.STUDENT);
             };
         }
         return List.of();
@@ -27,7 +28,7 @@ public class SaTokenPermissionImpl implements StpInterface {
 
     @Override
     public List<String> getPermissionList(Object loginId, String loginType) {
-        Object userObj = StpUtil.getSession().get("user");
+        Object userObj = StpUtil.getSession().get(SessionPrincipalFactory.SESSION_USER_KEY);
         if (userObj instanceof CurrentUserPrincipal user && user.getUserType() != null) {
             return switch (user.getUserType()) {
                 case MANAGER -> List.of("*");

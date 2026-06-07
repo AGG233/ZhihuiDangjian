@@ -1,25 +1,12 @@
-FROM eclipse-temurin:21-jdk-alpine AS builder
-WORKDIR /app
-
-COPY gradlew settings.gradle build.gradle.kts gradle.properties ./
-COPY gradle ./gradle
-COPY buildSrc ./buildSrc
-COPY server ./server
-COPY services ./services
-
-RUN chmod +x ./gradlew && ./gradlew :server:bootJar --no-daemon \
-    -x test -x integrationTest -x spotlessCheck \
-    -x jacocoRootReport -x jacocoRootCoverageVerification
-
-
 FROM eclipse-temurin:21-jre-alpine AS extractor
 WORKDIR /app
-COPY --from=builder /app/server/build/libs/server.jar app.jar
+COPY server/build/libs/server.jar app.jar
 RUN java -Djarmode=tools -jar app.jar extract --layers --launcher --destination /extracted
 
 
 FROM eclipse-temurin:21-jre-alpine
-RUN addgroup -S app && adduser -S -G app app
+RUN addgroup -S -g 1000 app && adduser -S -u 1000 -G app app
+WORKDIR /app
 
 COPY --from=extractor /extracted/dependencies/ ./
 COPY --from=extractor /extracted/spring-boot-loader/ ./
@@ -30,7 +17,7 @@ COPY --from=extractor /extracted/application/ ./
 LABEL com.rauio.zhihuidangjian=true
 EXPOSE 9000
 
-RUN apk add --no-cache curl
+RUN apk add --no-cache curl && mkdir -p /app/logs /app/uploads && chown -R app:app /app
 USER app
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \

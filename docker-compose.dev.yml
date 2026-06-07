@@ -67,7 +67,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: server/Dockerfile
+      dockerfile: server/Dockerfile-dev
     image: zhihuidangjian:local-dev
     container_name: zhihuidangjian-app
     restart: no
@@ -96,6 +96,7 @@ services:
       COS_LINK: ${COS_LINK:-}
       AI_MCP_ENABLED: ${AI_MCP_ENABLED:-false}
       AUTH_TEST_CAPTCHA_CODE: ${AUTH_TEST_CAPTCHA_CODE:-TEST8888}
+      LOG_PATH: /app/logs
     depends_on:
       mysql:
         condition: service_healthy

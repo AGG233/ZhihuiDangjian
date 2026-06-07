@@ -24,6 +24,8 @@ class ApplicationConfigStructureTest {
 
     private static final Path PROD_YAML = projectRoot().resolve("server/src/main/resources/application-prod.yaml");
     private static final Path BASE_YAML = projectRoot().resolve("server/src/main/resources/application.yaml");
+    private static final Path VERSION_CATALOG = projectRoot().resolve("gradle/libs.versions.toml");
+    private static final Path COMMON_WEB_BUILD = projectRoot().resolve("services/common/common-web/build.gradle.kts");
 
     private static Path projectRoot() {
         // 从当前 working dir 向上查找包含 settings.gradle 的目录
@@ -202,5 +204,18 @@ class ApplicationConfigStructureTest {
     void prodYamlMustNotContainDummyKey() throws IOException {
         String content = Files.readString(PROD_YAML);
         assertThat(content).as("application-prod.yaml 禁止包含 dummy-key 弱默认值").doesNotContain("dummy-key");
+    }
+
+    @Test
+    @DisplayName("common-web 接入 Knife4j 5.0.8 API 文档 UI")
+    void commonWebUsesKnife4jApiDocUi() throws IOException {
+        String versionCatalog = Files.readString(VERSION_CATALOG);
+        String commonWebBuild = Files.readString(COMMON_WEB_BUILD);
+
+        assertThat(versionCatalog)
+                .contains("knife4j = \"5.0.8\"")
+                .contains(
+                        "knife4j-openapi3-jakarta-spring-boot-starter = { module = \"com.baizhukui:knife4j-openapi3-jakarta-spring-boot-starter\", version.ref = \"knife4j\" }");
+        assertThat(commonWebBuild).contains("api(libs.knife4j.openapi3.jakarta.spring.boot.starter)");
     }
 }

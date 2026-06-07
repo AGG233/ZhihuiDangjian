@@ -38,6 +38,7 @@ import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
 import com.rauio.smartdangjian.server.auth.controller.AuthController;
 import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.RegisterRequest;
+import com.rauio.smartdangjian.server.auth.security.SessionPrincipalFactory;
 import com.rauio.smartdangjian.server.auth.service.AuthService;
 import com.rauio.smartdangjian.server.auth.service.CaptchaService;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
@@ -235,7 +236,7 @@ class AuthControllerRealServiceIntegrationTest {
                 com.rauio.smartdangjian.config.TransactionConfig.class,
                 com.rauio.smartdangjian.config.SensitiveWordConfig.class
             })
-    @Import({AuthController.class, AuthService.class, GlobalExceptionHandler.class})
+    @Import({AuthController.class, AuthService.class, SessionPrincipalFactory.class, GlobalExceptionHandler.class})
     static class TestConfig {
 
         @Bean

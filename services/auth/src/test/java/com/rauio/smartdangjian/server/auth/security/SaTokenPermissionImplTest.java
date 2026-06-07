@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
@@ -35,11 +36,11 @@ class SaTokenPermissionImplTest {
 
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
             stpUtil.when(StpUtil::getSession).thenReturn(session);
-            when(session.get("user")).thenReturn(user);
+            when(session.get(SessionPrincipalFactory.SESSION_USER_KEY)).thenReturn(user);
 
             List<String> roles = permission.getRoleList("1", "login");
 
-            assertThat(roles).containsExactly("STUDENT", "SCHOOL", "MANAGER");
+            assertThat(roles).containsExactly(RoleConstants.STUDENT, RoleConstants.SCHOOL, RoleConstants.MANAGER);
         }
     }
 
@@ -51,11 +52,11 @@ class SaTokenPermissionImplTest {
 
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
             stpUtil.when(StpUtil::getSession).thenReturn(session);
-            when(session.get("user")).thenReturn(user);
+            when(session.get(SessionPrincipalFactory.SESSION_USER_KEY)).thenReturn(user);
 
             List<String> roles = permission.getRoleList("1", "login");
 
-            assertThat(roles).containsExactly("STUDENT", "SCHOOL");
+            assertThat(roles).containsExactly(RoleConstants.STUDENT, RoleConstants.SCHOOL);
         }
     }
 
@@ -67,11 +68,11 @@ class SaTokenPermissionImplTest {
 
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
             stpUtil.when(StpUtil::getSession).thenReturn(session);
-            when(session.get("user")).thenReturn(user);
+            when(session.get(SessionPrincipalFactory.SESSION_USER_KEY)).thenReturn(user);
 
             List<String> roles = permission.getRoleList("1", "login");
 
-            assertThat(roles).containsExactly("STUDENT");
+            assertThat(roles).containsExactly(RoleConstants.STUDENT);
         }
     }
 
@@ -80,7 +81,7 @@ class SaTokenPermissionImplTest {
     void emptyRolesWhenNoUser() {
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
             stpUtil.when(StpUtil::getSession).thenReturn(session);
-            when(session.get("user")).thenReturn(null);
+            when(session.get(SessionPrincipalFactory.SESSION_USER_KEY)).thenReturn(null);
 
             List<String> roles = permission.getRoleList("1", "login");
 
@@ -96,7 +97,7 @@ class SaTokenPermissionImplTest {
 
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
             stpUtil.when(StpUtil::getSession).thenReturn(session);
-            when(session.get("user")).thenReturn(user);
+            when(session.get(SessionPrincipalFactory.SESSION_USER_KEY)).thenReturn(user);
 
             List<String> roles = permission.getRoleList("1", "login");
 
@@ -112,7 +113,7 @@ class SaTokenPermissionImplTest {
 
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
             stpUtil.when(StpUtil::getSession).thenReturn(session);
-            when(session.get("user")).thenReturn(user);
+            when(session.get(SessionPrincipalFactory.SESSION_USER_KEY)).thenReturn(user);
 
             List<String> permissions = permission.getPermissionList("1", "login");
 
@@ -128,7 +129,7 @@ class SaTokenPermissionImplTest {
 
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
             stpUtil.when(StpUtil::getSession).thenReturn(session);
-            when(session.get("user")).thenReturn(user);
+            when(session.get(SessionPrincipalFactory.SESSION_USER_KEY)).thenReturn(user);
 
             List<String> permissions = permission.getPermissionList("1", "login");
 
@@ -144,7 +145,7 @@ class SaTokenPermissionImplTest {
 
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
             stpUtil.when(StpUtil::getSession).thenReturn(session);
-            when(session.get("user")).thenReturn(user);
+            when(session.get(SessionPrincipalFactory.SESSION_USER_KEY)).thenReturn(user);
 
             List<String> permissions = permission.getPermissionList("1", "login");
 
@@ -157,7 +158,7 @@ class SaTokenPermissionImplTest {
     void nonUserSessionAttributeReturnsEmptyPermissions() {
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
             stpUtil.when(StpUtil::getSession).thenReturn(session);
-            when(session.get("user")).thenReturn(new Object());
+            when(session.get(SessionPrincipalFactory.SESSION_USER_KEY)).thenReturn(new Object());
 
             List<String> permissions = permission.getPermissionList("1", "login");
 
@@ -173,7 +174,7 @@ class SaTokenPermissionImplTest {
 
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
             stpUtil.when(StpUtil::getSession).thenReturn(session);
-            when(session.get("user")).thenReturn(user);
+            when(session.get(SessionPrincipalFactory.SESSION_USER_KEY)).thenReturn(user);
 
             List<String> permissions = permission.getPermissionList("1", "login");
 
@@ -186,7 +187,7 @@ class SaTokenPermissionImplTest {
     void emptyPermissionsWhenNoUser() {
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
             stpUtil.when(StpUtil::getSession).thenReturn(session);
-            when(session.get("user")).thenReturn(null);
+            when(session.get(SessionPrincipalFactory.SESSION_USER_KEY)).thenReturn(null);
 
             List<String> permissions = permission.getPermissionList("1", "login");
 
