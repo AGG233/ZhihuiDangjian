@@ -35,13 +35,23 @@ public class SessionPrincipalFactory {
     }
 
     public void bindCurrentSession(String userId, UserType userType) {
+        Long numericUserId = parseNumericUserId(userId);
         StpUtil.getSession()
                 .set(
                         SESSION_USER_KEY,
                         SessionUserPrincipal.builder()
-                                .id(Long.valueOf(userId))
+                                .id(numericUserId)
                                 .userType(userType)
                                 .build());
+    }
+
+    private Long parseNumericUserId(String userId) {
+        try {
+            return Long.valueOf(userId);
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException(
+                    "Dev default user id must be numeric when no matching user exists: " + userId, ex);
+        }
     }
 
     public boolean hasCurrentSessionPrincipal() {

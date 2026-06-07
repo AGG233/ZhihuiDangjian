@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.server.auth.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,12 +61,21 @@ class SessionPrincipalFactoryTest {
             factory.bindCurrentSession("1", UserType.MANAGER);
 
             org.mockito.ArgumentCaptor<Object> captor = org.mockito.ArgumentCaptor.forClass(Object.class);
-            org.mockito.Mockito.verify(session).set(org.mockito.Mockito.eq("user"), captor.capture());
+            org.mockito.Mockito.verify(session)
+                    .set(org.mockito.Mockito.eq(SessionPrincipalFactory.SESSION_USER_KEY), captor.capture());
             assertThat(captor.getValue()).isInstanceOf(SessionUserPrincipal.class);
             SessionUserPrincipal principal = (SessionUserPrincipal) captor.getValue();
             assertThat(principal.getId()).isEqualTo(1L);
             assertThat(principal.getUserType()).isEqualTo(UserType.MANAGER);
             assertThat(principal.getUniversityId()).isNull();
         }
+    }
+
+    @Test
+    @DisplayName("bindCurrentSession 在临时 dev 用户 ID 非数字时抛出明确配置错误")
+    void bindCurrentSessionRejectsNonNumericTemporaryDevPrincipalId() {
+        assertThatThrownBy(() -> factory.bindCurrentSession("admin", UserType.MANAGER))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Dev default user id must be numeric");
     }
 }
