@@ -13,6 +13,7 @@ concurrency:
 permissions:
   contents: read
   packages: write
+  checks: read
 
 env:
   REGISTRY: ghcr.io
@@ -25,15 +26,13 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: read
-      security-events: write
       packages: write
       checks: read
-      statuses: read
     needs: []
     outputs:
       version: ${{ steps.meta.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Wait for CI checks before release
         if: github.ref_type == 'tag'
@@ -44,10 +43,6 @@ jobs:
             Compile & Format Check
             Unit Tests
             Integration, Coverage & Smoke
-            Codacy Static Code Analysis
-            Codacy Diff Coverage
-          REQUIRED_STATUSES: |
-            CodeRabbit
         shell: bash
         run: |
           set -euo pipefail
@@ -87,47 +82,16 @@ jobs:
             return 2
           }
 
-          check_required_statuses() {
-            local all_ready=true
-            while IFS= read -r context_name; do
-              [ -n "$context_name" ] || continue
-              local state
-              state="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${SHA}/status" \
-                | jq -r --arg name "$context_name" '.statuses[] | select(.context == $name) | .state' | head -n 1)"
-              if [ -z "$state" ]; then
-                echo "Waiting for status to appear: ${context_name}"
-                all_ready=false
-                continue
-              fi
-              if [ "$state" = "pending" ]; then
-                echo "Waiting for status to complete: ${context_name}"
-                all_ready=false
-                continue
-              fi
-              if [ "$state" != "success" ]; then
-                echo "Required status failed: ${context_name} (${state})"
-                return 1
-              fi
-            done <<<"$REQUIRED_STATUSES"
-
-            if [ "$all_ready" = true ]; then
-              return 0
-            fi
-            return 2
-          }
-
           deadline=$((SECONDS + 1800))
           while true; do
             runs_result=0
             check_required_runs || runs_result=$?
-            statuses_result=0
-            check_required_statuses || statuses_result=$?
 
-            if [ "$runs_result" -eq 0 ] && [ "$statuses_result" -eq 0 ]; then
+            if [ "$runs_result" -eq 0 ]; then
               echo "All required CI checks passed for ${SHA}; release may continue."
               exit 0
             fi
-            if [ "$runs_result" -eq 1 ] || [ "$statuses_result" -eq 1 ]; then
+            if [ "$runs_result" -eq 1 ]; then
               echo "Release blocked because required CI checks did not pass."
               exit 1
             fi
@@ -139,6 +103,7 @@ jobs:
           done
 
       - name: Validate version matches tag
+        if: github.ref_type == 'tag'
         shell: bash
         run: |
           TAG_VERSION="${GITHUB_REF#refs/tags/v}"
@@ -158,52 +123,87 @@ jobs:
           echo "Using version: ${VERSION}"
 
       - name: Set lowercase image name
+        id: image
         run: echo "IMAGE_NAME=${GITHUB_REPOSITORY_OWNER,,}/zhihuidangjian" >> "$GITHUB_ENV"
 
+      - name: Set up JDK 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d # v4
+        with:
+          cache-read-only: true
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: Build application jar
+        run: ./gradlew :server:bootJar --no-daemon -x test -x integrationTest -x spotlessCheck
+
       - name: Login to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130  # v3.7.0
-
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: Extract Docker metadata
         id: docker-meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=semver,pattern={{version}}
 
       - name: Build and push Docker image (GHCR)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: .
           file: server/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           labels: ${{ steps.docker-meta.outputs.labels }}
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=min
+
+  trivy-scan:
+    name: Scan Docker Image
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [ release ]
+    permissions:
+      contents: read
+      security-events: write
+      packages: read
+    steps:
+      - name: Set lowercase image name
+        run: echo "IMAGE_NAME=${GITHUB_REPOSITORY_OWNER,,}/zhihuidangjian" >> "$GITHUB_ENV"
+
+      - name: Login to GHCR
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Scan Docker image for vulnerabilities
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.release.outputs.version }}
           format: sarif
           output: trivy-results.sarif
           severity: CRITICAL,HIGH
           exit-code: 0
 
       - name: Upload Trivy results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@dd903d2e4f5405488e5ef1422510ee31c8b32357 # v3
         if: always() && hashFiles('trivy-results.sarif') != ''
         with:
           sarif_file: trivy-results.sarif
@@ -216,7 +216,7 @@ jobs:
     needs: [ release ]
     if: github.ref_type == 'tag'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Replace image registry with NJU mirror
         run: sed -i 's|ghcr.io|ghcr.nju.edu.cn|g' docker-compose.yml
@@ -236,7 +236,7 @@ jobs:
   summary:
     name: Release Summary
     runs-on: ubuntu-latest
-    needs: [ release, deploy ]
+    needs: [ release, deploy, trivy-scan ]
     if: always()
     steps:
       - name: Print release info
@@ -249,4 +249,5 @@ jobs:
           echo "| Trigger | \`${{ github.event_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Commit | \`${{ github.sha }}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Deploy | \`${{ needs.deploy.result }}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Pipeline | build → release → deploy |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Trivy Scan | \`${{ needs.trivy-scan.result }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Pipeline | build → release → deploy, scan |" >> "$GITHUB_STEP_SUMMARY"

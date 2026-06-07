@@ -5,6 +5,9 @@ on:
     branches:
       - product
       - dev
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 concurrency:
@@ -181,45 +184,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [compile-and-format, unit-test]
-
-    services:
-      mysql:
-        image: mysql:8.4
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: zhdj
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=10
-          --memory=1g
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd="redis-cli ping"
-          --health-interval=5s
-          --health-timeout=3s
-          --health-retries=10
-          --memory=256m
-      neo4j:
-        image: neo4j:5-community
-        env:
-          NEO4J_AUTH: none
-          NEO4J_server_memory_heap_max__size: 512m
-        ports:
-          - 7687:7687
-        options: >-
-          --health-cmd="cypher-shell 'RETURN 1'"
-          --health-interval=10s
-          --health-timeout=10s
-          --health-retries=15
-          --health-start-period=30s
-          --memory=2g
+    env:
+      MYSQL_IMAGE: public.ecr.aws/docker/library/mysql:8.4
+      REDIS_IMAGE: public.ecr.aws/docker/library/redis:7-alpine
+      NEO4J_IMAGE: public.ecr.aws/docker/library/neo4j:5-community
 
     steps:
       - name: Checkout
@@ -238,6 +206,71 @@ jobs:
 
       - name: Grant execute permission
         run: chmod +x gradlew
+
+      - name: Start dependency containers
+        run: |
+          set -euo pipefail
+
+          pull_with_retry() {
+            local image="$1"
+            for attempt in 1 2 3 4 5; do
+              if docker pull "$image"; then
+                return 0
+              fi
+              sleep $((attempt * 5))
+            done
+            return 1
+          }
+
+          pull_with_retry "$MYSQL_IMAGE"
+          pull_with_retry "$REDIS_IMAGE"
+          pull_with_retry "$NEO4J_IMAGE"
+
+          docker run -d --name zhdj-ci-mysql \
+            -e MYSQL_ROOT_PASSWORD=root \
+            -e MYSQL_DATABASE=zhdj \
+            -p 3306:3306 \
+            --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot" \
+            --health-interval=10s \
+            --health-timeout=5s \
+            --health-retries=10 \
+            --memory=1g \
+            "$MYSQL_IMAGE"
+
+          docker run -d --name zhdj-ci-redis \
+            -p 6379:6379 \
+            --health-cmd="redis-cli ping" \
+            --health-interval=5s \
+            --health-timeout=3s \
+            --health-retries=10 \
+            --memory=256m \
+            "$REDIS_IMAGE"
+
+          docker run -d --name zhdj-ci-neo4j \
+            -e NEO4J_AUTH=none \
+            -e NEO4J_server_memory_heap_max__size=512m \
+            -p 7687:7687 \
+            --health-cmd="cypher-shell 'RETURN 1'" \
+            --health-interval=10s \
+            --health-timeout=10s \
+            --health-retries=15 \
+            --health-start-period=30s \
+            --memory=2g \
+            "$NEO4J_IMAGE"
+
+          for container in zhdj-ci-mysql zhdj-ci-redis zhdj-ci-neo4j; do
+            for attempt in $(seq 1 60); do
+              status="$(docker inspect --format='{{.State.Health.Status}}' "$container")"
+              if [ "$status" = healthy ]; then
+                break
+              fi
+              if [ "$attempt" -eq 60 ]; then
+                docker logs "$container" || true
+                exit 1
+              fi
+              sleep 2
+            done
+          done
 
       - name: Download service unit coverage data
         uses: actions/download-artifact@v4
@@ -275,13 +308,8 @@ jobs:
         env:
           REDIS_PASSWORD: password
         run: |
-          REDIS_CONTAINER=$(docker ps --filter "ancestor=redis:7-alpine" --format "{{.ID}}" | head -n 1)
-          if [ -z "$REDIS_CONTAINER" ]; then
-            echo "Redis service container not found"
-            exit 1
-          fi
-          docker exec "$REDIS_CONTAINER" redis-cli CONFIG SET requirepass "$REDIS_PASSWORD"
-          docker exec "$REDIS_CONTAINER" redis-cli -a "$REDIS_PASSWORD" ping
+          docker exec zhdj-ci-redis redis-cli CONFIG SET requirepass "$REDIS_PASSWORD"
+          docker exec zhdj-ci-redis redis-cli -a "$REDIS_PASSWORD" ping
 
       - name: Start server for API smoke
         env:
@@ -299,9 +327,11 @@ jobs:
           APP_CORS_ALLOWED_ORIGINS: http://127.0.0.1:9000
           AI_KEY: dummy-key
           AUTH_TEST_CAPTCHA_CODE: CI8888
+          LOG_PATH: server/build/logs
           TENCENT_CLOUD_COS_ENABLED: false
           AI_MCP_ENABLED: false
         run: |
+          mkdir -p server/build/logs
           java -jar server/build/libs/server.jar > server/build/api-smoke-app.log 2>&1 &
           echo $! > server/build/api-smoke-app.pid
 
@@ -326,12 +356,8 @@ jobs:
           REDIS_PASSWORD: password
           AUTH_TEST_CAPTCHA_CODE: CI8888
         run: |
-          REDIS_CONTAINER=$(docker ps --filter "ancestor=redis:7-alpine" --format "{{.ID}}" | head -n 1)
-          if [ -z "$REDIS_CONTAINER" ]; then
-            echo "Redis service container not found"
-            exit 1
-          fi
-          docker exec "$REDIS_CONTAINER" redis-cli -a "$REDIS_PASSWORD" SET captcha:ci-smoke "\"$AUTH_TEST_CAPTCHA_CODE\"" EX 300
+          # CaptchaService reads through GenericJackson2JsonRedisSerializer, so seed a JSON string value.
+          docker exec zhdj-ci-redis redis-cli -a "$REDIS_PASSWORD" SET captcha:ci-smoke "\"$AUTH_TEST_CAPTCHA_CODE\"" EX 300
 
       - name: Run OpenAPI smoke
         env:
@@ -360,6 +386,10 @@ jobs:
             done
             kill -9 $PID 2>/dev/null || true
           fi
+
+      - name: Stop dependency containers
+        if: always()
+        run: docker rm -f zhdj-ci-mysql zhdj-ci-redis zhdj-ci-neo4j || true
 
       - name: Upload build reports
         if: always()

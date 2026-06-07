@@ -7,7 +7,7 @@ RUN java -Djarmode=tools -jar app.jar extract --layers --launcher --destination 
 # ── Stage 2: Runtime ──
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-RUN addgroup -g 1000 -S app && adduser -u 1000 -S -G app app && mkdir -p logs && chown -R app:app /app
+RUN addgroup -g 1000 -S app && adduser -u 1000 -S -G app app && mkdir -p /app/logs /app/uploads && chown -R app:app /app
 
 COPY --from=extractor /extracted/dependencies/ ./
 
