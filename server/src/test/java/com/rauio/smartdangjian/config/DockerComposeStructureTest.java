@@ -29,33 +29,33 @@ class DockerComposeStructureTest {
     }
 
     @Test
-    @DisplayName("docker-compose.yml 中 Redis 服务配置了 requirepass")
-    void prodRedisRequirepassConfigured() throws IOException {
+    @DisplayName("docker-compose.yml 中 Redis 服务无密码模式（仅内网访问）")
+    void prodRedisNoPassword() throws IOException {
         String content = Files.readString(PROD_COMPOSE);
         assertThat(content)
-                .as("docker-compose.yml 中 Redis 应启用 requirepass")
-                .contains("requirepass")
-                .contains("\"${REDIS_PASSWORD}\"");
+                .as("生产 Redis 绑定 127.0.0.1，无需密码")
+                .contains("redis-server")
+                .doesNotContain("requirepass");
     }
 
     @Test
-    @DisplayName("docker-compose.yml 中 Redis healthcheck 使用 -a 参数传递密码")
-    void prodRedisHealthcheckIncludesPassword() throws IOException {
+    @DisplayName("docker-compose.yml 中 Redis healthcheck 使用无密码 ping")
+    void prodRedisHealthcheckNoPassword() throws IOException {
         String content = Files.readString(PROD_COMPOSE);
         assertThat(content)
-                .as("docker-compose.yml 中 Redis healthcheck 应传递密码参数")
+                .as("Redis healthcheck 不传密码参数")
                 .contains("redis-cli")
-                .contains("-a")
-                .contains("${REDIS_PASSWORD}");
+                .contains("ping")
+                .doesNotContain("redis-cli\", \"-a\"");
     }
 
     @Test
-    @DisplayName("docker-compose.yml 中 App 服务传递 REDIS_PASSWORD 环境变量")
-    void prodAppHasRedisPasswordEnv() throws IOException {
+    @DisplayName("docker-compose.yml 中 App 服务不传递 REDIS_PASSWORD（无密码模式）")
+    void prodAppNoRedisPasswordEnv() throws IOException {
         String content = Files.readString(PROD_COMPOSE);
         assertThat(content)
-                .as("docker-compose.yml 中 App 服务应传递 REDIS_PASSWORD 环境变量")
-                .contains("REDIS_PASSWORD");
+                .as("生产 Redis 无密码，App 不传 REDIS_PASSWORD")
+                .doesNotContain("REDIS_PASSWORD");
     }
 
     @Test
