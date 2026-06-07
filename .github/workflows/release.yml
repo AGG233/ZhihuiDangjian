@@ -209,16 +209,25 @@ jobs:
     needs: [ release ]
     if: github.ref_type == 'tag'
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-        with:
-          persist-credentials: false
+      - name: Checkout compose file
+        shell: bash
+        run: |
+          set -euo pipefail
+          WORKSPACE="${{ github.workspace }}"
+          mkdir -p "$WORKSPACE"
+          cd "$WORKSPACE"
+          git init -b temp-deploy
+          git remote add origin https://github.com/${{ github.repository }}.git
+          git fetch --depth 1 origin ${{ github.sha }} -- sparse
+          git sparse-checkout set docker-compose.yml
+          git checkout FETCH_HEAD
 
       - name: Login to Aliyun Container Registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
-        with:
-          registry: ${{ needs.release.outputs.registry }}
-          username: ${{ secrets.ALIYUN_REGISTRY_USERNAME }}
-          password: ${{ secrets.ALIYUN_REGISTRY_PASSWORD }}
+        shell: bash
+        run: |
+          docker login ${{ needs.release.outputs.registry }} \
+            -u '${{ secrets.ALIYUN_REGISTRY_USERNAME }}' \
+            -p '${{ secrets.ALIYUN_REGISTRY_PASSWORD }}'
 
       - name: Sync compose file
         working-directory: /www/server/panel/data/compose/test
