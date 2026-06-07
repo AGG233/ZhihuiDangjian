@@ -72,7 +72,6 @@ services:
       COS_REGION: ${COS_REGION:-ap-guangzhou}
       COS_BUCKET: ${COS_BUCKET}
       COS_LINK: ${COS_LINK}
-      LOG_PATH: /app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/actuator/health"]
       interval: 30s
@@ -80,7 +79,6 @@ services:
       start_period: 60s
       retries: 3
     volumes:
-      - app-logs:/app/logs
       - app-uploads:/app/uploads
     labels:
       - "com.rauio.zhihuidangjian=true"
@@ -93,5 +91,4 @@ services:
 volumes:
   redis-data:
   neo4j-data:
-  app-logs:
   app-uploads:
