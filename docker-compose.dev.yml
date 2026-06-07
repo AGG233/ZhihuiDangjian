@@ -67,7 +67,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: server/Dockerfile
+      dockerfile: server/Dockerfile-dev
     image: zhihuidangjian:local-dev
     container_name: zhihuidangjian-app
     restart: no

@@ -30,6 +30,7 @@ import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.RegisterRequest;
 import com.rauio.smartdangjian.server.auth.pojo.response.LoginResponse;
+import com.rauio.smartdangjian.server.auth.security.SessionPrincipalFactory;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
@@ -62,6 +63,7 @@ class AuthServiceTest {
                 captchaService,
                 userMapper,
                 userService,
+                new SessionPrincipalFactory(),
                 Clock.fixed(Instant.parse("2026-05-31T10:15:30Z"), ZoneId.of("UTC")));
     }
 

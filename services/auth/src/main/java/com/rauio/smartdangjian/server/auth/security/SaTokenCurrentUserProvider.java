@@ -66,7 +66,7 @@ public class SaTokenCurrentUserProvider implements CurrentUserProvider {
             if (session == null) {
                 throw notLogin();
             }
-            Object user = session.get("user");
+            Object user = session.get(SessionPrincipalFactory.SESSION_USER_KEY);
             if (user instanceof CurrentUserPrincipal) {
                 return (CurrentUserPrincipal) user;
             }
