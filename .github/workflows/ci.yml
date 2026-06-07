@@ -353,7 +353,8 @@ jobs:
           REDIS_PASSWORD: password
           AUTH_TEST_CAPTCHA_CODE: CI8888
         run: |
-          docker exec zhdj-ci-redis redis-cli -a "$REDIS_PASSWORD" SET captcha:ci-smoke "$AUTH_TEST_CAPTCHA_CODE" EX 300
+          # CaptchaService reads through GenericJackson2JsonRedisSerializer, so seed a JSON string value.
+          docker exec zhdj-ci-redis redis-cli -a "$REDIS_PASSWORD" SET captcha:ci-smoke "\"$AUTH_TEST_CAPTCHA_CODE\"" EX 300
 
       - name: Run OpenAPI smoke
         env:
