@@ -42,22 +42,11 @@ services:
           memory: 1G
           cpus: "2.0"
 
-  app-permissions:
-    image: alpine:3.22
-    container_name: zhihuidangjian-app-permissions
-    restart: no
-    command: ["sh", "-c", "mkdir -p /app/logs /app/uploads && chown -R 1000:1000 /app/logs /app/uploads"]
-    volumes:
-      - ./logs:/app/logs
-      - ./uploads:/app/uploads
-
   app:
     image: ${APP_IMAGE:-ghcr.io/agg233/zhihuidangjian:latest}
     container_name: zhihuidangjian
     restart: unless-stopped
     depends_on:
-      app-permissions:
-        condition: service_completed_successfully
       redis:
         condition: service_healthy
       neo4j:
@@ -91,8 +80,8 @@ services:
       start_period: 60s
       retries: 3
     volumes:
-      - ./logs:/app/logs
-      - ./uploads:/app/uploads
+      - app-logs:/app/logs
+      - app-uploads:/app/uploads
     labels:
       - "com.rauio.zhihuidangjian=true"
     deploy:
@@ -104,3 +93,5 @@ services:
 volumes:
   redis-data:
   neo4j-data:
+  app-logs:
+  app-uploads:

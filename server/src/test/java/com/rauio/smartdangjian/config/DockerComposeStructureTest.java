@@ -68,16 +68,15 @@ class DockerComposeStructureTest {
     }
 
     @Test
-    @DisplayName("docker-compose.yml 中 App 服务将日志路径指向已修正权限的挂载目录")
+    @DisplayName("docker-compose.yml 中 App 服务使用 named volume 挂载日志和上传目录")
     void prodAppLogPathUsesWritableMountedDirectory() throws IOException {
         String content = Files.readString(PROD_COMPOSE);
         assertThat(content)
-                .as("docker-compose.yml 中 App 服务日志应写入 /app/logs")
+                .as("生产 Compose 使用 named volume 挂载日志，避免宿主机权限问题")
                 .contains("LOG_PATH: /app/logs")
-                .contains("./logs:/app/logs")
-                .contains("app-permissions:")
-                .contains("chown -R 1000:1000 /app/logs /app/uploads")
-                .contains("condition: service_completed_successfully");
+                .contains("app-logs:/app/logs")
+                .contains("app-uploads:/app/uploads")
+                .doesNotContain("app-permissions:");
     }
 
     @Test

@@ -237,10 +237,6 @@ jobs:
             printf '\nAPP_IMAGE=%s\n' "$IMAGE" >> .env
           fi
 
-      - name: Ensure writable directories
-        working-directory: /www/server/panel/data/compose/test
-        run: mkdir -p logs uploads && chown -R 1000:1000 logs uploads
-
       - name: Deploy via docker-compose
         working-directory: /www/server/panel/data/compose/test
         run: |
