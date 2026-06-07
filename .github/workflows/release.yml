@@ -133,6 +133,8 @@ jobs:
           password: ${{ secrets.ALIYUN_REGISTRY_PASSWORD }}
 
       - name: Login to GHCR
+        id: ghcr-login
+        continue-on-error: true
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ghcr.io
@@ -148,11 +150,11 @@ jobs:
         with:
           images: |
             ${{ steps.image.outputs.image_repository }}
-            ${{ steps.image.outputs.ghcr_image_repository }}
+            ${{ steps.ghcr-login.outcome == 'success' && steps.image.outputs.ghcr_image_repository || '' }}
           tags: |
             type=semver,pattern={{version}}
 
-      - name: Build and push Docker image (Aliyun ACR and GHCR)
+      - name: Build and push Docker image (Aliyun ACR${{ steps.ghcr-login.outcome == 'success' && ' + GHCR' || ' (GHCR skipped)' }})
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: .
@@ -161,8 +163,8 @@ jobs:
           tags: |
             ${{ steps.image.outputs.image_repository }}:${{ steps.meta.outputs.version }}
             ${{ steps.image.outputs.image_repository }}:latest
-            ${{ steps.image.outputs.ghcr_image_repository }}:${{ steps.meta.outputs.version }}
-            ${{ steps.image.outputs.ghcr_image_repository }}:latest
+            ${{ steps.ghcr-login.outcome == 'success' && format('{0}:{1}', steps.image.outputs.ghcr_image_repository, steps.meta.outputs.version) || '' }}
+            ${{ steps.ghcr-login.outcome == 'success' && format('{0}:latest', steps.image.outputs.ghcr_image_repository) || '' }}
           labels: ${{ steps.docker-meta.outputs.labels }}
           platforms: linux/amd64
           cache-from: type=gha
