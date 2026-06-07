@@ -28,11 +28,12 @@ jobs:
       contents: read
       packages: write
       checks: read
-    needs: []
     outputs:
       version: ${{ steps.meta.outputs.version }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Wait for CI checks before release
         if: github.ref_type == 'tag'
@@ -217,6 +218,8 @@ jobs:
     if: github.ref_type == 'tag'
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Replace image registry with NJU mirror
         run: sed -i 's|ghcr.io|ghcr.nju.edu.cn|g' docker-compose.yml

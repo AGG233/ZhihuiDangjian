@@ -92,18 +92,41 @@ class DevAutoLoginFilterTest {
         DevProperties props = new DevProperties();
         props.setDefaultUserId("1");
         props.setDefaultUserType(UserType.MANAGER);
-        User devUser = User.builder().id(1L).build();
+        User loginUser = User.builder().id(2L).build();
         DevAutoLoginFilter filter = new DevAutoLoginFilter(props, userService, sessionPrincipalFactory);
 
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
             stpUtil.when(StpUtil::isLogin).thenReturn(true);
+            stpUtil.when(StpUtil::getLoginIdAsString).thenReturn("2");
             when(sessionPrincipalFactory.hasCurrentSessionPrincipal()).thenReturn(false);
-            when(userService.getById("1")).thenReturn(devUser);
+            when(userService.getById("2")).thenReturn(loginUser);
 
             filter.doFilterInternal(request, response, chain);
 
             stpUtil.verify(() -> StpUtil.login(any(), any(SaLoginParameter.class)), never());
-            verify(sessionPrincipalFactory).bindCurrentSession(devUser, UserType.MANAGER);
+            verify(sessionPrincipalFactory).bindCurrentSession(loginUser, UserType.MANAGER);
+            verify(chain).doFilter(request, response);
+        }
+    }
+
+    @Test
+    @DisplayName("已登录但缺少用户上下文且用户不存在时使用当前登录 ID 绑定临时上下文")
+    void bindTemporaryPrincipalUsesCurrentLoginIdWhenAlreadyLoggedIn() throws Exception {
+        DevProperties props = new DevProperties();
+        props.setDefaultUserId("1");
+        props.setDefaultUserType(UserType.MANAGER);
+        DevAutoLoginFilter filter = new DevAutoLoginFilter(props, userService, sessionPrincipalFactory);
+
+        try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
+            stpUtil.when(StpUtil::isLogin).thenReturn(true);
+            stpUtil.when(StpUtil::getLoginIdAsString).thenReturn("2");
+            when(sessionPrincipalFactory.hasCurrentSessionPrincipal()).thenReturn(false);
+            when(userService.getById("2")).thenReturn(null);
+
+            filter.doFilterInternal(request, response, chain);
+
+            stpUtil.verify(() -> StpUtil.login(any(), any(SaLoginParameter.class)), never());
+            verify(sessionPrincipalFactory).bindCurrentSession("2", UserType.MANAGER);
             verify(chain).doFilter(request, response);
         }
     }

@@ -51,11 +51,12 @@ public class DevAutoLoginFilter extends OncePerRequestFilter {
             StpUtil.login(defaultDevUserId, SaLoginModel.create().setTimeout(86400));
         }
         if (!login || !sessionPrincipalFactory.hasCurrentSessionPrincipal()) {
-            User user = userService.getById(defaultDevUserId);
+            String principalUserId = login ? StpUtil.getLoginIdAsString() : defaultDevUserId;
+            User user = userService.getById(principalUserId);
             if (user != null) {
                 sessionPrincipalFactory.bindCurrentSession(user, devProperties.getDefaultUserType());
             } else {
-                sessionPrincipalFactory.bindCurrentSession(defaultDevUserId, devProperties.getDefaultUserType());
+                sessionPrincipalFactory.bindCurrentSession(principalUserId, devProperties.getDefaultUserType());
             }
         }
     }
