@@ -219,8 +219,9 @@ jobs:
           cd "$WORKSPACE"
           git init -b temp-deploy
           git remote add origin https://github.com/${{ github.repository }}.git
-          git fetch --depth 1 origin ${{ github.sha }} --sparse
-          git sparse-checkout set --no-cone docker-compose.yml
+          git config core.sparseCheckout true
+          echo "docker-compose.yml" >> .git/info/sparse-checkout
+          git fetch --depth 1 origin ${{ github.sha }}
           git checkout FETCH_HEAD
 
       - name: Login to Aliyun Container Registry
@@ -232,7 +233,7 @@ jobs:
 
       - name: Sync compose file
         working-directory: /www/server/panel/data/compose/test
-        run: cp -f ${{ github.workspace }}/docker-compose.yml .
+        run: cp -f /tmp/docker-compose.yml .
 
       - name: Write deployed image
         working-directory: /www/server/panel/data/compose/test
