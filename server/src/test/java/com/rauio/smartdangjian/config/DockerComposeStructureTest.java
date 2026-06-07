@@ -59,6 +59,15 @@ class DockerComposeStructureTest {
     }
 
     @Test
+    @DisplayName("docker-compose.yml 中 App 镜像由发布流程写入，带 GHCR 默认回退")
+    void prodAppImageIsProvidedByReleasePipeline() throws IOException {
+        String content = Files.readString(PROD_COMPOSE);
+        assertThat(content)
+                .as("生产 Compose 使用 APP_IMAGE 变量，缺失时回退到 GHCR 默认镜像")
+                .contains("image: ${APP_IMAGE:-ghcr.io/agg233/zhihuidangjian:latest}");
+    }
+
+    @Test
     @DisplayName("docker-compose.yml 中 App 服务将日志路径指向已修正权限的挂载目录")
     void prodAppLogPathUsesWritableMountedDirectory() throws IOException {
         String content = Files.readString(PROD_COMPOSE);

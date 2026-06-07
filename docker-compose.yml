@@ -52,7 +52,7 @@ services:
       - ./uploads:/app/uploads
 
   app:
-    image: ghcr.io/agg233/zhihuidangjian:${APP_VERSION:-latest}
+    image: ${APP_IMAGE:-ghcr.io/agg233/zhihuidangjian:latest}
     container_name: zhihuidangjian
     restart: unless-stopped
     depends_on:
