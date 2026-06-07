@@ -214,12 +214,13 @@ jobs:
         run: |
           set -euo pipefail
           WORKSPACE="${{ github.workspace }}"
+          rm -rf "$WORKSPACE"
           mkdir -p "$WORKSPACE"
           cd "$WORKSPACE"
           git init -b temp-deploy
           git remote add origin https://github.com/${{ github.repository }}.git
-          git fetch --depth 1 origin ${{ github.sha }} -- sparse
-          git sparse-checkout set docker-compose.yml
+          git fetch --depth 1 origin ${{ github.sha }} --sparse
+          git sparse-checkout set --no-cone docker-compose.yml
           git checkout FETCH_HEAD
 
       - name: Login to Aliyun Container Registry
