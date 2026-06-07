@@ -3,10 +3,13 @@ package com.rauio.smartdangjian.config;
 import java.time.Duration;
 import java.util.Map;
 
+import jakarta.annotation.PostConstruct;
+
 import org.redisson.spring.starter.RedissonAutoConfigurationV2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -27,6 +30,25 @@ import com.rauio.smartdangjian.constants.RedisConstants;
 @EnableCaching
 @AutoConfigureBefore(RedissonAutoConfigurationV2.class)
 public class RedisConfig {
+
+    private final RedisProperties redisProperties;
+
+    public RedisConfig(RedisProperties redisProperties) {
+        this.redisProperties = redisProperties;
+    }
+
+    /**
+     * Redisson treats non-null password (including empty string) as a valid credential and sends AUTH.
+     * When REDIS_PASSWORD is unset, ${REDIS_PASSWORD:} resolves to empty string, not null.
+     * Normalize empty password to null so Redisson skips AUTH for passwordless Redis.
+     */
+    @PostConstruct
+    void normalizeEmptyPassword() {
+        String password = redisProperties.getPassword();
+        if (password != null && password.isEmpty()) {
+            redisProperties.setPassword(null);
+        }
+    }
 
     static final Duration DEFAULT_CACHE_TTL = Duration.ofHours(1);
     private static final Duration CACHE_TTL_JITTER_RANGE = Duration.ofMinutes(10);

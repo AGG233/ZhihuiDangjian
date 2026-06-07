@@ -72,18 +72,19 @@ class ApplicationConfigStructureTest {
     }
 
     @Test
-    @DisplayName("application-prod.yaml 中 spring.data.redis.password 必须从环境变量读取，无默认值（无冒号默认语法）")
-    void prodRedisPasswordMustBeRequiredEnvVar() throws IOException {
+    @DisplayName("application-prod.yaml 中 spring.data.redis.password 从环境变量读取，空默认值由 RedisConfig 归一化为 null")
+    void prodRedisPasswordMustUseEnvVarWithEmptyDefault() throws IOException {
         String content = Files.readString(PROD_YAML);
-        // 查找 password: 行的值部分，验证为 ${REDIS_PASSWORD}（无冒号默认值语法）
-        boolean hasRequiredPassword = content.lines()
+        // 允许 ${REDIS_PASSWORD} 或 ${REDIS_PASSWORD:}（空默认），两者均为安全配置
+        // 空字符串默认值由 RedisConfig.normalizeEmptyPassword() 归一化为 null，避免 Redisson 发送 AUTH
+        boolean hasSafePassword = content.lines()
                 .filter(line -> line.strip().startsWith("password:"))
                 .anyMatch(line -> {
                     String value = line.substring(line.indexOf(':') + 1).strip();
-                    return value.equals("${REDIS_PASSWORD}");
+                    return value.equals("${REDIS_PASSWORD}") || value.equals("${REDIS_PASSWORD:}");
                 });
-        assertThat(hasRequiredPassword)
-                .as("application-prod.yaml 必须使用 ${REDIS_PASSWORD}（无默认值），禁止硬编码密码或 ${REDIS_PASSWORD:xxx} 默认值")
+        assertThat(hasSafePassword)
+                .as("application-prod.yaml 必须使用 ${REDIS_PASSWORD} 或 ${REDIS_PASSWORD:}，禁止硬编码密码")
                 .isTrue();
     }
 

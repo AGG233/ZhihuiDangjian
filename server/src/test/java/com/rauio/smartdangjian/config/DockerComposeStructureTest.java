@@ -53,9 +53,7 @@ class DockerComposeStructureTest {
     @DisplayName("docker-compose.yml 中 App 服务不传递 REDIS_PASSWORD（无密码模式）")
     void prodAppNoRedisPasswordEnv() throws IOException {
         String content = Files.readString(PROD_COMPOSE);
-        assertThat(content)
-                .as("生产 Redis 无密码，App 不传 REDIS_PASSWORD")
-                .doesNotContain("REDIS_PASSWORD");
+        assertThat(content).as("生产 Redis 无密码，App 不传 REDIS_PASSWORD").doesNotContain("REDIS_PASSWORD");
     }
 
     @Test
