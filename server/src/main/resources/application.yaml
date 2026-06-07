@@ -81,7 +81,7 @@ mybatis-plus:
 
 logging:
   file:
-    path: ${LOG_PATH:/app/logs}
+    path: ${LOG_PATH:logs}
   level:
     root: INFO
     com.rauio.smartdangjian: DEBUG

@@ -124,13 +124,60 @@ class ObservabilityConfigTest {
     }
 
     @Test
-    @DisplayName("application.yaml 的日志路径默认指向 Docker 挂载目录")
-    void defaultLoggingPathUsesDockerMountedDirectory() throws IOException {
+    @DisplayName("application.yaml 的日志路径默认使用可写相对目录")
+    void defaultLoggingPathUsesWritableRelativeDirectory() throws IOException {
         Properties props = loadYaml("application.yaml");
 
         String loggingPath = props.getProperty("logging.file.path");
 
-        assertThat(loggingPath).isEqualTo("${LOG_PATH:/app/logs}");
+        assertThat(loggingPath).isEqualTo("${LOG_PATH:logs}");
+    }
+
+    @Test
+    @DisplayName("文件日志 appender 仅在 dev 和 prod profile 初始化")
+    void fileAppenderIsOnlyInitializedForDevAndProdProfiles() throws Exception {
+        ClassPathResource resource = new ClassPathResource("logback-spring.xml");
+        DocumentBuilderFactory factory = secureDocumentBuilderFactory();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        try (InputStream is = resource.getInputStream()) {
+            Document doc = builder.parse(is);
+            NodeList profiles = doc.getElementsByTagName("springProfile");
+
+            boolean fileAppenderDefinedInDevProdProfile = false;
+            boolean fileAppenderDefinedOutsideDevProdProfile = false;
+            boolean fileAppenderReferencedOutsideDevOrProdProfile = false;
+            for (int i = 0; i < profiles.getLength(); i++) {
+                Element profile = (Element) profiles.item(i);
+                String profileName = profile.getAttribute("name");
+                NodeList appenders = profile.getElementsByTagName("appender");
+                for (int j = 0; j < appenders.getLength(); j++) {
+                    Element appender = (Element) appenders.item(j);
+                    if (!"FILE".equals(appender.getAttribute("name"))) {
+                        continue;
+                    }
+                    if ("dev | prod".equals(profileName)) {
+                        fileAppenderDefinedInDevProdProfile = true;
+                    } else {
+                        fileAppenderDefinedOutsideDevProdProfile = true;
+                    }
+                }
+
+                NodeList appenderRefs = profile.getElementsByTagName("appender-ref");
+                for (int j = 0; j < appenderRefs.getLength(); j++) {
+                    Element appenderRef = (Element) appenderRefs.item(j);
+                    if (!"FILE".equals(appenderRef.getAttribute("ref"))) {
+                        continue;
+                    }
+                    if (!"dev".equals(profileName) && !"prod".equals(profileName)) {
+                        fileAppenderReferencedOutsideDevOrProdProfile = true;
+                    }
+                }
+            }
+
+            assertThat(fileAppenderDefinedInDevProdProfile).isTrue();
+            assertThat(fileAppenderDefinedOutsideDevProdProfile).isFalse();
+            assertThat(fileAppenderReferencedOutsideDevOrProdProfile).isFalse();
+        }
     }
 
     private static DocumentBuilderFactory secureDocumentBuilderFactory() throws Exception {
