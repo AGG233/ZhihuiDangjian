@@ -113,6 +113,26 @@ class ObservabilityConfigTest {
         }
     }
 
+    @Test
+    @DisplayName("prod profile 配置可覆盖且非根目录的日志路径")
+    void prodLoggingPathIsOverridableAndNotRootDirectory() throws IOException {
+        Properties props = loadYaml("application-prod.yaml");
+
+        String loggingPath = props.getProperty("logging.file.path");
+
+        assertThat(loggingPath).isEqualTo("${LOG_PATH:/app/logs}");
+    }
+
+    @Test
+    @DisplayName("application.yaml 的日志路径默认指向 Docker 挂载目录")
+    void defaultLoggingPathUsesDockerMountedDirectory() throws IOException {
+        Properties props = loadYaml("application.yaml");
+
+        String loggingPath = props.getProperty("logging.file.path");
+
+        assertThat(loggingPath).isEqualTo("${LOG_PATH:/app/logs}");
+    }
+
     private static DocumentBuilderFactory secureDocumentBuilderFactory() throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);

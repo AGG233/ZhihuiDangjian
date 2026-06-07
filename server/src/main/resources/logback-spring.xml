@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <springProperty name="appName" source="spring.application.name" defaultValue="server"/>
-    <springProperty name="logDir" source="logging.file.path" defaultValue="logs"/>
+    <springProperty name="logDir" source="logging.file.path" defaultValue="/app/logs"/>
 
     <!-- Console Appender -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">

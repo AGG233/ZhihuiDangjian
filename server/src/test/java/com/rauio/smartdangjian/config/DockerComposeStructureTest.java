@@ -59,6 +59,16 @@ class DockerComposeStructureTest {
     }
 
     @Test
+    @DisplayName("docker-compose.yml 中 App 服务将日志路径指向容器挂载目录")
+    void prodAppLogPathUsesMountedDirectory() throws IOException {
+        String content = Files.readString(PROD_COMPOSE);
+        assertThat(content)
+                .as("docker-compose.yml 中 App 服务日志应写入 /app/logs")
+                .contains("LOG_PATH: /app/logs")
+                .contains("./logs:/app/logs");
+    }
+
+    @Test
     @DisplayName("docker-compose.dev.yml 中 Redis 服务配置了 requirepass（含开发默认值）")
     void devRedisRequirepassConfigured() throws IOException {
         String content = Files.readString(DEV_COMPOSE);
@@ -87,5 +97,15 @@ class DockerComposeStructureTest {
                 .as("docker-compose.dev.yml 中 App 服务应传递 REDIS_PASSWORD 环境变量")
                 .contains("REDIS_PASSWORD")
                 .contains("${REDIS_PASSWORD:-redis-dev}");
+    }
+
+    @Test
+    @DisplayName("docker-compose.dev.yml 中 App 服务将日志路径指向容器挂载目录")
+    void devAppLogPathUsesMountedDirectory() throws IOException {
+        String content = Files.readString(DEV_COMPOSE);
+        assertThat(content)
+                .as("docker-compose.dev.yml 中 App 服务日志应写入 /app/logs")
+                .contains("LOG_PATH: /app/logs")
+                .contains("./logs:/app/logs");
     }
 }
