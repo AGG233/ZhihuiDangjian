@@ -180,10 +180,10 @@ jobs:
           fi
 
   integration-and-smoke:
-    name: Integration, Coverage & Smoke
+    name: Integration & Smoke
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    needs: [compile-and-format, unit-test]
+    needs: [compile-and-format]
     env:
       MYSQL_IMAGE: public.ecr.aws/docker/library/mysql:8.4
       REDIS_IMAGE: public.ecr.aws/docker/library/redis:7-alpine
@@ -272,34 +272,27 @@ jobs:
             done
           done
 
-      - name: Download service unit coverage data
-        uses: actions/download-artifact@v4
-        with:
-          name: service-unit-coverage-exec
-          path: .
+      - name: Run integration tests
+        run: ./gradlew integrationTest --continue
 
-      - name: Download server unit coverage data
-        uses: actions/download-artifact@v4
-        with:
-          name: server-unit-coverage-exec
-          path: .
-
-      - name: Restore unit coverage data
+      - name: Package integration coverage data
+        if: success()
         run: |
-          tar -xf service-unit-coverage-exec.tar
-          tar -xf server-unit-coverage-exec.tar
+          mapfile -t coverage_files < <(find . -path '*/build/jacoco/integrationTest.exec' -type f | sort)
+          if [ "${#coverage_files[@]}" -eq 0 ]; then
+            echo "No JaCoCo integration coverage data found"
+            exit 1
+          fi
+          tar -cf integration-coverage-exec.tar "${coverage_files[@]}"
 
-      - name: Run integration tests and coverage
-        run: ./gradlew jacocoRootReport jacocoRootCoverageVerification -PcoverageFromUnitArtifacts=true --continue
-
-      - name: Upload coverage to Codacy
-        if: success() || failure()
-        uses: codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699
+      - name: Upload integration coverage data
+        if: success()
+        uses: actions/upload-artifact@v4
         with:
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          coverage-reports: build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml
-          language: java
-          force-coverage-parser: jacoco
+          name: integration-coverage-exec
+          path: integration-coverage-exec.tar
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Build server bootJar
         run: ./gradlew :server:bootJar -x test -x integrationTest
@@ -400,5 +393,87 @@ jobs:
             **/build/reports/tests/**
             **/build/reports/jacoco/**
             server/build/api-smoke-app.log
+          if-no-files-found: ignore
+          retention-days: 7
+
+  coverage-verification:
+    name: Coverage Verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [unit-test, integration-and-smoke]
+    if: always()
+
+    steps:
+      - name: Check test jobs
+        run: |
+          if [ "${{ needs.unit-test.result }}" != "success" ] || [ "${{ needs.integration-and-smoke.result }}" != "success" ]; then
+            echo "Unit tests: ${{ needs.unit-test.result }}"
+            echo "Integration and smoke: ${{ needs.integration-and-smoke.result }}"
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: Download service unit coverage data
+        uses: actions/download-artifact@v4
+        with:
+          name: service-unit-coverage-exec
+          path: .
+
+      - name: Download server unit coverage data
+        uses: actions/download-artifact@v4
+        with:
+          name: server-unit-coverage-exec
+          path: .
+
+      - name: Download integration coverage data
+        uses: actions/download-artifact@v4
+        with:
+          name: integration-coverage-exec
+          path: .
+
+      - name: Restore coverage data
+        run: |
+          tar -xf service-unit-coverage-exec.tar
+          tar -xf server-unit-coverage-exec.tar
+          tar -xf integration-coverage-exec.tar
+
+      - name: Compile classes for coverage report
+        run: ./gradlew compileJava
+
+      - name: Run coverage verification
+        run: ./gradlew jacocoRootReport jacocoRootCoverageVerification -PcoverageFromUnitArtifacts=true -PcoverageFromIntegrationArtifacts=true --continue
+
+      - name: Upload coverage to Codacy
+        if: success() || failure()
+        uses: codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml
+          language: java
+          force-coverage-parser: jacoco
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            **/build/reports/jacoco/**
           if-no-files-found: ignore
           retention-days: 7
