@@ -45,6 +45,25 @@ class UserControllerTest extends BaseControllerTest {
     class NormalTests {
 
         @Test
+        @DisplayName("GET /me - 获取当前登录用户信息成功")
+        void getCurrentUserSuccess() throws Exception {
+            UserResponse vo = new UserResponse();
+            vo.setId(1L);
+            vo.setUsername("zhangsan");
+            vo.setRealName("张三");
+            vo.setUserType(com.rauio.smartdangjian.utils.spec.UserType.STUDENT);
+            when(userService.getCurrentUserId()).thenReturn("1");
+            when(userService.get(1L)).thenReturn(vo);
+
+            mockMvc.perform(get("/api/user/users/me"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data.id").value("1"))
+                    .andExpect(jsonPath("$.data.username").value("zhangsan"))
+                    .andExpect(jsonPath("$.data.realName").value("张三"));
+        }
+
+        @Test
         @DisplayName("GET /{id} - 获取用户信息成功")
         void getSuccess() throws Exception {
             UserResponse vo = new UserResponse();
@@ -120,6 +139,18 @@ class UserControllerTest extends BaseControllerTest {
     @Nested
     @DisplayName("异常处理场景")
     class ErrorTests {
+
+        @Test
+        @DisplayName("GET /me - Service 当前用户不存在返回 null")
+        void getCurrentUserReturnsNull() throws Exception {
+            when(userService.getCurrentUserId()).thenReturn("999");
+            when(userService.get(999L)).thenReturn(null);
+
+            mockMvc.perform(get("/api/user/users/me"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
 
         @Test
         @DisplayName("GET /{id} - Service 抛出 BusinessException 返回 400")

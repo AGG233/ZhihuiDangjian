@@ -69,8 +69,8 @@ class ObservabilityConfigTest {
     // ── Task B: 日志配置 ───────────────────────────────────────────────
 
     @Test
-    @DisplayName("logback-spring.xml 存在且包含 RollingFileAppender")
-    void logbackFileExistsWithRollingPolicy() throws Exception {
+    @DisplayName("logback-spring.xml 存在且仅使用 ConsoleAppender 输出到 stdout")
+    void logbackFileExistsWithConsoleAppenderOnly() throws Exception {
         ClassPathResource resource = new ClassPathResource("logback-spring.xml");
         assertThat(resource.exists()).isTrue();
 
@@ -78,17 +78,21 @@ class ObservabilityConfigTest {
         DocumentBuilder builder = factory.newDocumentBuilder();
         try (InputStream is = resource.getInputStream()) {
             Document doc = builder.parse(is);
-            NodeList fileAppenders = doc.getElementsByTagName("appender");
+            NodeList appenders = doc.getElementsByTagName("appender");
+            boolean hasConsole = false;
             boolean hasRollingFile = false;
-            for (int i = 0; i < fileAppenders.getLength(); i++) {
-                Element appender = (Element) fileAppenders.item(i);
+            for (int i = 0; i < appenders.getLength(); i++) {
+                Element appender = (Element) appenders.item(i);
                 String className = appender.getAttribute("class");
+                if (className.contains("ConsoleAppender")) {
+                    hasConsole = true;
+                }
                 if (className.contains("RollingFileAppender")) {
                     hasRollingFile = true;
-                    break;
                 }
             }
-            assertThat(hasRollingFile).isTrue();
+            assertThat(hasConsole).isTrue();
+            assertThat(hasRollingFile).isFalse();
         }
     }
 
@@ -134,49 +138,34 @@ class ObservabilityConfigTest {
     }
 
     @Test
-    @DisplayName("文件日志 appender 仅在 dev 和 prod profile 初始化")
-    void fileAppenderIsOnlyInitializedForDevAndProdProfiles() throws Exception {
+    @DisplayName("logback-spring.xml 不初始化文件日志 appender")
+    void fileAppenderIsNotInitialized() throws Exception {
         ClassPathResource resource = new ClassPathResource("logback-spring.xml");
         DocumentBuilderFactory factory = secureDocumentBuilderFactory();
         DocumentBuilder builder = factory.newDocumentBuilder();
         try (InputStream is = resource.getInputStream()) {
             Document doc = builder.parse(is);
-            NodeList profiles = doc.getElementsByTagName("springProfile");
+            NodeList appenders = doc.getElementsByTagName("appender");
+            NodeList appenderRefs = doc.getElementsByTagName("appender-ref");
 
-            boolean fileAppenderDefinedInDevProdProfile = false;
-            boolean fileAppenderDefinedOutsideDevProdProfile = false;
-            boolean fileAppenderReferencedOutsideDevOrProdProfile = false;
-            for (int i = 0; i < profiles.getLength(); i++) {
-                Element profile = (Element) profiles.item(i);
-                String profileName = profile.getAttribute("name");
-                NodeList appenders = profile.getElementsByTagName("appender");
-                for (int j = 0; j < appenders.getLength(); j++) {
-                    Element appender = (Element) appenders.item(j);
-                    if (!"FILE".equals(appender.getAttribute("name"))) {
-                        continue;
-                    }
-                    if ("dev | prod".equals(profileName)) {
-                        fileAppenderDefinedInDevProdProfile = true;
-                    } else {
-                        fileAppenderDefinedOutsideDevProdProfile = true;
-                    }
-                }
-
-                NodeList appenderRefs = profile.getElementsByTagName("appender-ref");
-                for (int j = 0; j < appenderRefs.getLength(); j++) {
-                    Element appenderRef = (Element) appenderRefs.item(j);
-                    if (!"FILE".equals(appenderRef.getAttribute("ref"))) {
-                        continue;
-                    }
-                    if (!"dev".equals(profileName) && !"prod".equals(profileName)) {
-                        fileAppenderReferencedOutsideDevOrProdProfile = true;
-                    }
+            boolean fileAppenderDefined = false;
+            boolean fileAppenderReferenced = false;
+            for (int i = 0; i < appenders.getLength(); i++) {
+                Element appender = (Element) appenders.item(i);
+                if ("FILE".equals(appender.getAttribute("name"))) {
+                    fileAppenderDefined = true;
                 }
             }
 
-            assertThat(fileAppenderDefinedInDevProdProfile).isTrue();
-            assertThat(fileAppenderDefinedOutsideDevProdProfile).isFalse();
-            assertThat(fileAppenderReferencedOutsideDevOrProdProfile).isFalse();
+            for (int i = 0; i < appenderRefs.getLength(); i++) {
+                Element appenderRef = (Element) appenderRefs.item(i);
+                if ("FILE".equals(appenderRef.getAttribute("ref"))) {
+                    fileAppenderReferenced = true;
+                }
+            }
+
+            assertThat(fileAppenderDefined).isFalse();
+            assertThat(fileAppenderReferenced).isFalse();
         }
     }
 
