@@ -266,15 +266,21 @@ class AdminCourseControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("GET 请求创建接口返回 405")
-        void createWithWrongMethod() throws Exception {
-            mockMvc.perform(get("/api/admin/content/courses")).andExpect(status().isMethodNotAllowed());
+        @DisplayName("GET 请求课程列表返回 200")
+        void getCourseListSuccess() throws Exception {
+            mockMvc.perform(get("/api/admin/content/courses")).andExpect(status().isOk());
         }
 
         @Test
         @DisplayName("POST 请求删除接口返回 405")
         void deleteWithWrongMethod() throws Exception {
             mockMvc.perform(post("/api/admin/content/courses/1")).andExpect(status().isMethodNotAllowed());
+        }
+
+        @Test
+        @DisplayName("PUT 请求创建接口返回 405")
+        void createWithWrongMethod() throws Exception {
+            mockMvc.perform(put("/api/admin/content/courses")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

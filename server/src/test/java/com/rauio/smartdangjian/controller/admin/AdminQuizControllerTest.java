@@ -393,15 +393,21 @@ class AdminQuizControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("GET 请求创建试题接口返回 405")
-        void createWithWrongMethod() throws Exception {
-            mockMvc.perform(get("/api/admin/quiz/quizzes")).andExpect(status().isMethodNotAllowed());
+        @DisplayName("GET 请求试题列表返回 200")
+        void getQuizListSuccess() throws Exception {
+            mockMvc.perform(get("/api/admin/quiz/quizzes")).andExpect(status().isOk());
         }
 
         @Test
         @DisplayName("POST 请求删除试题接口返回 405")
         void deleteWithWrongMethod() throws Exception {
             mockMvc.perform(post("/api/admin/quiz/quizzes/quiz-1")).andExpect(status().isMethodNotAllowed());
+        }
+
+        @Test
+        @DisplayName("PUT 请求创建试题接口返回 405")
+        void createWithWrongMethod() throws Exception {
+            mockMvc.perform(put("/api/admin/quiz/quizzes")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test

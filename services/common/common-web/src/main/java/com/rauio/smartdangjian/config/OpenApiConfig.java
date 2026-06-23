@@ -16,10 +16,7 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI() {
         String version = getClass().getPackage().getImplementationVersion();
         return new OpenAPI()
-                .info(new Info()
-                        .title("智慧党建api文档")
-                        .description("智慧党建api文档")
-                        .version(version != null ? version : "dev"))
+                .info(new Info().title("智慧党建api文档").description("智慧党建api文档").version(version != null ? version : "dev"))
                 .addSecurityItem(new SecurityRequirement().addList("JWT"))
                 .components(new Components()
                         .addSecuritySchemes(
