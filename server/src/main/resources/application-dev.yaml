@@ -24,7 +24,7 @@ dromara:
   x-file-storage:
     tencent-cos:
       - platform: tencent-cos
-        enable-storage: false
+        enable-storage: ${TENCENT_CLOUD_COS_ENABLED:false}
     local-plus:
       - platform: local-dev
         enable-storage: true
