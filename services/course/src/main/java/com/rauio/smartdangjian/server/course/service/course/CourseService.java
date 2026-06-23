@@ -30,6 +30,7 @@ import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.service.DataScopeService;
 import com.rauio.smartdangjian.service.PermissionValidator;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 import lombok.RequiredArgsConstructor;
 
@@ -271,6 +272,99 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         Page<CourseResponse> result = new Page<>(coursePage.getCurrent(), coursePage.getSize(), coursePage.getTotal());
         result.setRecords(toCourseResponseList(coursePage.getRecords()));
         return result;
+    }
+
+    /**
+     * 管理员分页查询课程，支持关键字/分类/难度/发布状态筛选。
+     * 系统管理员（MANAGER）可查看全量；高校管理员（SCHOOL）仅能看到本校课程。
+     *
+     * @param keyword     关键字（标题/描述 LIKE 匹配）
+     * @param categoryId  分类ID
+     * @param difficulty  难度
+     * @param isPublished 发布状态（null 时不限制）
+     * @param pageNum     页码
+     * @param pageSize    每页大小
+     * @return 分页结果
+     */
+    public Page<CourseResponse> searchAdminCourses(
+            String keyword, Long categoryId, String difficulty, Boolean isPublished, int pageNum, int pageSize) {
+        LambdaQueryWrapper<Course> wrapper = new LambdaQueryWrapper<Course>()
+                .select(
+                        Course::getId,
+                        Course::getTitle,
+                        Course::getDescription,
+                        Course::getDifficulty,
+                        Course::getCoverImageId,
+                        Course::getEnrollmentCount,
+                        Course::getAverageRating,
+                        Course::getIsPublished,
+                        Course::getPublishedAt,
+                        Course::getCreatorId,
+                        Course::getEstimatedDuration,
+                        Course::getCreatedAt,
+                        Course::getUpdatedAt);
+
+        // 大学范围隔离：非系统管理员只能看到本校课程
+        User currentUser = userService.getCurrentUser();
+        if (currentUser != null && currentUser.getUserType() != UserType.MANAGER) {
+            String universityId = currentUser.getUniversityId();
+            if (StringUtils.isNotBlank(universityId)) {
+                List<Long> universityUserIds = userMapper
+                        .selectList(new LambdaQueryWrapper<User>()
+                                .select(User::getId)
+                                .eq(User::getUniversityId, universityId))
+                        .stream()
+                        .map(User::getId)
+                        .filter(Objects::nonNull)
+                        .toList();
+                if (universityUserIds.isEmpty()) {
+                    Page<CourseResponse> emptyPage = new Page<>(pageNum, pageSize, 0);
+                    emptyPage.setRecords(Collections.emptyList());
+                    return emptyPage;
+                }
+                wrapper.in(Course::getCreatorId, universityUserIds);
+            }
+        }
+
+        // 关键字搜索
+        if (StringUtils.isNotBlank(keyword)) {
+            wrapper.and(w -> w.like(Course::getTitle, keyword).or(w2 -> w2.like(Course::getDescription, keyword)));
+        }
+
+        // 分类筛选
+        if (categoryId != null) {
+            List<Long> matchedCourseIds = categoryCourseMapper
+                    .selectList(new LambdaQueryWrapper<CategoryCourse>().eq(CategoryCourse::getCategoryId, categoryId))
+                    .stream()
+                    .map(CategoryCourse::getCourseId)
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .toList();
+            if (matchedCourseIds.isEmpty()) {
+                Page<CourseResponse> emptyPage = new Page<>(pageNum, pageSize, 0);
+                emptyPage.setRecords(Collections.emptyList());
+                return emptyPage;
+            }
+            wrapper.in(Course::getId, matchedCourseIds);
+        }
+
+        // 难度筛选
+        if (StringUtils.isNotBlank(difficulty)) {
+            wrapper.eq(Course::getDifficulty, difficulty);
+        }
+
+        // 发布状态筛选
+        if (isPublished != null) {
+            wrapper.eq(Course::getIsPublished, isPublished);
+        }
+
+        wrapper.orderByDesc(Course::getCreatedAt);
+
+        Page<Course> coursePage = this.page(new Page<>(pageNum, pageSize), wrapper);
+        Page<CourseResponse> resultPage =
+                new Page<>(coursePage.getCurrent(), coursePage.getSize(), coursePage.getTotal());
+        resultPage.setRecords(toCourseResponseList(coursePage.getRecords()));
+        return resultPage;
     }
 
     public Page<Long> recommendPublishedCourseIds(

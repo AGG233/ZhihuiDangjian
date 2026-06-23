@@ -67,4 +67,11 @@ public class AdminUserController {
         userService.update(id, request);
         return Result.ok(null);
     }
+
+    @Operation(summary = "删除用户", description = "根据用户ID删除用户")
+    @DeleteMapping("/{id}")
+    public Result<Void> delete(@Parameter(name = "id", description = "用户ID") @PathVariable Long id) {
+        userService.delete(id);
+        return Result.ok(null);
+    }
 }

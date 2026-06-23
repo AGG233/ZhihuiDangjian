@@ -1,14 +1,19 @@
 package com.rauio.smartdangjian.server.quiz.controller.admin;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.quiz.pojo.request.QuizOptionRequest;
 import com.rauio.smartdangjian.server.quiz.pojo.request.QuizRequest;
+import com.rauio.smartdangjian.server.quiz.pojo.response.QuizResponse;
 import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
 import com.rauio.smartdangjian.server.quiz.service.QuizService;
 
@@ -23,10 +28,38 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/admin/quiz/quizzes")
 @RequiredArgsConstructor
 @SaCheckRole(RoleConstants.SCHOOL)
+@Validated
 public class AdminQuizController {
+
+    private static final int PAGE_NUM_MIN = 1;
+    private static final int PAGE_SIZE_MIN = 1;
+    private static final int PAGE_SIZE_MAX = 100;
 
     private final QuizService quizService;
     private final QuizOptionService quizOptionService;
+
+    @Operation(summary = "获取试题详情", description = "根据试题ID获取试题详情")
+    @GetMapping("/{id}")
+    public Result<QuizResponse> getQuiz(@Parameter(name = "id", description = "试题ID") @PathVariable String id) {
+        return Result.ok(QuizResponse.from(quizService.get(IdUtil.parse(id))));
+    }
+
+    @Operation(summary = "分页查询试题", description = "管理员分页查询试题列表，支持按章节/难度/启用状态/关键字筛选")
+    @GetMapping
+    public Result<Page<QuizResponse>> getQuizPage(
+            @Parameter(name = "chapterId", description = "章节ID") @RequestParam(required = false) Long chapterId,
+            @Parameter(name = "difficulty", description = "难度") @RequestParam(required = false) String difficulty,
+            @Parameter(name = "isActive", description = "启用状态") @RequestParam(required = false) Boolean isActive,
+            @Parameter(name = "keyword", description = "题目内容关键字") @RequestParam(required = false) String keyword,
+            @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") @Min(PAGE_NUM_MIN)
+                    int pageNum,
+            @Parameter(name = "pageSize", description = "每页大小")
+                    @RequestParam(defaultValue = "10")
+                    @Min(PAGE_SIZE_MIN)
+                    @Max(PAGE_SIZE_MAX)
+                    int pageSize) {
+        return Result.ok(quizService.searchAdminQuizzes(chapterId, difficulty, isActive, keyword, pageNum, pageSize));
+    }
 
     @Operation(summary = "创建试题", description = "创建一道新试题")
     @PostMapping
