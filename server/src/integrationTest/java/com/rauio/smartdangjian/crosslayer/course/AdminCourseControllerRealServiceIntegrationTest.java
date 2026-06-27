@@ -242,7 +242,8 @@ class AdminCourseControllerRealServiceIntegrationTest extends CrossLayerTestBase
 
         when(courseMapper.selectPage(any(Page.class), any())).thenReturn(page);
         when(courseConvertor.toResponseList(any())).thenReturn(List.of(vo));
-        when(categoryCourseMapper.selectList(any())).thenReturn(List.of(CategoryCourse.builder().courseId(1L).build()));
+        when(categoryCourseMapper.selectList(any()))
+                .thenReturn(List.of(CategoryCourse.builder().courseId(1L).build()));
 
         mockMvc.perform(get("/api/admin/content/courses")
                         .param("keyword", "党史")
@@ -273,7 +274,11 @@ class AdminCourseControllerRealServiceIntegrationTest extends CrossLayerTestBase
     @DisplayName("GET /admin/content/courses SCHOOL 用户大学无用户时返回空页")
     void searchAdminCoursesSchoolEmptyUniversity() throws Exception {
         setSecurityContext(UserType.SCHOOL, 1L, "uni-1");
-        User schoolUser = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        User schoolUser = User.builder()
+                .id(1L)
+                .userType(UserType.SCHOOL)
+                .universityId("uni-1")
+                .build();
         when(userService.getCurrentUser()).thenReturn(schoolUser);
         when(userMapper.selectList(any())).thenReturn(List.of());
 
@@ -287,7 +292,11 @@ class AdminCourseControllerRealServiceIntegrationTest extends CrossLayerTestBase
     @DisplayName("GET /admin/content/courses SCHOOL 用户有大学用户且无额外筛选时正常返回")
     void searchAdminCoursesSchoolWithUniversityUsers() throws Exception {
         setSecurityContext(UserType.SCHOOL, 1L, "uni-1");
-        User schoolUser = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        User schoolUser = User.builder()
+                .id(1L)
+                .userType(UserType.SCHOOL)
+                .universityId("uni-1")
+                .build();
         when(userService.getCurrentUser()).thenReturn(schoolUser);
 
         User otherUser = User.builder().id(2L).build();
@@ -312,7 +321,11 @@ class AdminCourseControllerRealServiceIntegrationTest extends CrossLayerTestBase
     @DisplayName("GET /admin/content/courses SCHOOL 用户无 universityId 时跳过大学过滤")
     void searchAdminCoursesSchoolWithoutUniversityId() throws Exception {
         setSecurityContext(UserType.SCHOOL, 1L, null);
-        User schoolUser = User.builder().id(1L).userType(UserType.SCHOOL).universityId(null).build();
+        User schoolUser = User.builder()
+                .id(1L)
+                .userType(UserType.SCHOOL)
+                .universityId(null)
+                .build();
         when(userService.getCurrentUser()).thenReturn(schoolUser);
 
         Course course = Course.builder().id(3L).title("公共课程").build();
