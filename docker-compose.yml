@@ -13,6 +13,8 @@ services:
       - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     volumes:
       - redis-data:/data
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
     deploy:
       resources:
         limits:
@@ -33,6 +35,7 @@ services:
       - "127.0.0.1:7474:7474"
       - "127.0.0.1:7687:7687"
     environment:
+      TZ: ${TZ:-Asia/Shanghai}
       NEO4J_AUTH: ${NEO4J_USERNAME:?NEO4J_USERNAME is required}/${NEO4J_PASSWORD:?NEO4J_PASSWORD is required}
     volumes:
       - neo4j-data:/data
@@ -54,6 +57,7 @@ services:
     ports:
       - "${APP_PORT:-9000}:9000"
     environment:
+      TZ: ${TZ:-Asia/Shanghai}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
       DATABASE_URL: ${DATABASE_URL}
       DATABASE_USERNAME: ${DATABASE_USERNAME}
@@ -82,6 +86,7 @@ services:
       retries: 3
     volumes:
       - app-uploads:/app/uploads
+      - app-logs:/app/logs
     labels:
       - "com.rauio.zhihuidangjian=true"
     deploy:
@@ -94,3 +99,4 @@ volumes:
   redis-data:
   neo4j-data:
   app-uploads:
+  app-logs:
