@@ -49,6 +49,9 @@ gradle.projectsEvaluated {
     val coverageFromUnitArtifacts = providers.gradleProperty("coverageFromUnitArtifacts")
         .map(String::toBoolean)
         .getOrElse(false)
+    val coverageFromIntegrationArtifacts = providers.gradleProperty("coverageFromIntegrationArtifacts")
+        .map(String::toBoolean)
+        .getOrElse(false)
     val coverageProjects = subprojects.filter { project ->
         project.plugins.hasPlugin("java")
     }
@@ -84,7 +87,9 @@ gradle.projectsEvaluated {
         if (!coverageFromUnitArtifacts) {
             dependsOn(coverageProjects.map { it.tasks.named("test") })
         }
-        dependsOn(itProjects.map { it.tasks.named("integrationTest") })
+        if (!coverageFromIntegrationArtifacts) {
+            dependsOn(itProjects.map { it.tasks.named("integrationTest") })
+        }
         executionData.from(coverageExecutionData)
         executionData.from(itExecutionData)
         classDirectories.from(filteredClassDirs)

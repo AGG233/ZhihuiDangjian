@@ -302,7 +302,8 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
                         Course::getCreatorId,
                         Course::getEstimatedDuration,
                         Course::getCreatedAt,
-                        Course::getUpdatedAt);
+                        Course::getUpdatedAt,
+                        Course::getLikeCount);
 
         // 大学范围隔离：非系统管理员只能看到本校课程
         User currentUser = userService.getCurrentUser();
