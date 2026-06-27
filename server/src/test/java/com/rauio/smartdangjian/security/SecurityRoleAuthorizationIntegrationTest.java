@@ -45,7 +45,6 @@ class SecurityRoleAuthorizationIntegrationTest extends AbstractSecurityAuthoriza
         return Stream.of(
                 Arguments.of("/api/admin/users/1", "GET", "SCHOOL"),
                 Arguments.of("/api/search/profile", "GET", "STUDENT"),
-                Arguments.of("/api/admin/content/content-blocks/carousel/1", "DELETE", "MANAGER"),
                 Arguments.of("/api/admin/content/chapters/1", "GET", "SCHOOL"),
                 Arguments.of("/api/admin/content/courses/1", "DELETE", "SCHOOL"),
                 Arguments.of("/api/admin/quiz/quizzes/1", "DELETE", "SCHOOL"),
@@ -60,10 +59,6 @@ class SecurityRoleAuthorizationIntegrationTest extends AbstractSecurityAuthoriza
                 Arguments.of("/api/admin/resource/banners", "GET", "MANAGER"),
                 Arguments.of("/api/user/users/1", "GET", "STUDENT"),
                 Arguments.of("/api/content/courses/learned/me", "GET", "STUDENT"),
-                Arguments.of("/api/quiz/answers/me", "GET", "STUDENT"),
-                Arguments.of("/api/ai/chat/session-1/messages", "GET", "STUDENT"),
-                Arguments.of("/api/admin/content/categories/root", "POST", "SCHOOL"),
-                Arguments.of("/api/content/categories/1", "GET", "STUDENT"),
                 Arguments.of("/api/graph/party-history/search?keyword=history", "GET", "STUDENT"),
                 Arguments.of("/api/learning/records/me/1", "GET", "STUDENT"),
                 Arguments.of("/api/content/chapters/1", "GET", "STUDENT"),
@@ -94,8 +89,6 @@ class SecurityRoleAuthorizationIntegrationTest extends AbstractSecurityAuthoriza
                         .days(7)
                         .dailyData(java.util.List.of())
                         .build());
-        when(chapterContentBlockService.getByChapterId(1145141919810L)).thenReturn(java.util.List.of());
-        when(bannerService.getUserList()).thenReturn(java.util.List.of());
         when(partyHistoryQueryService.searchEntities(
                         org.mockito.ArgumentMatchers.anyString(),
                         org.mockito.ArgumentMatchers.any(),
@@ -138,7 +131,6 @@ class SecurityRoleAuthorizationIntegrationTest extends AbstractSecurityAuthoriza
                 Arguments.of("/api/ai/chat/session-1/messages", "GET", "STUDENT"),
                 Arguments.of("/api/learning/records/me/1", "GET", "STUDENT"),
                 Arguments.of("/api/content/categories/1", "GET", "STUDENT"),
-                Arguments.of("/api/content/content-blocks/carousel", "GET", "STUDENT"),
                 Arguments.of("/api/learning/hotspots/trends", "GET", "STUDENT"),
                 Arguments.of("/api/resource/banners", "GET", "STUDENT"),
                 Arguments.of("/api/content/categories/1/children", "GET", "STUDENT"),

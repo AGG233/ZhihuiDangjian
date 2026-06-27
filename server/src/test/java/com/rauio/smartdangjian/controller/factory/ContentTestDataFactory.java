@@ -1,6 +1,5 @@
 package com.rauio.smartdangjian.controller.factory;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -47,27 +46,6 @@ public final class ContentTestDataFactory {
                 .build();
     }
 
-    public static ChapterContentBlock createCarouselBlock(Long id, BlockType blockType) {
-        return ChapterContentBlock.builder()
-                .id(id)
-                .chapterId(1145141919810L)
-                .orderIndex(0)
-                .blockType(blockType)
-                .textContent("轮播图内容")
-                .resourceId(id)
-                .caption("轮播图" + id)
-                .build();
-    }
-
-    public static List<ChapterContentBlock> createContentBlockList(int count, Long chapterId) {
-        List<ChapterContentBlock> list = new ArrayList<>();
-        BlockType[] types = BlockType.values();
-        for (int i = 1; i <= count; i++) {
-            list.add(createCarouselBlock((long) i, types[i % types.length]));
-        }
-        return list;
-    }
-
     // ── ContentBlockResponse builders (uses ReflectionTestUtils for field access) ──
 
     public static ContentBlockResponse createContentBlockResponse(
@@ -79,19 +57,6 @@ public final class ContentTestDataFactory {
         ReflectionTestUtils.setField(vo, "resourceId", parentId);
         ReflectionTestUtils.setField(vo, "caption", "说明");
         return vo;
-    }
-
-    public static ContentBlockResponse createCarouselResponse(Long parentId, BlockType blockType) {
-        return createContentBlockResponse(parentId, blockType, "轮播图内容");
-    }
-
-    public static List<ContentBlockResponse> createContentBlockResponseList(int count) {
-        List<ContentBlockResponse> list = new ArrayList<>();
-        BlockType[] types = BlockType.values();
-        for (int i = 1; i <= count; i++) {
-            list.add(createCarouselResponse(1145141919810L, types[i % types.length]));
-        }
-        return list;
     }
 
     // ── JSON helpers ───────────────────────────────────────────────

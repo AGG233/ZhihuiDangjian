@@ -33,8 +33,6 @@ import com.rauio.smartdangjian.server.chapter.controller.admin.AdminChapterContr
 import com.rauio.smartdangjian.server.chapter.controller.user.UserChapterController;
 import com.rauio.smartdangjian.server.chapter.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
-import com.rauio.smartdangjian.server.content.controller.admin.AdminContentController;
-import com.rauio.smartdangjian.server.content.controller.user.UserContentController;
 import com.rauio.smartdangjian.server.content.mapper.ArticleContentBlockMapper;
 import com.rauio.smartdangjian.server.content.mapper.ArticleMapper;
 import com.rauio.smartdangjian.server.content.mapper.CategoryArticleMapper;
@@ -477,18 +475,6 @@ public class ControllerTestConfiguration {
     @Bean
     UserChapterController userChapterController(ChapterService chapterService) {
         return new UserChapterController(chapterService);
-    }
-
-    // ========== Content ==========
-
-    @Bean
-    AdminContentController adminContentController(ChapterContentBlockService chapterContentBlockService) {
-        return new AdminContentController(chapterContentBlockService);
-    }
-
-    @Bean
-    UserContentController userContentController(ChapterContentBlockService chapterContentBlockService) {
-        return new UserContentController(chapterContentBlockService);
     }
 
     // ========== Course ==========
