@@ -7,18 +7,19 @@ import org.junit.jupiter.api.Test;
 
 import io.swagger.v3.oas.models.OpenAPI;
 
-class SpringDocConfigTest {
+class OpenApiConfigTest {
 
-    private final SpringDocConfig config = new SpringDocConfig();
+    private final OpenApiConfig config = new OpenApiConfig();
 
     @Test
-    @DisplayName("customOpenAPI 创建 OpenAPI 实例")
+    @DisplayName("customOpenAPI 创建 OpenAPI 实例并读取版本")
     void customOpenAPI() {
         OpenAPI openAPI = config.customOpenAPI();
 
         assertThat(openAPI).isNotNull();
         assertThat(openAPI.getInfo()).isNotNull();
-        assertThat(openAPI.getInfo().getTitle()).isEqualTo("API接口文档");
+        assertThat(openAPI.getInfo().getTitle()).isEqualTo("智慧党建api文档");
+        assertThat(openAPI.getInfo().getVersion()).isNotNull();
     }
 
     @Test

@@ -3,7 +3,7 @@ services:
     image: redis:7-alpine
     container_name: zhihuidangjian-redis
     restart: unless-stopped
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?REDIS_PASSWORD is required}"]
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 5s
@@ -43,7 +43,7 @@ services:
           cpus: "2.0"
 
   app:
-    image: ghcr.io/agg233/zhihuidangjian:${APP_VERSION:-latest}
+    image: ${APP_IMAGE:-ghcr.io/agg233/zhihuidangjian:latest}
     container_name: zhihuidangjian
     restart: unless-stopped
     depends_on:
@@ -54,7 +54,7 @@ services:
     ports:
       - "${APP_PORT:-9000}:9000"
     environment:
-      SPRING_PROFILES_ACTIVE: prod
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
       DATABASE_URL: ${DATABASE_URL}
       DATABASE_USERNAME: ${DATABASE_USERNAME}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
@@ -72,7 +72,8 @@ services:
       COS_REGION: ${COS_REGION:-ap-guangzhou}
       COS_BUCKET: ${COS_BUCKET}
       COS_LINK: ${COS_LINK}
-      LOG_PATH: /app/logs
+      TENCENT_CLOUD_COS_ENABLED: ${TENCENT_CLOUD_COS_ENABLED:-true}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:*,http://127.0.0.1:*}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/actuator/health"]
       interval: 30s
@@ -80,8 +81,7 @@ services:
       start_period: 60s
       retries: 3
     volumes:
-      - ./logs:/app/logs
-      - ./uploads:/app/uploads
+      - app-uploads:/app/uploads
     labels:
       - "com.rauio.zhihuidangjian=true"
     deploy:
@@ -93,3 +93,4 @@ services:
 volumes:
   redis-data:
   neo4j-data:
+  app-uploads:

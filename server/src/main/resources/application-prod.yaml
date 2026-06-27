@@ -1,7 +1,7 @@
 spring:
   data:
     redis:
-      password: ${REDIS_PASSWORD}
+      password: ${REDIS_PASSWORD:}
   ai:
     openai:
       api-key: ${AI_KEY}
@@ -20,3 +20,7 @@ logging:
     path: ${LOG_PATH:/app/logs}
   level:
     root: WARN
+
+app:
+  cors:
+    allowed-origins: ${CORS_ORIGINS}

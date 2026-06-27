@@ -40,12 +40,16 @@ public class WebConfig implements WebMvcConfigurer {
      * CORS configuration - security notes:
      * - allowCredentials(true) with allowedOriginPatterns IS safe (not the insecure allowCredentials+allowedOrigins("*") pattern)
      * - Current defaults (localhost:*, 127.0.0.1:*) are safe for development
-     * - Production: set app.cors.allowed-origins to specific domain names
+     * - Production: set CORS_ORIGINS to specific domain names
      * - If origins are ever relaxed to "*", allowCredentials must be set to false
      */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        String[] origins = Arrays.stream(corsProperties.getAllowedOrigins().split(","))
+        String originsStr = environment.getProperty("CORS_ORIGINS");
+        if (originsStr == null || originsStr.isBlank()) {
+            originsStr = corsProperties.getAllowedOrigins();
+        }
+        String[] origins = Arrays.stream(originsStr.split(","))
                 .map(String::trim)
                 .filter(origin -> !origin.isEmpty())
                 .toArray(String[]::new);
@@ -72,7 +76,7 @@ public class WebConfig implements WebMvcConfigurer {
         }
         boolean hasWildcard = Arrays.stream(origins).anyMatch(origin -> origin.contains("*"));
         if (origins.length == 0 || hasWildcard) {
-            throw new IllegalStateException("生产环境必须配置明确的 app.cors.allowed-origins，禁止使用通配符");
+            throw new IllegalStateException("生产环境必须配置明确的 CORS_ORIGINS，禁止使用通配符");
         }
     }
 }

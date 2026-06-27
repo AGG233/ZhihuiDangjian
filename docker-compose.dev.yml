@@ -64,6 +64,16 @@ services:
     networks:
       - zhihuidangjian
 
+  app-permissions:
+    image: alpine:3.22
+    container_name: zhihuidangjian-app-permissions
+    restart: no
+    command: ["sh", "-c", "mkdir -p /app/logs && chown -R 1000:1000 /app/logs"]
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - zhihuidangjian
+
   app:
     build:
       context: .
@@ -98,6 +108,8 @@ services:
       AUTH_TEST_CAPTCHA_CODE: ${AUTH_TEST_CAPTCHA_CODE:-TEST8888}
       LOG_PATH: /app/logs
     depends_on:
+      app-permissions:
+        condition: service_completed_successfully
       mysql:
         condition: service_healthy
       redis:

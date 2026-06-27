@@ -29,43 +29,53 @@ class DockerComposeStructureTest {
     }
 
     @Test
-    @DisplayName("docker-compose.yml 中 Redis 服务配置了 requirepass")
-    void prodRedisRequirepassConfigured() throws IOException {
+    @DisplayName("docker-compose.yml 中 Redis 服务使用环境变量密码认证")
+    void prodRedisPasswordAuth() throws IOException {
         String content = Files.readString(PROD_COMPOSE);
         assertThat(content)
-                .as("docker-compose.yml 中 Redis 应启用 requirepass")
+                .as("生产 Redis 使用环境变量密码认证")
+                .contains("redis-server")
                 .contains("requirepass")
-                .contains("\"${REDIS_PASSWORD}\"");
+                .contains("${REDIS_PASSWORD");
     }
 
     @Test
-    @DisplayName("docker-compose.yml 中 Redis healthcheck 使用 -a 参数传递密码")
-    void prodRedisHealthcheckIncludesPassword() throws IOException {
+    @DisplayName("docker-compose.yml 中 Redis healthcheck 使用密码参数")
+    void prodRedisHealthcheckWithPassword() throws IOException {
         String content = Files.readString(PROD_COMPOSE);
         assertThat(content)
-                .as("docker-compose.yml 中 Redis healthcheck 应传递密码参数")
+                .as("Redis healthcheck 应传递密码参数")
                 .contains("redis-cli")
                 .contains("-a")
-                .contains("${REDIS_PASSWORD}");
+                .contains("ping");
     }
 
     @Test
     @DisplayName("docker-compose.yml 中 App 服务传递 REDIS_PASSWORD 环境变量")
     void prodAppHasRedisPasswordEnv() throws IOException {
         String content = Files.readString(PROD_COMPOSE);
-        assertThat(content)
-                .as("docker-compose.yml 中 App 服务应传递 REDIS_PASSWORD 环境变量")
-                .contains("REDIS_PASSWORD");
+        assertThat(content).as("生产 Compose App 服务应传递 REDIS_PASSWORD 环境变量").contains("REDIS_PASSWORD");
     }
 
     @Test
-    @DisplayName("docker-compose.yml 中 App 服务将日志路径指向容器挂载目录")
-    void prodAppLogPathUsesMountedDirectory() throws IOException {
+    @DisplayName("docker-compose.yml 中 App 镜像由发布流程写入，带 GHCR 默认回退")
+    void prodAppImageIsProvidedByReleasePipeline() throws IOException {
         String content = Files.readString(PROD_COMPOSE);
         assertThat(content)
-                .as("docker-compose.yml 中 App 服务日志应写入 /app/logs")
-                .contains("LOG_PATH: /app/logs")
-                .contains("./logs:/app/logs");
+                .as("生产 Compose 使用 APP_IMAGE 变量，缺失时回退到 GHCR 默认镜像")
+                .contains("image: ${APP_IMAGE:-ghcr.io/agg233/zhihuidangjian:latest}");
+    }
+
+    @Test
+    @DisplayName("docker-compose.yml 中 App 服务使用 named volume 挂载上传目录，无文件日志")
+    void prodAppLogPathUsesWritableMountedDirectory() throws IOException {
+        String content = Files.readString(PROD_COMPOSE);
+        assertThat(content)
+                .as("生产 Compose 使用 named volume 挂载上传目录，日志走 Docker stdout")
+                .contains("app-uploads:/app/uploads")
+                .doesNotContain("app-logs:")
+                .doesNotContain("LOG_PATH")
+                .doesNotContain("app-permissions:");
     }
 
     @Test
@@ -100,12 +110,15 @@ class DockerComposeStructureTest {
     }
 
     @Test
-    @DisplayName("docker-compose.dev.yml 中 App 服务将日志路径指向容器挂载目录")
-    void devAppLogPathUsesMountedDirectory() throws IOException {
+    @DisplayName("docker-compose.dev.yml 中 App 服务将日志路径指向已修正权限的挂载目录")
+    void devAppLogPathUsesWritableMountedDirectory() throws IOException {
         String content = Files.readString(DEV_COMPOSE);
         assertThat(content)
                 .as("docker-compose.dev.yml 中 App 服务日志应写入 /app/logs")
                 .contains("LOG_PATH: /app/logs")
-                .contains("./logs:/app/logs");
+                .contains("./logs:/app/logs")
+                .contains("app-permissions:")
+                .contains("chown -R 1000:1000 /app/logs")
+                .contains("condition: service_completed_successfully");
     }
 }

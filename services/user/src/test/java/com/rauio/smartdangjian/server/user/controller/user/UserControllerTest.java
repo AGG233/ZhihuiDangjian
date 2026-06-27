@@ -30,6 +30,25 @@ class UserControllerTest {
     private UserController controller;
 
     @Test
+    @DisplayName("getCurrentUser 返回当前登录用户信息")
+    void getCurrentUser() {
+        UserResponse response = new UserResponse();
+        response.setId(1L);
+        response.setUsername("testuser");
+        response.setRealName("测试用户");
+        when(userService.getCurrentUserId()).thenReturn("1");
+        when(userService.get(1L)).thenReturn(response);
+
+        var result = controller.getCurrentUser();
+
+        assertThat(result).isNotNull();
+        assertThat(result.getCode()).isEqualTo("200");
+        assertThat(result.getData()).isEqualTo(response);
+        verify(userService).getCurrentUserId();
+        verify(userService).get(1L);
+    }
+
+    @Test
     @DisplayName("get 根据用户ID返回用户视图")
     void get() {
         UserResponse response = new UserResponse();

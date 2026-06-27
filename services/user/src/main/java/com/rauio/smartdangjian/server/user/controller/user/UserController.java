@@ -37,6 +37,12 @@ public class UserController {
 
     private final UserService userService;
 
+    @Operation(summary = "获取当前登录用户信息", description = "获取当前登录用户的完整信息，基于安全上下文自动识别用户身份，无需传参")
+    @GetMapping("/me")
+    public Result<UserResponse> getCurrentUser() {
+        return Result.ok(userService.get(Long.parseLong(userService.getCurrentUserId())));
+    }
+
     @Operation(summary = "获取用户信息", description = "通过ID获取用户信息，返回含脱敏联系方式的用户详情")
     @GetMapping("/{id}")
     public Result<UserResponse> get(@Parameter(name = "id", description = "用户ID") @PathVariable Long id) {

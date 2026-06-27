@@ -91,7 +91,6 @@ public class FileService {
                     .setMethod(Constant.GeneratePresignedUrl.Method.PUT)
                     .setExpiration(DateUtil.offsetMinute(new Date(), 10))
                     .putHeaders(Constant.Metadata.CONTENT_TYPE, request.getMimeType())
-                    .putUserMetadata("resourceId", String.valueOf(meta.getId()))
                     .generatePresignedUrl();
             uploadUrl = urlResult.getUrl();
             expiration = System.currentTimeMillis() + ResourceConstant.COS_KEY_EXPIRATION;
