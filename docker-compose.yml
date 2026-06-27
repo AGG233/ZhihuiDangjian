@@ -86,6 +86,7 @@ services:
       retries: 3
     volumes:
       - app-uploads:/app/uploads
+      - app-logs:/app/logs
     labels:
       - "com.rauio.zhihuidangjian=true"
     deploy:
@@ -98,3 +99,4 @@ volumes:
   redis-data:
   neo4j-data:
   app-uploads:
+  app-logs:
