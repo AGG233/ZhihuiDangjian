@@ -16,6 +16,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 
+import org.apache.ibatis.builder.MapperBuilderAssistant;
+import org.apache.ibatis.session.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,6 +32,8 @@ import org.springframework.transaction.support.AbstractPlatformTransactionManage
 import org.springframework.transaction.support.DefaultTransactionStatus;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.crosslayer.CrossLayerTestBase;
 import com.rauio.smartdangjian.server.course.controller.admin.AdminCourseController;
 import com.rauio.smartdangjian.server.course.controller.user.UserCourseController;
@@ -39,6 +43,7 @@ import com.rauio.smartdangjian.server.course.pojo.convertor.CourseConvertor;
 import com.rauio.smartdangjian.server.course.pojo.entity.CategoryCourse;
 import com.rauio.smartdangjian.server.course.pojo.entity.Course;
 import com.rauio.smartdangjian.server.course.pojo.request.CourseRequest;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.course.service.course.CourseService;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
@@ -72,6 +77,9 @@ class AdminCourseControllerRealServiceIntegrationTest extends CrossLayerTestBase
     @BeforeEach
     void resetMocks() {
         reset(courseMapper, categoryCourseMapper, courseConvertor, userService, userMapper, dataScopeService);
+        TableInfoHelper.initTableInfo(new MapperBuilderAssistant(new Configuration(), ""), Course.class);
+        TableInfoHelper.initTableInfo(new MapperBuilderAssistant(new Configuration(), ""), User.class);
+        TableInfoHelper.initTableInfo(new MapperBuilderAssistant(new Configuration(), ""), CategoryCourse.class);
     }
 
     @Test
@@ -214,6 +222,111 @@ class AdminCourseControllerRealServiceIntegrationTest extends CrossLayerTestBase
         mockMvc.perform(get("/api/content/courses/learned/8")).andExpect(status().isNotFound());
 
         verify(courseMapper, never()).selectLearnedCoursesByUserId(any());
+    }
+
+    // ================================================================
+    // searchAdminCourses — 覆盖所有分支
+    // ================================================================
+
+    @Test
+    @DisplayName("GET /admin/content/courses MANAGER 用户跳过大学过滤，使用所有筛选参数")
+    void searchAdminCoursesManagerWithAllFilters() throws Exception {
+        setSecurityContext(UserType.MANAGER, 1L, null);
+
+        Course course = Course.builder().id(1L).title("党史课程").build();
+        CourseResponse vo = CourseResponse.builder().id(1L).title("党史课程").build();
+
+        Page<Course> page = new Page<>(1, 10);
+        page.setRecords(List.of(course));
+        page.setTotal(1);
+
+        when(courseMapper.selectPage(any(Page.class), any())).thenReturn(page);
+        when(courseConvertor.toResponseList(any())).thenReturn(List.of(vo));
+        when(categoryCourseMapper.selectList(any())).thenReturn(List.of(CategoryCourse.builder().courseId(1L).build()));
+
+        mockMvc.perform(get("/api/admin/content/courses")
+                        .param("keyword", "党史")
+                        .param("categoryId", "5")
+                        .param("difficulty", "beginner")
+                        .param("isPublished", "true")
+                        .param("pageNum", "1")
+                        .param("pageSize", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.data.total").value(1))
+                .andExpect(jsonPath("$.data.records.length()").value(1));
+    }
+
+    @Test
+    @DisplayName("GET /admin/content/courses 分类无匹配时返回空页")
+    void searchAdminCoursesEmptyCategory() throws Exception {
+        setSecurityContext(UserType.MANAGER, 1L, null);
+        when(categoryCourseMapper.selectList(any())).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/admin/content/courses").param("categoryId", "999"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.total").value(0))
+                .andExpect(jsonPath("$.data.records").isEmpty());
+    }
+
+    @Test
+    @DisplayName("GET /admin/content/courses SCHOOL 用户大学无用户时返回空页")
+    void searchAdminCoursesSchoolEmptyUniversity() throws Exception {
+        setSecurityContext(UserType.SCHOOL, 1L, "uni-1");
+        User schoolUser = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        when(userService.getCurrentUser()).thenReturn(schoolUser);
+        when(userMapper.selectList(any())).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/admin/content/courses"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.total").value(0))
+                .andExpect(jsonPath("$.data.records").isEmpty());
+    }
+
+    @Test
+    @DisplayName("GET /admin/content/courses SCHOOL 用户有大学用户且无额外筛选时正常返回")
+    void searchAdminCoursesSchoolWithUniversityUsers() throws Exception {
+        setSecurityContext(UserType.SCHOOL, 1L, "uni-1");
+        User schoolUser = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        when(userService.getCurrentUser()).thenReturn(schoolUser);
+
+        User otherUser = User.builder().id(2L).build();
+        when(userMapper.selectList(any())).thenReturn(List.of(otherUser));
+
+        Course course = Course.builder().id(2L).title("校内课程").build();
+        CourseResponse vo = CourseResponse.builder().id(2L).title("校内课程").build();
+        Page<Course> page = new Page<>(1, 10);
+        page.setRecords(List.of(course));
+        page.setTotal(1);
+
+        when(courseMapper.selectPage(any(Page.class), any())).thenReturn(page);
+        when(courseConvertor.toResponseList(any())).thenReturn(List.of(vo));
+
+        mockMvc.perform(get("/api/admin/content/courses"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.total").value(1))
+                .andExpect(jsonPath("$.data.records.length()").value(1));
+    }
+
+    @Test
+    @DisplayName("GET /admin/content/courses SCHOOL 用户无 universityId 时跳过大学过滤")
+    void searchAdminCoursesSchoolWithoutUniversityId() throws Exception {
+        setSecurityContext(UserType.SCHOOL, 1L, null);
+        User schoolUser = User.builder().id(1L).userType(UserType.SCHOOL).universityId(null).build();
+        when(userService.getCurrentUser()).thenReturn(schoolUser);
+
+        Course course = Course.builder().id(3L).title("公共课程").build();
+        CourseResponse vo = CourseResponse.builder().id(3L).title("公共课程").build();
+        Page<Course> page = new Page<>(1, 10);
+        page.setRecords(List.of(course));
+        page.setTotal(1);
+
+        when(courseMapper.selectPage(any(Page.class), any())).thenReturn(page);
+        when(courseConvertor.toResponseList(any())).thenReturn(List.of(vo));
+
+        mockMvc.perform(get("/api/admin/content/courses"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.total").value(1));
     }
 
     @SpringBootConfiguration
