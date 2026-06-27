@@ -44,8 +44,6 @@ import com.rauio.smartdangjian.server.category.service.category.CategoryService;
 import com.rauio.smartdangjian.server.chapter.controller.admin.AdminChapterController;
 import com.rauio.smartdangjian.server.chapter.controller.user.UserChapterController;
 import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
-import com.rauio.smartdangjian.server.content.controller.admin.AdminContentController;
-import com.rauio.smartdangjian.server.content.controller.user.UserContentController;
 import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
 import com.rauio.smartdangjian.server.content.service.article.ArticleService;
 import com.rauio.smartdangjian.server.course.controller.admin.AdminCourseController;
@@ -427,18 +425,8 @@ abstract class AbstractSecurityAuthorizationIntegrationTest {
         }
 
         @Bean
-        UserContentController userContentController(ChapterContentBlockService blockService) {
-            return new UserContentController(blockService);
-        }
-
-        @Bean
         UserBannerController userBannerController(BannerService bannerService) {
             return new UserBannerController(bannerService);
-        }
-
-        @Bean
-        AdminContentController adminContentController(ChapterContentBlockService blockService) {
-            return new AdminContentController(blockService);
         }
 
         @Bean

@@ -9,7 +9,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.server.content.mapper.ChapterContentBlockMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterContentBlockConvertor;
 import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
-import com.rauio.smartdangjian.server.content.pojo.request.ChapterContentBlockRequest;
 import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -17,8 +16,6 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ChapterContentBlockService extends ServiceImpl<ChapterContentBlockMapper, ChapterContentBlock> {
-
-    private static final Long CAROUSEL_PARENT_ID = 1145141919810L;
 
     private final ChapterContentBlockConvertor convertor;
 
@@ -45,15 +42,6 @@ public class ChapterContentBlockService extends ServiceImpl<ChapterContentBlockM
         return this.saveBatch(blocks);
     }
 
-    public Boolean createCarouselBatch(List<ChapterContentBlockRequest> requests) {
-        if (requests == null || requests.isEmpty()) {
-            return true;
-        }
-        return createBatch(requests.stream()
-                .map(request -> request.toEntity(CAROUSEL_PARENT_ID))
-                .toList());
-    }
-
     /**
      * 删除章节内容块。
      *
@@ -72,10 +60,6 @@ public class ChapterContentBlockService extends ServiceImpl<ChapterContentBlockM
      */
     public Boolean update(ChapterContentBlock entity) {
         return this.updateById(entity);
-    }
-
-    public Boolean updateCarousel(ChapterContentBlockRequest request) {
-        return update(request.toEntity(CAROUSEL_PARENT_ID));
     }
 
     /**
