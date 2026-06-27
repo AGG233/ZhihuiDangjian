@@ -43,7 +43,8 @@ jobs:
           REQUIRED_CHECKS: |
             Compile & Format Check
             Unit Tests
-            Integration, Coverage & Smoke
+            Integration & Smoke
+            Coverage Verification
         shell: bash
         run: |
           set -euo pipefail
