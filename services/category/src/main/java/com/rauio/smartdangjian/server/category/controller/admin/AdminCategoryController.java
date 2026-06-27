@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.security.RoleConstants;
 import com.rauio.smartdangjian.server.category.pojo.request.CategoryRequest;
+import com.rauio.smartdangjian.server.category.pojo.response.CategoryResponse;
 import com.rauio.smartdangjian.server.category.service.category.CategoryService;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
@@ -25,6 +26,24 @@ import lombok.RequiredArgsConstructor;
 @Validated
 public class AdminCategoryController {
     private final CategoryService categoryService;
+
+    @Operation(summary = "获取目录详情", description = "系统管理员可读取全部分类；高校管理员仅可读取本校分类和公共分类。")
+    @GetMapping("/{id}")
+    public Result<CategoryResponse> get(@PathVariable Long id) {
+        return Result.ok(categoryService.get(id));
+    }
+
+    @Operation(summary = "获取根目录列表", description = "返回当前角色可见范围内的根分类。系统管理员可见全部根分类；高校管理员可见公共分类加本校分类。")
+    @GetMapping
+    public Result<List<CategoryResponse>> getRootList() {
+        return Result.ok(categoryService.getRootList());
+    }
+
+    @Operation(summary = "获取子目录列表", description = "仅返回当前角色有权访问的父分类下的子目录。")
+    @GetMapping("/{id}/children")
+    public Result<List<CategoryResponse>> getByParentId(@PathVariable Long id) {
+        return Result.ok(categoryService.getByParentId(id));
+    }
 
     @Operation(
             summary = "添加根目录",
