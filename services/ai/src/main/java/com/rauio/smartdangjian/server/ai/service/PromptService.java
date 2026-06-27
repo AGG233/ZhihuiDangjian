@@ -91,7 +91,7 @@ public class PromptService extends ServiceImpl<AiPromptsMapper, AiPrompts> {
         try {
             return PromptRoleEnum.valueOf(role.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("无效的提示词角色: " + role + "，可选值: SYSTEM, DEVELOPER");
+            throw new IllegalArgumentException("无效的提示词角色: " + role + "，可选值: system, user, developer");
         }
     }
 

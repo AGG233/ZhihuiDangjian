@@ -22,7 +22,7 @@ public class AiPromptCreateRequest {
     @NotBlank(message = "content不能为空")
     private String content;
 
-    @Schema(description = "提示词角色", example = "SYSTEM")
+    @Schema(description = "提示词角色", example = "system")
     @NotBlank(message = "role不能为空")
     private String role;
 

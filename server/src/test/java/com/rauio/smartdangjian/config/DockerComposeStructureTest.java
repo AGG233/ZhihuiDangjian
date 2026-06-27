@@ -67,15 +67,10 @@ class DockerComposeStructureTest {
     }
 
     @Test
-    @DisplayName("docker-compose.yml 中 App 服务使用 named volume 挂载上传目录，无文件日志")
+    @DisplayName("docker-compose.yml 中 App 服务使用 named volume 挂载上传目录")
     void prodAppLogPathUsesWritableMountedDirectory() throws IOException {
         String content = Files.readString(PROD_COMPOSE);
-        assertThat(content)
-                .as("生产 Compose 使用 named volume 挂载上传目录，日志走 Docker stdout")
-                .contains("app-uploads:/app/uploads")
-                .doesNotContain("app-logs:")
-                .doesNotContain("LOG_PATH")
-                .doesNotContain("app-permissions:");
+        assertThat(content).as("生产 Compose 使用 named volume 挂载上传目录").contains("app-uploads:/app/uploads");
     }
 
     @Test

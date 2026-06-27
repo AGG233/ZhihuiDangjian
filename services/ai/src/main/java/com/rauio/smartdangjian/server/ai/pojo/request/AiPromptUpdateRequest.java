@@ -18,7 +18,7 @@ public class AiPromptUpdateRequest {
     @Schema(description = "提示词内容", example = "你是党务学习助手，回答需严谨、客观、简洁。")
     private String content;
 
-    @Schema(description = "提示词角色", example = "SYSTEM")
+    @Schema(description = "提示词角色", example = "system")
     private String role;
 
     @Schema(description = "是否启用", example = "true")
