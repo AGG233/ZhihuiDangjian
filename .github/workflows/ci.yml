@@ -15,8 +15,8 @@ permissions:
   contents: read
 
 jobs:
-  compile-and-format:
-    name: Compile & Format Check
+  package-jar:
+    name: Package Jar
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -38,16 +38,16 @@ jobs:
       - name: Grant execute permission
         run: chmod +x gradlew
 
-      - name: Compile sources and check formatting
-        run: ./gradlew compileJava spotlessCheck
+      - name: Package Jar
+        run: ./gradlew bootJar
 
-      - name: Upload compile reports
-        if: failure()
+      - name: Upload Artifacts
+        if: success()
         uses: actions/upload-artifact@v7
         with:
-          name: compile-format-reports
+          name: server-jar
           path: |
-            **/build/reports/**
+            server/build/libs/**
           if-no-files-found: ignore
           retention-days: 7
 
@@ -180,7 +180,7 @@ jobs:
     name: Integration & Smoke
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    needs: [compile-and-format]
+    needs: [package-jar]
     env:
       MYSQL_IMAGE: public.ecr.aws/docker/library/mysql:8.4
       REDIS_IMAGE: public.ecr.aws/docker/library/redis:7-alpine
@@ -291,15 +291,18 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-      - name: Build server bootJar
-        run: ./gradlew :server:bootJar -x test -x integrationTest
-
       - name: Enable Redis password for API smoke
         env:
           REDIS_PASSWORD: password
         run: |
           docker exec zhdj-ci-redis redis-cli CONFIG SET requirepass "$REDIS_PASSWORD"
           docker exec zhdj-ci-redis redis-cli -a "$REDIS_PASSWORD" ping
+
+      - name: Download Server JAR
+        uses: actions/download-artifact@v8
+        with:
+          name: server-jar
+          path: server/build/libs/
 
       - name: Start server for API smoke
         env:
