@@ -118,11 +118,6 @@ services:
         condition: service_healthy
     volumes:
       - ./logs:/app/logs
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: "2.0"
     networks:
       - zhihuidangjian
 
