@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/AGG233/ZhihuiDangjian/compare/v1.2.1...v1.2.2) (2026-06-28)
+
+
+### Bug Fixes
+
+* 避免无PR的情况下继续执行 ([ce4df6a](https://github.com/AGG233/ZhihuiDangjian/commit/ce4df6a8d50e49b96931ca9b1c51f64be329f3b2))
+
 ## [1.2.1](https://github.com/AGG233/ZhihuiDangjian/compare/v1.2.0...v1.2.1) (2026-06-28)
 
 
