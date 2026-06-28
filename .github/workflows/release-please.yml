@@ -33,10 +33,10 @@ jobs:
       # Uses GH_PAT (not GITHUB_TOKEN) so the merge commit triggers
       # a new workflow run, which then creates the release + tag.
       - name: Auto-merge Release PR
-        if: ${{ steps.release.outputs.pr }}
+        if: ${{ fromJSON(steps.release.outputs.pr).number }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-          PR_NUMBER: ${{ steps.release.outputs.pr }}
+          PR_NUMBER: ${{ fromJSON(steps.release.outputs.pr).number }}
         run: |
           set -euo pipefail
           for attempt in 1 2 3 4 5; do
