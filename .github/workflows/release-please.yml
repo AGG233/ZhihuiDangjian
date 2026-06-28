@@ -29,6 +29,9 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT }}
 
+      - uses: actions/checkout@v7            # ← 新增
+        with:
+          token: ${{ secrets.GH_PAT }}
       # Auto-merge Release PR for fully automated flow.
       # Uses GH_PAT (not GITHUB_TOKEN) so the merge commit triggers
       # a new workflow run, which then creates the release + tag.
