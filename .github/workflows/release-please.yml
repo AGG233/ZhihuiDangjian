@@ -19,36 +19,21 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
+
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
       version: ${{ steps.release.outputs.version }}
+
     steps:
       - uses: googleapis/release-please-action@0dfd8538845b8e92600d271a895a5372865d4062 # v5
         id: release
         with:
           token: ${{ secrets.GH_PAT }}
 
-      # Auto-merge Release PR for fully automated flow.
-      # Uses GH_PAT (not GITHUB_TOKEN) so the merge commit triggers
-      # a new workflow run, which then creates the release + tag.
-      - name: Auto-merge Release PR
-        if: ${{ steps.release.outputs.pr != '' && fromJSON(steps.release.outputs.pr).number }}
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-          PR_NUMBER: ${{ fromJSON(steps.release.outputs.pr).number }}
-        run: |
-          set -euo pipefail
-          for attempt in 1 2 3 4 5; do
-            if gh pr merge --merge "$PR_NUMBER" --subject "chore: auto-merge release PR"; then
-              echo "✅ Release PR #${PR_NUMBER} merged successfully"
-              exit 0
-            fi
-            echo "⏳ Attempt ${attempt} failed, retrying in 3s..."
-            sleep 3
-          done
-          echo "ERROR: Failed to merge Release PR #${PR_NUMBER} after 5 attempts"
-          exit 1
+      - uses: actions/checkout@v7            # ← 新增
+        with:
+          token: ${{ secrets.GH_PAT }}
 
   # ── Build & Push Docker Image ───────────────────────────────────────
   build-and-push:
