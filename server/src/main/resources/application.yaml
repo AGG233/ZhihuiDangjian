@@ -7,8 +7,8 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
       connection-timeout: 2000
-      minimum-idle: 4
-      maximum-pool-size: 16
+      minimum-idle: 32
+      maximum-pool-size: 100
       idle-timeout: 30000
       username: ${DATABASE_USERNAME}
       password: ${DATABASE_PASSWORD}
@@ -26,9 +26,9 @@ spring:
       connect-timeout: 2s
       lettuce:
         pool:
-          max-active: 16
-          max-idle: 8
-          min-idle: 4
+          max-active: 50
+          max-idle: 16
+          min-idle: 8
           max-wait: 2s
   neo4j:
     uri: ${NEO4J_URI:bolt://localhost:7687}
@@ -74,6 +74,12 @@ dromara:
 
 server:
   port: 9000
+  tomcat:
+    threads:
+      max: 400
+      min-spare: 50
+    max-connections: 8192
+    accept-count: 200
 
 # MyBatis-Plus 配置
 mybatis-plus:
