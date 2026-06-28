@@ -78,4 +78,66 @@ class LearningPathToolTest {
 
         assertThat(result).isEmpty();
     }
+
+    @Test
+    @DisplayName("getLearningProfile profile 的子字段为 null 时 Map 值对应为 null")
+    void getLearningProfilePartialData() {
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
+        UserProfileResponse profile = UserProfileResponse.builder()
+                .userId("1")
+                .learning(null)
+                .knowledge(null)
+                .interestCategoryIds(null)
+                .quiz(null)
+                .build();
+
+        when(searchQueryFacade.getProfile("1")).thenReturn(profile);
+
+        Map<String, Object> result = learningPathTool.getLearningProfile();
+
+        assertThat(result).containsKey("learningStats");
+        assertThat(result).containsKey("knowledgeStats");
+        assertThat(result).containsKey("interestCategoryIds");
+        assertThat(result).containsKey("quizStats");
+        assertThat(result.get("learningStats")).isNull();
+        assertThat(result.get("interestCategoryIds")).isNull();
+    }
+
+    @Test
+    @DisplayName("getLearningProfile profile 的兴趣分类为空列表时返回空列表")
+    void getLearningProfileEmptyInterestList() {
+        when(currentUserProvider.getCurrentUserId()).thenReturn("1");
+        UserProfileResponse.LearningStats learning = UserProfileResponse.LearningStats.builder()
+                .totalDuration(100)
+                .totalRecords(1)
+                .completedChapters(0)
+                .build();
+
+        UserProfileResponse profile = UserProfileResponse.builder()
+                .userId("1")
+                .learning(learning)
+                .knowledge(null)
+                .interestCategoryIds(List.of())
+                .quiz(null)
+                .build();
+
+        when(searchQueryFacade.getProfile("1")).thenReturn(profile);
+
+        Map<String, Object> result = learningPathTool.getLearningProfile();
+
+        assertThat(result).containsKey("interestCategoryIds");
+        assertThat(result.get("interestCategoryIds")).isInstanceOf(List.class);
+        assertThat((List<?>) result.get("interestCategoryIds")).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getLearningProfile 当前用户 ID 为 null 时以 null 查询并返回空 Map")
+    void getLearningProfileWithNullUserId() {
+        when(currentUserProvider.getCurrentUserId()).thenReturn(null);
+        when(searchQueryFacade.getProfile(null)).thenReturn(null);
+
+        Map<String, Object> result = learningPathTool.getLearningProfile();
+
+        assertThat(result).isEmpty();
+    }
 }
