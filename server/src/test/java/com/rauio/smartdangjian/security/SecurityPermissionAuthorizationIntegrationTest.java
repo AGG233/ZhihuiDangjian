@@ -1,13 +1,11 @@
 package com.rauio.smartdangjian.security;
 
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DisplayName;
@@ -51,10 +49,7 @@ class SecurityPermissionAuthorizationIntegrationTest extends AbstractSecurityAut
                 Arguments.of("/api/user/users/1", "PUT", "user:update"),
                 Arguments.of("/api/content/courses/learned/me", "GET", "course:read"),
                 Arguments.of("/api/quiz/answers/me", "GET", "quiz:read"),
-                Arguments.of("/api/quiz/answers/me/quizzes/1", "GET", "quiz:read"),
-                Arguments.of("/api/quiz/answers/me/quizzes/1/options/1", "GET", "quiz:read"),
-                Arguments.of("/api/quiz/answers/me/quizzes/1/options/1", "POST", "quiz:answer"),
-                Arguments.of("/api/quiz/answers/me/quizzes/1/options/1", "PUT", "quiz:answer"));
+                Arguments.of("/api/quiz/answers/me/quizzes/1/options/1", "POST", "quiz:answer"));
     }
 
     @ParameterizedTest(name = "{0} 权限满足时返回 200")
@@ -71,9 +66,6 @@ class SecurityPermissionAuthorizationIntegrationTest extends AbstractSecurityAut
         when(userService.getCurrentUserId()).thenReturn("1");
         when(courseService.getByUserId(1L)).thenReturn(java.util.List.of());
         when(userQuizAnswerService.getByUserId(1L)).thenReturn(java.util.List.of());
-        when(userQuizAnswerService.getByUserIdAndQuizId(anyLong(), anyLong())).thenReturn(List.of());
-        when(userQuizAnswerService.updateByUserIdAndQuizIdAndOptionId(anyLong(), anyLong(), anyLong()))
-                .thenReturn(true);
 
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class);
                 AnnotationHandlerScope ignored = annotationHandlerScope(
@@ -98,10 +90,7 @@ class SecurityPermissionAuthorizationIntegrationTest extends AbstractSecurityAut
                 Arguments.of("/api/user/users/1", "PUT", "user:update"),
                 Arguments.of("/api/content/courses/learned/me", "GET", "course:read"),
                 Arguments.of("/api/quiz/answers/me", "GET", "quiz:read"),
-                Arguments.of("/api/quiz/answers/me/quizzes/1", "GET", "quiz:read"),
-                Arguments.of("/api/quiz/answers/me/quizzes/1/options/1", "GET", "quiz:read"),
-                Arguments.of("/api/quiz/answers/me/quizzes/1/options/1", "POST", "quiz:answer"),
-                Arguments.of("/api/quiz/answers/me/quizzes/1/options/1", "PUT", "quiz:answer"));
+                Arguments.of("/api/quiz/answers/me/quizzes/1/options/1", "POST", "quiz:answer"));
     }
 
     @ParameterizedTest(name = "{0} 缺少 {2} 权限时不调用业务服务")

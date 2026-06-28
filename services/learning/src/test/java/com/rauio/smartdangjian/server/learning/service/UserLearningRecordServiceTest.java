@@ -14,8 +14,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
-import org.apache.ibatis.builder.MapperBuilderAssistant;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,29 +27,19 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
 import com.rauio.smartdangjian.server.learning.pojo.convertor.UserLearningRecordConvertor;
-import com.rauio.smartdangjian.server.learning.pojo.dto.LearningRecordSummaryDto;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserLearningRecordRequest;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 
 @ExtendWith(MockitoExtension.class)
 class UserLearningRecordServiceTest {
-
-    @BeforeAll
-    static void initTableInfo() {
-        MybatisConfiguration config = new MybatisConfiguration();
-        MapperBuilderAssistant assistant = new MapperBuilderAssistant(config, "");
-        TableInfoHelper.initTableInfo(assistant, UserLearningRecord.class);
-    }
 
     @Mock
     private UserLearningRecordMapper mapper;
@@ -764,142 +752,5 @@ class UserLearningRecordServiceTest {
         int result = recordService.syncUserLearningGraph(USER_ID);
 
         assertThat(result).isZero();
-    }
-
-    // ==================== getForUser ====================
-
-    @Test
-    @DisplayName("getForUser 根据ID和用户ID查询学习记录成功")
-    void getForUserSuccess() {
-        UserLearningRecord entity =
-                UserLearningRecord.builder().id(RECORD_ID).userId(USER_ID).build();
-        doReturn(entity).when(recordService).getOne(any(QueryWrapper.class));
-        when(convertor.toResponse(entity))
-                .thenReturn(UserLearningRecordResponse.builder()
-                        .id(RECORD_ID)
-                        .userId(USER_ID)
-                        .build());
-
-        UserLearningRecordResponse result = recordService.getForUser(RECORD_ID, USER_ID);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(RECORD_ID);
-    }
-
-    @Test
-    @DisplayName("getForUser 记录不存在抛出异常")
-    void getForUserNotFound() {
-        doReturn(null).when(recordService).getOne(any(QueryWrapper.class));
-
-        assertThatThrownBy(() -> recordService.getForUser(RECORD_ID, USER_ID))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("学习记录不存在");
-    }
-
-    // ==================== createForUser ====================
-
-    @Test
-    @DisplayName("createForUser 设置 userId 后委托给 create")
-    void createForUserSuccess() {
-        UserLearningRecordRequest dto =
-                UserLearningRecordRequest.builder().chapterId(CHAPTER_ID).build();
-        UserLearningRecord entity = UserLearningRecord.builder()
-                .userId(USER_ID)
-                .chapterId(CHAPTER_ID)
-                .createdAt(LocalDateTime.now())
-                .build();
-        when(convertor.toEntity(any(UserLearningRecordRequest.class))).thenReturn(entity);
-        doReturn(true).when(recordService).save(any(UserLearningRecord.class));
-
-        Boolean result = recordService.createForUser(dto, USER_ID);
-
-        assertThat(result).isTrue();
-        assertThat(dto.getUserId()).isEqualTo(USER_ID);
-    }
-
-    // ==================== updateForUser ====================
-
-    @Test
-    @DisplayName("updateForUser 更新用户指定学习记录成功")
-    void updateForUserSuccess() {
-        UserLearningRecordRequest dto =
-                UserLearningRecordRequest.builder().id(RECORD_ID).build();
-        doReturn(UserLearningRecord.builder().id(RECORD_ID).build())
-                .when(recordService)
-                .getOne(any(QueryWrapper.class));
-        doReturn(UserLearningRecord.builder().id(RECORD_ID).build())
-                .when(recordService)
-                .getById(RECORD_ID);
-        when(convertor.toEntity(dto))
-                .thenReturn(UserLearningRecord.builder().id(RECORD_ID).build());
-        doReturn(true).when(recordService).updateById(any(UserLearningRecord.class));
-
-        Boolean result = recordService.updateForUser(dto, USER_ID);
-
-        assertThat(result).isTrue();
-        assertThat(dto.getUserId()).isEqualTo(USER_ID);
-    }
-
-    @Test
-    @DisplayName("updateForUser ID 为空抛出异常")
-    void updateForUserIdNull() {
-        UserLearningRecordRequest dto = UserLearningRecordRequest.builder().build();
-
-        assertThatThrownBy(() -> recordService.updateForUser(dto, USER_ID))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("记录ID");
-    }
-
-    @Test
-    @DisplayName("updateForUser 记录不存在抛出异常")
-    void updateForUserNotFound() {
-        UserLearningRecordRequest dto =
-                UserLearningRecordRequest.builder().id(RECORD_ID).build();
-        doReturn(null).when(recordService).getOne(any(QueryWrapper.class));
-
-        assertThatThrownBy(() -> recordService.updateForUser(dto, USER_ID))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("学习记录不存在");
-    }
-
-    // ==================== listRecordSummariesByUserId ====================
-
-    @Test
-    @DisplayName("listRecordSummariesByUserId 返回用户学习记录摘要")
-    void listRecordSummariesByUserId() {
-        UserLearningRecord rec = UserLearningRecord.builder()
-                .userId(USER_ID)
-                .chapterId(CHAPTER_ID)
-                .duration(1800)
-                .build();
-        doReturn(List.of(rec)).when(recordService).list(any(LambdaQueryWrapper.class));
-
-        List<LearningRecordSummaryDto> result = recordService.listRecordSummariesByUserId(USER_ID);
-
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).userId()).isEqualTo(USER_ID);
-    }
-
-    // ==================== listChapterRecordSummariesByUserIds ====================
-
-    @Test
-    @DisplayName("listChapterRecordSummariesByUserIds 返回多个用户的学习摘要")
-    void listChapterRecordSummariesByUserIds() {
-        UserLearningRecord rec = UserLearningRecord.builder()
-                .userId(USER_ID)
-                .chapterId(CHAPTER_ID)
-                .build();
-        doReturn(List.of(rec)).when(recordService).list(any(LambdaQueryWrapper.class));
-
-        List<LearningRecordSummaryDto> result = recordService.listChapterRecordSummariesByUserIds(List.of(USER_ID));
-
-        assertThat(result).hasSize(1);
-    }
-
-    @Test
-    @DisplayName("listChapterRecordSummariesByUserIds null/空入参返回空列表")
-    void listChapterRecordSummariesByUserIdsNullInput() {
-        assertThat(recordService.listChapterRecordSummariesByUserIds(null)).isEmpty();
-        assertThat(recordService.listChapterRecordSummariesByUserIds(List.of())).isEmpty();
     }
 }

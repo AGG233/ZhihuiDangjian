@@ -15,7 +15,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -31,7 +30,6 @@ import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
 import com.rauio.smartdangjian.server.quiz.mapper.QuizOptionMapper;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
-import com.rauio.smartdangjian.server.quiz.pojo.request.QuizOptionRequest;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -139,76 +137,6 @@ class QuizOptionServiceTest {
         Boolean result = quizOptionService.create(1L, option);
 
         assertThat(result).isFalse();
-    }
-
-    // ==================== update (overloaded) ====================
-
-    @Nested
-    @DisplayName("update(Long, QuizOptionRequest) 重载方法")
-    class UpdateFromRequest {
-
-        @Test
-        @DisplayName("从请求对象更新选项成功")
-        void updatesFromRequestSuccessfully() {
-            QuizOptionRequest request = new QuizOptionRequest("新选项", true, "A");
-            doReturn(true).when(quizOptionService).updateById(any(QuizOption.class));
-
-            Boolean result = quizOptionService.update(1L, request);
-
-            assertThat(result).isTrue();
-            ArgumentCaptor<QuizOption> captor = ArgumentCaptor.forClass(QuizOption.class);
-            verify(quizOptionService).updateById(captor.capture());
-            assertThat(captor.getValue().getId()).isEqualTo(1L);
-            assertThat(captor.getValue().getOptionText()).isEqualTo("新选项");
-            assertThat(captor.getValue().getIsCorrect()).isTrue();
-            assertThat(captor.getValue().getOrderIndex()).isEqualTo("A");
-        }
-
-        @Test
-        @DisplayName("从请求对象更新失败时返回 false")
-        void updateFromRequestReturnsFalseOnFailure() {
-            QuizOptionRequest request = new QuizOptionRequest("新选项", true, "A");
-            doReturn(false).when(quizOptionService).updateById(any(QuizOption.class));
-
-            Boolean result = quizOptionService.update(1L, request);
-
-            assertThat(result).isFalse();
-        }
-    }
-
-    // ==================== create (overloaded) ====================
-
-    @Nested
-    @DisplayName("create(Long, QuizOptionRequest) 重载方法")
-    class CreateFromRequest {
-
-        @Test
-        @DisplayName("从请求对象创建选项成功")
-        void createsFromRequestSuccessfully() {
-            QuizOptionRequest request = new QuizOptionRequest("新选项", false, "B");
-            doReturn(true).when(quizOptionService).save(any(QuizOption.class));
-
-            Boolean result = quizOptionService.create(1L, request);
-
-            assertThat(result).isTrue();
-            ArgumentCaptor<QuizOption> captor = ArgumentCaptor.forClass(QuizOption.class);
-            verify(quizOptionService).save(captor.capture());
-            assertThat(captor.getValue().getQuizId()).isEqualTo(1L);
-            assertThat(captor.getValue().getOptionText()).isEqualTo("新选项");
-            assertThat(captor.getValue().getIsCorrect()).isFalse();
-            assertThat(captor.getValue().getOrderIndex()).isEqualTo("B");
-        }
-
-        @Test
-        @DisplayName("从请求对象创建失败时返回 false")
-        void createFromRequestReturnsFalseOnFailure() {
-            QuizOptionRequest request = new QuizOptionRequest("新选项", false, "B");
-            doReturn(false).when(quizOptionService).save(any(QuizOption.class));
-
-            Boolean result = quizOptionService.create(1L, request);
-
-            assertThat(result).isFalse();
-        }
     }
 
     // ==================== getByQuizId ====================

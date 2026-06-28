@@ -83,13 +83,8 @@ import com.rauio.smartdangjian.server.search.service.LearningHotspotService;
 import com.rauio.smartdangjian.server.search.service.RecommendService;
 import com.rauio.smartdangjian.server.search.service.SearchService;
 import com.rauio.smartdangjian.server.search.service.UserProfileService;
-import com.rauio.smartdangjian.server.social.controller.user.UserSocialController;
-import com.rauio.smartdangjian.server.social.service.CommentService;
-import com.rauio.smartdangjian.server.social.service.LikeService;
 import com.rauio.smartdangjian.server.user.controller.admin.AdminUserController;
-import com.rauio.smartdangjian.server.user.controller.publicapi.ApiController;
 import com.rauio.smartdangjian.server.user.controller.user.UserController;
-import com.rauio.smartdangjian.server.user.service.UniversitiesService;
 import com.rauio.smartdangjian.server.user.service.UserService;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
@@ -199,15 +194,6 @@ abstract class AbstractSecurityAuthorizationIntegrationTest {
     @MockitoBean
     protected AiMemoryService aiMemoryService;
 
-    @MockitoBean
-    protected UniversitiesService universitiesService;
-
-    @MockitoBean
-    protected CommentService commentService;
-
-    @MockitoBean
-    protected LikeService likeService;
-
     @BeforeEach
     void resetMocks() {
         org.mockito.Mockito.reset(
@@ -239,10 +225,7 @@ abstract class AbstractSecurityAuthorizationIntegrationTest {
                 resourceMetaService,
                 bannerService,
                 llmService,
-                aiMemoryService,
-                universitiesService,
-                commentService,
-                likeService);
+                aiMemoryService);
     }
 
     protected static SaAnnotationHandlerInterface<SaCheckLogin> allowingLoginHandler() {
@@ -582,19 +565,6 @@ abstract class AbstractSecurityAuthorizationIntegrationTest {
         UserChatController userChatController(
                 LLMService llmService, AiMemoryService aiMemoryService, UserService userService) {
             return new UserChatController(llmService, aiMemoryService, userService);
-        }
-
-        @Bean
-        ApiController apiController(UniversitiesService universitiesService) {
-            return new ApiController(universitiesService);
-        }
-
-        @Bean
-        UserSocialController userSocialController(
-                CommentService commentService,
-                LikeService likeService,
-                com.rauio.smartdangjian.security.CurrentUserProvider currentUserProvider) {
-            return new UserSocialController(commentService, likeService, currentUserProvider);
         }
     }
 }

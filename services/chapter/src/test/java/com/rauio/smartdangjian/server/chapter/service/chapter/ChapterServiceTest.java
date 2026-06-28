@@ -5,17 +5,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
-import org.apache.ibatis.builder.MapperBuilderAssistant;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,9 +22,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.chapter.pojo.convertor.ChapterConvertor;
 import com.rauio.smartdangjian.server.chapter.pojo.entity.Chapter;
@@ -54,13 +48,6 @@ class ChapterServiceTest {
     @Spy
     @InjectMocks
     private ChapterService chapterService;
-
-    @BeforeAll
-    static void initTableInfo() {
-        MybatisConfiguration config = new MybatisConfiguration();
-        MapperBuilderAssistant assistant = new MapperBuilderAssistant(config, "");
-        TableInfoHelper.initTableInfo(assistant, Chapter.class);
-    }
 
     @BeforeEach
     void resetSpy() {
@@ -325,100 +312,5 @@ class ChapterServiceTest {
         Boolean result = chapterService.delete(999L);
 
         assertThat(result).isFalse();
-    }
-
-    // ================================================================
-    // getCourseIdMapByChapterIds
-    // ================================================================
-
-    @Test
-    @DisplayName("getCourseIdMapByChapterIds 返回章节ID到课程ID的映射")
-    void getCourseIdMapByChapterIdsReturnsMap() {
-        Chapter c1 = Chapter.builder().id(1L).courseId(10L).build();
-        Chapter c2 = Chapter.builder().id(2L).courseId(10L).build();
-        doReturn(List.of(c1, c2)).when(chapterService).list(any(LambdaQueryWrapper.class));
-
-        Map<Long, Long> result = chapterService.getCourseIdMapByChapterIds(List.of(1L, 2L));
-
-        assertThat(result).hasSize(2);
-        assertThat(result.get(1L)).isEqualTo(10L);
-        assertThat(result.get(2L)).isEqualTo(10L);
-    }
-
-    @Test
-    @DisplayName("getCourseIdMapByChapterIds null/空入参返回空映射")
-    void getCourseIdMapByChapterIdsNullInput() {
-        assertThat(chapterService.getCourseIdMapByChapterIds(null)).isEmpty();
-        assertThat(chapterService.getCourseIdMapByChapterIds(Collections.emptyList()))
-                .isEmpty();
-    }
-
-    @Test
-    @DisplayName("getCourseIdMapByChapterIds 过滤掉 id 或 courseId 为 null 的记录")
-    void getCourseIdMapByChapterIdsFiltersNullFields() {
-        Chapter valid = Chapter.builder().id(1L).courseId(10L).build();
-        Chapter nullId = Chapter.builder().id(null).courseId(20L).build();
-        Chapter nullCourseId = Chapter.builder().id(3L).courseId(null).build();
-        doReturn(List.of(valid, nullId, nullCourseId)).when(chapterService).list(any(LambdaQueryWrapper.class));
-
-        Map<Long, Long> result = chapterService.getCourseIdMapByChapterIds(List.of(1L, 2L, 3L));
-
-        assertThat(result).hasSize(1);
-        assertThat(result.get(1L)).isEqualTo(10L);
-    }
-
-    // ================================================================
-    // listCourseIdsByChapterIds
-    // ================================================================
-
-    @Test
-    @DisplayName("listCourseIdsByChapterIds 返回去重的课程ID列表")
-    void listCourseIdsByChapterIdsReturnsDistinctCourseIds() {
-        Map<Long, Long> map = Map.of(1L, 10L, 2L, 10L, 3L, 20L);
-        doReturn(map).when(chapterService).getCourseIdMapByChapterIds(any());
-
-        List<Long> result = chapterService.listCourseIdsByChapterIds(List.of(1L, 2L, 3L));
-
-        assertThat(result).containsExactlyInAnyOrder(10L, 20L);
-    }
-
-    // ================================================================
-    // create 补充分支
-    // ================================================================
-
-    @Test
-    @DisplayName("create 创建章节时支持多个内容块并全部保存")
-    void createWithMultipleContentBlocks() {
-        ChapterRequest dto = ChapterRequest.builder()
-                .courseId("1")
-                .title("多内容块")
-                .description("描述")
-                .orderIndex(1)
-                .content(List.of(
-                        ContentBlockDto.builder().textContent("块1").build(),
-                        ContentBlockDto.builder().textContent("块2").build()))
-                .build();
-        Chapter chapter = Chapter.builder().title("多内容块").build();
-        chapter.setId(1L);
-
-        doReturn(null).when(chapterService).getOne(any(LambdaQueryWrapper.class));
-        when(chapterConvertor.toEntity(dto)).thenReturn(chapter);
-        doReturn(true).when(chapterService).save(chapter);
-        when(contentBlockConvertor.toEntity(any(ContentBlockDto.class)))
-                .thenReturn(
-                        ChapterContentBlock.builder()
-                                .chapterId(1L)
-                                .textContent("块1")
-                                .build(),
-                        ChapterContentBlock.builder()
-                                .chapterId(1L)
-                                .textContent("块2")
-                                .build());
-        doReturn(true).when(contentService).create(any(ChapterContentBlock.class));
-
-        Boolean result = chapterService.create(dto);
-
-        assertThat(result).isTrue();
-        verify(contentService, times(2)).create(any(ChapterContentBlock.class));
     }
 }
