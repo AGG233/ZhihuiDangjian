@@ -35,6 +35,17 @@ public class DevAutoLoginFilter extends OncePerRequestFilter {
         this.sessionPrincipalFactory = sessionPrincipalFactory;
     }
 
+    private static final String[] EXCLUDE_PATHS = {"/api/auth/captcha", "/api/school/all"};
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        for (String exclude : EXCLUDE_PATHS) {
+            if (path.startsWith(exclude)) return true;
+        }
+        return false;
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
