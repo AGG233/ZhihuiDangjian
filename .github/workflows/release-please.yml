@@ -36,18 +36,18 @@ jobs:
         if: ${{ steps.release.outputs.pr }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
+          PR_NUMBER: ${{ steps.release.outputs.pr }}
         run: |
           set -euo pipefail
-          PR="${{ steps.release.outputs.pr }}"
           for attempt in 1 2 3 4 5; do
-            if gh pr merge --merge "$PR" --subject "chore: auto-merge release PR"; then
-              echo "✅ Release PR #${PR} merged successfully"
+            if gh pr merge --merge "$PR_NUMBER" --subject "chore: auto-merge release PR"; then
+              echo "✅ Release PR #${PR_NUMBER} merged successfully"
               exit 0
             fi
             echo "⏳ Attempt ${attempt} failed, retrying in 3s..."
             sleep 3
           done
-          echo "ERROR: Failed to merge Release PR #${PR} after 5 attempts"
+          echo "ERROR: Failed to merge Release PR #${PR_NUMBER} after 5 attempts"
           exit 1
 
   # ── Build & Push Docker Image ───────────────────────────────────────
