@@ -8,11 +8,11 @@ on:
     inputs:
       version:
         description: 'Version to deploy (format: X.Y.Z, e.g. 1.3.0)'
-        required: false
+        required: true
         type: string
 
 concurrency:
-  group: cd-${{ github.ref }}
+  group: cd-production
   cancel-in-progress: false
 
 permissions:
@@ -32,12 +32,22 @@ jobs:
       - name: Extract version
         id: meta
         shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.version }}" ]; then
-            VERSION="${{ inputs.version }}"
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            VERSION="$INPUT_VERSION"
           else
-            VERSION="${GITHUB_REF#refs/tags/v}"
+            VERSION="${GITHUB_REF_NAME#v}"
           fi
+
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$ ]]; then
+            echo "ERROR: invalid version '${VERSION}'"
+            exit 1
+          fi
+
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Deploying version: ${VERSION}"
 
@@ -89,10 +99,15 @@ jobs:
 
       - name: Login to Aliyun Container Registry
         shell: bash
+        env:
+          REGISTRY: ${{ steps.image.outputs.registry }}
+          ALIYUN_REGISTRY_USERNAME: ${{ secrets.ALIYUN_REGISTRY_USERNAME }}
+          ALIYUN_REGISTRY_PASSWORD: ${{ secrets.ALIYUN_REGISTRY_PASSWORD }}
         run: |
-          docker login ${{ steps.image.outputs.registry }} \
-            -u '${{ secrets.ALIYUN_REGISTRY_USERNAME }}' \
-            -p '${{ secrets.ALIYUN_REGISTRY_PASSWORD }}'
+          set -euo pipefail
+          printf '%s' "$ALIYUN_REGISTRY_PASSWORD" | docker login "$REGISTRY" \
+            --username "$ALIYUN_REGISTRY_USERNAME" \
+            --password-stdin
 
       - name: Wait for image availability
         shell: bash

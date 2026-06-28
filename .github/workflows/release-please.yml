@@ -10,13 +10,15 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write
-  pull-requests: write
-  issues: write
+  contents: read
 
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
@@ -35,15 +37,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
+          set -euo pipefail
           PR="${{ steps.release.outputs.pr }}"
           for attempt in 1 2 3 4 5; do
             if gh pr merge --merge "$PR" --subject "chore: auto-merge release PR"; then
               echo "✅ Release PR #${PR} merged successfully"
-              break
+              exit 0
             fi
             echo "⏳ Attempt ${attempt} failed, retrying in 3s..."
             sleep 3
           done
+          echo "ERROR: Failed to merge Release PR #${PR} after 5 attempts"
+          exit 1
 
   # ── Build & Push Docker Image ───────────────────────────────────────
   build-and-push:
@@ -224,3 +229,18 @@ jobs:
         with:
           sarif_file: trivy-results.sarif
           category: trivy
+
+  # ── Trigger CD ──────────────────────────────────────────────────────
+  trigger-cd:
+    name: Trigger CD
+    needs: [build-and-push, trivy-scan]
+    if: ${{ always() && needs.build-and-push.result == 'success' && needs.trivy-scan.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger CD deployment via workflow_dispatch
+        run: |
+          gh workflow run cd.yml \
+            --ref product \
+            -f version='${{ needs.build-and-push.outputs.version }}'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
