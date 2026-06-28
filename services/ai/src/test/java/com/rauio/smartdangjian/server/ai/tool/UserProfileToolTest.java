@@ -38,4 +38,26 @@ class UserProfileToolTest {
 
         assertThat(result).isSameAs(profile);
     }
+
+    @Test
+    @DisplayName("getUserProfile 用户画像不存在时返回 null")
+    void getUserProfileNotFound() {
+        when(currentUserProvider.getCurrentUserId()).thenReturn("nonexistent");
+        when(searchQueryFacade.getProfile("nonexistent")).thenReturn(null);
+
+        UserProfileResponse result = userProfileTool.getUserProfile();
+
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("getUserProfile 当前用户 ID 为 null 时以 null 查询并返回 null")
+    void getUserProfileWithNullUserId() {
+        when(currentUserProvider.getCurrentUserId()).thenReturn(null);
+        when(searchQueryFacade.getProfile(null)).thenReturn(null);
+
+        UserProfileResponse result = userProfileTool.getUserProfile();
+
+        assertThat(result).isNull();
+    }
 }
