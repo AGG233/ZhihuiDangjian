@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.3](https://github.com/AGG233/ZhihuiDangjian/compare/v1.2.2...v1.2.3) (2026-06-28)
+
+
+### Bug Fixes
+
+* 修复 Release Please 配置文件名（缺少前置点）并将 release-type 改为 simple ([eb3072f](https://github.com/AGG233/ZhihuiDangjian/commit/eb3072f6b1d1b967db7f6c92d90a68566f75b0fe))
+* 错误的文件名 ([fea80d6](https://github.com/AGG233/ZhihuiDangjian/commit/fea80d6b11f45f3e772ea511d7babb343ec01caa))
+
 ## [1.2.2](https://github.com/AGG233/ZhihuiDangjian/compare/v1.2.1...v1.2.2) (2026-06-28)
 
 
