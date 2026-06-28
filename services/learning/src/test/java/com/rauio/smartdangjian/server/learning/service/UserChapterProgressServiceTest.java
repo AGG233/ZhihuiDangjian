@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
+import org.apache.ibatis.builder.MapperBuilderAssistant;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,16 +21,27 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.baomidou.mybatisplus.core.MybatisConfiguration;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
 import com.rauio.smartdangjian.server.learning.pojo.convertor.UserChapterProgressConvertor;
+import com.rauio.smartdangjian.server.learning.pojo.dto.ChapterProgressSummaryDto;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserChapterProgress;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserChapterProgressRequest;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
 
 @ExtendWith(MockitoExtension.class)
 class UserChapterProgressServiceTest {
+
+    @BeforeAll
+    static void initTableInfo() {
+        MybatisConfiguration config = new MybatisConfiguration();
+        MapperBuilderAssistant assistant = new MapperBuilderAssistant(config, "");
+        TableInfoHelper.initTableInfo(assistant, UserChapterProgress.class);
+    }
 
     @Mock
     private UserChapterProgressMapper mapper;
@@ -502,5 +515,174 @@ class UserChapterProgressServiceTest {
         assertThatThrownBy(() -> progressService.update(dto))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("更新进度记录失败");
+    }
+
+    // ==================== getForUser ====================
+
+    @Test
+    @DisplayName("getForUser 根据ID和用户ID查询进度成功")
+    void getForUserSuccess() {
+        UserChapterProgress entity = UserChapterProgress.builder()
+                .id(PROGRESS_ID)
+                .userId(USER_ID)
+                .chapterId(CHAPTER_ID)
+                .progress(50)
+                .build();
+        doReturn(entity).when(progressService).getOne(any(QueryWrapper.class));
+        when(convertor.toResponse(entity))
+                .thenReturn(UserChapterProgressResponse.builder()
+                        .id(PROGRESS_ID)
+                        .userId(USER_ID)
+                        .progress(50)
+                        .build());
+
+        UserChapterProgressResponse result = progressService.getForUser(PROGRESS_ID, USER_ID);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(PROGRESS_ID);
+    }
+
+    @Test
+    @DisplayName("getForUser 记录不存在抛出异常")
+    void getForUserNotFound() {
+        doReturn(null).when(progressService).getOne(any(QueryWrapper.class));
+
+        assertThatThrownBy(() -> progressService.getForUser(PROGRESS_ID, USER_ID))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("进度记录不存在");
+    }
+
+    // ==================== createForUser ====================
+
+    @Test
+    @DisplayName("createForUser 设置 userId 后委托给 create")
+    void createForUserSuccess() {
+        UserChapterProgressRequest dto = UserChapterProgressRequest.builder()
+                .chapterId(CHAPTER_ID)
+                .progress(30)
+                .build();
+        doReturn(null).when(progressService).getOne(any(QueryWrapper.class));
+        UserChapterProgress entity = UserChapterProgress.builder()
+                .userId(USER_ID)
+                .chapterId(CHAPTER_ID)
+                .progress(30)
+                .build();
+        when(convertor.toEntity(any(UserChapterProgressRequest.class))).thenReturn(entity);
+        doReturn(true).when(progressService).save(any(UserChapterProgress.class));
+
+        Boolean result = progressService.createForUser(dto, USER_ID);
+
+        assertThat(result).isTrue();
+        assertThat(dto.getUserId()).isEqualTo(USER_ID);
+    }
+
+    // ==================== updateForUser ====================
+
+    @Test
+    @DisplayName("updateForUser 更新用户指定进度成功")
+    void updateForUserSuccess() {
+        UserChapterProgressRequest dto = UserChapterProgressRequest.builder()
+                .id(PROGRESS_ID)
+                .progress(80)
+                .build();
+        UserChapterProgress existing = UserChapterProgress.builder()
+                .id(PROGRESS_ID)
+                .progress(50)
+                .status("in_progress")
+                .build();
+
+        doReturn(existing).when(progressService).getOne(any(QueryWrapper.class));
+        doReturn(existing).when(progressService).getById(PROGRESS_ID);
+        when(convertor.toEntity(dto))
+                .thenReturn(UserChapterProgress.builder()
+                        .id(PROGRESS_ID)
+                        .progress(80)
+                        .build());
+        doReturn(true).when(progressService).updateById(any(UserChapterProgress.class));
+
+        Boolean result = progressService.updateForUser(dto, USER_ID);
+
+        assertThat(result).isTrue();
+        assertThat(dto.getUserId()).isEqualTo(USER_ID);
+    }
+
+    @Test
+    @DisplayName("updateForUser ID 为空抛出异常")
+    void updateForUserIdNull() {
+        UserChapterProgressRequest dto = UserChapterProgressRequest.builder().build();
+
+        assertThatThrownBy(() -> progressService.updateForUser(dto, USER_ID))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("进度ID");
+    }
+
+    @Test
+    @DisplayName("updateForUser 记录不存在抛出异常")
+    void updateForUserNotFound() {
+        UserChapterProgressRequest dto =
+                UserChapterProgressRequest.builder().id(PROGRESS_ID).build();
+        doReturn(null).when(progressService).getOne(any(QueryWrapper.class));
+
+        assertThatThrownBy(() -> progressService.updateForUser(dto, USER_ID))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("进度记录不存在");
+    }
+
+    // ==================== listProgressSummariesByUserId ====================
+
+    @Test
+    @DisplayName("listProgressSummariesByUserId 返回用户进度摘要")
+    void listProgressSummariesByUserId() {
+        UserChapterProgress p1 = UserChapterProgress.builder()
+                .userId(USER_ID)
+                .chapterId(CHAPTER_ID)
+                .progress(50)
+                .status("in_progress")
+                .build();
+        doReturn(List.of(p1)).when(progressService).list(any(LambdaQueryWrapper.class));
+
+        List<ChapterProgressSummaryDto> result = progressService.listProgressSummariesByUserId(USER_ID);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).userId()).isEqualTo(USER_ID);
+        assertThat(result.get(0).progress()).isEqualTo(50);
+    }
+
+    // ==================== listChapterProgressSummariesByUserIds ====================
+
+    @Test
+    @DisplayName("listChapterProgressSummariesByUserIds 返回多个用户的进度摘要")
+    void listChapterProgressSummariesByUserIds() {
+        UserChapterProgress p1 = UserChapterProgress.builder()
+                .userId(USER_ID)
+                .chapterId(CHAPTER_ID)
+                .build();
+        doReturn(List.of(p1)).when(progressService).list(any(LambdaQueryWrapper.class));
+
+        List<ChapterProgressSummaryDto> result =
+                progressService.listChapterProgressSummariesByUserIds(List.of(USER_ID));
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).userId()).isEqualTo(USER_ID);
+    }
+
+    @Test
+    @DisplayName("listChapterProgressSummariesByUserIds null/空入参返回空列表")
+    void listChapterProgressSummariesByUserIdsNullInput() {
+        assertThat(progressService.listChapterProgressSummariesByUserIds(null)).isEmpty();
+        assertThat(progressService.listChapterProgressSummariesByUserIds(List.of()))
+                .isEmpty();
+    }
+
+    // ==================== countCompletedByUserId ====================
+
+    @Test
+    @DisplayName("countCompletedByUserId 返回用户已完成进度数")
+    void countCompletedByUserId() {
+        doReturn(3L).when(progressService).count(any(LambdaQueryWrapper.class));
+
+        long result = progressService.countCompletedByUserId(USER_ID);
+
+        assertThat(result).isEqualTo(3L);
     }
 }

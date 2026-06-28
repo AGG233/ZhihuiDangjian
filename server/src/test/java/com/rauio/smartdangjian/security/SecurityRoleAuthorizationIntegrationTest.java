@@ -1,5 +1,9 @@
 package com.rauio.smartdangjian.security;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -13,12 +17,14 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.server.category.pojo.response.CategoryResponse;
 import com.rauio.smartdangjian.server.chapter.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 import com.rauio.smartdangjian.server.search.pojo.response.LearningTrendResponse;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
+import com.rauio.smartdangjian.server.social.pojo.response.LikeStatusResponse;
 
 import cn.dev33.satoken.stp.StpUtil;
 
@@ -43,13 +49,12 @@ class SecurityRoleAuthorizationIntegrationTest extends AbstractSecurityAuthoriza
 
     static Stream<Arguments> forbiddenEndpointProvider() {
         return Stream.of(
+                // Admin CRUD GET endpoints
                 Arguments.of("/api/admin/users/1", "GET", "SCHOOL"),
                 Arguments.of("/api/search/profile", "GET", "STUDENT"),
                 Arguments.of("/api/admin/content/chapters/1", "GET", "SCHOOL"),
-                Arguments.of("/api/admin/content/courses/1", "DELETE", "SCHOOL"),
-                Arguments.of("/api/admin/quiz/quizzes/1", "DELETE", "SCHOOL"),
-                Arguments.of("/api/admin/quiz/answers/users/1/quizzes/1/options/1", "DELETE", "MANAGER"),
-                Arguments.of("/api/quiz/quizzes/1", "GET", "STUDENT"),
+                Arguments.of("/api/admin/content/courses/1", "GET", "SCHOOL"),
+                Arguments.of("/api/admin/quiz/quizzes/1", "GET", "SCHOOL"),
                 Arguments.of("/api/admin/ai/prompts", "GET", "MANAGER"),
                 Arguments.of("/api/admin/ai/skills", "GET", "MANAGER"),
                 Arguments.of("/api/admin/ai/faqs", "GET", "MANAGER"),
@@ -57,12 +62,62 @@ class SecurityRoleAuthorizationIntegrationTest extends AbstractSecurityAuthoriza
                 Arguments.of("/api/admin/learning/progress/chapter/1", "GET", "SCHOOL"),
                 Arguments.of("/api/admin/resource/files/1", "GET", "SCHOOL"),
                 Arguments.of("/api/admin/resource/banners", "GET", "MANAGER"),
+                // Admin CRUD POST endpoints
+                Arguments.of("/api/admin/users", "POST", "SCHOOL"),
+                Arguments.of("/api/admin/users/search", "POST", "SCHOOL"),
+                Arguments.of("/api/admin/content/categories/root", "POST", "SCHOOL"),
+                Arguments.of("/api/admin/content/categories/1/children", "POST", "SCHOOL"),
+                Arguments.of("/api/admin/content/chapters", "POST", "SCHOOL"),
+                Arguments.of("/api/admin/content/courses", "POST", "SCHOOL"),
+                Arguments.of("/api/admin/resource/files", "POST", "SCHOOL"),
+                Arguments.of("/api/admin/resource/banners", "POST", "MANAGER"),
+                Arguments.of("/api/admin/ai/prompts", "POST", "MANAGER"),
+                Arguments.of("/api/admin/ai/skills", "POST", "MANAGER"),
+                Arguments.of("/api/admin/ai/faqs", "POST", "MANAGER"),
+                // Admin CRUD PUT endpoints
+                Arguments.of("/api/admin/users/1", "PUT", "SCHOOL"),
+                Arguments.of("/api/admin/content/categories/1", "PUT", "SCHOOL"),
+                Arguments.of("/api/admin/content/chapters", "PUT", "SCHOOL"),
+                Arguments.of("/api/admin/content/courses/1", "PUT", "SCHOOL"),
+                Arguments.of("/api/admin/resource/files/1", "PUT", "SCHOOL"),
+                Arguments.of("/api/admin/resource/banners/1", "PUT", "MANAGER"),
+                Arguments.of("/api/admin/ai/prompts/1", "PUT", "MANAGER"),
+                Arguments.of("/api/admin/ai/skills/1", "PUT", "MANAGER"),
+                Arguments.of("/api/admin/ai/faqs/1", "PUT", "MANAGER"),
+                // Admin CRUD DELETE endpoints
+                Arguments.of("/api/admin/users/1", "DELETE", "SCHOOL"),
+                Arguments.of("/api/admin/content/categories/1", "DELETE", "SCHOOL"),
+                Arguments.of("/api/admin/content/categories/1/all", "DELETE", "SCHOOL"),
+                Arguments.of("/api/admin/content/chapters/1", "DELETE", "SCHOOL"),
+                Arguments.of("/api/admin/content/courses/1", "DELETE", "SCHOOL"),
+                Arguments.of("/api/admin/resource/files/1", "DELETE", "SCHOOL"),
+                Arguments.of("/api/admin/resource/files/by-hash/test", "DELETE", "SCHOOL"),
+                Arguments.of("/api/admin/resource/banners/1", "DELETE", "MANAGER"),
+                Arguments.of("/api/admin/ai/prompts/1", "DELETE", "MANAGER"),
+                Arguments.of("/api/admin/ai/skills/1", "DELETE", "MANAGER"),
+                Arguments.of("/api/admin/ai/faqs/1", "DELETE", "MANAGER"),
+                Arguments.of("/api/admin/learning/records/1", "DELETE", "SCHOOL"),
+                Arguments.of("/api/admin/learning/progress/1", "DELETE", "SCHOOL"),
+                Arguments.of("/api/admin/quiz/answers/users/1/quizzes/1/options/1", "DELETE", "MANAGER"),
+                // Quiz endpoints
+                Arguments.of("/api/quiz/quizzes/1", "GET", "STUDENT"),
+                // User endpoints
                 Arguments.of("/api/user/users/1", "GET", "STUDENT"),
+                // Content endpoints
                 Arguments.of("/api/content/courses/learned/me", "GET", "STUDENT"),
-                Arguments.of("/api/graph/party-history/search?keyword=history", "GET", "STUDENT"),
-                Arguments.of("/api/learning/records/me/1", "GET", "STUDENT"),
                 Arguments.of("/api/content/chapters/1", "GET", "STUDENT"),
-                Arguments.of("/api/learning/graph/me/sync", "POST", "STUDENT"));
+                // Graph endpoints
+                Arguments.of("/api/graph/party-history/search?keyword=history", "GET", "STUDENT"),
+                // Learning endpoints
+                Arguments.of("/api/learning/records/me/1", "GET", "STUDENT"),
+                Arguments.of("/api/learning/graph/me/sync", "POST", "STUDENT"),
+                // UserSocialController endpoints (STUDENT)
+                Arguments.of("/api/social/article/1/comments", "GET", "STUDENT"),
+                Arguments.of("/api/social/article/1/comments", "POST", "STUDENT"),
+                Arguments.of("/api/social/comments/1/replies", "POST", "STUDENT"),
+                Arguments.of("/api/social/comments/1", "DELETE", "STUDENT"),
+                Arguments.of("/api/social/article/1/like", "POST", "STUDENT"),
+                Arguments.of("/api/social/article/1/like/status", "GET", "STUDENT"));
     }
 
     @ParameterizedTest(name = "{0} 角色满足时返回 200")
@@ -98,6 +153,12 @@ class SecurityRoleAuthorizationIntegrationTest extends AbstractSecurityAuthoriza
                         .nodes(java.util.List.of())
                         .edges(java.util.List.of())
                         .build());
+        when(commentService.getPage(anyString(), anyLong(), any(), anyInt(), anyInt(), anyString()))
+                .thenReturn(new Page<>());
+        when(likeService.getStatus(anyLong(), anyString(), anyLong()))
+                .thenReturn(LikeStatusResponse.builder().liked(true).build());
+        when(likeService.toggle(anyLong(), anyString(), anyLong()))
+                .thenReturn(LikeStatusResponse.builder().liked(true).build());
 
         try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class);
                 AnnotationHandlerScope ignored = annotationHandlerScope(
@@ -138,6 +199,11 @@ class SecurityRoleAuthorizationIntegrationTest extends AbstractSecurityAuthoriza
                 Arguments.of("/api/learning/records/me", "GET", "STUDENT"),
                 Arguments.of("/api/content/categories/root", "GET", "STUDENT"),
                 Arguments.of("/api/content/chapters/1", "GET", "STUDENT"),
-                Arguments.of("/api/learning/graph/me/sync", "POST", "STUDENT"));
+                Arguments.of("/api/learning/graph/me/sync", "POST", "STUDENT"),
+                // UserSocialController endpoints (STUDENT)
+                Arguments.of("/api/social/article/1/comments", "GET", "STUDENT"),
+                Arguments.of("/api/social/article/1/like/status", "GET", "STUDENT"),
+                Arguments.of("/api/social/article/1/like", "POST", "STUDENT"),
+                Arguments.of("/api/social/comments/1", "DELETE", "STUDENT"));
     }
 }
