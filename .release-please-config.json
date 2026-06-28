@@ -1,9 +1,0 @@
-{
-  "plugins": [],
-  "release-type": "java",
-  "packages": {
-    ".": {
-      "extra-files": ["gradle.properties"]
-    }
-  }
-}

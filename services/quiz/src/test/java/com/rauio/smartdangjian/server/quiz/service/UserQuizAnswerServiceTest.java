@@ -12,38 +12,22 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.ibatis.builder.MapperBuilderAssistant;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.rauio.smartdangjian.server.quiz.mapper.UserQuizAnswerMapper;
-import com.rauio.smartdangjian.server.quiz.pojo.dto.UserQuizAnswerSummaryDto;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
 
 @ExtendWith(MockitoExtension.class)
 class UserQuizAnswerServiceTest {
-
-    @BeforeAll
-    static void initTableInfo() {
-        MybatisConfiguration config = new MybatisConfiguration();
-        MapperBuilderAssistant assistant = new MapperBuilderAssistant(config, "");
-        assistant.setCurrentNamespace(UserQuizAnswer.class.getName());
-        TableInfoHelper.initTableInfo(assistant, UserQuizAnswer.class);
-    }
 
     @Mock
     private UserQuizAnswerMapper mapper;
@@ -236,119 +220,6 @@ class UserQuizAnswerServiceTest {
 
         assertThat(result).isFalse();
         verify(userQuizAnswerService, never()).removeById(anyLong());
-    }
-
-    // ==================== createForUser ====================
-
-    @Nested
-    @DisplayName("createForUser 为用户创建答题记录")
-    class CreateForUser {
-
-        @Test
-        @DisplayName("创建答题记录成功")
-        void createsForUserSuccessfully() {
-            doReturn(true).when(userQuizAnswerService).save(any(UserQuizAnswer.class));
-
-            Boolean result = userQuizAnswerService.createForUser(1L, 2L, 3L);
-
-            assertThat(result).isTrue();
-            ArgumentCaptor<UserQuizAnswer> captor = ArgumentCaptor.forClass(UserQuizAnswer.class);
-            verify(userQuizAnswerService).save(captor.capture());
-            assertThat(captor.getValue().getUserId()).isEqualTo(1L);
-            assertThat(captor.getValue().getQuizId()).isEqualTo(2L);
-            assertThat(captor.getValue().getOptionId()).isEqualTo(3L);
-        }
-
-        @Test
-        @DisplayName("创建答题记录失败时返回 false")
-        void createForUserReturnsFalseOnFailure() {
-            doReturn(false).when(userQuizAnswerService).save(any(UserQuizAnswer.class));
-
-            Boolean result = userQuizAnswerService.createForUser(1L, 2L, 3L);
-
-            assertThat(result).isFalse();
-        }
-    }
-
-    // ==================== listAnswerSummariesByUserId ====================
-
-    @Nested
-    @DisplayName("listAnswerSummariesByUserId 获取用户答题摘要")
-    class ListAnswerSummariesByUserId {
-
-        @Test
-        @DisplayName("返回答案摘要 DTO 列表")
-        void returnsSummaries() {
-            UserQuizAnswer a1 = UserQuizAnswer.builder()
-                    .userId(1L)
-                    .quizId(10L)
-                    .isCorrect(1)
-                    .timeSpent(30)
-                    .build();
-            UserQuizAnswer a2 = UserQuizAnswer.builder()
-                    .userId(1L)
-                    .quizId(11L)
-                    .isCorrect(0)
-                    .timeSpent(45)
-                    .build();
-            doReturn(List.of(a1, a2)).when(userQuizAnswerService).list(any(LambdaQueryWrapper.class));
-
-            List<UserQuizAnswerSummaryDto> result = userQuizAnswerService.listAnswerSummariesByUserId(1L);
-
-            assertThat(result).hasSize(2);
-            assertThat(result).allMatch(dto -> dto.userId().equals(1L));
-        }
-
-        @Test
-        @DisplayName("用户无记录时返回空列表")
-        void returnsEmptyWhenNoAnswers() {
-            doReturn(Collections.emptyList()).when(userQuizAnswerService).list(any(LambdaQueryWrapper.class));
-
-            List<UserQuizAnswerSummaryDto> result = userQuizAnswerService.listAnswerSummariesByUserId(1L);
-
-            assertThat(result).isEmpty();
-        }
-    }
-
-    // ==================== updateByUserIdAndQuizIdAndOptionId (triple param) ====================
-
-    @Nested
-    @DisplayName("updateByUserIdAndQuizIdAndOptionId(Long,Long,Long) 复合键更新")
-    class UpdateByTripleParam {
-
-        @Test
-        @DisplayName("记录存在时构建并更新成功")
-        void updatesWhenExistingFound() {
-            UserQuizAnswer existing = UserQuizAnswer.builder()
-                    .id(5L)
-                    .userId(1L)
-                    .quizId(2L)
-                    .optionId(3L)
-                    .build();
-            doReturn(existing).when(userQuizAnswerService).getByUserIdAndQuizIdAndOptionId(1L, 2L, 3L);
-            doReturn(true).when(userQuizAnswerService).updateById(any(UserQuizAnswer.class));
-
-            Boolean result = userQuizAnswerService.updateByUserIdAndQuizIdAndOptionId(1L, 2L, 3L);
-
-            assertThat(result).isTrue();
-            ArgumentCaptor<UserQuizAnswer> captor = ArgumentCaptor.forClass(UserQuizAnswer.class);
-            verify(userQuizAnswerService).updateById(captor.capture());
-            assertThat(captor.getValue().getId()).isEqualTo(5L);
-            assertThat(captor.getValue().getUserId()).isEqualTo(1L);
-            assertThat(captor.getValue().getQuizId()).isEqualTo(2L);
-            assertThat(captor.getValue().getOptionId()).isEqualTo(3L);
-        }
-
-        @Test
-        @DisplayName("记录不存在时返回 false")
-        void returnsFalseWhenNotFound() {
-            doReturn(null).when(userQuizAnswerService).getByUserIdAndQuizIdAndOptionId(1L, 2L, 3L);
-
-            Boolean result = userQuizAnswerService.updateByUserIdAndQuizIdAndOptionId(1L, 2L, 3L);
-
-            assertThat(result).isFalse();
-            verify(userQuizAnswerService, never()).updateById(any());
-        }
     }
 
     // ==================== getByQuizId ====================

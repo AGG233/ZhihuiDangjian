@@ -1,8 +1,11 @@
-name: release-please
+name: Release Pipeline
+
 on:
   push:
     branches:
-      - product
+      product
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 concurrency:
@@ -13,48 +16,9 @@ permissions:
   contents: read
 
 jobs:
-  release-please:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      issues: write
-    outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
-      version: ${{ steps.release.outputs.version }}
-    steps:
-      - uses: googleapis/release-please-action@0dfd8538845b8e92600d271a895a5372865d4062 # v5
-        id: release
-        with:
-          token: ${{ secrets.GH_PAT }}
-
-      # Auto-merge Release PR for fully automated flow.
-      # Uses GH_PAT (not GITHUB_TOKEN) so the merge commit triggers
-      # a new workflow run, which then creates the release + tag.
-      - name: Auto-merge Release PR
-        if: ${{ steps.release.outputs.pr }}
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          set -euo pipefail
-          PR="${{ steps.release.outputs.pr }}"
-          for attempt in 1 2 3 4 5; do
-            if gh pr merge --merge "$PR" --subject "chore: auto-merge release PR"; then
-              echo "✅ Release PR #${PR} merged successfully"
-              exit 0
-            fi
-            echo "⏳ Attempt ${attempt} failed, retrying in 3s..."
-            sleep 3
-          done
-          echo "ERROR: Failed to merge Release PR #${PR} after 5 attempts"
-          exit 1
-
-  # ── Build & Push Docker Image ───────────────────────────────────────
-  build-and-push:
+  # ── Stage 1: Build & Push Docker Image ───────────────────────────────
+  release:
     name: Build & Push Docker Image
-    needs: release-please
-    if: ${{ needs.release-please.outputs.release_created == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
@@ -68,14 +32,25 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ needs.release-please.outputs.tag_name }}
           persist-credentials: false
+
+      - name: Validate version matches tag
+        if: github.ref_type == 'tag'
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+          GRADLE_VERSION=$(grep '^projectVersion=' gradle.properties | cut -d= -f2)
+          if [ "$TAG_VERSION" != "$GRADLE_VERSION" ]; then
+            echo "ERROR: Tag v$TAG_VERSION != gradle.properties $GRADLE_VERSION"
+            exit 1
+          fi
+          echo "Version OK: v$GRADLE_VERSION"
 
       - name: Resolve version
         id: meta
         shell: bash
         run: |
-          VERSION="${{ needs.release-please.outputs.version }}"
+          VERSION=$(grep '^projectVersion=' gradle.properties | cut -d= -f2)
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Using version: ${VERSION}"
 
@@ -199,10 +174,9 @@ jobs:
 
   trivy-scan:
     name: Scan Docker Image
-    needs: [ build-and-push ]
-    if: ${{ needs.build-and-push.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    needs: [ release ]
     permissions:
       contents: read
       security-events: write
@@ -210,14 +184,14 @@ jobs:
       - name: Login to Aliyun Container Registry
         uses: docker/login-action@v4
         with:
-          registry: ${{ needs.build-and-push.outputs.registry }}
+          registry: ${{ needs.release.outputs.registry }}
           username: ${{ secrets.ALIYUN_REGISTRY_USERNAME }}
           password: ${{ secrets.ALIYUN_REGISTRY_PASSWORD }}
 
       - name: Scan Docker image for vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ${{ needs.build-and-push.outputs.image_repository }}:${{ needs.build-and-push.outputs.version }}
+          image-ref: ${{ needs.release.outputs.image_repository }}:${{ needs.release.outputs.version }}
           format: sarif
           output: trivy-results.sarif
           severity: CRITICAL,HIGH
@@ -230,17 +204,58 @@ jobs:
           sarif_file: trivy-results.sarif
           category: trivy
 
-  # ── Trigger CD ──────────────────────────────────────────────────────
-  trigger-cd:
-    name: Trigger CD
-    needs: [build-and-push, trivy-scan]
-    if: ${{ always() && needs.build-and-push.result == 'success' && needs.trivy-scan.result == 'success' }}
-    runs-on: ubuntu-latest
+  # ── Stage 2: Deploy to Server ────────────────────────────────────────
+  deploy:
+    name: Deploy to Server
+    runs-on: self-hosted
+    needs: [ release ]
+    if: github.ref_type == 'tag'
     steps:
-      - name: Trigger CD deployment via workflow_dispatch
+      - name: Login to Aliyun Container Registry
+        shell: bash
         run: |
-          gh workflow run cd.yml \
-            --ref product \
-            -f version='${{ needs.build-and-push.outputs.version }}'
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          docker login ${{ needs.release.outputs.registry }} \
+            -u '${{ secrets.ALIYUN_REGISTRY_USERNAME }}' \
+            -p '${{ secrets.ALIYUN_REGISTRY_PASSWORD }}'
+
+      - name: Write deployed image
+        working-directory: /www/server/panel/data/compose/test
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMAGE="${{ needs.release.outputs.image_repository }}:${{ needs.release.outputs.version }}"
+          touch .env
+          if grep -q '^APP_IMAGE=' .env; then
+            sed -i "s|^APP_IMAGE=.*|APP_IMAGE=${IMAGE}|" .env
+          else
+            printf '\nAPP_IMAGE=%s\n' "$IMAGE" >> .env
+          fi
+
+      - name: Deploy via docker-compose
+        working-directory: /www/server/panel/data/compose/test
+        run: |
+          docker-compose pull
+          docker-compose up -d
+          docker image prune -f --filter "label=com.rauio.zhihuidangjian=true"
+
+  # ── Summary ──────────────────────────────────────────────────────────
+  summary:
+    name: Release Summary
+    runs-on: ubuntu-latest
+    needs: [ release, deploy, trivy-scan ]
+    if: always()
+    steps:
+      - name: Print release info
+        run: |
+          echo "## Release Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Item | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Version | \`${{ needs.release.outputs.version }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Image | \`${{ needs.release.outputs.image_repository }}:${{ needs.release.outputs.version }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| GHCR Image | \`${{ needs.release.outputs.ghcr_image_repository }}:${{ needs.release.outputs.version }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Trigger | \`${{ github.event_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Commit | \`${{ github.sha }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Deploy | \`${{ needs.deploy.result }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Trivy Scan | \`${{ needs.trivy-scan.result }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Pipeline | build → release → deploy, scan |" >> "$GITHUB_STEP_SUMMARY"

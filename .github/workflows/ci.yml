@@ -3,6 +3,7 @@ name: CI
 on:
   pull_request:
     branches:
+      - product
       - dev
   workflow_dispatch:
 
