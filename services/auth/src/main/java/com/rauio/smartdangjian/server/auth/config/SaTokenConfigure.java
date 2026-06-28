@@ -14,9 +14,7 @@ import cn.dev33.satoken.stp.StpUtil;
 @EnableConfigurationProperties(AuthProperties.class)
 public class SaTokenConfigure implements WebMvcConfigurer {
 
-    private static final String[] PUBLIC_EXCLUDE_PATHS = {
-        "/api/auth/login", "/api/auth/captcha/**", "/api/auth/register", "/api/schools/list", "/error"
-    };
+    private static final String[] PUBLIC_EXCLUDE_PATHS = PublicPathConstants.SA_TOKEN_EXCLUDE;
 
     private static final String[] DOC_EXCLUDE_PATHS = {
         "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/doc.html", "/webjars/**"
