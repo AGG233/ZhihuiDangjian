@@ -226,6 +226,7 @@ jobs:
         run: |
           gh workflow run cd.yml \
             --ref product \
+            --repo '${{ github.repository }}' \
             -f version='${{ needs.build-and-push.outputs.version }}'
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
