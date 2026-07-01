@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.4](https://github.com/AGG233/ZhihuiDangjian/compare/v1.2.3...v1.2.4) (2026-06-28)
+
+
+### Bug Fixes
+
+* 修复 dev 模式 DevAutoLoginFilter 并发踢下线导致 500 ([146d5bd](https://github.com/AGG233/ZhihuiDangjian/commit/146d5bd73a63bca9ca8adb2c679485bdc143fff1))
+* 修复 Sa-Token 白名单路径错误，/api/schools/list 改为 /api/school/all ([bd9fcf2](https://github.com/AGG233/ZhihuiDangjian/commit/bd9fcf26b553b996c27cf0803a01b4a912f42ae6))
+
+
+### Performance Improvements
+
+* 调大 HikariCP/Tomcat/Redis 连接池适配生产负载 ([b11c9cf](https://github.com/AGG233/ZhihuiDangjian/commit/b11c9cf63e60da2a1e7e760a32c2e0cd5bb1a545))
+
 ## [1.2.3](https://github.com/AGG233/ZhihuiDangjian/compare/v1.2.2...v1.2.3) (2026-06-28)
 
 
