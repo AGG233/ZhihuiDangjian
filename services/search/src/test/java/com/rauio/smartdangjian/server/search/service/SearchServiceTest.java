@@ -10,7 +10,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.util.List;
-import java.util.Set;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -72,12 +71,11 @@ class SearchServiceTest {
         doReturn(page).when(courseQueryFacade).searchPublishedCourses("关键词", null, null, 1, 10);
         doReturn("1").when(userProfileQueryFacade).getCurrentUserId();
 
-        Page<Long> recPage = new Page<>(1, 10, 2);
-        recPage.setRecords(List.of(1L, 2L, 3L));
+        Page<CourseResponse> recPage = new Page<>(1, 10, 2);
+        recPage.setRecords(List.of(
+                course(2L, "推荐2"),
+                course(3L, "推荐3")));
         doReturn(recPage).when(recommendService).recommend(1L, 1, 10);
-        doReturn(List.of(course(2L, "推荐2"), course(3L, "推荐3")))
-                .when(courseQueryFacade)
-                .listCourseResponsesByIds(Set.of(2L, 3L));
 
         Page<CourseResponse> result = searchService.hybridSearch("关键词", 1, 10);
 
@@ -91,14 +89,13 @@ class SearchServiceTest {
         doReturn(page).when(courseQueryFacade).searchPublishedCourses("关键词", null, null, 1, 10);
         doReturn("1").when(userProfileQueryFacade).getCurrentUserId();
 
-        Page<Long> recPage = new Page<>(1, 10, 1);
-        recPage.setRecords(List.of(1L));
+        Page<CourseResponse> recPage = new Page<>(1, 10, 1);
+        recPage.setRecords(List.of(course(1L, "搜索1")));
         doReturn(recPage).when(recommendService).recommend(1L, 1, 10);
 
         Page<CourseResponse> result = searchService.hybridSearch("关键词", 1, 10);
 
         assertThat(result.getRecords()).extracting(CourseResponse::getId).containsExactly(1L);
-        verify(courseQueryFacade, never()).listCourseResponsesByIds(org.mockito.ArgumentMatchers.any());
     }
 
     @Test

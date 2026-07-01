@@ -3,6 +3,7 @@ package com.rauio.smartdangjian.server.search.service;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.data.neo4j.core.Neo4jClient;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.course.service.course.CourseService;
 import com.rauio.smartdangjian.server.learning.pojo.dto.ChapterProgressSummaryDto;
 import com.rauio.smartdangjian.server.learning.pojo.dto.LearningRecordSummaryDto;
@@ -43,8 +45,10 @@ public class RecommendService {
 
     /**
      * 综合推荐：融合协同过滤、知识图谱、画像推荐结果
+     *
+     * @return 包含完整课程信息的分页结果
      */
-    public Page<Long> recommend(Long userId, int pageNum, int pageSize) {
+    public Page<CourseResponse> recommend(Long userId, int pageNum, int pageSize) {
         List<ScoredItem> merged = new ArrayList<>();
 
         // 协同过滤 (权重 0.4)
@@ -71,12 +75,25 @@ public class RecommendService {
             scoreMap.merge(item.id, item.score, Double::sum);
         }
 
-        List<Long> sorted = scoreMap.entrySet().stream()
+        List<Long> sortedIds = scoreMap.entrySet().stream()
                 .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())
                 .map(Map.Entry::getKey)
                 .toList();
 
-        return paginate(sorted, pageNum, pageSize);
+        // 对当前页的 ID 批量查询课程详情，并恢复排序
+        List<Long> pagedIds = paginate(sortedIds, pageNum, pageSize).getRecords();
+        List<CourseResponse> details = courseService.listCourseResponsesByIds(pagedIds);
+        Map<Long, CourseResponse> detailMap = details.stream()
+                .collect(Collectors.toMap(CourseResponse::getId, Function.identity()));
+
+        List<CourseResponse> ordered = pagedIds.stream()
+                .map(detailMap::get)
+                .filter(Objects::nonNull)
+                .toList();
+
+        Page<CourseResponse> result = new Page<>(pageNum, pageSize, sortedIds.size());
+        result.setRecords(ordered);
+        return result;
     }
 
     // ==================== 协同过滤推荐 ====================

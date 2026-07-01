@@ -69,10 +69,10 @@ public class SearchController {
         return Result.ok(searchService.hybridSearch(keyword, pageNum, pageSize));
     }
 
-    @Operation(summary = "获取个性化推荐课程", description = "融合协同过滤、知识图谱和画像的综合推荐")
+    @Operation(summary = "获取个性化推荐课程", description = "融合协同过滤、知识图谱和画像的综合推荐，返回完整课程信息")
     @GetMapping("/recommend")
     @SaCheckRole(RoleConstants.STUDENT)
-    public Result<Page<Long>> recommend(
+    public Result<Page<CourseResponse>> recommend(
             @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") @Min(PAGE_NUM_MIN)
                     int pageNum,
             @Parameter(name = "pageSize", description = "每页条数")
@@ -88,7 +88,7 @@ public class SearchController {
     @Operation(summary = "获取当前用户画像", description = "返回用户学习统计、知识掌握、兴趣分类、答题统计")
     @GetMapping("/profile")
     @SaCheckRole(RoleConstants.STUDENT)
-    public Result<UserProfileResponse> getProfile() {
+public Result<UserProfileResponse> getProfile() {
         return Result.ok(userProfileService.getCurrentUserProfile());
     }
 }

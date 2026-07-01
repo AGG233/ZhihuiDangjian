@@ -76,14 +76,16 @@ class SearchControllerTest {
     void recommendDelegates() {
         UserProfileResponse profile = UserProfileResponse.builder().userId("1").build();
         when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
-        Page<Long> recPage = new Page<>(1, 10);
-        recPage.setRecords(List.of(1L));
+        Page<CourseResponse> recPage = new Page<>(1, 10);
+        recPage.setRecords(List.of(CourseResponse.builder().id(1L).title("推荐课程").build()));
         when(recommendService.recommend(1L, 1, 10)).thenReturn(recPage);
 
         var result = searchController.recommend(1, 10);
 
         assertThat(result).isNotNull();
-        assertThat(result.getData().getRecords()).contains(1L);
+        assertThat(result.getData().getRecords()).hasSize(1);
+        assertThat(result.getData().getRecords().get(0).getId()).isEqualTo(1L);
+        assertThat(result.getData().getRecords().get(0).getTitle()).isEqualTo("推荐课程");
     }
 
     @Test

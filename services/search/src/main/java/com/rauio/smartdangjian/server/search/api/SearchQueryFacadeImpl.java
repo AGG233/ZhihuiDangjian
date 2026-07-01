@@ -3,6 +3,7 @@ package com.rauio.smartdangjian.server.search.api;
 import org.springframework.stereotype.Component;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 import com.rauio.smartdangjian.server.search.service.RecommendService;
 import com.rauio.smartdangjian.server.search.service.UserProfileService;
@@ -22,7 +23,7 @@ public class SearchQueryFacadeImpl implements SearchQueryFacade {
     private final UserProfileService userProfileService;
 
     @Override
-    public Page<Long> recommend(Long userId, int pageNum, int pageSize) {
+    public Page<CourseResponse> recommend(Long userId, int pageNum, int pageSize) {
         return recommendService.recommend(userId, pageNum, pageSize);
     }
 

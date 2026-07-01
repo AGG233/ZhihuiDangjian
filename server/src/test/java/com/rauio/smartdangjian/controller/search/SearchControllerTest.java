@@ -98,14 +98,17 @@ class SearchControllerTest extends BaseControllerTest {
                     UserProfileResponse.builder().userId("1").build();
             when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
 
-            Page<Long> recommendPage = new Page<>(1, 10, 2);
-            recommendPage.setRecords(List.of(1L, 2L));
+            Page<CourseResponse> recommendPage = new Page<>(1, 10, 2);
+            recommendPage.setRecords(List.of(
+                    CourseResponse.builder().id(1L).title("推荐课程1").build(),
+                    CourseResponse.builder().id(2L).title("推荐课程2").build()));
             when(recommendService.recommend(eq(1L), anyInt(), anyInt())).thenReturn(recommendPage);
 
             mockMvc.perform(get("/api/search/recommend").param("pageNum", "1").param("pageSize", "10"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data.records.length()").value(2));
+                    .andExpect(jsonPath("$.data.records.length()").value(2))
+                    .andExpect(jsonPath("$.data.records[0].title").value("推荐课程1"));
         }
 
         @Test
@@ -195,7 +198,7 @@ class SearchControllerTest extends BaseControllerTest {
                     UserProfileResponse.builder().userId("1").build();
             when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
 
-            Page<Long> emptyPage = new Page<>(1, 10, 0);
+            Page<CourseResponse> emptyPage = new Page<>(1, 10, 0);
             emptyPage.setRecords(List.of());
             when(recommendService.recommend(anyLong(), anyInt(), anyInt())).thenReturn(emptyPage);
 
