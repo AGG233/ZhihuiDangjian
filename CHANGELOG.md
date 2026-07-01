@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.5](https://github.com/AGG233/ZhihuiDangjian/compare/v1.2.4...v1.2.5) (2026-07-01)
+
+
+### Bug Fixes
+
+* 修复 trigger-cd 因缺少 .git 导致 gh workflow run 失败 ([3cf78f4](https://github.com/AGG233/ZhihuiDangjian/commit/3cf78f43cc6d78d48f0f6227d5affb4b6b120a1f))
+
 ## [1.2.4](https://github.com/AGG233/ZhihuiDangjian/compare/v1.2.3...v1.2.4) (2026-06-28)
 
 
