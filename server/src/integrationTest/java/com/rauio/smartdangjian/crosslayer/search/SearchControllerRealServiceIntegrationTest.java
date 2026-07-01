@@ -120,8 +120,10 @@ class SearchControllerRealServiceIntegrationTest extends CrossLayerTestBase {
     @DisplayName("GET /api/search/recommend 成功获取个性化推荐")
     void recommend() throws Exception {
         UserProfileResponse profile = UserProfileResponse.builder().userId("1").build();
-        Page<Long> page = new Page<>(1, 10);
-        page.setRecords(List.of(100L, 101L));
+        Page<CourseResponse> page = new Page<>(1, 10);
+        page.setRecords(List.of(
+                CourseResponse.builder().id(100L).title("推荐课程A").build(),
+                CourseResponse.builder().id(101L).title("推荐课程B").build()));
         page.setTotal(2);
         when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
         when(recommendService.recommend(1L, 1, 10)).thenReturn(page);
@@ -130,7 +132,8 @@ class SearchControllerRealServiceIntegrationTest extends CrossLayerTestBase {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("200"))
                 .andExpect(jsonPath("$.data.total").value(2))
-                .andExpect(jsonPath("$.data.records.length()").value(2));
+                .andExpect(jsonPath("$.data.records.length()").value(2))
+                .andExpect(jsonPath("$.data.records[0].title").value("推荐课程A"));
     }
 
     @Test

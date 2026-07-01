@@ -45,16 +45,13 @@ public class SearchService {
 
             String userIdStr = userProfileQueryFacade.getCurrentUserId();
             Long userId = IdUtil.parse(userIdStr);
-            Page<Long> cfIds = recommendService.recommend(userId, 1, pageSize);
+            Page<CourseResponse> recPage = recommendService.recommend(userId, 1, pageSize);
 
-            Set<Long> idsToFetch = cfIds.getRecords().stream()
-                    .filter(id -> !existingIds.contains(id))
+            List<CourseResponse> toAdd = recPage.getRecords().stream()
+                    .filter(cr -> !existingIds.contains(cr.getId()))
                     .limit(pageSize - records.size())
-                    .collect(Collectors.toSet());
-
-            if (!idsToFetch.isEmpty()) {
-                records.addAll(courseQueryFacade.listCourseResponsesByIds(idsToFetch));
-            }
+                    .toList();
+            records.addAll(toAdd);
         }
 
         searchPage.setRecords(records);

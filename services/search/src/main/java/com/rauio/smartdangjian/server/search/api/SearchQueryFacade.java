@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.server.search.api;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 
 /**
@@ -10,14 +11,14 @@ import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 public interface SearchQueryFacade {
 
     /**
-     * 获取推荐内容 ID 分页列表。
+     * 获取推荐课程分页列表。
      *
      * @param userId   用户 ID
      * @param pageNum  页码
      * @param pageSize 每页大小
-     * @return 推荐课程 ID 的分页结果
+     * @return 推荐课程的分页结果，含完整课程信息
      */
-    Page<Long> recommend(Long userId, int pageNum, int pageSize);
+    Page<CourseResponse> recommend(Long userId, int pageNum, int pageSize);
 
     /**
      * 获取用户画像信息。

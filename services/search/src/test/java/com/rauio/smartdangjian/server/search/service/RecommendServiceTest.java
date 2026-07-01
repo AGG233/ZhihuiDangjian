@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -30,6 +31,7 @@ import org.springframework.data.neo4j.core.Neo4jClient;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.server.chapter.service.chapter.ChapterService;
+import com.rauio.smartdangjian.server.course.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.course.service.course.CourseService;
 import com.rauio.smartdangjian.server.learning.pojo.dto.LearningRecordSummaryDto;
 import com.rauio.smartdangjian.server.learning.pojo.dto.UserBehaviorDto;
@@ -123,10 +125,18 @@ class RecommendServiceTest {
         doReturn(graphPage).when(recommendService).recommendByGraph(1L, 1, 10);
         doReturn(profilePage).when(recommendService).recommendByProfile(1L, 1, 10);
 
-        Page<Long> result = recommendService.recommend(1L, 1, 10);
+        // mock listCourseResponsesByIds 返回 CourseResponse（保持排序恢复验证）
+        doReturn(List.of(
+                CourseResponse.builder().id(2L).title("课程2").build(),
+                CourseResponse.builder().id(3L).title("课程3").build(),
+                CourseResponse.builder().id(1L).title("课程1").build()))
+                .when(courseService).listCourseResponsesByIds(anyList());
+
+        Page<CourseResponse> result = recommendService.recommend(1L, 1, 10);
 
         assertThat(result.getRecords()).isNotEmpty();
-        assertThat(result.getRecords().get(0)).isEqualTo(2L);
+        assertThat(result.getRecords().get(0).getId()).isEqualTo(2L);
+        assertThat(result.getRecords().get(0).getTitle()).isEqualTo("课程2");
     }
 
     @Test
@@ -137,7 +147,9 @@ class RecommendServiceTest {
         doReturn(emptyPage).when(recommendService).recommendByGraph(1L, 1, 10);
         doReturn(emptyPage).when(recommendService).recommendByProfile(1L, 1, 10);
 
-        Page<Long> result = recommendService.recommend(1L, 1, 10);
+        doReturn(List.of()).when(courseService).listCourseResponsesByIds(List.of());
+
+        Page<CourseResponse> result = recommendService.recommend(1L, 1, 10);
 
         assertThat(result.getRecords()).isEmpty();
     }
@@ -362,7 +374,9 @@ class RecommendServiceTest {
         doReturn(graphPage).when(recommendService).recommendByGraph(anyLong(), anyInt(), anyInt());
         doReturn(profilePage).when(recommendService).recommendByProfile(anyLong(), anyInt(), anyInt());
 
-        Page<Long> result = recommendService.recommend(1L, 10, 10);
+        doReturn(List.of()).when(courseService).listCourseResponsesByIds(List.of());
+
+        Page<CourseResponse> result = recommendService.recommend(1L, 10, 10);
 
         assertThat(result.getRecords()).isEmpty();
     }
