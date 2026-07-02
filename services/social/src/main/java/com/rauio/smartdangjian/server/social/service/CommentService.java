@@ -117,6 +117,11 @@ public class CommentService extends ServiceImpl<CommentMapper, Comment> {
     }
 
     private Page<CommentResponse> toCommentResponsePage(Page<Comment> page) {
+        if (page.getRecords().isEmpty()) {
+            Page<CommentResponse> empty = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
+            empty.setRecords(List.of());
+            return empty;
+        }
         Set<Long> userIds = page.getRecords().stream().map(Comment::getUserId).collect(Collectors.toSet());
         Map<Long, User> userMap =
                 userService.listByIds(userIds).stream().collect(Collectors.toMap(User::getId, u -> u, (a, b) -> a));
