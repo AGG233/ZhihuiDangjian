@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.6](https://github.com/AGG233/ZhihuiDangjian/compare/v1.2.5...v1.2.6) (2026-07-02)
+
+
+### Bug Fixes
+
+* 修复测验创建参数校验和评论列表空集合查询问题 ([c198411](https://github.com/AGG233/ZhihuiDangjian/commit/c19841122dbf253c7333909dc545ec4de0a67b26))
+* 修复测验创建参数校验和评论列表空集合查询问题 ([7cfbc12](https://github.com/AGG233/ZhihuiDangjian/commit/7cfbc12d59684e8d299e099ba8096d1557e8e805))
+
 ## [1.2.5](https://github.com/AGG233/ZhihuiDangjian/compare/v1.2.4...v1.2.5) (2026-07-01)
 
 
