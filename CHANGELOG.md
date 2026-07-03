@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.7](https://github.com/AGG233/ZhihuiDangjian/compare/v1.2.6...v1.2.7) (2026-07-03)
+
+
+### Bug Fixes
+
+* 移除 CD 中 buildx 镜像等待步骤，优化 CI/Docker/代码格式 ([216eb68](https://github.com/AGG233/ZhihuiDangjian/commit/216eb682279b9d23ba86faf292f8681b730c2fac))
+* 移除 CD 中 buildx 镜像等待步骤，优化 CI/Docker/代码格式 ([1cb71b5](https://github.com/AGG233/ZhihuiDangjian/commit/1cb71b513077f0daff10f4f9676b7a14c0bfb9b2))
+
 ## [1.2.6](https://github.com/AGG233/ZhihuiDangjian/compare/v1.2.5...v1.2.6) (2026-07-02)
 
 
