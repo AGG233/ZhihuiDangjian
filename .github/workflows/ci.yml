@@ -39,16 +39,32 @@ jobs:
         run: chmod +x gradlew
 
       - name: Package Jar
-        run: ./gradlew bootJar
+        run: ./gradlew :server:bootJar --no-daemon -x test -x integrationTest -x spotlessCheck
 
-      - name: Upload Artifacts
+      - name: Package compiled classes
+        run: |
+          mapfile -t class_dirs < <(find server services -path '*/build/classes/java/main' -type d | sort)
+          if [ "${#class_dirs[@]}" -eq 0 ]; then
+            echo "No compiled classes found"
+            exit 1
+          fi
+          tar -cf compiled-classes.tar "${class_dirs[@]}"
+
+      - name: Upload Server Jar
         if: success()
         uses: actions/upload-artifact@v7
         with:
           name: server-jar
-          path: |
-            server/build/libs/**
-          if-no-files-found: ignore
+          path: server/build/libs/server.jar
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload compiled classes
+        uses: actions/upload-artifact@v7
+        with:
+          name: compiled-classes
+          path: compiled-classes.tar
+          if-no-files-found: error
           retention-days: 7
 
   service-unit-tests:
@@ -453,8 +469,14 @@ jobs:
           tar -xf server-unit-coverage-exec.tar
           tar -xf integration-coverage-exec.tar
 
-      - name: Compile classes for coverage report
-        run: ./gradlew compileJava
+      - name: Download compiled classes
+        uses: actions/download-artifact@v8
+        with:
+          name: compiled-classes
+          path: .
+
+      - name: Restore compiled classes
+        run: tar -xf compiled-classes.tar
 
       - name: Run coverage verification
         run: ./gradlew jacocoRootReport jacocoRootCoverageVerification -PcoverageFromUnitArtifacts=true -PcoverageFromIntegrationArtifacts=true --continue

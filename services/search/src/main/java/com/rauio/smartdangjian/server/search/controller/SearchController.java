@@ -88,7 +88,7 @@ public class SearchController {
     @Operation(summary = "获取当前用户画像", description = "返回用户学习统计、知识掌握、兴趣分类、答题统计")
     @GetMapping("/profile")
     @SaCheckRole(RoleConstants.STUDENT)
-public Result<UserProfileResponse> getProfile() {
+    public Result<UserProfileResponse> getProfile() {
         return Result.ok(userProfileService.getCurrentUserProfile());
     }
 }

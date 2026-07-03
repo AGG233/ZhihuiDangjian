@@ -109,22 +109,6 @@ jobs:
             --username "$ALIYUN_REGISTRY_USERNAME" \
             --password-stdin
 
-      - name: Wait for image availability
-        shell: bash
-        run: |
-          IMAGE="${{ steps.image.outputs.image_repository }}:${{ steps.meta.outputs.version }}"
-          echo "Waiting for image manifest: ${IMAGE}"
-          for attempt in 1 2 3 4 5 6 7 8 9 10; do
-            if docker buildx imagetools inspect "${IMAGE}" >/dev/null 2>&1; then
-              echo "✅ Image manifest is available"
-              exit 0
-            fi
-            echo "⏳ Image not ready yet (attempt ${attempt}/10), waiting 30s..."
-            sleep 30
-          done
-          echo "ERROR: Image manifest not available after 10 attempts"
-          exit 1
-
       - name: Write deployed image
         working-directory: /www/server/panel/data/compose/test
         shell: bash
