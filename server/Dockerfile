@@ -17,7 +17,7 @@ COPY --from=extractor /extracted/application/ ./
 LABEL com.rauio.zhihuidangjian=true
 EXPOSE 9000
 
-RUN apk add --no-cache curl && mkdir -p /app/logs /app/uploads && chown -R app:app /app
+RUN apk upgrade --no-cache && apk add --no-cache curl && mkdir -p /app/logs /app/uploads && chown -R app:app /app
 USER app
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \

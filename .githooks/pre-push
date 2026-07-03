@@ -1,0 +1,49 @@
+#!/bin/bash
+#
+# pre-push hook — 推送前自动运行格式化检查和单元测试
+# 通过设置环境变量 SKIP_CHECKS=1 可跳过
+#
+set -euo pipefail
+
+if [ "${SKIP_CHECKS:-}" = "1" ]; then
+    echo "🔇 SKIP_CHECKS=1，跳过 pre-push 检查"
+    exit 0
+fi
+
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$PROJECT_ROOT"
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo " 🔍 推送前检查开始"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# ── 1. 代码格式检查 ──────────────────────────────────
+echo ""
+echo "【1/2】Spotless 代码格式检查..."
+if ./gradlew spotlessCheck --no-daemon --quiet 2>&1; then
+    echo " ✅ 格式检查通过"
+else
+    echo ""
+    echo " ❌ 格式检查失败！请运行 ./gradlew spotlessApply 自动修复"
+    echo "    或设置 SKIP_CHECKS=1 跳过检查后推送"
+    exit 1
+fi
+
+# ── 2. 单元测试 ──────────────────────────────────────
+echo ""
+echo "【2/2】单元测试..."
+START_MS=$(date +%s%N)
+if ./gradlew test --continue --no-daemon --quiet 2>&1; then
+    ELAPSED=$(echo "scale=1; ($(date +%s%N) - START_MS) / 1000000000" | bc)
+    echo " ✅ 全部测试通过（${ELAPSED}秒）"
+else
+    echo ""
+    echo " ❌ 存在测试失败！请先修复后再推送"
+    echo "    或设置 SKIP_CHECKS=1 跳过检查后推送"
+    exit 1
+fi
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo " ✅ 所有检查通过，继续推送"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

@@ -30,8 +30,9 @@ public class RecommendTool {
         if (result.getRecords().isEmpty()) {
             return "暂无推荐课程，请先完成更多学习内容以获取个性化推荐";
         }
-        return "推荐课程列表: " + result.getRecords().stream()
-                .map(cr -> cr.getId() + "(" + cr.getTitle() + ")")
-                .collect(Collectors.joining(", "));
+        return "推荐课程列表: "
+                + result.getRecords().stream()
+                        .map(cr -> cr.getId() + "(" + cr.getTitle() + ")")
+                        .collect(Collectors.joining(", "));
     }
 }

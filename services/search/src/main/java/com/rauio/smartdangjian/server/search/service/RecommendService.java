@@ -83,13 +83,11 @@ public class RecommendService {
         // 对当前页的 ID 批量查询课程详情，并恢复排序
         List<Long> pagedIds = paginate(sortedIds, pageNum, pageSize).getRecords();
         List<CourseResponse> details = courseService.listCourseResponsesByIds(pagedIds);
-        Map<Long, CourseResponse> detailMap = details.stream()
-                .collect(Collectors.toMap(CourseResponse::getId, Function.identity()));
+        Map<Long, CourseResponse> detailMap =
+                details.stream().collect(Collectors.toMap(CourseResponse::getId, Function.identity()));
 
-        List<CourseResponse> ordered = pagedIds.stream()
-                .map(detailMap::get)
-                .filter(Objects::nonNull)
-                .toList();
+        List<CourseResponse> ordered =
+                pagedIds.stream().map(detailMap::get).filter(Objects::nonNull).toList();
 
         Page<CourseResponse> result = new Page<>(pageNum, pageSize, sortedIds.size());
         result.setRecords(ordered);

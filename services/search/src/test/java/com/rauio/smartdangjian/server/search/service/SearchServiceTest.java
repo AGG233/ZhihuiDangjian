@@ -72,9 +72,7 @@ class SearchServiceTest {
         doReturn("1").when(userProfileQueryFacade).getCurrentUserId();
 
         Page<CourseResponse> recPage = new Page<>(1, 10, 2);
-        recPage.setRecords(List.of(
-                course(2L, "推荐2"),
-                course(3L, "推荐3")));
+        recPage.setRecords(List.of(course(2L, "推荐2"), course(3L, "推荐3")));
         doReturn(recPage).when(recommendService).recommend(1L, 1, 10);
 
         Page<CourseResponse> result = searchService.hybridSearch("关键词", 1, 10);

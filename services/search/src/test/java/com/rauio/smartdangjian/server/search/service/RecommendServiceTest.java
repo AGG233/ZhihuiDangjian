@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -127,10 +126,11 @@ class RecommendServiceTest {
 
         // mock listCourseResponsesByIds 返回 CourseResponse（保持排序恢复验证）
         doReturn(List.of(
-                CourseResponse.builder().id(2L).title("课程2").build(),
-                CourseResponse.builder().id(3L).title("课程3").build(),
-                CourseResponse.builder().id(1L).title("课程1").build()))
-                .when(courseService).listCourseResponsesByIds(anyList());
+                        CourseResponse.builder().id(2L).title("课程2").build(),
+                        CourseResponse.builder().id(3L).title("课程3").build(),
+                        CourseResponse.builder().id(1L).title("课程1").build()))
+                .when(courseService)
+                .listCourseResponsesByIds(anyList());
 
         Page<CourseResponse> result = recommendService.recommend(1L, 1, 10);
 
