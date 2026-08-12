@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: service-auth
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      connection-timeout: 2000
+      minimum-idle: 4
+      maximum-pool-size: 16
+      idle-timeout: 30000
+      username: ${DATABASE_USERNAME}
+      password: ${DATABASE_PASSWORD}
+    url: ${DATABASE_URL}
+
+auth:
+  captcha:
+    test-code: ${AUTH_TEST_CAPTCHA_CODE:}

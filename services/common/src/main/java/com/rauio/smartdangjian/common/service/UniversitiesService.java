@@ -1,0 +1,72 @@
+package com.rauio.smartdangjian.common.service;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.rauio.smartdangjian.common.mapper.UniversitiesMapper;
+import com.rauio.smartdangjian.common.pojo.Universities;
+import com.rauio.smartdangjian.common.pojo.response.SchoolResponse;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class UniversitiesService extends ServiceImpl<UniversitiesMapper, Universities> {
+
+    /**
+     * 根据学校 ID 查询学校名称。
+     *
+     * @param id 学校 ID
+     * @return
+     */
+    public String getNameById(String id) {
+        Universities university = this.getById(id);
+        return university != null ? university.getName() : null;
+    }
+
+    /**
+     * 根据学校名称查询学校 ID。
+     *
+     * @param name 学校名称
+     * @return
+     */
+    public String getIdByName(String name) {
+        Universities university = this.getOne(new LambdaQueryWrapper<Universities>()
+                .eq(Universities::getName, name)
+                .select(Universities::getId));
+        return university != null ? university.getId() : null;
+    }
+
+    /**
+     * 获取学校列表。
+     *
+     * @return 学校响应列表
+     */
+    public List<SchoolResponse> getList() {
+        List<Universities> entities = this.list();
+        if (entities == null) {
+            return Collections.emptyList();
+        }
+        return entities.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 将 Universities 实体转换为 SchoolResponse。
+     *
+     * @param entity 学校实体
+     * @return 学校响应对象
+     */
+    private SchoolResponse toResponse(Universities entity) {
+        return SchoolResponse.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .build();
+    }
+}

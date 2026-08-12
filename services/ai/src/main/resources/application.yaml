@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: service-ai
+
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      connection-timeout: 3000
+      minimum-idle: 4
+      maximum-pool-size: 24
+      idle-timeout: 30000
+      username: ${DATABASE_USERNAME}
+      password: ${DATABASE_PASSWORD}
+    url: ${DATABASE_URL:jdbc:mysql://127.0.0.1:3306/zhihuidangjian?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      database: ${REDIS_DATABASE}
+  ai:
+    openai:
+      base-url: https://api.deepseek.com
+      api-key: ${AI_KEY:dummy-key}
+      chat:
+        options:
+          model: ${AI_MODEL:deepseek-chat}
+          temperature: ${AI_TEMPERATURE:0.7}
+          max-tokens: ${AI_MAX_TOKENS:4096}
+    mcp:
+      client:
+        enabled: ${AI_MCP_ENABLED:false}

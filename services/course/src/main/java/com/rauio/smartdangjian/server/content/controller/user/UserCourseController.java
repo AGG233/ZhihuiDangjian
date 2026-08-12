@@ -1,0 +1,50 @@
+package com.rauio.smartdangjian.server.content.controller.user;
+
+import java.util.List;
+
+import org.springframework.web.bind.annotation.*;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import cn.dev33.satoken.annotation.SaCheckRole;
+import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
+import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.content.pojo.response.PageResponse;
+import com.rauio.smartdangjian.server.content.service.course.CourseService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+
+@Tag(name = "用户课程接口", description = "从用户视角查询课程")
+@RestController
+@RequestMapping("/api/content/courses")
+@RequiredArgsConstructor
+public class UserCourseController {
+
+    private final CourseService courseService;
+
+    @Operation(summary = "获取课程详情", description = "根据课程ID获取课程详细信息")
+    @GetMapping("/{id}")
+    public Result<CourseResponse> get(@PathVariable Long id) throws JsonProcessingException {
+        return Result.ok(courseService.get(id));
+    }
+
+    @Operation(summary = "分页获取课程", description = "根据分页参数获取课程列表")
+    @GetMapping
+    public Result<PageResponse<Object>> getPage(
+            @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
+            @Parameter(name = "pageSize", description = "页的大小") @RequestParam(defaultValue = "10") int pageSize) {
+        return Result.ok(courseService.getPage(pageNum, pageSize));
+    }
+
+    @Operation(summary = "获取用户已学习课程", description = "根据用户ID获取已学习课程列表")
+    @GetMapping("/learned/{id}")
+    @SaCheckRole("STUDENT")
+    @ResourceAccess(id = "#id")
+    public Result<List<Course>> getByUserIdCourses(@PathVariable Long id) {
+        return Result.ok(courseService.getByUserId(id));
+    }
+}

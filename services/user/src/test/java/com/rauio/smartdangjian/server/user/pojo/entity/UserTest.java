@@ -1,0 +1,128 @@
+package com.rauio.smartdangjian.server.user.pojo.entity;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.LocalDateTime;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
+import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
+import com.rauio.smartdangjian.utils.spec.UserType;
+
+class UserTest {
+
+    @Test
+    @DisplayName("builder 构造 User 所有字段值正确")
+    void builderCreatesUserCorrectly() {
+        LocalDateTime now = LocalDateTime.of(2025, 1, 1, 12, 0);
+        User user = User.builder()
+                .id(1L)
+                .universityId("univ-1")
+                .username("testuser")
+                .password("secret")
+                .realName("张三")
+                .idCard("110101199001011234")
+                .partyMemberId("PM-001")
+                .joinPartyDate(now.minusYears(3))
+                .partyStatus(PartyStatus.FORMAL_MEMBER)
+                .branchName("第一党支部")
+                .userType(UserType.STUDENT)
+                .status(AccountStatus.ACTIVE)
+                .email("test@example.com")
+                .phone("13800138000")
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
+
+        assertThat(user.getId()).isEqualTo(1L);
+        assertThat(user.getUniversityId()).isEqualTo("univ-1");
+        assertThat(user.getUsername()).isEqualTo("testuser");
+        assertThat(user.getPassword()).isEqualTo("secret");
+        assertThat(user.getRealName()).isEqualTo("张三");
+        assertThat(user.getIdCard()).isEqualTo("110101199001011234");
+        assertThat(user.getPartyMemberId()).isEqualTo("PM-001");
+        assertThat(user.getJoinPartyDate()).isEqualTo(now.minusYears(3));
+        assertThat(user.getPartyStatus()).isEqualTo(PartyStatus.FORMAL_MEMBER);
+        assertThat(user.getBranchName()).isEqualTo("第一党支部");
+        assertThat(user.getUserType()).isEqualTo(UserType.STUDENT);
+        assertThat(user.getStatus()).isEqualTo(AccountStatus.ACTIVE);
+        assertThat(user.getEmail()).isEqualTo("test@example.com");
+        assertThat(user.getPhone()).isEqualTo("13800138000");
+        assertThat(user.getCreatedAt()).isEqualTo(now);
+        assertThat(user.getUpdatedAt()).isEqualTo(now);
+    }
+
+
+    @Test
+    @DisplayName("CurrentUserPrincipal getId 返回 id 字段值")
+    void getPrincipalIdReturnsId() {
+        User user = User.builder().id(1L).userType(UserType.STUDENT).build();
+
+        assertThat(user.getId()).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("CurrentUserPrincipal getUserType 返回 userType 字段值")
+    void getPrincipalUserTypeReturnsUserType() {
+        User user = User.builder().id(1L).userType(UserType.MANAGER).build();
+
+        assertThat(user.getUserType()).isEqualTo(UserType.MANAGER);
+    }
+
+    @Test
+    @DisplayName("CurrentUserPrincipal getUniversityId 返回 universityId 字段值")
+    void getPrincipalUniversityIdReturnsUniversityId() {
+        User user = User.builder()
+                .id(1L)
+                .universityId("univ-1")
+                .userType(UserType.SCHOOL)
+                .build();
+
+        assertThat(user.getUniversityId()).isEqualTo("univ-1");
+    }
+
+    @Test
+    @DisplayName("全参构造器创建 User 所有字段正确")
+    void allArgsConstructorWorks() {
+        LocalDateTime now = LocalDateTime.of(2025, 6, 1, 10, 0);
+        User user = new User(
+                1L,
+                "univ-1",
+                "testuser",
+                "pass",
+                "张三",
+                "idcard",
+                "pm-1",
+                now.minusYears(2),
+                PartyStatus.FORMAL_MEMBER,
+                "支部",
+                UserType.STUDENT,
+                AccountStatus.ACTIVE,
+                0,
+                "test@test.com",
+                "138",
+                now,
+                now);
+
+        assertThat(user.getId()).isEqualTo(1L);
+        assertThat(user.getUsername()).isEqualTo("testuser");
+        assertThat(user.getUserType()).isEqualTo(UserType.STUDENT);
+        assertThat(user.getStatus()).isEqualTo(AccountStatus.ACTIVE);
+    }
+
+    @Test
+    @DisplayName("setter 修改 username 字段后 getter 返回新值")
+    void setterAndGetterWork() {
+        User user = User.builder()
+                .id(1L)
+                .username("oldname")
+                .userType(UserType.STUDENT)
+                .build();
+
+        user.setUsername("newname");
+
+        assertThat(user.getUsername()).isEqualTo("newname");
+    }
+}

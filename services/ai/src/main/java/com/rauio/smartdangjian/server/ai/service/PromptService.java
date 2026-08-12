@@ -1,0 +1,111 @@
+package com.rauio.smartdangjian.server.ai.service;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.ai.constants.AiErrorConstants;
+import com.rauio.smartdangjian.server.ai.mapper.AiPromptsMapper;
+import com.rauio.smartdangjian.server.ai.pojo.convertor.PromptConvertor;
+import com.rauio.smartdangjian.server.ai.pojo.entity.AiPrompts;
+import com.rauio.smartdangjian.server.ai.pojo.enums.PromptRoleEnum;
+import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptCreateRequest;
+import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptUpdateRequest;
+import com.rauio.smartdangjian.server.ai.pojo.response.AiPromptResponse;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(transactionManager = "dataSourceTransactionManager")
+public class PromptService extends ServiceImpl<AiPromptsMapper, AiPrompts> {
+
+    private final PromptConvertor convertor;
+
+    public AiPromptResponse create(AiPromptCreateRequest request) {
+        AiPrompts prompt = AiPrompts.builder()
+                .agentType(request.getAgentType().toUpperCase())
+                .name(request.getName())
+                .content(request.getContent())
+                .role(parsePromptRole(request.getRole()))
+                .enabled(Boolean.TRUE.equals(request.getEnabled()))
+                .sort(request.getSort() == null ? 0 : request.getSort())
+                .build();
+        this.save(prompt);
+        return convertor.toResponse(prompt);
+    }
+
+    public AiPromptResponse update(String id, AiPromptUpdateRequest request) {
+        AiPrompts prompt = this.getById(id);
+        if (prompt == null) {
+            throw new BusinessException(AiErrorConstants.PROMPT_NOT_FOUND, "提示词不存在: " + id);
+        }
+        if (request.getAgentType() != null) {
+            prompt.setAgentType(request.getAgentType().toUpperCase());
+        }
+        if (request.getName() != null) {
+            prompt.setName(request.getName());
+        }
+        if (request.getContent() != null) {
+            prompt.setContent(request.getContent());
+        }
+        if (request.getRole() != null) {
+            prompt.setRole(parsePromptRole(request.getRole()));
+        }
+        if (request.getEnabled() != null) {
+            prompt.setEnabled(request.getEnabled());
+        }
+        if (request.getSort() != null) {
+            prompt.setSort(request.getSort());
+        }
+        this.updateById(prompt);
+        return convertor.toResponse(prompt);
+    }
+
+    public AiPromptResponse getByIdResponse(String id) {
+        return convertor.toResponse(this.getById(id));
+    }
+
+    public List<AiPromptResponse> listResponses() {
+        return convertor.toResponseList(this.list());
+    }
+
+    public List<AiPrompts> listEnabledSystemPrompts(String agentType) {
+        return this.list(new LambdaQueryWrapper<AiPrompts>()
+                .eq(AiPrompts::getEnabled, true)
+                .eq(AiPrompts::getRole, PromptRoleEnum.SYSTEM)
+                .and(wrapper ->
+                        wrapper.eq(AiPrompts::getAgentType, "COMMON").or().eq(AiPrompts::getAgentType, agentType))
+                .orderByAsc(AiPrompts::getSort, AiPrompts::getUpdatedAt));
+    }
+
+    private PromptRoleEnum parsePromptRole(String role) {
+        try {
+            return PromptRoleEnum.valueOf(role.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("无效的提示词角色: " + role + "，可选值: SYSTEM, DEVELOPER");
+        }
+    }
+
+    public String buildSystemPrompt(String agentType) {
+        List<AiPrompts> prompts = listEnabledSystemPrompts(agentType);
+        if (prompts.isEmpty()) {
+            return """
+                    你是智慧党建平台AI助手。
+                    回答要求：
+                    1. 使用中文，表达准确、简洁、可执行。
+                    2. 结论必须基于可获取信息，不得编造事实。
+                    3. 结合用户学习、答题和会话记忆时要显式区分“已知信息”和“推断建议”。
+                    """;
+        }
+        return prompts.stream()
+                .map(AiPrompts::getContent)
+                .filter(content -> content != null && !content.isBlank())
+                .reduce((left, right) -> left + "\n\n" + right)
+                .orElse("");
+    }
+}

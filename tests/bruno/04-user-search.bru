@@ -1,0 +1,31 @@
+meta {
+  name: 04 User Search
+  type: http
+  seq: 4
+}
+
+post {
+  url: __BASE_URL__/api/user/users/search?pageNum=1&pageSize=1
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {}
+}
+
+tests {
+  test("authenticated user search responds successfully", function () {
+    expect(res.getStatus()).to.equal(200);
+    const body = res.getBody();
+    expect(body.code).to.equal("200");
+    expect(body.data).to.not.equal(undefined);
+    expect(body.data.records).to.not.equal(undefined);
+  });
+}

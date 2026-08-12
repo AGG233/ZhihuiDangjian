@@ -1,0 +1,51 @@
+package com.rauio.smartdangjian.server.quiz.pojo.entity;
+
+import java.time.LocalDateTime;
+
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+@TableName("user_quiz_answer")
+@Schema(description = "用户答题记录")
+public class UserQuizAnswer {
+
+    @TableId
+    @JsonSerialize(using = ToStringSerializer.class)
+    @Schema(description = "答题记录ID")
+    private Long id;
+
+    @Schema(description = "用户ID")
+    private Long userId;
+
+    @Schema(description = "选项ID")
+    private Long optionId;
+
+    @Schema(description = "题目ID")
+    private Long quizId;
+
+    @Schema(description = "用户答案")
+    private String userAnswer;
+
+    @Schema(description = "答题结果：0表示错误，1表示完全正确，2表示部分正确", example = "1")
+    private Integer isCorrect;
+
+    @Schema(description = "获得分数", example = "5")
+    private Integer scoreObtained;
+
+    @Schema(description = "答题耗时（秒）", example = "30")
+    private Integer timeSpent;
+
+    @Schema(description = "答题会话ID")
+    private String sessionId;
+
+    @Schema(description = "答题时间")
+    private LocalDateTime answerTime;
+}

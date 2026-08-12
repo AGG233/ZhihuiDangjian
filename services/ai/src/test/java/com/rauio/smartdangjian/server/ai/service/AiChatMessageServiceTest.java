@@ -1,0 +1,50 @@
+package com.rauio.smartdangjian.server.ai.service;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.rauio.smartdangjian.server.ai.mapper.AiChatMessageMapper;
+import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
+
+@ExtendWith(MockitoExtension.class)
+class AiChatMessageServiceTest {
+
+    @Mock
+    private AiChatMessageMapper mapper;
+
+    @Spy
+    @InjectMocks
+    private AiChatMessageService aiChatMessageService;
+
+    @Test
+    @DisplayName("mapper 被正确注入")
+    void mapperInjected() {
+        assertThat(aiChatMessageService).isNotNull();
+    }
+
+    @Test
+    @DisplayName("AiChatMessage 实体构建")
+    void buildMessage() {
+        AiChatMessage message = AiChatMessage.builder()
+                .id(1L)
+                .sessionId("1")
+                .userId(1L)
+                .agentType("CHAT")
+                .senderType("user")
+                .content("你好")
+                .build();
+
+        assertThat(message.getId()).isEqualTo(1L);
+        assertThat(message.getSessionId()).isEqualTo("1");
+        assertThat(message.getUserId()).isEqualTo(1L);
+        assertThat(message.getAgentType()).isEqualTo("CHAT");
+        assertThat(message.getContent()).isEqualTo("你好");
+    }
+}

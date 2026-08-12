@@ -1,0 +1,147 @@
+package com.rauio.smartdangjian.server.resource.service;
+
+import java.util.List;
+
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.rauio.smartdangjian.common.utils.IdUtil;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.resource.constants.ResourceErrorConstants;
+import com.rauio.smartdangjian.server.resource.constants.ResourceStatusConstants;
+import com.rauio.smartdangjian.server.resource.mapper.ResourceMetaMapper;
+import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
+import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaCreateRequest;
+import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaUpdateRequest;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, ResourceMeta> {
+
+    public ResourceMeta create(ResourceMetaCreateRequest request) {
+        validateDuplicate(null, request.getHash(), request.getObjectKey());
+        ResourceMeta meta = ResourceMeta.builder()
+                .uploaderId(IdUtil.parse(request.getUploaderId()))
+                .originalName(request.getOriginalName())
+                .hash(request.getHash())
+                .objectKey(request.getObjectKey())
+                .resourceType(request.getResourceType())
+                .status(request.getStatus() != null ? request.getStatus() : ResourceStatusConstants.PUBLIC)
+                .build();
+        if (!this.save(meta)) {
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_CREATE_FAILED, "创建资源失败");
+        }
+        return meta;
+    }
+
+    public ResourceMeta get(Long id) {
+        ResourceMeta meta = this.getById(id);
+        if (meta == null) {
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在");
+        }
+        return meta;
+    }
+
+    @Cacheable(value = "resourceMeta", key = "#hash")
+    public ResourceMeta getByHash(String hash) {
+        ResourceMeta meta = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
+                .eq(ResourceMeta::getHash, hash)
+                .last("limit 1"));
+        if (meta == null) {
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在");
+        }
+        return meta;
+    }
+
+    public boolean existsByHash(String hash) {
+        return this.exists(new LambdaQueryWrapper<ResourceMeta>().eq(ResourceMeta::getHash, hash));
+    }
+
+    public List<ResourceMeta> list(
+            Long uploaderId, String originalName, String hash, Integer resourceType, Integer status) {
+        LambdaQueryWrapper<ResourceMeta> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(uploaderId != null, ResourceMeta::getUploaderId, uploaderId)
+                .like(StringUtils.isNotBlank(originalName), ResourceMeta::getOriginalName, originalName)
+                .eq(StringUtils.isNotBlank(hash), ResourceMeta::getHash, hash)
+                .eq(resourceType != null, ResourceMeta::getResourceType, resourceType)
+                .eq(status != null, ResourceMeta::getStatus, status)
+                .orderByDesc(ResourceMeta::getId);
+        return this.list(wrapper);
+    }
+
+    public Boolean update(Long id, ResourceMetaUpdateRequest request) {
+        ResourceMeta existing = this.get(id);
+        validateDuplicate(id, existing.getHash(), existing.getObjectKey());
+
+        ResourceMeta meta = ResourceMeta.builder()
+                .id(id)
+                .uploaderId(existing.getUploaderId())
+                .hash(existing.getHash())
+                .objectKey(
+                        StringUtils.isNotBlank(request.getObjectKey())
+                                ? request.getObjectKey()
+                                : existing.getObjectKey())
+                .originalName(
+                        StringUtils.isNotBlank(request.getOriginalName())
+                                ? request.getOriginalName()
+                                : existing.getOriginalName())
+                .resourceType(
+                        request.getResourceType() != null ? request.getResourceType() : existing.getResourceType())
+                .status(request.getStatus() != null ? request.getStatus() : existing.getStatus())
+                .build();
+
+        if (!this.updateById(meta)) {
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_UPDATE_FAILED, "更新资源失败");
+        }
+        return true;
+    }
+
+    public Boolean delete(Long id) {
+        this.get(id);
+
+        if (!this.removeById(id)) {
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_DELETE_FAILED, "删除资源失败");
+        }
+        return true;
+    }
+
+    public Boolean deleteByHash(String hash) {
+        ResourceMeta meta = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
+                .eq(ResourceMeta::getHash, hash)
+                .last("limit 1"));
+        if (meta == null) {
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在");
+        }
+        return delete(meta.getId());
+    }
+
+    public Boolean deleteByHashes(List<String> hashes) {
+        for (String hash : hashes) {
+            deleteByHash(hash);
+        }
+        return true;
+    }
+
+    private void validateDuplicate(Long currentId, String hash, String objectKey) {
+        ResourceMeta sameHash = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
+                .eq(StringUtils.isNotBlank(hash), ResourceMeta::getHash, hash)
+                .last("limit 1"));
+        if (sameHash != null && !sameHash.getId().equals(currentId)) {
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_HASH_EXISTS, "资源哈希已存在");
+        }
+
+        ResourceMeta sameObjectKey = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
+                .eq(StringUtils.isNotBlank(objectKey), ResourceMeta::getObjectKey, objectKey)
+                .last("limit 1"));
+        if (sameObjectKey != null && !sameObjectKey.getId().equals(currentId)) {
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_OBJECT_KEY_EXISTS, "对象存储键已存在");
+        }
+    }
+}

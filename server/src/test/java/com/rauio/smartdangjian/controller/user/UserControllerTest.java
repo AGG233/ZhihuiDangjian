@@ -1,0 +1,396 @@
+package com.rauio.smartdangjian.controller.user;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.BaseControllerTest;
+import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
+import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
+import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
+import com.rauio.smartdangjian.server.user.controller.user.UserController;
+import com.rauio.smartdangjian.server.user.service.UserService;
+import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = UserControllerTest.TestConfig.class)
+@DisplayName("用户管理接口测试")
+class UserControllerTest extends BaseControllerTest {
+
+    @SpringBootConfiguration
+    static class TestConfig extends CommonTestConfig {
+        @Bean
+        public UserController userController(UserService userService) {
+            return new UserController(userService);
+        }
+    }
+
+    @MockitoBean
+    private UserService userService;
+
+    // ═══════════════════════════════════════════════════════════════
+    // 正常场景
+    // ═══════════════════════════════════════════════════════════════
+
+    @Nested
+    @DisplayName("正常场景")
+    class NormalTests {
+
+        @Test
+        @DisplayName("GET /{id} - 获取用户信息成功")
+        void getSuccess() throws Exception {
+            UserResponse vo = new UserResponse();
+            vo.setId(1L);
+            vo.setUsername("zhangsan");
+            vo.setRealName("张三");
+            vo.setUserType(com.rauio.smartdangjian.utils.spec.UserType.STUDENT);
+            when(userService.get(1L)).thenReturn(vo);
+
+            mockMvc.perform(get("/api/user/users/1"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data.id").value("1"))
+                    .andExpect(jsonPath("$.data.username").value("zhangsan"))
+                    .andExpect(jsonPath("$.data.realName").value("张三"));
+        }
+
+        @Test
+        @DisplayName("POST /search - 用户分页搜索成功")
+        void searchSuccess() throws Exception {
+            UserPublicResponse publicVO = new UserPublicResponse();
+            publicVO.setId(1L);
+            publicVO.setUsername("zhangsan");
+            publicVO.setRealName("张三");
+            publicVO.setPartyStatus(PartyStatus.FORMAL_MEMBER);
+            Page<UserPublicResponse> page = new Page<>(1, 10, 1);
+            page.setRecords(List.of(publicVO));
+
+            when(userService.getPage(any(UserRequest.class), eq(1), eq(10))).thenReturn(page);
+
+            UserRequest dto = new UserRequest();
+            dto.setUsername("zhang");
+            mockMvc.perform(post("/api/user/users/search")
+                            .param("pageNum", "1")
+                            .param("pageSize", "10")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(CourseTestDataFactory.toJson(dto)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data.records[0].username").value("zhangsan"))
+                    .andExpect(jsonPath("$.data.total").value(1));
+        }
+
+        @Test
+        @DisplayName("PUT /{id} - 更新用户成功")
+        void updateSuccess() throws Exception {
+            doNothing().when(userService).update(eq(1L), any());
+
+            String json = "{\"realName\":\"张三丰\"}";
+            mockMvc.perform(put("/api/user/users/1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"));
+        }
+
+        @Test
+        @DisplayName("DELETE /{id} - 接口已弃用返回 404")
+        void deleteReturnsDeprecated() throws Exception {
+            mockMvc.perform(delete("/api/user/users/1"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("404"))
+                    .andExpect(jsonPath("$.message").value("接口已经弃用"));
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // 异常处理场景
+    // ═══════════════════════════════════════════════════════════════
+
+    @Nested
+    @DisplayName("异常处理场景")
+    class ErrorTests {
+
+        @Test
+        @DisplayName("GET /{id} - Service 抛出 BusinessException 返回 400")
+        void getThrowsBusinessException() throws Exception {
+            when(userService.get(1L)).thenThrow(new BusinessException(4000, "用户不存在"));
+
+            mockMvc.perform(get("/api/user/users/1"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.message").value("用户不存在"));
+        }
+
+        @Test
+        @DisplayName("GET /{id} - Service 抛出 RuntimeException 返回 500")
+        void getThrowsRuntimeException() throws Exception {
+            when(userService.get(1L)).thenThrow(new RuntimeException("数据库异常"));
+
+            mockMvc.perform(get("/api/user/users/1"))
+                    .andExpect(status().isInternalServerError())
+                    .andExpect(jsonPath("$.code").value("500"));
+        }
+
+        @Test
+        @DisplayName("POST /search - Service 抛出 BusinessException 返回 400")
+        void searchThrowsBusinessException() throws Exception {
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
+                    .thenThrow(new BusinessException(1005, "用户不存在"));
+
+            mockMvc.perform(post("/api/user/users/search")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{}"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("1005"))
+                    .andExpect(jsonPath("$.message").value("用户不存在"));
+        }
+
+        @Test
+        @DisplayName("POST /search - Service 抛出 RuntimeException 返回 500")
+        void searchThrowsRuntimeException() throws Exception {
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
+                    .thenThrow(new RuntimeException("数据库连接失败"));
+
+            mockMvc.perform(post("/api/user/users/search")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{}"))
+                    .andExpect(status().isInternalServerError())
+                    .andExpect(jsonPath("$.code").value("500"));
+        }
+
+        @Test
+        @DisplayName("PUT /{id} - Service 抛出 BusinessException 返回 400")
+        void updateThrowsBusinessException() throws Exception {
+            doThrow(new BusinessException(4000, "更新用户失败")).when(userService).update(eq(1L), any());
+
+            mockMvc.perform(put("/api/user/users/1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"realName\":\"新名称\"}"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.message").value("更新用户失败"));
+        }
+
+        @Test
+        @DisplayName("PUT /{id} - Service 抛出 RuntimeException 返回 500")
+        void updateThrowsRuntimeException() throws Exception {
+            doThrow(new RuntimeException("数据库异常")).when(userService).update(eq(1L), any());
+
+            mockMvc.perform(put("/api/user/users/1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"realName\":\"新名称\"}"))
+                    .andExpect(status().isInternalServerError())
+                    .andExpect(jsonPath("$.code").value("500"));
+        }
+
+        @Test
+        @DisplayName("PUT /{id} - Service 正常返回 200 OK")
+        void updateNormalSuccess() throws Exception {
+            doNothing().when(userService).update(eq(1L), any());
+
+            mockMvc.perform(put("/api/user/users/1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"realName\":\"新名称\"}"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.message").value("OK"));
+        }
+
+        @Test
+        @DisplayName("POST /search - 非法 JSON 请求体返回 400")
+        void malformedJson() throws Exception {
+            mockMvc.perform(post("/api/user/users/search")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{invalid json"))
+                    .andExpect(status().isBadRequest());
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // 边界场景
+    // ═══════════════════════════════════════════════════════════════
+
+    @Nested
+    @DisplayName("边界场景")
+    class BoundaryTests {
+
+        @Test
+        @DisplayName("GET /{id} - 服务返回 null 时 code 为 400")
+        void getReturnsNull() throws Exception {
+            when(userService.get(999L)).thenReturn(null);
+
+            mockMvc.perform(get("/api/user/users/999"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.message").value("OK"));
+        }
+
+        @Test
+        @DisplayName("POST /search - 空结果集返回空列表")
+        void searchEmptyResults() throws Exception {
+            Page<UserPublicResponse> emptyPage = new Page<>(1, 10, 0);
+            emptyPage.setRecords(List.of());
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
+                    .thenReturn(emptyPage);
+
+            mockMvc.perform(post("/api/user/users/search")
+                            .param("pageNum", "1")
+                            .param("pageSize", "10")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{}"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data.records").isEmpty())
+                    .andExpect(jsonPath("$.data.total").value(0));
+        }
+
+        @Test
+        @DisplayName("POST /search - 空请求体 {} 正常处理")
+        void searchWithEmptyBody() throws Exception {
+            Page<UserPublicResponse> page = new Page<>(1, 10, 0);
+            page.setRecords(List.of());
+            when(userService.getPage(any(UserRequest.class), eq(1), eq(10))).thenReturn(page);
+
+            mockMvc.perform(post("/api/user/users/search")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{}"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"));
+        }
+
+        @Test
+        @DisplayName("POST /search - 搜索字段含特殊字符")
+        void searchWithSpecialChars() throws Exception {
+            Page<UserPublicResponse> page = new Page<>(1, 10, 0);
+            page.setRecords(List.of());
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
+                    .thenReturn(page);
+
+            UserRequest dto = new UserRequest();
+            dto.setUsername("user_@#$%");
+            mockMvc.perform(post("/api/user/users/search")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(CourseTestDataFactory.toJson(dto)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"));
+        }
+
+        @Test
+        @DisplayName("POST /search - 搜索字段超长字符串")
+        void searchWithLongField() throws Exception {
+            Page<UserPublicResponse> page = new Page<>(1, 10, 0);
+            page.setRecords(List.of());
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
+                    .thenReturn(page);
+
+            UserRequest dto = new UserRequest();
+            dto.setUsername("a".repeat(1000));
+            mockMvc.perform(post("/api/user/users/search")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(CourseTestDataFactory.toJson(dto)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"));
+        }
+
+        @Test
+        @DisplayName("POST /search - 默认分页参数")
+        void searchWithDefaultPagination() throws Exception {
+            Page<UserPublicResponse> page = new Page<>(1, 10, 0);
+            page.setRecords(List.of());
+            when(userService.getPage(any(UserRequest.class), eq(1), eq(10))).thenReturn(page);
+
+            mockMvc.perform(post("/api/user/users/search")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{}"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.current").value(1))
+                    .andExpect(jsonPath("$.data.size").value(10));
+        }
+
+        @Test
+        @DisplayName("PUT /{id} - 空请求体正常处理")
+        void updateWithEmptyBody() throws Exception {
+            mockMvc.perform(put("/api/user/users/1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{}"))
+                    .andExpect(status().isOk());
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // 安全场景
+    // ═══════════════════════════════════════════════════════════════
+
+    @Nested
+    @DisplayName("安全场景")
+    class SecurityTests {
+
+        @Test
+        @DisplayName("XSS 注入在搜索字段中")
+        void xssInSearch() throws Exception {
+            Page<UserPublicResponse> page = new Page<>(1, 10, 0);
+            page.setRecords(List.of());
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
+                    .thenReturn(page);
+
+            UserRequest dto = new UserRequest();
+            dto.setUsername("<script>alert('xss')</script>");
+            mockMvc.perform(post("/api/user/users/search")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(CourseTestDataFactory.toJson(dto)))
+                    .andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("SQL 注入在搜索字段中")
+        void sqlInjectionInSearch() throws Exception {
+            Page<UserPublicResponse> page = new Page<>(1, 10, 0);
+            page.setRecords(List.of());
+            when(userService.getPage(any(UserRequest.class), anyInt(), anyInt()))
+                    .thenReturn(page);
+
+            UserRequest dto = new UserRequest();
+            dto.setUsername("' OR '1'='1");
+            mockMvc.perform(post("/api/user/users/search")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(CourseTestDataFactory.toJson(dto)))
+                    .andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("POST 请求获取接口返回 405")
+        void getWithWrongMethod() throws Exception {
+            mockMvc.perform(post("/api/user/users/1")).andExpect(status().isMethodNotAllowed());
+        }
+
+        @Test
+        @DisplayName("GET 请求搜索接口路径匹配 GET /{id} 返回 200")
+        void searchWithWrongMethod() throws Exception {
+            mockMvc.perform(get("/api/user/users/search")).andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("DELETE 请求搜索接口路径匹配 DELETE /{id} 返回 200")
+        void searchWithDeleteMethod() throws Exception {
+            mockMvc.perform(delete("/api/user/users/search")).andExpect(status().isBadRequest());
+        }
+    }
+}

@@ -1,0 +1,12 @@
+app:
+  security:
+    enabled: true
+
+spring:
+  ai:
+    openai:
+      api-key: ${AI_KEY}
+
+logging:
+  level:
+    root: WARN

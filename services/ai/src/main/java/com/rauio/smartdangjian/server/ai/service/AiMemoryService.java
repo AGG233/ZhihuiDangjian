@@ -1,0 +1,99 @@
+package com.rauio.smartdangjian.server.ai.service;
+
+import static com.rauio.smartdangjian.server.ai.constants.AiConstants.MESSAGE_INPUT;
+import static com.rauio.smartdangjian.server.ai.constants.AiConstants.MESSAGE_OUTPUT;
+import static com.rauio.smartdangjian.server.ai.constants.AiConstants.SENDER_ASSISTANT;
+import static com.rauio.smartdangjian.server.ai.constants.AiConstants.SENDER_USER;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.rauio.smartdangjian.common.utils.IdUtil;
+import com.rauio.smartdangjian.server.ai.pojo.entity.AiChatMessage;
+import com.rauio.smartdangjian.server.ai.pojo.response.AiChatMessageResponse;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(transactionManager = "dataSourceTransactionManager")
+public class AiMemoryService {
+
+    private final AiChatMessageService aiChatMessageService;
+
+    public void saveConversation(String userId, String sessionId, String agentType, String input, String output) {
+        if (userId == null || sessionId == null || userId.isBlank() || sessionId.isBlank()) {
+            return;
+        }
+        String safeOutput = output == null || output.isBlank() ? "[AI 未返回文本内容]" : output;
+        Map<String, Object> metadata = Map.of("agentType", agentType);
+        aiChatMessageService.save(
+                buildMessage(userId, sessionId, agentType, SENDER_USER, MESSAGE_INPUT, input, metadata));
+        aiChatMessageService.save(
+                buildMessage(userId, sessionId, agentType, SENDER_ASSISTANT, MESSAGE_OUTPUT, safeOutput, metadata));
+    }
+
+    public String buildLongTermMemory(String userId, String sessionId, int limit) {
+        if (userId == null || userId.isBlank()) {
+            return "";
+        }
+        boolean excludeCurrentSession = sessionId != null && !sessionId.isBlank();
+        List<AiChatMessage> memories = aiChatMessageService.list(new LambdaQueryWrapper<AiChatMessage>()
+                .eq(AiChatMessage::getUserId, userId)
+                .ne(excludeCurrentSession, AiChatMessage::getSessionId, sessionId)
+                .orderByDesc(AiChatMessage::getCreatedAt)
+                .last("limit " + Math.max(limit, 1)));
+
+        if (memories.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (int i = memories.size() - 1; i >= 0; i--) {
+            AiChatMessage message = memories.get(i);
+            builder.append("- [")
+                    .append(message.getAgentType())
+                    .append('/')
+                    .append(message.getSenderType())
+                    .append("] ")
+                    .append(message.getContent())
+                    .append('\n');
+        }
+        return builder.toString().trim();
+    }
+
+    public List<AiChatMessageResponse> listSessionMessages(String userId, String sessionId) {
+        return aiChatMessageService.list(new LambdaQueryWrapper<AiChatMessage>()
+                .eq(AiChatMessage::getUserId, userId)
+                .eq(AiChatMessage::getSessionId, sessionId)
+                .orderByAsc(AiChatMessage::getCreatedAt))
+                .stream()
+                .map(AiChatMessageResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    private AiChatMessage buildMessage(
+            String userId,
+            String sessionId,
+            String agentType,
+            String senderType,
+            String messageType,
+            String content,
+            Map<String, Object> metadata) {
+        return AiChatMessage.builder()
+                .userId(IdUtil.parse(userId))
+                .sessionId(sessionId)
+                .agentType(agentType)
+                .senderType(senderType)
+                .messageType(messageType)
+                .content(content)
+                .metadata(new HashMap<>(metadata))
+                .build();
+    }
+}
