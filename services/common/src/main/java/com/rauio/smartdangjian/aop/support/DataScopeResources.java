@@ -10,6 +10,7 @@ public final class DataScopeResources {
     public static final String QUIZ_ADMIN = "QUIZ_ADMIN";
     public static final String RESOURCE_META_ADMIN = "RESOURCE_META_ADMIN";
     public static final String CATEGORY = "CATEGORY";
+    public static final String ARTICLE_ADMIN = "ARTICLE_ADMIN";
 
     private DataScopeResources() {}
 }
