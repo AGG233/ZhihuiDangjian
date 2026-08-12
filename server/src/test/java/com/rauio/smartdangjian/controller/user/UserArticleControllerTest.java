@@ -24,7 +24,9 @@ import com.rauio.smartdangjian.server.content.pojo.entity.Article;
 import com.rauio.smartdangjian.server.content.pojo.response.ArticleResponse;
 import com.rauio.smartdangjian.server.content.service.article.ArticleService;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = UserArticleControllerTest.TestConfig.class)
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+        classes = UserArticleControllerTest.TestConfig.class)
 @DisplayName("用户文章接口测试")
 class UserArticleControllerTest extends BaseControllerTest {
 
@@ -124,8 +126,7 @@ class UserArticleControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /{id} - 非数字 ID 返回 400（Spring 类型转换失败）")
         void getWithNonNumericId() throws Exception {
-            mockMvc.perform(get("/api/content/articles/文章"))
-                    .andExpect(status().isBadRequest());
+            mockMvc.perform(get("/api/content/articles/文章")).andExpect(status().isBadRequest());
         }
 
         @Test
@@ -143,8 +144,7 @@ class UserArticleControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /api/content/articles - 分页参数非法时返回 400")
         void getArticlesWithInvalidPaging() throws Exception {
-            mockMvc.perform(get("/api/content/articles?pageNum=abc"))
-                    .andExpect(status().isBadRequest());
+            mockMvc.perform(get("/api/content/articles?pageNum=abc")).andExpect(status().isBadRequest());
         }
     }
 
@@ -167,8 +167,7 @@ class UserArticleControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT 请求分类文章接口返回 405")
         void getByCategoryWithWrongMethod() throws Exception {
-            mockMvc.perform(put("/api/content/articles/by-category/1"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(put("/api/content/articles/by-category/1")).andExpect(status().isMethodNotAllowed());
         }
     }
 }

@@ -196,7 +196,8 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST / - Service 抛出 RuntimeException 返回 500")
         void createThrowsRuntimeException() throws Exception {
-            when(recordService.create(any(UserLearningRecordRequest.class))).thenThrow(new RuntimeException("创建学习记录异常"));
+            when(recordService.create(any(UserLearningRecordRequest.class)))
+                    .thenThrow(new RuntimeException("创建学习记录异常"));
 
             mockMvc.perform(post("/api/learning/records")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -296,8 +297,7 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /user/{userId}/chapter/{chapterId} - 空结果集返回空列表")
         void getByUserIdAndChapterIdEmptyResult() throws Exception {
-            when(recordService.getByUserIdAndChapterId(9999L, 9999L))
-                    .thenReturn(List.of());
+            when(recordService.getByUserIdAndChapterId(9999L, 9999L)).thenReturn(List.of());
 
             mockMvc.perform(get("/api/learning/records/users/9999/chapters/9999"))
                     .andExpect(status().isOk())

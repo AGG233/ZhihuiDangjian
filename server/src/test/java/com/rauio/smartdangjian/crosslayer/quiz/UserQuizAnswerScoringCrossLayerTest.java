@@ -3,7 +3,6 @@ package com.rauio.smartdangjian.crosslayer.quiz;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -108,7 +107,8 @@ class UserQuizAnswerScoringCrossLayerTest extends CrossLayerTestBase {
                 field.setAccessible(true);
                 field.set(service, mapper);
             } catch (Exception e) {
-                throw new RuntimeException("Failed to set baseMapper on " + service.getClass().getSimpleName(), e);
+                throw new RuntimeException(
+                        "Failed to set baseMapper on " + service.getClass().getSimpleName(), e);
             }
             return service;
         }
@@ -162,8 +162,7 @@ class UserQuizAnswerScoringCrossLayerTest extends CrossLayerTestBase {
         // 正确选项 A、B，只提交 A → 5 * 1 / 2 = 2.5 → 四舍五入 3
         when(quizMapper.selectById(1L)).thenReturn(quiz("multiple_choice", 5));
         when(quizOptionService.getById(1L)).thenReturn(option(1L, 1L, true));
-        when(quizOptionService.getByQuizId(1L))
-                .thenReturn(List.of(option(1L, 1L, true), option(2L, 1L, true)));
+        when(quizOptionService.getByQuizId(1L)).thenReturn(List.of(option(1L, 1L, true), option(2L, 1L, true)));
         when(userQuizAnswerMapper.selectList(any())).thenReturn(Collections.emptyList());
 
         userQuizAnswerService.create(answer(1L, 1L, 1L));
@@ -179,8 +178,7 @@ class UserQuizAnswerScoringCrossLayerTest extends CrossLayerTestBase {
         // 已提交正确选项 A，本次提交 B
         when(quizMapper.selectById(1L)).thenReturn(quiz("multiple_choice", 5));
         when(quizOptionService.getById(2L)).thenReturn(option(2L, 1L, true));
-        when(quizOptionService.getByQuizId(1L))
-                .thenReturn(List.of(option(1L, 1L, true), option(2L, 1L, true)));
+        when(quizOptionService.getByQuizId(1L)).thenReturn(List.of(option(1L, 1L, true), option(2L, 1L, true)));
         when(userQuizAnswerMapper.selectList(any())).thenReturn(List.of(answer(1L, 1L, 1L)));
 
         userQuizAnswerService.create(answer(1L, 1L, 2L));

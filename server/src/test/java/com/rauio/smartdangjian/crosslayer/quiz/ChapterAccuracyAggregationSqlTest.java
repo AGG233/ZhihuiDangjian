@@ -95,8 +95,7 @@ class ChapterAccuracyAggregationSqlTest {
     }
 
     private void insertQuiz(long id, long chapterId) throws Exception {
-        try (PreparedStatement ps =
-                connection.prepareStatement("INSERT INTO quiz (id, chapter_id) VALUES (?, ?)")) {
+        try (PreparedStatement ps = connection.prepareStatement("INSERT INTO quiz (id, chapter_id) VALUES (?, ?)")) {
             ps.setLong(1, id);
             ps.setLong(2, chapterId);
             ps.executeUpdate();
@@ -125,9 +124,9 @@ class ChapterAccuracyAggregationSqlTest {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    rows.add(new long[] {
-                        rs.getLong("chapterId"), rs.getLong("questionCount"), rs.getLong("correctCount")
-                    });
+                    rows.add(
+                            new long[] {rs.getLong("chapterId"), rs.getLong("questionCount"), rs.getLong("correctCount")
+                            });
                 }
             }
         }

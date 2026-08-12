@@ -104,7 +104,8 @@ class LearningFrequencyStatsCrossLayerTest extends CrossLayerTestBase {
                 field.setAccessible(true);
                 field.set(service, mapper);
             } catch (Exception e) {
-                throw new RuntimeException("Failed to set baseMapper on " + service.getClass().getSimpleName(), e);
+                throw new RuntimeException(
+                        "Failed to set baseMapper on " + service.getClass().getSimpleName(), e);
             }
             return service;
         }
@@ -156,9 +157,8 @@ class LearningFrequencyStatsCrossLayerTest extends CrossLayerTestBase {
     void daysOverLimitThrowsBusinessException() {
         assertThatThrownBy(() -> recordService.getFrequencyStats(USER_ID, 366))
                 .isInstanceOf(BusinessException.class)
-                .satisfies(e ->
-                        assertThat(((BusinessException) e).getCode())
-                                .isEqualTo(LearningErrorConstants.STATS_DAYS_OUT_OF_RANGE));
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(LearningErrorConstants.STATS_DAYS_OUT_OF_RANGE));
     }
 
     private DayFrequencyStat stat(LocalDate date, long count, long totalDuration) {

@@ -13,12 +13,12 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -103,7 +103,10 @@ class TaskAcceptanceCrossLayerTest extends CrossLayerTestBase {
         when(taskConvertor.toResponseList(any()))
                 .thenReturn(List.of(TaskResponse.builder().id(TASK_ID).build()));
         when(taskConvertor.toAcceptanceResponse(any(TaskAcceptance.class)))
-                .thenReturn(TaskAcceptanceResponse.builder().taskId(TASK_ID).userId(STUDENT_ID).build());
+                .thenReturn(TaskAcceptanceResponse.builder()
+                        .taskId(TASK_ID)
+                        .userId(STUDENT_ID)
+                        .build());
     }
 
     @SpringBootConfiguration
@@ -149,7 +152,8 @@ class TaskAcceptanceCrossLayerTest extends CrossLayerTestBase {
                 field.setAccessible(true);
                 field.set(service, mapper);
             } catch (Exception e) {
-                throw new RuntimeException("Failed to set baseMapper on " + service.getClass().getSimpleName(), e);
+                throw new RuntimeException(
+                        "Failed to set baseMapper on " + service.getClass().getSimpleName(), e);
             }
         }
 
@@ -199,7 +203,9 @@ class TaskAcceptanceCrossLayerTest extends CrossLayerTestBase {
                 .thenReturn(Task.builder().id(TASK_ID).status(TaskStatus.DRAFT).build());
         when(taskMapper.updateById(any(Task.class))).thenReturn(1);
 
-        adminTaskService.update(TASK_ID, TaskUpdateRequest.builder().status(TaskStatus.PUBLISHED).build());
+        adminTaskService.update(
+                TASK_ID,
+                TaskUpdateRequest.builder().status(TaskStatus.PUBLISHED).build());
 
         ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
         verify(taskMapper).updateById(captor.capture());
@@ -211,10 +217,12 @@ class TaskAcceptanceCrossLayerTest extends CrossLayerTestBase {
     void adminInvalidTransitionRejected() {
         setSchoolContext(SCHOOL_USER_ID, "uni1");
         when(taskMapper.selectById(TASK_ID))
-                .thenReturn(Task.builder().id(TASK_ID).status(TaskStatus.PUBLISHED).build());
+                .thenReturn(
+                        Task.builder().id(TASK_ID).status(TaskStatus.PUBLISHED).build());
 
         assertThatThrownBy(() -> adminTaskService.update(
-                        TASK_ID, TaskUpdateRequest.builder().status(TaskStatus.DRAFT).build()))
+                        TASK_ID,
+                        TaskUpdateRequest.builder().status(TaskStatus.DRAFT).build()))
                 .isInstanceOf(BusinessException.class)
                 .satisfies(e -> assertThat(((BusinessException) e).getCode())
                         .isEqualTo(TaskErrorConstants.TASK_INVALID_STATUS_TRANSITION));
@@ -225,7 +233,8 @@ class TaskAcceptanceCrossLayerTest extends CrossLayerTestBase {
     @DisplayName("管理端删除任务：级联清理领取记录后删除任务")
     void adminDeleteTaskRemovesAcceptancesAndTask() {
         setSchoolContext(SCHOOL_USER_ID, "uni1");
-        when(taskMapper.selectById(TASK_ID)).thenReturn(Task.builder().id(TASK_ID).build());
+        when(taskMapper.selectById(TASK_ID))
+                .thenReturn(Task.builder().id(TASK_ID).build());
 
         adminTaskService.delete(TASK_ID);
 
@@ -269,7 +278,8 @@ class TaskAcceptanceCrossLayerTest extends CrossLayerTestBase {
     void studentAcceptTaskPersistsAcceptedRecord() {
         setStudentContext(STUDENT_ID, "uni1");
         when(taskMapper.selectById(TASK_ID))
-                .thenReturn(Task.builder().id(TASK_ID).status(TaskStatus.PUBLISHED).build());
+                .thenReturn(
+                        Task.builder().id(TASK_ID).status(TaskStatus.PUBLISHED).build());
         when(taskAcceptanceMapper.selectCount(any())).thenReturn(0L);
 
         taskService.accept(TASK_ID);
@@ -289,7 +299,8 @@ class TaskAcceptanceCrossLayerTest extends CrossLayerTestBase {
     void studentDuplicateAcceptThrows() {
         setStudentContext(STUDENT_ID, "uni1");
         when(taskMapper.selectById(TASK_ID))
-                .thenReturn(Task.builder().id(TASK_ID).status(TaskStatus.PUBLISHED).build());
+                .thenReturn(
+                        Task.builder().id(TASK_ID).status(TaskStatus.PUBLISHED).build());
         when(taskAcceptanceMapper.selectCount(any())).thenReturn(1L);
 
         assertThatThrownBy(() -> taskService.accept(TASK_ID))
@@ -308,8 +319,8 @@ class TaskAcceptanceCrossLayerTest extends CrossLayerTestBase {
 
         assertThatThrownBy(() -> taskService.accept(TASK_ID))
                 .isInstanceOf(BusinessException.class)
-                .satisfies(e -> assertThat(((BusinessException) e).getCode())
-                        .isEqualTo(TaskErrorConstants.TASK_CLOSED));
+                .satisfies(
+                        e -> assertThat(((BusinessException) e).getCode()).isEqualTo(TaskErrorConstants.TASK_CLOSED));
         verify(taskAcceptanceMapper, never()).insert(any(TaskAcceptance.class));
     }
 
@@ -320,7 +331,8 @@ class TaskAcceptanceCrossLayerTest extends CrossLayerTestBase {
     void studentSubmitFullProgressCompletes() {
         setStudentContext(STUDENT_ID, "uni1");
         when(taskMapper.selectById(TASK_ID))
-                .thenReturn(Task.builder().id(TASK_ID).status(TaskStatus.PUBLISHED).build());
+                .thenReturn(
+                        Task.builder().id(TASK_ID).status(TaskStatus.PUBLISHED).build());
         when(taskAcceptanceMapper.selectOne(any(), anyBoolean()))
                 .thenReturn(acceptance(TaskAcceptanceStatus.ACCEPTED, 0));
 
@@ -339,7 +351,8 @@ class TaskAcceptanceCrossLayerTest extends CrossLayerTestBase {
     void studentSubmitPartialProgressMarksSubmitted() {
         setStudentContext(STUDENT_ID, "uni1");
         when(taskMapper.selectById(TASK_ID))
-                .thenReturn(Task.builder().id(TASK_ID).status(TaskStatus.PUBLISHED).build());
+                .thenReturn(
+                        Task.builder().id(TASK_ID).status(TaskStatus.PUBLISHED).build());
         when(taskAcceptanceMapper.selectOne(any(), anyBoolean()))
                 .thenReturn(acceptance(TaskAcceptanceStatus.ACCEPTED, 0));
 
@@ -358,11 +371,13 @@ class TaskAcceptanceCrossLayerTest extends CrossLayerTestBase {
     void studentResubmitAfterSubmittedThrows() {
         setStudentContext(STUDENT_ID, "uni1");
         when(taskMapper.selectById(TASK_ID))
-                .thenReturn(Task.builder().id(TASK_ID).status(TaskStatus.PUBLISHED).build());
+                .thenReturn(
+                        Task.builder().id(TASK_ID).status(TaskStatus.PUBLISHED).build());
         when(taskAcceptanceMapper.selectOne(any(), anyBoolean()))
                 .thenReturn(acceptance(TaskAcceptanceStatus.SUBMITTED, 60));
 
-        assertThatThrownBy(() -> taskService.submit(TASK_ID, TaskSubmitRequest.builder().progress(90).build()))
+        assertThatThrownBy(() -> taskService.submit(
+                        TASK_ID, TaskSubmitRequest.builder().progress(90).build()))
                 .isInstanceOf(BusinessException.class)
                 .satisfies(e -> assertThat(((BusinessException) e).getCode())
                         .isEqualTo(TaskErrorConstants.TASK_ALREADY_SUBMITTED));
@@ -374,10 +389,12 @@ class TaskAcceptanceCrossLayerTest extends CrossLayerTestBase {
     void studentSubmitWithoutAcceptanceThrows() {
         setStudentContext(STUDENT_ID, "uni1");
         when(taskMapper.selectById(TASK_ID))
-                .thenReturn(Task.builder().id(TASK_ID).status(TaskStatus.PUBLISHED).build());
+                .thenReturn(
+                        Task.builder().id(TASK_ID).status(TaskStatus.PUBLISHED).build());
         when(taskAcceptanceMapper.selectOne(any(), anyBoolean())).thenReturn(null);
 
-        assertThatThrownBy(() -> taskService.submit(TASK_ID, TaskSubmitRequest.builder().progress(80).build()))
+        assertThatThrownBy(() -> taskService.submit(
+                        TASK_ID, TaskSubmitRequest.builder().progress(80).build()))
                 .isInstanceOf(BusinessException.class)
                 .satisfies(e -> assertThat(((BusinessException) e).getCode())
                         .isEqualTo(TaskErrorConstants.TASK_ACCEPTANCE_NOT_FOUND));
@@ -391,10 +408,11 @@ class TaskAcceptanceCrossLayerTest extends CrossLayerTestBase {
         when(taskMapper.selectById(TASK_ID))
                 .thenReturn(Task.builder().id(TASK_ID).status(TaskStatus.CLOSED).build());
 
-        assertThatThrownBy(() -> taskService.submit(TASK_ID, TaskSubmitRequest.builder().progress(100).build()))
+        assertThatThrownBy(() -> taskService.submit(
+                        TASK_ID, TaskSubmitRequest.builder().progress(100).build()))
                 .isInstanceOf(BusinessException.class)
-                .satisfies(e -> assertThat(((BusinessException) e).getCode())
-                        .isEqualTo(TaskErrorConstants.TASK_CLOSED));
+                .satisfies(
+                        e -> assertThat(((BusinessException) e).getCode()).isEqualTo(TaskErrorConstants.TASK_CLOSED));
         verify(taskAcceptanceMapper, never()).updateById(any(TaskAcceptance.class));
     }
 
@@ -403,9 +421,11 @@ class TaskAcceptanceCrossLayerTest extends CrossLayerTestBase {
     void studentSubmitInvalidProgressThrows() {
         setStudentContext(STUDENT_ID, "uni1");
         when(taskMapper.selectById(TASK_ID))
-                .thenReturn(Task.builder().id(TASK_ID).status(TaskStatus.PUBLISHED).build());
+                .thenReturn(
+                        Task.builder().id(TASK_ID).status(TaskStatus.PUBLISHED).build());
 
-        assertThatThrownBy(() -> taskService.submit(TASK_ID, TaskSubmitRequest.builder().progress(101).build()))
+        assertThatThrownBy(() -> taskService.submit(
+                        TASK_ID, TaskSubmitRequest.builder().progress(101).build()))
                 .isInstanceOf(BusinessException.class)
                 .satisfies(e -> assertThat(((BusinessException) e).getCode())
                         .isEqualTo(TaskErrorConstants.TASK_PROGRESS_INVALID));

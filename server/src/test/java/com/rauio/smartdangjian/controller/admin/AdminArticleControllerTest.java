@@ -23,10 +23,12 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.constants.ArticleErrorConstants;
 import com.rauio.smartdangjian.server.content.controller.admin.AdminArticleController;
 import com.rauio.smartdangjian.server.content.pojo.request.ArticleRequest;
-import com.rauio.smartdangjian.server.content.spec.ArticleStatus;
 import com.rauio.smartdangjian.server.content.service.article.ArticleService;
+import com.rauio.smartdangjian.server.content.spec.ArticleStatus;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = AdminArticleControllerTest.TestConfig.class)
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+        classes = AdminArticleControllerTest.TestConfig.class)
 @DisplayName("管理员文章接口测试")
 class AdminArticleControllerTest extends BaseControllerTest {
 
@@ -166,8 +168,7 @@ class AdminArticleControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("DELETE - 文章 ID 非数字返回 400")
         void deleteWithNonNumericId() throws Exception {
-            mockMvc.perform(delete("/api/admin/content/articles/文章"))
-                    .andExpect(status().isBadRequest());
+            mockMvc.perform(delete("/api/admin/content/articles/文章")).andExpect(status().isBadRequest());
         }
     }
 

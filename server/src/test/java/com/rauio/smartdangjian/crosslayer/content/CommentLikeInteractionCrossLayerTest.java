@@ -41,7 +41,6 @@ import com.rauio.smartdangjian.server.content.comment.pojo.response.CommentRespo
 import com.rauio.smartdangjian.server.content.comment.pojo.response.LikeStatusResponse;
 import com.rauio.smartdangjian.server.content.comment.service.CommentService;
 import com.rauio.smartdangjian.server.content.comment.service.LikeService;
-import com.rauio.smartdangjian.utils.spec.UserType;
 
 /**
  * 评论与点赞跨层回归测试。
@@ -128,7 +127,8 @@ class CommentLikeInteractionCrossLayerTest extends CrossLayerTestBase {
                 field.setAccessible(true);
                 field.set(service, mapper);
             } catch (Exception e) {
-                throw new RuntimeException("Failed to set baseMapper on " + service.getClass().getSimpleName(), e);
+                throw new RuntimeException(
+                        "Failed to set baseMapper on " + service.getClass().getSimpleName(), e);
             }
         }
 
@@ -193,7 +193,8 @@ class CommentLikeInteractionCrossLayerTest extends CrossLayerTestBase {
     @DisplayName("删除评论：作者本人删除成功")
     void ownerDeletesOwnCommentSucceeds() {
         setStudentContext(OWNER_ID, "uni1");
-        when(commentMapper.selectById(1L)).thenReturn(Comment.builder().id(1L).userId(OWNER_ID).build());
+        when(commentMapper.selectById(1L))
+                .thenReturn(Comment.builder().id(1L).userId(OWNER_ID).build());
         when(commentMapper.deleteById(1L)).thenReturn(1);
 
         commentService.delete(1L);
@@ -205,7 +206,8 @@ class CommentLikeInteractionCrossLayerTest extends CrossLayerTestBase {
     @DisplayName("删除评论：他人删除抛 3306 且不删除")
     void otherUserDeletesCommentThrows() {
         setStudentContext(999L, "uni1");
-        when(commentMapper.selectById(1L)).thenReturn(Comment.builder().id(1L).userId(OWNER_ID).build());
+        when(commentMapper.selectById(1L))
+                .thenReturn(Comment.builder().id(1L).userId(OWNER_ID).build());
 
         assertThatThrownBy(() -> commentService.delete(1L))
                 .isInstanceOf(BusinessException.class)
@@ -218,7 +220,8 @@ class CommentLikeInteractionCrossLayerTest extends CrossLayerTestBase {
     @DisplayName("删除评论：MANAGER 可删除他人评论")
     void managerDeletesAnyCommentSucceeds() {
         setManagerContext(999L, "uni1");
-        when(commentMapper.selectById(1L)).thenReturn(Comment.builder().id(1L).userId(OWNER_ID).build());
+        when(commentMapper.selectById(1L))
+                .thenReturn(Comment.builder().id(1L).userId(OWNER_ID).build());
         when(commentMapper.deleteById(1L)).thenReturn(1);
 
         commentService.delete(1L);
@@ -238,7 +241,9 @@ class CommentLikeInteractionCrossLayerTest extends CrossLayerTestBase {
         page.setRecords(List.of(c1, c2));
         when(commentMapper.selectPage(any(Page.class), any())).thenReturn(page);
         when(commentConvertor.toResponseList(any(List.class)))
-                .thenReturn(List.of(CommentResponse.builder().build(), CommentResponse.builder().build()));
+                .thenReturn(List.of(
+                        CommentResponse.builder().build(),
+                        CommentResponse.builder().build()));
 
         CommentPageResponse result = commentService.getPage("course", COURSE_ID, 1, 10);
 
@@ -266,7 +271,12 @@ class CommentLikeInteractionCrossLayerTest extends CrossLayerTestBase {
     @DisplayName("toggle 幂等：两次点击后回到未赞状态且计数归位")
     void toggleTwiceReturnsToUnliked() {
         setStudentContext(OWNER_ID, "uni1");
-        LikeRecord existing = LikeRecord.builder().id(10L).userId(OWNER_ID).targetType("course").targetId(COURSE_ID).build();
+        LikeRecord existing = LikeRecord.builder()
+                .id(10L)
+                .userId(OWNER_ID)
+                .targetType("course")
+                .targetId(COURSE_ID)
+                .build();
         // 第一次查询无记录 → 插入；第二次查询有记录 → 删除（getOne 走 selectOne(wrapper, throwEx) 两参重载）
         when(likeRecordMapper.selectOne(any(), anyBoolean())).thenReturn(null, existing);
         when(likeRecordMapper.selectCount(any())).thenReturn(1L, 0L);

@@ -75,7 +75,8 @@ class UserQuizAnswerAccuracyCrossLayerTest extends CrossLayerTestBase {
                 field.setAccessible(true);
                 field.set(service, mapper);
             } catch (Exception e) {
-                throw new RuntimeException("Failed to set baseMapper on " + service.getClass().getSimpleName(), e);
+                throw new RuntimeException(
+                        "Failed to set baseMapper on " + service.getClass().getSimpleName(), e);
             }
             return service;
         }
@@ -97,9 +98,8 @@ class UserQuizAnswerAccuracyCrossLayerTest extends CrossLayerTestBase {
     @Test
     @DisplayName("多章节聚合：2 章节记录映射为 2 条准确率（题目数/答对数/正确率）")
     void groupsByChapterAcrossMultipleChapters() {
-        when(userQuizAnswerMapper.selectChapterAccuracyByUserId(1L)).thenReturn(List.of(
-                row(10L, 4, 3),
-                row(20L, 2, 2)));
+        when(userQuizAnswerMapper.selectChapterAccuracyByUserId(1L))
+                .thenReturn(List.of(row(10L, 4, 3), row(20L, 2, 2)));
 
         List<ChapterAccuracyResponse> result = userQuizAnswerService.getAccuracyByChapter(1L);
 
