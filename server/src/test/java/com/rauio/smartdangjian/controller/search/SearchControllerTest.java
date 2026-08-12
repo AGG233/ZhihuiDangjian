@@ -28,6 +28,7 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.search.controller.SearchController;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
+import com.rauio.smartdangjian.server.search.service.HotSpotService;
 import com.rauio.smartdangjian.server.search.service.RecommendService;
 import com.rauio.smartdangjian.server.search.service.SearchService;
 import com.rauio.smartdangjian.server.search.service.UserProfileService;
@@ -40,8 +41,11 @@ class SearchControllerTest extends BaseControllerTest {
     static class TestConfig extends CommonTestConfig {
         @Bean
         public SearchController searchController(
-                SearchService searchService, RecommendService recommendService, UserProfileService userProfileService) {
-            return new SearchController(searchService, recommendService, userProfileService);
+                SearchService searchService,
+                RecommendService recommendService,
+                UserProfileService userProfileService,
+                HotSpotService hotSpotService) {
+            return new SearchController(searchService, recommendService, userProfileService, hotSpotService);
         }
     }
 
@@ -53,6 +57,9 @@ class SearchControllerTest extends BaseControllerTest {
 
     @MockitoBean
     private UserProfileService userProfileService;
+
+    @MockitoBean
+    private HotSpotService hotSpotService;
 
     private Page<CourseResponse> createCoursePage(int count) {
         Page<CourseResponse> page = new Page<>(1, 10, count);
@@ -133,6 +140,39 @@ class SearchControllerTest extends BaseControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data.userId").value("1"));
+        }
+
+        @Test
+        @DisplayName("GET /hot/courses - 热门课程成功")
+        void hotCoursesSuccess() throws Exception {
+            when(hotSpotService.getHotCourses(anyInt())).thenReturn(List.of());
+
+            mockMvc.perform(get("/api/search/hot/courses"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data.length()").value(0));
+        }
+
+        @Test
+        @DisplayName("GET /hot/categories - 热门分类成功")
+        void hotCategoriesSuccess() throws Exception {
+            when(hotSpotService.getHotCategories(anyInt())).thenReturn(List.of());
+
+            mockMvc.perform(get("/api/search/hot/categories"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data.length()").value(0));
+        }
+
+        @Test
+        @DisplayName("GET /trend/learning - 学习趋势成功")
+        void learningTrendSuccess() throws Exception {
+            when(hotSpotService.getLearningTrend(anyInt())).thenReturn(List.of());
+
+            mockMvc.perform(get("/api/search/trend/learning"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data.length()").value(0));
         }
     }
 
