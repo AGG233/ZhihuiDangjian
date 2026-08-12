@@ -12,6 +12,9 @@ public class LearningErrorConstants {
     public static final int RECORD_UPDATE_FAILED = 4004;
     public static final int RECORD_DELETE_FAILED = 4005;
 
+    // 学习统计
+    public static final int STATS_DAYS_OUT_OF_RANGE = 4006;
+
     // 学习进度
     public static final int PROGRESS_NOT_FOUND = 4011;
     public static final int PROGRESS_ALREADY_EXISTS = 4012;

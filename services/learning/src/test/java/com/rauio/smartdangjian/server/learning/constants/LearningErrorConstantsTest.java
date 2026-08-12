@@ -25,12 +25,14 @@ class LearningErrorConstantsTest {
         assertThat(LearningErrorConstants.RECORD_ID_REQUIRED).isEqualTo(4003);
         assertThat(LearningErrorConstants.RECORD_UPDATE_FAILED).isEqualTo(4004);
         assertThat(LearningErrorConstants.RECORD_DELETE_FAILED).isEqualTo(4005);
+        assertThat(LearningErrorConstants.STATS_DAYS_OUT_OF_RANGE).isEqualTo(4006);
 
         assertThat(LearningErrorConstants.RECORD_NOT_FOUND).isBetween(4000, 4999);
         assertThat(LearningErrorConstants.RECORD_CREATE_FAILED).isBetween(4000, 4999);
         assertThat(LearningErrorConstants.RECORD_ID_REQUIRED).isBetween(4000, 4999);
         assertThat(LearningErrorConstants.RECORD_UPDATE_FAILED).isBetween(4000, 4999);
         assertThat(LearningErrorConstants.RECORD_DELETE_FAILED).isBetween(4000, 4999);
+        assertThat(LearningErrorConstants.STATS_DAYS_OUT_OF_RANGE).isBetween(4000, 4999);
     }
 
     @Test

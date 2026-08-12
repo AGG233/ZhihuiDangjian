@@ -2,11 +2,13 @@ package com.rauio.smartdangjian.server.learning.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -27,6 +29,8 @@ import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
 import com.rauio.smartdangjian.server.learning.pojo.convertor.UserLearningRecordConvertor;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserLearningRecordRequest;
+import com.rauio.smartdangjian.server.learning.pojo.response.DayFrequencyStat;
+import com.rauio.smartdangjian.server.learning.pojo.response.FrequencyStatsResponse;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,6 +53,11 @@ class UserLearningRecordServiceTest {
     private static final Long USER_ID = 1L;
     private static final Long CHAPTER_ID = 1L;
     private static final Long COURSE_ID = 1L;
+
+    @org.junit.jupiter.api.BeforeEach
+    void stubBaseMapper() {
+        lenient().doReturn(mapper).when(recordService).getBaseMapper();
+    }
 
     // ==================== get ====================
 
@@ -175,6 +184,70 @@ class UserLearningRecordServiceTest {
         List<UserLearningRecord> result = recordService.getRecentByUserId("1", 0);
 
         assertThat(result).isEmpty();
+    }
+
+    // ==================== getFrequencyStats ====================
+
+    @Test
+    @DisplayName("getFrequencyStats 多天记录聚合总次数与总时长")
+    void getFrequencyStatsAggregatesMultiDayRecords() {
+        when(mapper.selectFrequencyStats(eq(USER_ID), any(LocalDateTime.class)))
+                .thenReturn(List.of(
+                        stat(LocalDate.of(2026, 8, 10), 2L, 1200L),
+                        stat(LocalDate.of(2026, 8, 11), 2L, 1800L),
+                        stat(LocalDate.of(2026, 8, 12), 2L, 2400L)));
+
+        FrequencyStatsResponse result = recordService.getFrequencyStats(USER_ID, 3);
+
+        assertThat(result.getDays()).hasSize(3);
+        assertThat(result.getTotalCount()).isEqualTo(6);
+        assertThat(result.getTotalDuration()).isEqualTo(5400);
+        assertThat(result.getAvgPerDay()).isCloseTo(2.0, within(0.0001));
+        assertThat(result.getDays().get(0).getDate()).isEqualTo(LocalDate.of(2026, 8, 10));
+    }
+
+    @Test
+    @DisplayName("getFrequencyStats 无记录时返回空明细与零值汇总")
+    void getFrequencyStatsEmptyReturnsZeroes() {
+        when(mapper.selectFrequencyStats(eq(USER_ID), any(LocalDateTime.class))).thenReturn(List.of());
+
+        FrequencyStatsResponse result = recordService.getFrequencyStats(USER_ID, 30);
+
+        assertThat(result.getDays()).isEmpty();
+        assertThat(result.getTotalCount()).isZero();
+        assertThat(result.getTotalDuration()).isZero();
+        assertThat(result.getAvgPerDay()).isZero();
+    }
+
+    @Test
+    @DisplayName("getFrequencyStats days 为空时按默认30天统计")
+    void getFrequencyStatsDefaultDaysWhenNull() {
+        when(mapper.selectFrequencyStats(eq(USER_ID), any(LocalDateTime.class)))
+                .thenReturn(List.of(stat(LocalDate.now(), 6L, 5400L)));
+
+        FrequencyStatsResponse result = recordService.getFrequencyStats(USER_ID, null);
+
+        assertThat(result.getTotalCount()).isEqualTo(6);
+        assertThat(result.getAvgPerDay()).isCloseTo(0.2, within(0.0001));
+    }
+
+    @Test
+    @DisplayName("getFrequencyStats days 非正数时按默认30天统计")
+    void getFrequencyStatsDefaultDaysWhenNonPositive() {
+        when(mapper.selectFrequencyStats(eq(USER_ID), any(LocalDateTime.class))).thenReturn(List.of());
+
+        FrequencyStatsResponse result = recordService.getFrequencyStats(USER_ID, 0);
+
+        assertThat(result.getTotalCount()).isZero();
+        assertThat(result.getAvgPerDay()).isZero();
+    }
+
+    @Test
+    @DisplayName("getFrequencyStats days 超过365抛出异常")
+    void getFrequencyStatsRejectsDaysOverLimit() {
+        assertThatThrownBy(() -> recordService.getFrequencyStats(USER_ID, 366))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("统计天数超出范围");
     }
 
     // ==================== getByChapterId ====================
@@ -678,5 +751,13 @@ class UserLearningRecordServiceTest {
         int result = recordService.syncUserLearningGraph(USER_ID);
 
         assertThat(result).isZero();
+    }
+
+    private DayFrequencyStat stat(LocalDate date, long count, long totalDuration) {
+        return DayFrequencyStat.builder()
+                .date(date)
+                .recordCount(count)
+                .totalDuration(totalDuration)
+                .build();
     }
 }

@@ -11,10 +11,14 @@ import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
+import com.rauio.smartdangjian.constants.ErrorConstants;
+import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserLearningRecordRequest;
+import com.rauio.smartdangjian.server.learning.pojo.response.FrequencyStatsResponse;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
+import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,6 +33,20 @@ import lombok.RequiredArgsConstructor;
 public class UserLearningRecordController {
 
     private final UserLearningRecordService recordService;
+    private final UserService userService;
+
+    @Operation(summary = "碎片化学习频率统计", description = "按日粒度返回近N天（默认30）的学习次数、总时长、日均频次")
+    @GetMapping("/stats/frequency")
+    @SaCheckRole("STUDENT")
+    public Result<FrequencyStatsResponse> getFrequencyStats(
+            @Parameter(name = "days", description = "统计天数，默认30，最大365")
+                    @RequestParam(required = false) Integer days) {
+        String currentUserId = userService.getCurrentUserId();
+        if (currentUserId == null) {
+            throw new BusinessException(ErrorConstants.USER_NOT_EXISTS, "未登录");
+        }
+        return Result.ok(recordService.getFrequencyStats(Long.valueOf(currentUserId), days));
+    }
 
     @Operation(summary = "获取学习记录", description = "根据记录ID获取学习记录详情")
     @GetMapping("/{id}")
