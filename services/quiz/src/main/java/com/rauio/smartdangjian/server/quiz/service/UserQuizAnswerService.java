@@ -14,9 +14,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
 import com.rauio.smartdangjian.server.quiz.mapper.UserQuizAnswerMapper;
+import com.rauio.smartdangjian.server.quiz.pojo.dto.ChapterAccuracyRow;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
+import com.rauio.smartdangjian.server.quiz.pojo.response.ChapterAccuracyResponse;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
 
@@ -251,6 +253,36 @@ public class UserQuizAnswerService extends ServiceImpl<UserQuizAnswerMapper, Use
         wrapper.eq(UserQuizAnswer::getUserId, userId);
         wrapper.eq(UserQuizAnswer::getQuizId, quizId);
         return this.list(wrapper);
+    }
+
+    /**
+     * 按章节聚合用户答题准确率。
+     *
+     * <p>聚合由 Mapper 的 {@link UserQuizAnswerMapper#selectChapterAccuracyByUserId} 完成
+     * （user_quiz_answer JOIN quiz 按 quiz.chapter_id 分组），本方法仅做 DTO → Response 映射：
+     * 正确率 = 答对数 / 记录数。答对口径：仅 isCorrect=1（完全正确）计答对，
+     * isCorrect=2（部分正确）不计，与 UserProfileService.buildQuizStats 的 correctRate 一致。
+     * 无答题记录时返回空列表。
+     *
+     * @param userId 用户ID
+     * @return 按章节聚合的准确率列表
+     */
+    public List<ChapterAccuracyResponse> getAccuracyByChapter(Long userId) {
+        return baseMapper.selectChapterAccuracyByUserId(userId).stream()
+                .map(row -> toChapterAccuracyResponse(row))
+                .toList();
+    }
+
+    private ChapterAccuracyResponse toChapterAccuracyResponse(ChapterAccuracyRow row) {
+        int questionCount = row.getQuestionCount() == null ? 0 : row.getQuestionCount();
+        int correctCount = row.getCorrectCount() == null ? 0 : row.getCorrectCount();
+        double accuracy = questionCount == 0 ? 0.0 : (double) correctCount / questionCount;
+        return ChapterAccuracyResponse.builder()
+                .chapterId(row.getChapterId())
+                .questionCount(questionCount)
+                .correctCount(correctCount)
+                .accuracy(accuracy)
+                .build();
     }
 
     /**

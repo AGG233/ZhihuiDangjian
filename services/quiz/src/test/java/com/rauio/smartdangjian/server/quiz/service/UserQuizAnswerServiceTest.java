@@ -10,9 +10,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,9 +27,11 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
 import com.rauio.smartdangjian.server.quiz.mapper.UserQuizAnswerMapper;
+import com.rauio.smartdangjian.server.quiz.pojo.dto.ChapterAccuracyRow;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
+import com.rauio.smartdangjian.server.quiz.pojo.response.ChapterAccuracyResponse;
 
 @ExtendWith(MockitoExtension.class)
 class UserQuizAnswerServiceTest {
@@ -44,6 +48,27 @@ class UserQuizAnswerServiceTest {
     @Spy
     @InjectMocks
     private UserQuizAnswerService userQuizAnswerService;
+
+    @BeforeEach
+    void injectBaseMapper() throws Exception {
+        // @Spy 实例无法经 @InjectMocks 注入父类 ServiceImpl.baseMapper，手动反射注入，
+        // 供 getAccuracyByChapter 直接调用 mapper 聚合方法（既有用例不依赖 baseMapper，不受影响）
+        Field baseMapperField = findBaseMapperField(UserQuizAnswerService.class);
+        baseMapperField.setAccessible(true);
+        baseMapperField.set(userQuizAnswerService, mapper);
+    }
+
+    private static Field findBaseMapperField(Class<?> clazz) throws NoSuchFieldException {
+        Class<?> current = clazz;
+        while (current != null) {
+            try {
+                return current.getDeclaredField("baseMapper");
+            } catch (NoSuchFieldException e) {
+                current = current.getSuperclass();
+            }
+        }
+        throw new NoSuchFieldException("baseMapper");
+    }
 
     // ==================== create ====================
 
@@ -526,6 +551,41 @@ class UserQuizAnswerServiceTest {
         assertThat(result).isNull();
     }
 
+    // ==================== getAccuracyByChapter ====================
+
+    @Test
+    @DisplayName("getAccuracyByChapter 多章节数据：按章节映射题目数、答对数与正确率")
+    void getAccuracyByChapterGroupsByChapter() {
+        when(mapper.selectChapterAccuracyByUserId(1L)).thenReturn(List.of(
+                row(10L, 4, 3),
+                row(20L, 2, 2)));
+
+        List<ChapterAccuracyResponse> result = userQuizAnswerService.getAccuracyByChapter(1L);
+
+        assertThat(result).hasSize(2);
+        ChapterAccuracyResponse chapter1 = result.get(0);
+        assertThat(chapter1.getChapterId()).isEqualTo(10L);
+        assertThat(chapter1.getQuestionCount()).isEqualTo(4);
+        assertThat(chapter1.getCorrectCount()).isEqualTo(3);
+        assertThat(chapter1.getAccuracy()).isEqualTo(0.75);
+        ChapterAccuracyResponse chapter2 = result.get(1);
+        assertThat(chapter2.getChapterId()).isEqualTo(20L);
+        assertThat(chapter2.getQuestionCount()).isEqualTo(2);
+        assertThat(chapter2.getCorrectCount()).isEqualTo(2);
+        assertThat(chapter2.getAccuracy()).isEqualTo(1.0);
+        verify(mapper).selectChapterAccuracyByUserId(1L);
+    }
+
+    @Test
+    @DisplayName("getAccuracyByChapter 无答题记录：返回空列表")
+    void getAccuracyByChapterReturnsEmptyWhenNoAnswers() {
+        when(mapper.selectChapterAccuracyByUserId(1L)).thenReturn(Collections.emptyList());
+
+        List<ChapterAccuracyResponse> result = userQuizAnswerService.getAccuracyByChapter(1L);
+
+        assertThat(result).isEmpty();
+    }
+
     // ==================== helpers ====================
 
     private Quiz quiz(String questionType, Integer score) {
@@ -542,5 +602,13 @@ class UserQuizAnswerServiceTest {
                 .quizId(quizId)
                 .optionId(optionId)
                 .build();
+    }
+
+    private ChapterAccuracyRow row(Long chapterId, Integer questionCount, Integer correctCount) {
+        ChapterAccuracyRow row = new ChapterAccuracyRow();
+        row.setChapterId(chapterId);
+        row.setQuestionCount(questionCount);
+        row.setCorrectCount(correctCount);
+        return row;
     }
 }
