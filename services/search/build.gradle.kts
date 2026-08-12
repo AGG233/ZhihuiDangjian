@@ -7,6 +7,7 @@ dependencies {
     implementation(project(":services:content"))
     implementation(project(":services:chapter"))
     implementation(project(":services:course"))
+    implementation(project(":services:category"))
     implementation(project(":services:learning"))
     implementation(project(":services:user"))
     implementation(project(":services:quiz"))

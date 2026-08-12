@@ -1,18 +1,23 @@
 package com.rauio.smartdangjian.server.search.controller;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.search.pojo.response.HotCategoryResponse;
+import com.rauio.smartdangjian.server.search.pojo.response.HotCourseResponse;
+import com.rauio.smartdangjian.server.search.pojo.response.LearningTrendResponse;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
+import com.rauio.smartdangjian.server.search.service.HotSpotService;
 import com.rauio.smartdangjian.server.search.service.RecommendService;
 import com.rauio.smartdangjian.server.search.service.SearchService;
 import com.rauio.smartdangjian.server.search.service.UserProfileService;
-import com.rauio.smartdangjian.utils.spec.UserType;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,6 +32,7 @@ public class SearchController {
     private final SearchService searchService;
     private final RecommendService recommendService;
     private final UserProfileService userProfileService;
+    private final HotSpotService hotSpotService;
 
     @Operation(summary = "搜索课程", description = "支持关键词全文检索，可按分类和难度过滤")
     @GetMapping("/courses")
@@ -66,5 +72,29 @@ public class SearchController {
     @SaCheckRole("STUDENT")
     public Result<UserProfileResponse> getProfile() {
         return Result.ok(userProfileService.getCurrentUserProfile());
+    }
+
+    @Operation(summary = "热门课程", description = "按报名人数与近30天学习人数加权排序的热门课程 Top N")
+    @GetMapping("/hot/courses")
+    @SaCheckRole("STUDENT")
+    public Result<List<HotCourseResponse>> hotCourses(
+            @Parameter(name = "topN", description = "返回条数，默认10") @RequestParam(defaultValue = "10") int topN) {
+        return Result.ok(hotSpotService.getHotCourses(topN));
+    }
+
+    @Operation(summary = "热门分类", description = "按关联课程报名人数汇总的热门分类 Top N")
+    @GetMapping("/hot/categories")
+    @SaCheckRole("STUDENT")
+    public Result<List<HotCategoryResponse>> hotCategories(
+            @Parameter(name = "topN", description = "返回条数，默认10") @RequestParam(defaultValue = "10") int topN) {
+        return Result.ok(hotSpotService.getHotCategories(topN));
+    }
+
+    @Operation(summary = "学习趋势", description = "按天返回近N天学习人次与总时长")
+    @GetMapping("/trend/learning")
+    @SaCheckRole("STUDENT")
+    public Result<List<LearningTrendResponse>> learningTrend(
+            @Parameter(name = "days", description = "统计天数，默认30") @RequestParam(defaultValue = "30") int days) {
+        return Result.ok(hotSpotService.getLearningTrend(days));
     }
 }

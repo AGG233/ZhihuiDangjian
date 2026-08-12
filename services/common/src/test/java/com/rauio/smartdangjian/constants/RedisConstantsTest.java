@@ -2,8 +2,6 @@ package com.rauio.smartdangjian.constants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.lang.reflect.Constructor;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -51,4 +49,21 @@ class RedisConstantsTest {
         assertThat(RedisConstants.USER_PROFILE_CACHE_PREFIX).isEqualTo("user:profile:");
     }
 
+    @Test
+    @DisplayName("HOT_COURSE_CACHE_PREFIX 为 search:hot:courses:")
+    void hotCourseCachePrefix() {
+        assertThat(RedisConstants.HOT_COURSE_CACHE_PREFIX).isEqualTo("search:hot:courses:");
+    }
+
+    @Test
+    @DisplayName("HOT_CATEGORY_CACHE_PREFIX 为 search:hot:categories:")
+    void hotCategoryCachePrefix() {
+        assertThat(RedisConstants.HOT_CATEGORY_CACHE_PREFIX).isEqualTo("search:hot:categories:");
+    }
+
+    @Test
+    @DisplayName("LEARNING_TREND_CACHE_PREFIX 为 search:trend:learning:")
+    void learningTrendCachePrefix() {
+        assertThat(RedisConstants.LEARNING_TREND_CACHE_PREFIX).isEqualTo("search:trend:learning:");
+    }
 }
