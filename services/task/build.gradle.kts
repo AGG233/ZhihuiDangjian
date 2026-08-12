@@ -1,0 +1,17 @@
+plugins {
+    id("boot-application-conventions")
+}
+
+dependencies {
+    implementation(project(":services:common"))
+    implementation(project(":services:user"))
+    implementation(libs.mapstruct)
+    implementation(libs.mybatis.plus.join.starter)
+    implementation(libs.bundles.common)
+
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+    annotationProcessor(libs.mapstruct.processor)
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+}
