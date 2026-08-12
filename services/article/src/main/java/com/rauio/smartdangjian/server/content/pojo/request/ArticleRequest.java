@@ -27,6 +27,9 @@ public class ArticleRequest {
     @Schema(description = "文章摘要，可留空")
     private String summary;
 
+    @Schema(description = "原文链接，可留空")
+    private String sourceUrl;
+
     @Schema(description = "文章状态，有'draft','published','archived'，分别对应草稿,公开，归档不公开")
     private ArticleStatus status;
 }

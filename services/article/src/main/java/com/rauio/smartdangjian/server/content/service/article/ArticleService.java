@@ -52,6 +52,7 @@ public class ArticleService extends ServiceImpl<ArticleMapper, Article> {
                 .authorId(user.getId())
                 .title(request.getTitle())
                 .summary(request.getSummary())
+                .sourceUrl(request.getSourceUrl())
                 .status(request.getStatus())
                 .build();
         if (!this.save(article)) {

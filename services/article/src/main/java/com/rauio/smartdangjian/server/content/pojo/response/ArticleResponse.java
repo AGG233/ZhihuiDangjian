@@ -29,6 +29,9 @@ public class ArticleResponse {
     @Schema(description = "文章摘要")
     private String summary;
 
+    @Schema(description = "原文链接")
+    private String sourceUrl;
+
     @Schema(description = "文章状态")
     private ArticleStatus status;
 

@@ -3,6 +3,7 @@ package com.rauio.smartdangjian.server.content.service.article;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -73,6 +74,21 @@ class ArticleServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .extracting("code")
                 .isEqualTo(ArticleErrorConstants.ARTICLE_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("get 返回文章实体包含 sourceUrl（读取路径）")
+    void getReturnsArticleWithSourceUrl() {
+        Article article = Article.builder()
+                .id(1L)
+                .title("文章标题")
+                .sourceUrl("https://example.com/original-article")
+                .build();
+        doReturn(article).when(articleService).getById(1L);
+
+        Article result = articleService.get(1L);
+
+        assertThat(result.getSourceUrl()).isEqualTo("https://example.com/original-article");
     }
 
     // ================================================================
@@ -163,6 +179,51 @@ class ArticleServiceTest {
     }
 
     @Test
+    @DisplayName("create 带 sourceUrl 时落库保存 sourceUrl")
+    void createPersistsSourceUrl() {
+        User user = User.builder()
+                .id(1L)
+                .username("testuser")
+                .userType(UserType.SCHOOL)
+                .build();
+        when(userService.getCurrentUser()).thenReturn(user);
+        doReturn(true).when(articleService).save(any(Article.class));
+
+        ArticleRequest dto = ArticleRequest.builder()
+                .title("带原文链接的文章")
+                .summary("摘要")
+                .sourceUrl("https://example.com/original-article")
+                .status(ArticleStatus.Published)
+                .build();
+
+        articleService.create(dto);
+
+        verify(articleService).save(argThat(article ->
+                "https://example.com/original-article".equals(article.getSourceUrl())));
+    }
+
+    @Test
+    @DisplayName("create 不带 sourceUrl 时落库 sourceUrl 为 null")
+    void createWithoutSourceUrlLeavesSourceUrlNull() {
+        User user = User.builder()
+                .id(1L)
+                .username("testuser")
+                .userType(UserType.SCHOOL)
+                .build();
+        when(userService.getCurrentUser()).thenReturn(user);
+        doReturn(true).when(articleService).save(any(Article.class));
+
+        ArticleRequest dto = ArticleRequest.builder()
+                .title("无原文链接的文章")
+                .status(ArticleStatus.Draft)
+                .build();
+
+        articleService.create(dto);
+
+        verify(articleService).save(argThat(article -> article.getSourceUrl() == null));
+    }
+
+    @Test
     @DisplayName("create 创建文章时 authorId 设置为当前用户 ID")
     void createSetsAuthorIdToCurrentUser() {
         User user = User.builder()
@@ -214,6 +275,45 @@ class ArticleServiceTest {
         articleService.update(dto);
 
         verify(convertor).toEntity(dto);
+    }
+
+    @Test
+    @DisplayName("update 修改 sourceUrl 时通过 updateById 落库新值")
+    void updateModifiesSourceUrl() {
+        Article entity = Article.builder()
+                .id(1L)
+                .title("更新标题")
+                .sourceUrl("https://example.com/updated-source")
+                .build();
+        when(convertor.toEntity(any(ArticleRequest.class))).thenReturn(entity);
+        doReturn(true).when(articleService).updateById(entity);
+
+        ArticleRequest dto = ArticleRequest.builder()
+                .id(1L)
+                .title("更新标题")
+                .sourceUrl("https://example.com/updated-source")
+                .build();
+
+        articleService.update(dto);
+
+        verify(convertor).toEntity(dto);
+        verify(articleService).updateById(argThat(article ->
+                "https://example.com/updated-source".equals(article.getSourceUrl())));
+    }
+
+    @Test
+    @DisplayName("update sourceUrl 为 null 时不覆盖已有值（updateById NOT_NULL 策略）")
+    void updateWithNullSourceUrlDoesNotOverwrite() {
+        Article entity = Article.builder().id(1L).title("更新标题").build();
+        when(convertor.toEntity(any(ArticleRequest.class))).thenReturn(entity);
+        doReturn(true).when(articleService).updateById(entity);
+
+        ArticleRequest dto = ArticleRequest.builder().id(1L).title("更新标题").build();
+
+        articleService.update(dto);
+
+        // updateById 默认 NOT_NULL 字段策略：null 字段不进入 SET 语句，不覆盖既有值
+        verify(articleService).updateById(argThat(article -> article.getSourceUrl() == null));
     }
 
     @Test

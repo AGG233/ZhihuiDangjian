@@ -17,6 +17,7 @@ class ArticleRequestTest {
                 .authorId(1L)
                 .title("测试文章")
                 .summary("测试摘要")
+                .sourceUrl("https://example.com/source")
                 .status(ArticleStatus.Published)
                 .build();
 
@@ -24,6 +25,7 @@ class ArticleRequestTest {
         assertThat(request.getAuthorId()).isEqualTo(1L);
         assertThat(request.getTitle()).isEqualTo("测试文章");
         assertThat(request.getSummary()).isEqualTo("测试摘要");
+        assertThat(request.getSourceUrl()).isEqualTo("https://example.com/source");
         assertThat(request.getStatus()).isEqualTo(ArticleStatus.Published);
     }
 
