@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.server.content.controller.user;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,13 +21,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserContentController {
 
-    private static final Long CAROUSEL_PARENT_ID = 1145141919810L;
+    /** 轮播图父章节 ID，默认兼容既有数据 */
+    @Value("${app.content.carousel.chapter-id:1145141919810}")
+    private Long carouselParentId;
 
     private final ChapterContentBlockService chapterContentBlockService;
 
     @Operation(summary = "获取轮播图列表")
     @GetMapping("/carousel")
     public Result<List<ContentBlockResponse>> getCarousel() {
-        return Result.ok(chapterContentBlockService.getByChapterId(CAROUSEL_PARENT_ID));
+        return Result.ok(chapterContentBlockService.getByChapterId(carouselParentId));
     }
 }

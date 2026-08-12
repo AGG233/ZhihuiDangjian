@@ -46,6 +46,11 @@ sa-token:
   token-style: random-64
   is-write-header: true
 
+app:
+  content:
+    carousel:
+      chapter-id: 1145141919810
+
 auth:
   captcha:
     test-code: ${AUTH_TEST_CAPTCHA_CODE:}
