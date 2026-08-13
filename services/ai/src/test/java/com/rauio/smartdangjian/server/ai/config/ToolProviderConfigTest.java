@@ -17,6 +17,7 @@ import com.rauio.smartdangjian.server.ai.tool.LearningPathTool;
 import com.rauio.smartdangjian.server.ai.tool.LearningTool;
 import com.rauio.smartdangjian.server.ai.tool.QuizManageTool;
 import com.rauio.smartdangjian.server.ai.tool.QuizTool;
+import com.rauio.smartdangjian.server.ai.tool.RagSearchTool;
 import com.rauio.smartdangjian.server.ai.tool.RecommendTool;
 import com.rauio.smartdangjian.server.ai.tool.UserInfoTool;
 import com.rauio.smartdangjian.server.ai.tool.UserProfileTool;
@@ -37,6 +38,7 @@ class ToolProviderConfigTest {
                 "userProfileToolProvider",
                 "quizManageToolProvider",
                 "contentSearchToolProvider",
+                "ragSearchToolProvider",
                 "aiQuizGeneratorToolProvider",
                 "articleDetailToolProvider",
                 "contentReviewToolProvider",
@@ -56,6 +58,7 @@ class ToolProviderConfigTest {
                     case "userProfileToolProvider" -> config.userProfileToolProvider(mock(UserProfileTool.class));
                     case "quizManageToolProvider" -> config.quizManageToolProvider(mock(QuizManageTool.class));
                     case "contentSearchToolProvider" -> config.contentSearchToolProvider(mock(ContentSearchTool.class));
+                    case "ragSearchToolProvider" -> config.ragSearchToolProvider(mock(RagSearchTool.class));
                     case "aiQuizGeneratorToolProvider" ->
                         config.aiQuizGeneratorToolProvider(mock(AiQuizGeneratorTool.class));
                     case "articleDetailToolProvider" -> config.articleDetailToolProvider(mock(ArticleDetailTool.class));

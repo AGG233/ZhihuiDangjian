@@ -67,6 +67,7 @@ class AgentModuleConfigTest {
                 anyProvider,
                 anyProvider,
                 anyProvider,
+                anyProvider,
                 anyProvider);
 
         assertThat(registry).isNotNull();
