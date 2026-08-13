@@ -9,8 +9,10 @@
 - [ ] refactor（重构）
 - [ ] perf（性能）
 - [ ] test（测试）
-- [ ] build / ci（构建 / 流水线）
+- [ ] build（构建）
+- [ ] ci（流水线）
 - [ ] chore（杂项）
+- [ ] revert（回滚）
 
 ## 关联 Issue
 <!-- 如：Closes #123 -->
