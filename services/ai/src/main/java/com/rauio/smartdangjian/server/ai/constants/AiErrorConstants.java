@@ -9,6 +9,7 @@ public class AiErrorConstants {
     public static final int SKILL_NOT_FOUND = 8002;
     public static final int SKILL_NOT_IN_CACHE = 8003;
     public static final int PROMPT_NOT_FOUND = 8004;
+    public static final int VOICE_TRANSCRIBE_FAILED = 8005;
     public static final int DOCUMENT_TYPE_INVALID = 8006;
     public static final int DOCUMENT_INGEST_FAILED = 8007;
 }
