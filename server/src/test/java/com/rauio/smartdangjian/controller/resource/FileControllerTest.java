@@ -31,6 +31,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.resource.controller.user.FileController;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
@@ -50,10 +51,13 @@ import com.rauio.smartdangjian.server.resource.service.FileService;
             "DATABASE_PASSWORD=",
             "NEO4J_URI=bolt://localhost:7687",
             "NEO4J_USERNAME=neo4j",
-            "NEO4J_PASSWORD=password"
+            "NEO4J_PASSWORD=password",
+            // 测试环境禁用向量库与 embedding 选择，避免 dashscope/openai 双 EmbeddingModel 冲突及真实 API 调用
+            "spring.ai.model.embedding=dashscope",
+            "spring.ai.vectorstore.type=none"
         })
 @DisplayName("文件资源接口测试 (FileController)")
-class FileControllerTest {
+class FileControllerTest extends BaseControllerTest {
 
     @SpringBootConfiguration
     @EnableAutoConfiguration(
@@ -63,7 +67,7 @@ class FileControllerTest {
                 com.rauio.smartdangjian.config.TransactionConfig.class
             })
     @EnableWebMvc
-    static class TestConfig {
+    static class TestConfig extends BaseControllerTest.CommonTestConfig {
         @Bean
         public FileController fileController(FileService fileService) {
             return new FileController(fileService);

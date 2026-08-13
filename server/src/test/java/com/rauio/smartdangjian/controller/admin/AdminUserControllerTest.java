@@ -55,7 +55,10 @@ import com.rauio.smartdangjian.utils.spec.UserType;
             "DATABASE_PASSWORD=",
             "NEO4J_URI=bolt://localhost:7687",
             "NEO4J_USERNAME=neo4j",
-            "NEO4J_PASSWORD=password"
+            "NEO4J_PASSWORD=password",
+            // 测试环境禁用向量库与 embedding 选择，避免 dashscope/openai 双 EmbeddingModel 冲突及真实 API 调用
+            "spring.ai.model.embedding=dashscope",
+            "spring.ai.vectorstore.type=none"
         })
 @DisplayName("管理员用户接口测试")
 class AdminUserControllerTest extends BaseControllerTest {
@@ -68,7 +71,8 @@ class AdminUserControllerTest extends BaseControllerTest {
                 com.rauio.smartdangjian.config.TransactionConfig.class
             })
     @EnableWebMvc
-    static class TestConfig {
+    // 继承 CommonTestConfig 以复用 XML converter 移除逻辑（jackson-dataformat-xml 传递依赖导致无 Accept 请求默认返回 XML）
+    static class TestConfig extends BaseControllerTest.CommonTestConfig {
         @Bean
         public AdminUserController adminUserController(UserService userService) {
             return new AdminUserController(userService);
