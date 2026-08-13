@@ -111,7 +111,8 @@ class ArticleAdminAccessAspectTest {
     @Test
     @DisplayName("文章作者不存在时抛出异常")
     void beforeAuthorNotFound() {
-        when(articleMapper.selectById("1")).thenReturn(Article.builder().id(1L).authorId(1L).build());
+        when(articleMapper.selectById("1"))
+                .thenReturn(Article.builder().id(1L).authorId(1L).build());
         when(userMapper.selectById(1L)).thenReturn(null);
 
         DataScopeContext context = mockContext(UserType.SCHOOL, 1L, "uni1", "'1'");
@@ -123,8 +124,10 @@ class ArticleAdminAccessAspectTest {
     @Test
     @DisplayName("作者与当前用户不同校时抛出异常")
     void beforeAuthorDifferentUniversity() {
-        when(articleMapper.selectById("1")).thenReturn(Article.builder().id(1L).authorId(1L).build());
-        when(userMapper.selectById(1L)).thenReturn(User.builder().id(1L).universityId("uni2").build());
+        when(articleMapper.selectById("1"))
+                .thenReturn(Article.builder().id(1L).authorId(1L).build());
+        when(userMapper.selectById(1L))
+                .thenReturn(User.builder().id(1L).universityId("uni2").build());
 
         DataScopeContext context = mockContext(UserType.SCHOOL, 1L, "uni1", "'1'");
         assertThatThrownBy(() -> aspect.before(context))
@@ -135,7 +138,8 @@ class ArticleAdminAccessAspectTest {
     @Test
     @DisplayName("学校管理员管理本校作者文章通过")
     void beforeSameUniversityPasses() {
-        when(articleMapper.selectById("1")).thenReturn(Article.builder().id(1L).authorId(1L).build());
+        when(articleMapper.selectById("1"))
+                .thenReturn(Article.builder().id(1L).authorId(1L).build());
         when(userMapper.selectById(1L))
                 .thenReturn(User.builder().id(1L).universityId("uni1").build());
 

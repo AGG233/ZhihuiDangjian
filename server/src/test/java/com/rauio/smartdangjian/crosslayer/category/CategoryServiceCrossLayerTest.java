@@ -93,16 +93,13 @@ class CategoryServiceCrossLayerTest extends CrossLayerTestBase {
                 }
 
                 @Override
-                protected void doBegin(Object transaction, TransactionDefinition definition) {
-                }
+                protected void doBegin(Object transaction, TransactionDefinition definition) {}
 
                 @Override
-                protected void doCommit(DefaultTransactionStatus status) {
-                }
+                protected void doCommit(DefaultTransactionStatus status) {}
 
                 @Override
-                protected void doRollback(DefaultTransactionStatus status) {
-                }
+                protected void doRollback(DefaultTransactionStatus status) {}
             };
         }
     }
@@ -112,12 +109,11 @@ class CategoryServiceCrossLayerTest extends CrossLayerTestBase {
     @Test
     @DisplayName("getRootList should return root categories using LambdaQueryWrapper")
     void getRootListShouldReturnRootCategories() {
-        List<Category> rootCategories = List.of(
-                createCategory(1L, "root1", 0, null, null),
-                createCategory(2L, "root2", 0, null, null));
+        List<Category> rootCategories =
+                List.of(createCategory(1L, "root1", 0, null, null), createCategory(2L, "root2", 0, null, null));
         when(categoryMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(rootCategories);
-        when(categoryConvertor.toResponseList(rootCategories)).thenReturn(
-                List.of(createResponse(1L, "root1"), createResponse(2L, "root2")));
+        when(categoryConvertor.toResponseList(rootCategories))
+                .thenReturn(List.of(createResponse(1L, "root1"), createResponse(2L, "root2")));
 
         List<CategoryResponse> result = categoryService.getRootList();
 
@@ -130,11 +126,9 @@ class CategoryServiceCrossLayerTest extends CrossLayerTestBase {
     @Test
     @DisplayName("getByParentId should return children using LambdaQueryWrapper")
     void getByParentIdShouldReturnChildren() {
-        List<Category> children = List.of(
-                createCategory(3L, "child1", 1, 1L, "1"));
+        List<Category> children = List.of(createCategory(3L, "child1", 1, 1L, "1"));
         when(categoryMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(children);
-        when(categoryConvertor.toResponseList(children)).thenReturn(
-                List.of(createResponse(3L, "child1")));
+        when(categoryConvertor.toResponseList(children)).thenReturn(List.of(createResponse(3L, "child1")));
 
         List<CategoryResponse> result = categoryService.getByParentId(1L);
 
@@ -269,8 +263,11 @@ class CategoryServiceCrossLayerTest extends CrossLayerTestBase {
         when(categoryMapper.selectById(10L)).thenReturn(null);
 
         assertThatThrownBy(() -> categoryService.createByParentId(
-                List.of(CategoryRequest.builder().name("child").childrenNode(Collections.emptyList()).build()),
-                10L))
+                        List.of(CategoryRequest.builder()
+                                .name("child")
+                                .childrenNode(Collections.emptyList())
+                                .build()),
+                        10L))
                 .isInstanceOf(BusinessException.class)
                 .satisfies(e -> {
                     BusinessException be = (BusinessException) e;
@@ -285,8 +282,11 @@ class CategoryServiceCrossLayerTest extends CrossLayerTestBase {
         when(categoryMapper.selectById(10L)).thenReturn(parent);
 
         assertThatThrownBy(() -> categoryService.createByParentId(
-                List.of(CategoryRequest.builder().name("child").childrenNode(Collections.emptyList()).build()),
-                10L))
+                        List.of(CategoryRequest.builder()
+                                .name("child")
+                                .childrenNode(Collections.emptyList())
+                                .build()),
+                        10L))
                 .isInstanceOf(BusinessException.class)
                 .satisfies(e -> {
                     BusinessException be = (BusinessException) e;
@@ -402,7 +402,8 @@ class CategoryServiceCrossLayerTest extends CrossLayerTestBase {
     void updateShouldPreserveExistingMetadata() {
         Category existing = createCategory(1L, "oldName", 0, null, "123");
         when(categoryMapper.selectById(1L)).thenReturn(existing);
-        CategoryRequest dto = CategoryRequest.builder().name("newName").description("newDesc").build();
+        CategoryRequest dto =
+                CategoryRequest.builder().name("newName").description("newDesc").build();
         Category updatedEntity = createCategory(null, "newName", null, null, null);
         when(categoryConvertor.toEntity(dto)).thenReturn(updatedEntity);
         when(categoryMapper.updateById(any(Category.class))).thenReturn(1);

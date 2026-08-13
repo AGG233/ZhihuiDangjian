@@ -81,36 +81,33 @@ class LearningResourceAccessAspectTest {
         @Test
         @DisplayName("管理员读取学习记录通过")
         void readManagerBypass() {
-            when(learningRecordMapper.selectById("1")).thenReturn(
-                    UserLearningRecord.builder().id(1L).userId(1L).build());
+            when(learningRecordMapper.selectById("1"))
+                    .thenReturn(UserLearningRecord.builder().id(1L).userId(1L).build());
 
             DataScopeContext context = mockContext(
-                    UserType.MANAGER, 1L, "uni1",
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.READ, "'1'");
+                    UserType.MANAGER, 1L, "uni1", DataScopeResources.LEARNING_RECORD, DataScopeAction.READ, "'1'");
             aspect.before(context);
         }
 
         @Test
         @DisplayName("学生读取自己的学习记录通过")
         void readOwnRecord() {
-            when(learningRecordMapper.selectById("1")).thenReturn(
-                    UserLearningRecord.builder().id(1L).userId(1L).build());
+            when(learningRecordMapper.selectById("1"))
+                    .thenReturn(UserLearningRecord.builder().id(1L).userId(1L).build());
 
             DataScopeContext context = mockContext(
-                    UserType.STUDENT, 1L, "uni1",
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.READ, "'1'");
+                    UserType.STUDENT, 1L, "uni1", DataScopeResources.LEARNING_RECORD, DataScopeAction.READ, "'1'");
             aspect.before(context);
         }
 
         @Test
         @DisplayName("学生读取他人学习记录拒绝")
         void readOthersRecord() {
-            when(learningRecordMapper.selectById("1")).thenReturn(
-                    UserLearningRecord.builder().id(1L).userId(2L).build());
+            when(learningRecordMapper.selectById("1"))
+                    .thenReturn(UserLearningRecord.builder().id(1L).userId(2L).build());
 
             DataScopeContext context = mockContext(
-                    UserType.STUDENT, 1L, "uni1",
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.READ, "'1'");
+                    UserType.STUDENT, 1L, "uni1", DataScopeResources.LEARNING_RECORD, DataScopeAction.READ, "'1'");
             assertThatThrownBy(() -> aspect.before(context))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("无权访问该资源");
@@ -119,28 +116,26 @@ class LearningResourceAccessAspectTest {
         @Test
         @DisplayName("学校管理员读取本校学习记录通过")
         void readSameUniversityRecord() {
-            when(learningRecordMapper.selectById("1")).thenReturn(
-                    UserLearningRecord.builder().id(1L).userId(2L).build());
-            when(userMapper.selectById(2L)).thenReturn(
-                    User.builder().id(2L).universityId("uni1").build());
+            when(learningRecordMapper.selectById("1"))
+                    .thenReturn(UserLearningRecord.builder().id(1L).userId(2L).build());
+            when(userMapper.selectById(2L))
+                    .thenReturn(User.builder().id(2L).universityId("uni1").build());
 
             DataScopeContext context = mockContext(
-                    UserType.SCHOOL, 1L, "uni1",
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.READ, "'1'");
+                    UserType.SCHOOL, 1L, "uni1", DataScopeResources.LEARNING_RECORD, DataScopeAction.READ, "'1'");
             aspect.before(context);
         }
 
         @Test
         @DisplayName("学校管理员读取外校学习记录拒绝")
         void readOtherUniversityRecord() {
-            when(learningRecordMapper.selectById("1")).thenReturn(
-                    UserLearningRecord.builder().id(1L).userId(2L).build());
-            when(userMapper.selectById(2L)).thenReturn(
-                    User.builder().id(2L).universityId("uni2").build());
+            when(learningRecordMapper.selectById("1"))
+                    .thenReturn(UserLearningRecord.builder().id(1L).userId(2L).build());
+            when(userMapper.selectById(2L))
+                    .thenReturn(User.builder().id(2L).universityId("uni2").build());
 
             DataScopeContext context = mockContext(
-                    UserType.SCHOOL, 1L, "uni1",
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.READ, "'1'");
+                    UserType.SCHOOL, 1L, "uni1", DataScopeResources.LEARNING_RECORD, DataScopeAction.READ, "'1'");
             assertThatThrownBy(() -> aspect.before(context))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("无权访问本校外的数据");
@@ -149,11 +144,10 @@ class LearningResourceAccessAspectTest {
         @Test
         @DisplayName("学校管理员未绑定学校时读取抛出异常")
         void readSchoolWithoutUniversityId() {
-            when(learningRecordMapper.selectById("1")).thenReturn(
-                    UserLearningRecord.builder().id(1L).userId(2L).build());
+            when(learningRecordMapper.selectById("1"))
+                    .thenReturn(UserLearningRecord.builder().id(1L).userId(2L).build());
             DataScopeContext context = mockContext(
-                    UserType.SCHOOL, 1L, null,
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.READ, "'1'");
+                    UserType.SCHOOL, 1L, null, DataScopeResources.LEARNING_RECORD, DataScopeAction.READ, "'1'");
             assertThatThrownBy(() -> aspect.before(context))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("未绑定学校");
@@ -165,8 +159,7 @@ class LearningResourceAccessAspectTest {
             when(learningRecordMapper.selectById("1")).thenReturn(null);
 
             DataScopeContext context = mockContext(
-                    UserType.MANAGER, 1L, "uni1",
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.READ, "'1'");
+                    UserType.MANAGER, 1L, "uni1", DataScopeResources.LEARNING_RECORD, DataScopeAction.READ, "'1'");
             assertThatThrownBy(() -> aspect.before(context))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("学习记录不存在");
@@ -182,24 +175,22 @@ class LearningResourceAccessAspectTest {
         @Test
         @DisplayName("学生读取自己的进度通过")
         void readOwnProgress() {
-            when(chapterProgressMapper.selectById("1")).thenReturn(
-                    UserChapterProgress.builder().id(1L).userId(1L).build());
+            when(chapterProgressMapper.selectById("1"))
+                    .thenReturn(UserChapterProgress.builder().id(1L).userId(1L).build());
 
             DataScopeContext context = mockContext(
-                    UserType.STUDENT, 1L, "uni1",
-                    DataScopeResources.CHAPTER_PROGRESS, DataScopeAction.READ, "'1'");
+                    UserType.STUDENT, 1L, "uni1", DataScopeResources.CHAPTER_PROGRESS, DataScopeAction.READ, "'1'");
             aspect.before(context);
         }
 
         @Test
         @DisplayName("学生读取他人进度拒绝")
         void readOthersProgress() {
-            when(chapterProgressMapper.selectById("1")).thenReturn(
-                    UserChapterProgress.builder().id(1L).userId(2L).build());
+            when(chapterProgressMapper.selectById("1"))
+                    .thenReturn(UserChapterProgress.builder().id(1L).userId(2L).build());
 
             DataScopeContext context = mockContext(
-                    UserType.STUDENT, 1L, "uni1",
-                    DataScopeResources.CHAPTER_PROGRESS, DataScopeAction.READ, "'1'");
+                    UserType.STUDENT, 1L, "uni1", DataScopeResources.CHAPTER_PROGRESS, DataScopeAction.READ, "'1'");
             assertThatThrownBy(() -> aspect.before(context))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("无权访问该资源");
@@ -211,8 +202,7 @@ class LearningResourceAccessAspectTest {
             when(chapterProgressMapper.selectById("1")).thenReturn(null);
 
             DataScopeContext context = mockContext(
-                    UserType.MANAGER, 1L, "uni1",
-                    DataScopeResources.CHAPTER_PROGRESS, DataScopeAction.READ, "'1'");
+                    UserType.MANAGER, 1L, "uni1", DataScopeResources.CHAPTER_PROGRESS, DataScopeAction.READ, "'1'");
             assertThatThrownBy(() -> aspect.before(context))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("进度记录不存在");
@@ -228,39 +218,36 @@ class LearningResourceAccessAspectTest {
         @Test
         @DisplayName("管理员删除学习记录通过")
         void deleteManagerBypass() {
-            when(learningRecordMapper.selectById("1")).thenReturn(
-                    UserLearningRecord.builder().id(1L).userId(2L).build());
+            when(learningRecordMapper.selectById("1"))
+                    .thenReturn(UserLearningRecord.builder().id(1L).userId(2L).build());
             DataScopeContext context = mockContext(
-                    UserType.MANAGER, 1L, "uni1",
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.DELETE, "'1'");
+                    UserType.MANAGER, 1L, "uni1", DataScopeResources.LEARNING_RECORD, DataScopeAction.DELETE, "'1'");
             aspect.before(context);
         }
 
         @Test
         @DisplayName("学校管理员删除本校学习记录通过")
         void deleteSameUniversityRecord() {
-            when(learningRecordMapper.selectById("1")).thenReturn(
-                    UserLearningRecord.builder().id(1L).userId(2L).build());
-            when(userMapper.selectById(2L)).thenReturn(
-                    User.builder().id(2L).universityId("uni1").build());
+            when(learningRecordMapper.selectById("1"))
+                    .thenReturn(UserLearningRecord.builder().id(1L).userId(2L).build());
+            when(userMapper.selectById(2L))
+                    .thenReturn(User.builder().id(2L).universityId("uni1").build());
 
             DataScopeContext context = mockContext(
-                    UserType.SCHOOL, 1L, "uni1",
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.DELETE, "'1'");
+                    UserType.SCHOOL, 1L, "uni1", DataScopeResources.LEARNING_RECORD, DataScopeAction.DELETE, "'1'");
             aspect.before(context);
         }
 
         @Test
         @DisplayName("学校管理员删除外校学习记录拒绝")
         void deleteOtherUniversityRecord() {
-            when(learningRecordMapper.selectById("1")).thenReturn(
-                    UserLearningRecord.builder().id(1L).userId(2L).build());
-            when(userMapper.selectById(2L)).thenReturn(
-                    User.builder().id(2L).universityId("uni2").build());
+            when(learningRecordMapper.selectById("1"))
+                    .thenReturn(UserLearningRecord.builder().id(1L).userId(2L).build());
+            when(userMapper.selectById(2L))
+                    .thenReturn(User.builder().id(2L).universityId("uni2").build());
 
             DataScopeContext context = mockContext(
-                    UserType.SCHOOL, 1L, "uni1",
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.DELETE, "'1'");
+                    UserType.SCHOOL, 1L, "uni1", DataScopeResources.LEARNING_RECORD, DataScopeAction.DELETE, "'1'");
             assertThatThrownBy(() -> aspect.before(context))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("无权访问本校外的数据");
@@ -269,11 +256,10 @@ class LearningResourceAccessAspectTest {
         @Test
         @DisplayName("学生无权删除学习记录")
         void deleteStudentNotAllowed() {
-            when(learningRecordMapper.selectById("1")).thenReturn(
-                    UserLearningRecord.builder().id(1L).userId(2L).build());
+            when(learningRecordMapper.selectById("1"))
+                    .thenReturn(UserLearningRecord.builder().id(1L).userId(2L).build());
             DataScopeContext context = mockContext(
-                    UserType.STUDENT, 1L, "uni1",
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.DELETE, "'1'");
+                    UserType.STUDENT, 1L, "uni1", DataScopeResources.LEARNING_RECORD, DataScopeAction.DELETE, "'1'");
             assertThatThrownBy(() -> aspect.before(context))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("无权删除该资源");
@@ -282,11 +268,10 @@ class LearningResourceAccessAspectTest {
         @Test
         @DisplayName("学校管理员未绑定学校时删除抛出异常")
         void deleteSchoolWithoutUniversityId() {
-            when(learningRecordMapper.selectById("1")).thenReturn(
-                    UserLearningRecord.builder().id(1L).userId(2L).build());
+            when(learningRecordMapper.selectById("1"))
+                    .thenReturn(UserLearningRecord.builder().id(1L).userId(2L).build());
             DataScopeContext context = mockContext(
-                    UserType.SCHOOL, 1L, null,
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.DELETE, "'1'");
+                    UserType.SCHOOL, 1L, null, DataScopeResources.LEARNING_RECORD, DataScopeAction.DELETE, "'1'");
             assertThatThrownBy(() -> aspect.before(context))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("未绑定学校");
@@ -298,8 +283,7 @@ class LearningResourceAccessAspectTest {
             when(learningRecordMapper.selectById("1")).thenReturn(null);
 
             DataScopeContext context = mockContext(
-                    UserType.MANAGER, 1L, "uni1",
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.DELETE, "'1'");
+                    UserType.MANAGER, 1L, "uni1", DataScopeResources.LEARNING_RECORD, DataScopeAction.DELETE, "'1'");
             assertThatThrownBy(() -> aspect.before(context))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("学习记录不存在");
@@ -315,11 +299,10 @@ class LearningResourceAccessAspectTest {
         @Test
         @DisplayName("管理员删除进度通过")
         void deleteManagerBypass() {
-            when(chapterProgressMapper.selectById("1")).thenReturn(
-                    UserChapterProgress.builder().id(1L).userId(2L).build());
+            when(chapterProgressMapper.selectById("1"))
+                    .thenReturn(UserChapterProgress.builder().id(1L).userId(2L).build());
             DataScopeContext context = mockContext(
-                    UserType.MANAGER, 1L, "uni1",
-                    DataScopeResources.CHAPTER_PROGRESS, DataScopeAction.DELETE, "'1'");
+                    UserType.MANAGER, 1L, "uni1", DataScopeResources.CHAPTER_PROGRESS, DataScopeAction.DELETE, "'1'");
             aspect.before(context);
         }
 
@@ -329,8 +312,7 @@ class LearningResourceAccessAspectTest {
             when(chapterProgressMapper.selectById("1")).thenReturn(null);
 
             DataScopeContext context = mockContext(
-                    UserType.MANAGER, 1L, "uni1",
-                    DataScopeResources.CHAPTER_PROGRESS, DataScopeAction.DELETE, "'1'");
+                    UserType.MANAGER, 1L, "uni1", DataScopeResources.CHAPTER_PROGRESS, DataScopeAction.DELETE, "'1'");
             assertThatThrownBy(() -> aspect.before(context))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("进度记录不存在");
@@ -342,14 +324,41 @@ class LearningResourceAccessAspectTest {
     @Test
     @DisplayName("不支持的资源类型抛出异常")
     void unsupportedResource() {
-        User user = User.builder().id(1L).userType(UserType.MANAGER).universityId("uni1").build();
+        User user = User.builder()
+                .id(1L)
+                .userType(UserType.MANAGER)
+                .universityId("uni1")
+                .build();
         DataScopeAccess access = new DataScopeAccess() {
-            @Override public String resource() { return "INVALID"; }
-            @Override public DataScopeAction action() { return DataScopeAction.READ; }
-            @Override public String id() { return "'1'"; }
-            @Override public String body() { return ""; }
-            @Override public String query() { return ""; }
-            @Override public Class<? extends java.lang.annotation.Annotation> annotationType() { return DataScopeAccess.class; }
+            @Override
+            public String resource() {
+                return "INVALID";
+            }
+
+            @Override
+            public DataScopeAction action() {
+                return DataScopeAction.READ;
+            }
+
+            @Override
+            public String id() {
+                return "'1'";
+            }
+
+            @Override
+            public String body() {
+                return "";
+            }
+
+            @Override
+            public String query() {
+                return "";
+            }
+
+            @Override
+            public Class<? extends java.lang.annotation.Annotation> annotationType() {
+                return DataScopeAccess.class;
+            }
         };
 
         ProceedingJoinPoint jp = mock(ProceedingJoinPoint.class);
@@ -376,8 +385,7 @@ class LearningResourceAccessAspectTest {
         void afterNonFilterReturnsOriginal() {
             Object result = Result.ok("any");
             DataScopeContext context = mockContext(
-                    UserType.SCHOOL, 1L, "uni1",
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.READ, "");
+                    UserType.SCHOOL, 1L, "uni1", DataScopeResources.LEARNING_RECORD, DataScopeAction.READ, "");
             assertThat(aspect.after(context, result)).isSameAs(result);
         }
 
@@ -386,8 +394,7 @@ class LearningResourceAccessAspectTest {
         void afterManagerReturnsOriginal() {
             Object result = Result.ok("any");
             DataScopeContext context = mockContext(
-                    UserType.MANAGER, 1L, "uni1",
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.FILTER, "'1'");
+                    UserType.MANAGER, 1L, "uni1", DataScopeResources.LEARNING_RECORD, DataScopeAction.FILTER, "'1'");
             assertThat(aspect.after(context, result)).isSameAs(result);
         }
 
@@ -396,8 +403,7 @@ class LearningResourceAccessAspectTest {
         void afterStudentReturnsOriginal() {
             Object result = Result.ok("any");
             DataScopeContext context = mockContext(
-                    UserType.STUDENT, 1L, "uni1",
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.FILTER, "'1'");
+                    UserType.STUDENT, 1L, "uni1", DataScopeResources.LEARNING_RECORD, DataScopeAction.FILTER, "'1'");
             assertThat(aspect.after(context, result)).isSameAs(result);
         }
 
@@ -406,8 +412,7 @@ class LearningResourceAccessAspectTest {
         void afterNotResultTypeReturnsOriginal() {
             Object result = "plain string";
             DataScopeContext context = mockContext(
-                    UserType.SCHOOL, 1L, "uni1",
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.FILTER, "'1'");
+                    UserType.SCHOOL, 1L, "uni1", DataScopeResources.LEARNING_RECORD, DataScopeAction.FILTER, "'1'");
             assertThat(aspect.after(context, result)).isSameAs(result);
         }
 
@@ -415,10 +420,9 @@ class LearningResourceAccessAspectTest {
         @DisplayName("学校管理员未绑定学校时 FILTER 抛出异常")
         void afterSchoolWithoutUniversityId() {
             Object result = Result.ok(List.of());
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"chapterId"}, new Object[]{1L});
-            DataScopeContext context = mockContext(jp,
-                    UserType.SCHOOL, 1L, null,
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.FILTER, "'1'");
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"chapterId"}, new Object[] {1L});
+            DataScopeContext context = mockContext(
+                    jp, UserType.SCHOOL, 1L, null, DataScopeResources.LEARNING_RECORD, DataScopeAction.FILTER, "'1'");
             assertThatThrownBy(() -> aspect.after(context, result))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("未绑定学校");
@@ -427,17 +431,20 @@ class LearningResourceAccessAspectTest {
         @Test
         @DisplayName("FILTER 学习记录按学校过滤")
         void afterFiltersLearningRecordByUniversity() {
-            UserLearningRecordResponse ownRecord = UserLearningRecordResponse.builder().id(1L).userId(2L).build();
-            UserLearningRecordResponse otherRecord = UserLearningRecordResponse.builder().id(2L).userId(3L).build();
+            UserLearningRecordResponse ownRecord =
+                    UserLearningRecordResponse.builder().id(1L).userId(2L).build();
+            UserLearningRecordResponse otherRecord =
+                    UserLearningRecordResponse.builder().id(2L).userId(3L).build();
             Object result = Result.ok(List.of(ownRecord, otherRecord));
 
-            when(userMapper.selectById(2L)).thenReturn(User.builder().id(2L).universityId("uni1").build());
-            when(userMapper.selectById(3L)).thenReturn(User.builder().id(3L).universityId("uni2").build());
+            when(userMapper.selectById(2L))
+                    .thenReturn(User.builder().id(2L).universityId("uni1").build());
+            when(userMapper.selectById(3L))
+                    .thenReturn(User.builder().id(3L).universityId("uni2").build());
 
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"chapterId"}, new Object[]{1L});
-            DataScopeContext context = mockContext(jp,
-                    UserType.SCHOOL, 1L, "uni1",
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.FILTER, "'1'");
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"chapterId"}, new Object[] {1L});
+            DataScopeContext context = mockContext(
+                    jp, UserType.SCHOOL, 1L, "uni1", DataScopeResources.LEARNING_RECORD, DataScopeAction.FILTER, "'1'");
 
             Object after = aspect.after(context, result);
             assertThat(after).isInstanceOf(Result.class);
@@ -450,17 +457,26 @@ class LearningResourceAccessAspectTest {
         @Test
         @DisplayName("FILTER 章节进度按学校过滤")
         void afterFiltersChapterProgressByUniversity() {
-            UserChapterProgressResponse ownProgress = UserChapterProgressResponse.builder().id(1L).userId(2L).build();
-            UserChapterProgressResponse otherProgress = UserChapterProgressResponse.builder().id(2L).userId(3L).build();
+            UserChapterProgressResponse ownProgress =
+                    UserChapterProgressResponse.builder().id(1L).userId(2L).build();
+            UserChapterProgressResponse otherProgress =
+                    UserChapterProgressResponse.builder().id(2L).userId(3L).build();
             Object result = Result.ok(List.of(ownProgress, otherProgress));
 
-            when(userMapper.selectById(2L)).thenReturn(User.builder().id(2L).universityId("uni1").build());
-            when(userMapper.selectById(3L)).thenReturn(User.builder().id(3L).universityId("uni2").build());
+            when(userMapper.selectById(2L))
+                    .thenReturn(User.builder().id(2L).universityId("uni1").build());
+            when(userMapper.selectById(3L))
+                    .thenReturn(User.builder().id(3L).universityId("uni2").build());
 
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"chapterId"}, new Object[]{1L});
-            DataScopeContext context = mockContext(jp,
-                    UserType.SCHOOL, 1L, "uni1",
-                    DataScopeResources.CHAPTER_PROGRESS, DataScopeAction.FILTER, "'1'");
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"chapterId"}, new Object[] {1L});
+            DataScopeContext context = mockContext(
+                    jp,
+                    UserType.SCHOOL,
+                    1L,
+                    "uni1",
+                    DataScopeResources.CHAPTER_PROGRESS,
+                    DataScopeAction.FILTER,
+                    "'1'");
 
             Object after = aspect.after(context, result);
             assertThat(after).isInstanceOf(Result.class);
@@ -474,10 +490,9 @@ class LearningResourceAccessAspectTest {
         @DisplayName("FILTER data 不是 List 时直接返回原结果")
         void afterFilterDataNotList() {
             Object result = Result.ok("single item");
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"chapterId"}, new Object[]{1L});
-            DataScopeContext context = mockContext(jp,
-                    UserType.SCHOOL, 1L, "uni1",
-                    DataScopeResources.LEARNING_RECORD, DataScopeAction.FILTER, "'1'");
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"chapterId"}, new Object[] {1L});
+            DataScopeContext context = mockContext(
+                    jp, UserType.SCHOOL, 1L, "uni1", DataScopeResources.LEARNING_RECORD, DataScopeAction.FILTER, "'1'");
             assertThat(aspect.after(context, result)).isSameAs(result);
         }
     }
@@ -485,8 +500,7 @@ class LearningResourceAccessAspectTest {
     // ==================== helpers ====================
 
     private DataScopeContext mockContext(
-            UserType userType, Long userId, String universityId,
-            String resource, DataScopeAction action, String id) {
+            UserType userType, Long userId, String universityId, String resource, DataScopeAction action, String id) {
         UserStub user = new UserStub(userId, userType, universityId);
         DataScopeAccess access = createAccess(resource, action, id, "");
 
@@ -501,8 +515,13 @@ class LearningResourceAccessAspectTest {
     }
 
     private DataScopeContext mockContext(
-            ProceedingJoinPoint jp, UserType userType, Long userId, String universityId,
-            String resource, DataScopeAction action, String id) {
+            ProceedingJoinPoint jp,
+            UserType userType,
+            Long userId,
+            String universityId,
+            String resource,
+            DataScopeAction action,
+            String id) {
         UserStub user = new UserStub(userId, userType, universityId);
         DataScopeAccess access = createAccess(resource, action, id, "");
         return new DataScopeContext(jp, access, user);
@@ -522,19 +541,29 @@ class LearningResourceAccessAspectTest {
     private DataScopeAccess createAccess(String resource, DataScopeAction action, String id, String body) {
         return new DataScopeAccess() {
             @Override
-            public String resource() { return resource; }
+            public String resource() {
+                return resource;
+            }
 
             @Override
-            public DataScopeAction action() { return action; }
+            public DataScopeAction action() {
+                return action;
+            }
 
             @Override
-            public String id() { return id; }
+            public String id() {
+                return id;
+            }
 
             @Override
-            public String body() { return body; }
+            public String body() {
+                return body;
+            }
 
             @Override
-            public String query() { return ""; }
+            public String query() {
+                return "";
+            }
 
             @Override
             public Class<? extends java.lang.annotation.Annotation> annotationType() {
@@ -558,12 +587,18 @@ class LearningResourceAccessAspectTest {
         }
 
         @Override
-        public Long getId() { return id; }
+        public Long getId() {
+            return id;
+        }
 
         @Override
-        public UserType getUserType() { return userType; }
+        public UserType getUserType() {
+            return userType;
+        }
 
         @Override
-        public String getUniversityId() { return universityId; }
+        public String getUniversityId() {
+            return universityId;
+        }
     }
 }

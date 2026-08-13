@@ -117,7 +117,10 @@ public class AiQuizGeneratorTool {
         }
 
         Quiz quiz = Quiz.builder()
-                .chapterId(effectiveChapterId != null && !effectiveChapterId.isBlank() ? IdUtil.parseNullable(effectiveChapterId) : null)
+                .chapterId(
+                        effectiveChapterId != null && !effectiveChapterId.isBlank()
+                                ? IdUtil.parseNullable(effectiveChapterId)
+                                : null)
                 .question(question)
                 .questionType(effectiveQuestionType)
                 .score(5)

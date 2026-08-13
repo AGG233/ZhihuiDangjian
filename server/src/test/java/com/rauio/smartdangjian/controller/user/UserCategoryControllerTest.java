@@ -18,9 +18,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.controller.factory.CategoryTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.content.controller.user.UserCategoryController;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryArticle;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
@@ -311,8 +311,7 @@ class UserCategoryControllerTest extends BaseControllerTest {
         @DisplayName("GET /{id} - 目录包含深层嵌套子节点")
         void getCategoryWithDeepNestedChildren() throws Exception {
             CategoryResponse grandchild = CategoryTestDataFactory.createCategoryResponse(3L, "孙节点", 2L);
-            CategoryResponse child =
-                    CategoryTestDataFactory.createCategoryResponse(2L, "子节点", 1L, List.of(grandchild));
+            CategoryResponse child = CategoryTestDataFactory.createCategoryResponse(2L, "子节点", 1L, List.of(grandchild));
             CategoryResponse parent = CategoryTestDataFactory.createCategoryResponse(1L, "根节点", null, List.of(child));
 
             when(categoryService.get(1L)).thenReturn(parent);
@@ -362,8 +361,7 @@ class UserCategoryControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入尝试在 path 参数中 — 参数化查询防护")
         void sqlInjectionInPathParameter() throws Exception {
-            mockMvc.perform(get("/api/content/categories/{id}", "' OR '1'='1"))
-                    .andExpect(status().isBadRequest());
+            mockMvc.perform(get("/api/content/categories/{id}", "' OR '1'='1")).andExpect(status().isBadRequest());
         }
     }
 }

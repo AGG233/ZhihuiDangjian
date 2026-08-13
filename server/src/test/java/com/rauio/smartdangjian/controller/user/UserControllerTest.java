@@ -23,10 +23,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.CourseTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.user.controller.user.UserController;
 import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
-import com.rauio.smartdangjian.server.user.controller.user.UserController;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 

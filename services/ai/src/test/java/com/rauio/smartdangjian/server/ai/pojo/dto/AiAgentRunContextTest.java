@@ -42,9 +42,6 @@ class AiAgentRunContextTest {
     void recordToString() {
         AiAgentRunContext context = new AiAgentRunContext("session-1", "user-1", "你好");
 
-        assertThat(context.toString())
-                .contains("session-1")
-                .contains("user-1")
-                .contains("你好");
+        assertThat(context.toString()).contains("session-1").contains("user-1").contains("你好");
     }
 }

@@ -121,8 +121,7 @@ class AdminQuizAnswerControllerTest extends BaseControllerTest {
             when(userQuizAnswerService.deleteByUserIdAndQuizIdAndOptionId(anyLong(), anyLong(), anyLong()))
                     .thenReturn(true);
 
-            mockMvc.perform(delete(
-                            "/api/admin/quiz/answers/users/999999/quizzes/999999/options/999999"))
+            mockMvc.perform(delete("/api/admin/quiz/answers/users/999999/quizzes/999999/options/999999"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("200"));
         }

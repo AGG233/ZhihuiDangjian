@@ -166,7 +166,8 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST / - Service 抛出 RuntimeException 返回 500")
         void createThrowsRuntimeException() throws Exception {
-            when(progressService.create(any(UserChapterProgressRequest.class))).thenThrow(new RuntimeException("创建进度记录失败"));
+            when(progressService.create(any(UserChapterProgressRequest.class)))
+                    .thenThrow(new RuntimeException("创建进度记录失败"));
 
             mockMvc.perform(post("/api/learning/progress")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -289,8 +290,7 @@ class UserChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 注入在路径参数中")
         void xssInPath() throws Exception {
-            when(progressService.get(anyLong()))
-                    .thenThrow(new BusinessException(4000, "进度记录不存在"));
+            when(progressService.get(anyLong())).thenThrow(new BusinessException(4000, "进度记录不存在"));
 
             mockMvc.perform(get(URI.create("/api/learning/progress/%3Cscript%3Ealert('xss')%3E")))
                     .andExpect(status().isBadRequest());

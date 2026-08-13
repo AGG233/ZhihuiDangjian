@@ -6,14 +6,13 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
-import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.pojo.response.Result;
-import com.rauio.smartdangjian.server.ai.pojo.response.AiPromptResponse;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptCreateRequest;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiPromptUpdateRequest;
+import com.rauio.smartdangjian.server.ai.pojo.response.AiPromptResponse;
 import com.rauio.smartdangjian.server.ai.service.PromptService;
-import com.rauio.smartdangjian.utils.spec.UserType;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

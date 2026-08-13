@@ -8,6 +8,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.net.URI;
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -15,23 +18,15 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import java.net.URI;
-import java.util.List;
 
 import com.rauio.smartdangjian.BaseControllerTest;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.controller.factory.LearningTestDataFactory;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.learning.controller.admin.AdminChapterProgressController;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserChapterProgressResponse;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.learning.service.UserChapterProgressService;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.utils.spec.UserType;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
@@ -236,8 +231,7 @@ class AdminChapterProgressControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST 请求获取接口返回 405")
         void getWithWrongMethod() throws Exception {
-            mockMvc.perform(post("/api/admin/learning/progress/chapter/1"))
-                    .andExpect(status().isMethodNotAllowed());
+            mockMvc.perform(post("/api/admin/learning/progress/chapter/1")).andExpect(status().isMethodNotAllowed());
         }
 
         @Test

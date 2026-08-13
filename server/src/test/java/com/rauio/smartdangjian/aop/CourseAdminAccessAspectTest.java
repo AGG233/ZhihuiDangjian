@@ -98,7 +98,7 @@ class CourseAdminAccessAspectTest {
         void createPasses() {
             CourseRequest body = CourseRequest.builder().title("新课程").build();
             Method realMethod = findMethod("courseAction", CourseRequest.class);
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"course"}, new Object[]{body}, realMethod);
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"course"}, new Object[] {body}, realMethod);
             DataScopeContext context = mockContext(jp, DataScopeAction.CREATE, "'0'", "#course");
 
             aspect.before(context);
@@ -107,7 +107,7 @@ class CourseAdminAccessAspectTest {
         @Test
         @DisplayName("创建课程时请求体为空抛出异常")
         void createBodyNull() {
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{}, new Object[]{});
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {}, new Object[] {});
             DataScopeContext context = mockContext(jp, DataScopeAction.CREATE, "", "#course");
             assertThatThrownBy(() -> aspect.before(context))
                     .isInstanceOf(BusinessException.class)
@@ -130,7 +130,7 @@ class CourseAdminAccessAspectTest {
             when(userMapper.selectById(1L)).thenReturn(creator);
 
             CourseRequest body = CourseRequest.builder().title("更新标题").build();
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"course", "id"}, new Object[]{body, 1L});
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"course", "id"}, new Object[] {body, 1L});
             DataScopeContext context = mockContext(jp, DataScopeAction.UPDATE, "'1'", "#course");
 
             aspect.before(context);
@@ -142,7 +142,7 @@ class CourseAdminAccessAspectTest {
             when(courseMapper.selectById("1")).thenReturn(null);
 
             CourseRequest body = CourseRequest.builder().title("更新标题").build();
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"course", "id"}, new Object[]{body, 1L});
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"course", "id"}, new Object[] {body, 1L});
             DataScopeContext context = mockContext(jp, DataScopeAction.UPDATE, "'1'", "#course");
 
             assertThatThrownBy(() -> aspect.before(context))
@@ -158,7 +158,7 @@ class CourseAdminAccessAspectTest {
             when(userMapper.selectById(1L)).thenReturn(null);
 
             CourseRequest body = CourseRequest.builder().title("更新标题").build();
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"course", "id"}, new Object[]{body, 1L});
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"course", "id"}, new Object[] {body, 1L});
             DataScopeContext context = mockContext(jp, DataScopeAction.UPDATE, "'1'", "#course");
 
             assertThatThrownBy(() -> aspect.before(context))
@@ -175,7 +175,7 @@ class CourseAdminAccessAspectTest {
             when(userMapper.selectById(1L)).thenReturn(creator);
 
             CourseRequest body = CourseRequest.builder().title("更新标题").build();
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"course", "id"}, new Object[]{body, 1L});
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"course", "id"}, new Object[] {body, 1L});
             DataScopeContext context = mockContext(jp, DataScopeAction.UPDATE, "'1'", "#course");
 
             assertThatThrownBy(() -> aspect.before(context))
@@ -246,7 +246,7 @@ class CourseAdminAccessAspectTest {
     @Test
     @DisplayName("UPDATE 操作课程ID为空抛出异常")
     void updateCourseIdEmpty() {
-        ProceedingJoinPoint jp = mockJoinPoint(new String[]{}, new Object[]{});
+        ProceedingJoinPoint jp = mockJoinPoint(new String[] {}, new Object[] {});
         DataScopeContext context = mockContext(jp, DataScopeAction.UPDATE, "", "");
         assertThatThrownBy(() -> aspect.before(context))
                 .isInstanceOf(BusinessException.class)

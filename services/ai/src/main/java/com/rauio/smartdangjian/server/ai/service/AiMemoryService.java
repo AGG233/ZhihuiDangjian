@@ -69,10 +69,11 @@ public class AiMemoryService {
     }
 
     public List<AiChatMessageResponse> listSessionMessages(String userId, String sessionId) {
-        return aiChatMessageService.list(new LambdaQueryWrapper<AiChatMessage>()
-                .eq(AiChatMessage::getUserId, userId)
-                .eq(AiChatMessage::getSessionId, sessionId)
-                .orderByAsc(AiChatMessage::getCreatedAt))
+        return aiChatMessageService
+                .list(new LambdaQueryWrapper<AiChatMessage>()
+                        .eq(AiChatMessage::getUserId, userId)
+                        .eq(AiChatMessage::getSessionId, sessionId)
+                        .orderByAsc(AiChatMessage::getCreatedAt))
                 .stream()
                 .map(AiChatMessageResponse::fromEntity)
                 .collect(Collectors.toList());

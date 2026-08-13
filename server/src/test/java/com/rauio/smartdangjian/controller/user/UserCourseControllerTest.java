@@ -202,15 +202,13 @@ class UserCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 尝试在路径参数中")
         void xssInPath() throws Exception {
-            mockMvc.perform(get("/api/content/courses/1"))
-                    .andExpect(status().isOk());
+            mockMvc.perform(get("/api/content/courses/1")).andExpect(status().isOk());
         }
 
         @Test
         @DisplayName("SQL 注入尝试在路径参数中")
         void sqlInjectionInPath() throws Exception {
-            mockMvc.perform(get("/api/content/courses/1"))
-                    .andExpect(status().isOk());
+            mockMvc.perform(get("/api/content/courses/1")).andExpect(status().isOk());
         }
 
         @Test

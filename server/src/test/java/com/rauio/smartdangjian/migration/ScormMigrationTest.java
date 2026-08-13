@@ -92,9 +92,8 @@ class ScormMigrationTest {
 
     private int countTables() throws Exception {
         try (Statement stmt = connection.createStatement();
-                ResultSet rs = stmt.executeQuery(
-                        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES"
-                                + " WHERE TABLE_NAME IN ('scorm_package', 'scorm_registration')")) {
+                ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES"
+                        + " WHERE TABLE_NAME IN ('scorm_package', 'scorm_registration')")) {
             rs.next();
             return rs.getInt(1);
         }
