@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.ai.constants.AiErrorConstants;
 import com.rauio.smartdangjian.server.ai.pojo.request.AiChatRequest;
 import com.rauio.smartdangjian.server.ai.pojo.response.AiChatResponse;
 import com.rauio.smartdangjian.server.ai.service.LLMService;
@@ -39,6 +41,9 @@ public class VoiceChatController {
             @RequestPart("file") MultipartFile file,
             @RequestPart(value = "sessionId", required = false) String sessionId) {
         String text = speechService.transcribe(file);
+        if (text == null || text.isBlank()) {
+            throw new BusinessException(AiErrorConstants.VOICE_TRANSCRIBE_FAILED, "未识别到语音内容，请重新录制");
+        }
         return llmService.chat(new AiChatRequest(sessionId, text));
     }
 }

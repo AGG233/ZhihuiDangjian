@@ -109,4 +109,14 @@ class SpeechServiceTest {
                 .satisfies(e -> assertThat(((BusinessException) e).getCode())
                         .isEqualTo(AiErrorConstants.VOICE_TRANSCRIBE_FAILED));
     }
+
+    @Test
+    @DisplayName("FunASR 返回空文本时原样返回空串（空转写由上层业务拦截）")
+    void transcribeReturnsEmptyStringWhenRecognitionReturnsEmpty() {
+        when(recognition.call(any(RecognitionParam.class), any(File.class))).thenReturn("");
+
+        MockMultipartFile audio = new MockMultipartFile("file", "voice.wav", "audio/wav", new byte[] {1, 2, 3});
+
+        assertThat(speechService.transcribe(audio)).isEmpty();
+    }
 }
