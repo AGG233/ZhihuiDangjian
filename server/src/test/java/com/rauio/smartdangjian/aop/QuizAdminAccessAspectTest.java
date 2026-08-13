@@ -243,12 +243,24 @@ class QuizAdminAccessAspectTest {
 
         ProceedingJoinPoint jp = mock(ProceedingJoinPoint.class);
         MethodSignature sig = mock(MethodSignature.class);
-        lenient().when(sig.getMethod()).thenReturn(mock(Method.class));
+        lenient().when(sig.getMethod()).thenReturn(findMethod("dummyQuizAction", DataScopeAction.class));
         lenient().when(sig.getParameterNames()).thenReturn(new String[0]);
         lenient().when(jp.getSignature()).thenReturn(sig);
         lenient().when(jp.getArgs()).thenReturn(new Object[0]);
 
         return new DataScopeContext(jp, access, user);
+    }
+
+    private String dummyQuizAction(DataScopeAction action) {
+        return null;
+    }
+
+    private Method findMethod(String name, Class<?>... paramTypes) {
+        try {
+            return getClass().getDeclaredMethod(name, paramTypes);
+        } catch (Exception e) {
+            throw new AssertionError("Method not found: " + name, e);
+        }
     }
 
     private DataScopeAccess createAccess(DataScopeAction action, String id, String query) {
