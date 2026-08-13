@@ -52,4 +52,5 @@ out/
 ### Local docs & changelogs (ignored) ###
 /.changelog-*.md
 /CLAUDE.md
+/AGENTS.md
 /docs/
