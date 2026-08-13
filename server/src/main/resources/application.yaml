@@ -32,6 +32,8 @@ spring:
       chat:
         options:
           model: deepseek-chat
+    dashscope:
+      api-key: ${AI_EMBEDDING_KEY:${AI_KEY:dummy-key}}
 
 # Sa-Token 配置
 sa-token:

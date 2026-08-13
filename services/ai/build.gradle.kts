@@ -15,6 +15,9 @@ dependencies {
 
     implementation(libs.bundles.common)
     implementation(libs.bundles.ai)
+    implementation(libs.spring.ai.starter.vector.store.neo4j)
+    implementation(libs.spring.ai.alibaba.autoconfigure.dashscope)
+    implementation(libs.dashscope.sdk)
     // implementation(libs.bundles.security)
     implementation(libs.spring.boot.starter.data.redis)
     implementation(libs.springdoc.openapi.starter.webmvc.ui)
