@@ -354,7 +354,7 @@ class LearningResourceAccessAspectTest {
 
         ProceedingJoinPoint jp = mock(ProceedingJoinPoint.class);
         MethodSignature sig = mock(MethodSignature.class);
-        lenient().when(sig.getMethod()).thenReturn(mock(Method.class));
+        lenient().when(sig.getMethod()).thenReturn(findMethod("dummyLearningAction"));
         lenient().when(jp.getSignature()).thenReturn(sig);
         lenient().when(jp.getArgs()).thenReturn(new Object[0]);
 
@@ -492,7 +492,7 @@ class LearningResourceAccessAspectTest {
 
         ProceedingJoinPoint jp = mock(ProceedingJoinPoint.class);
         MethodSignature sig = mock(MethodSignature.class);
-        lenient().when(sig.getMethod()).thenReturn(mock(Method.class));
+        lenient().when(sig.getMethod()).thenReturn(findMethod("dummyLearningAction"));
         lenient().when(sig.getParameterNames()).thenReturn(new String[0]);
         lenient().when(jp.getSignature()).thenReturn(sig);
         lenient().when(jp.getArgs()).thenReturn(new Object[0]);
@@ -510,13 +510,30 @@ class LearningResourceAccessAspectTest {
 
     private ProceedingJoinPoint mockJoinPoint(String[] paramNames, Object[] args) {
         MethodSignature sig = mock(MethodSignature.class);
-        lenient().when(sig.getMethod()).thenReturn(mock(Method.class));
+        lenient().when(sig.getMethod()).thenReturn(findMethod("dummyFilterAction"));
         lenient().when(sig.getParameterNames()).thenReturn(paramNames);
 
         ProceedingJoinPoint jp = mock(ProceedingJoinPoint.class);
         lenient().when(jp.getSignature()).thenReturn(sig);
         lenient().when(jp.getArgs()).thenReturn(args);
         return jp;
+    }
+
+    private String dummyLearningAction() {
+        return null;
+    }
+
+    private String dummyFilterAction(Long id) {
+        return null;
+    }
+
+    private Method findMethod(String methodName) {
+        for (Method method : getClass().getDeclaredMethods()) {
+            if (method.getName().equals(methodName)) {
+                return method;
+            }
+        }
+        throw new AssertionError("Method not found: " + methodName);
     }
 
     private DataScopeAccess createAccess(String resource, DataScopeAction action, String id, String body) {
