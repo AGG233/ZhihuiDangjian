@@ -570,9 +570,7 @@ class UserQuizAnswerServiceTest {
     @Test
     @DisplayName("getAccuracyByChapter 多章节数据：按章节映射题目数、答对数与正确率")
     void getAccuracyByChapterGroupsByChapter() {
-        when(mapper.selectChapterAccuracyByUserId(1L)).thenReturn(List.of(
-                row(10L, 4, 3),
-                row(20L, 2, 2)));
+        when(mapper.selectChapterAccuracyByUserId(1L)).thenReturn(List.of(row(10L, 4, 3), row(20L, 2, 2)));
 
         List<ChapterAccuracyResponse> result = userQuizAnswerService.getAccuracyByChapter(1L);
 
