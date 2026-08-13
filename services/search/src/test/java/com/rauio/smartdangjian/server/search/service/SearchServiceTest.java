@@ -124,7 +124,8 @@ class SearchServiceTest {
         coursePage.setRecords(List.of(course));
         doReturn(coursePage).when(courseMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
 
-        CourseResponse response = CourseResponse.builder().id(1L).difficulty("hard").build();
+        CourseResponse response =
+                CourseResponse.builder().id(1L).difficulty("hard").build();
         doReturn(List.of(response)).when(courseConvertor).toResponseList(any());
         doReturn(Collections.emptyList()).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
 
@@ -198,8 +199,10 @@ class SearchServiceTest {
         CourseResponse r2 = CourseResponse.builder().id(2L).title("推荐课程").build();
         doReturn(List.of(r1), List.of(r2)).when(courseConvertor).toResponseList(any());
 
-        CategoryCourse cc1 = CategoryCourse.builder().courseId(1L).categoryId(1L).build();
-        CategoryCourse cc2 = CategoryCourse.builder().courseId(2L).categoryId(1L).build();
+        CategoryCourse cc1 =
+                CategoryCourse.builder().courseId(1L).categoryId(1L).build();
+        CategoryCourse cc2 =
+                CategoryCourse.builder().courseId(2L).categoryId(1L).build();
         doReturn(List.of(cc1), List.of(cc2)).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
 
         doReturn("1").when(userService).getCurrentUserId();
@@ -229,7 +232,8 @@ class SearchServiceTest {
         CourseResponse r1 = CourseResponse.builder().id(1L).title("搜索1").build();
         doReturn(List.of(r1)).when(courseConvertor).toResponseList(any());
 
-        CategoryCourse cc1 = CategoryCourse.builder().courseId(1L).categoryId(1L).build();
+        CategoryCourse cc1 =
+                CategoryCourse.builder().courseId(1L).categoryId(1L).build();
         doReturn(List.of(cc1)).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
 
         doReturn("1").when(userService).getCurrentUserId();
@@ -253,7 +257,6 @@ class SearchServiceTest {
 
         CourseResponse response = CourseResponse.builder().title("无ID课程").build();
         doReturn(List.of(response)).when(courseConvertor).toResponseList(any());
-
 
         Page<CourseResponse> result = searchService.searchCourses("测试", null, null, 1, 10);
 

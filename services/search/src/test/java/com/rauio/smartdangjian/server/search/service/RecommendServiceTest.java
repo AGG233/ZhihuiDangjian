@@ -13,7 +13,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
@@ -41,9 +40,9 @@ import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.learning.pojo.dto.UserBehaviorDto;
 import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
 import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
+import com.rauio.smartdangjian.server.learning.pojo.dto.UserBehaviorDto;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserChapterProgress;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
@@ -178,13 +177,17 @@ class RecommendServiceTest {
         similarityPage.setRecords(List.of(sim));
         doReturn(similarityPage).when(userSimilarityMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
 
-        UserLearningRecord learned = UserLearningRecord.builder().chapterId(1L).userId(1L).build();
+        UserLearningRecord learned =
+                UserLearningRecord.builder().chapterId(1L).userId(1L).build();
         doReturn(List.of(learned)).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
         Chapter learnedChapter = Chapter.builder().id(1L).courseId(1L).build();
         doReturn(List.of(learnedChapter)).when(chapterMapper).selectList(any(LambdaQueryWrapper.class));
 
-        UserLearningRecord similarRecord = UserLearningRecord.builder().chapterId(2L).userId(2L).build();
-        doReturn(List.of(learned), List.of(similarRecord)).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+        UserLearningRecord similarRecord =
+                UserLearningRecord.builder().chapterId(2L).userId(2L).build();
+        doReturn(List.of(learned), List.of(similarRecord))
+                .when(userLearningRecordMapper)
+                .selectList(any(LambdaQueryWrapper.class));
 
         doReturn(Collections.emptyList()).when(userChapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
 
@@ -205,13 +208,17 @@ class RecommendServiceTest {
         similarityPage.setRecords(List.of(sim));
         doReturn(similarityPage).when(userSimilarityMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
 
-        UserLearningRecord learned = UserLearningRecord.builder().chapterId(1L).userId(1L).build();
+        UserLearningRecord learned =
+                UserLearningRecord.builder().chapterId(1L).userId(1L).build();
         doReturn(List.of(learned)).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
         Chapter learnedChapter = Chapter.builder().id(1L).courseId(1L).build();
         doReturn(List.of(learnedChapter)).when(chapterMapper).selectList(any(LambdaQueryWrapper.class));
 
-        UserLearningRecord similarRecord = UserLearningRecord.builder().chapterId(1L).userId(1L).build();
-        doReturn(List.of(learned), List.of(similarRecord)).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+        UserLearningRecord similarRecord =
+                UserLearningRecord.builder().chapterId(1L).userId(1L).build();
+        doReturn(List.of(learned), List.of(similarRecord))
+                .when(userLearningRecordMapper)
+                .selectList(any(LambdaQueryWrapper.class));
         doReturn(Collections.emptyList()).when(userChapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
         doReturn(List.of(learnedChapter)).when(chapterMapper).selectByIds(anyCollection());
 
@@ -296,8 +303,8 @@ class RecommendServiceTest {
     @Test
     @DisplayName("答题正确率高于80%时推荐hard难度课程")
     void recommendByProfileWithHighCorrectRateFiltersHard() {
-        UserProfileResponse.QuizStats quizStats = UserProfileResponse.QuizStats.builder()
-                .correctRate(0.85).build();
+        UserProfileResponse.QuizStats quizStats =
+                UserProfileResponse.QuizStats.builder().correctRate(0.85).build();
         UserProfileResponse profile = UserProfileResponse.builder()
                 .userId("1")
                 .interestCategoryIds(List.of(1L))
@@ -322,8 +329,8 @@ class RecommendServiceTest {
     @Test
     @DisplayName("答题正确率在50%-80%时推荐medium难度课程")
     void recommendByProfileWithMediumCorrectRateFiltersMedium() {
-        UserProfileResponse.QuizStats quizStats = UserProfileResponse.QuizStats.builder()
-                .correctRate(0.65).build();
+        UserProfileResponse.QuizStats quizStats =
+                UserProfileResponse.QuizStats.builder().correctRate(0.65).build();
         UserProfileResponse profile = UserProfileResponse.builder()
                 .userId("1")
                 .interestCategoryIds(List.of(1L))
@@ -348,8 +355,8 @@ class RecommendServiceTest {
     @Test
     @DisplayName("答题正确率低于50%时推荐easy难度课程")
     void recommendByProfileWithLowCorrectRateFiltersEasy() {
-        UserProfileResponse.QuizStats quizStats = UserProfileResponse.QuizStats.builder()
-                .correctRate(0.35).build();
+        UserProfileResponse.QuizStats quizStats =
+                UserProfileResponse.QuizStats.builder().correctRate(0.35).build();
         UserProfileResponse profile = UserProfileResponse.builder()
                 .userId("1")
                 .interestCategoryIds(List.of(1L))
@@ -374,9 +381,7 @@ class RecommendServiceTest {
     @Test
     @DisplayName("用户画像无兴趣分类时不过滤分类")
     void recommendByProfileNoInterestsSkipsCategoryFilter() {
-        UserProfileResponse profile = UserProfileResponse.builder()
-                .userId("1")
-                .build();
+        UserProfileResponse profile = UserProfileResponse.builder().userId("1").build();
         doReturn(profile).when(userProfileService).getProfile("1");
         doReturn(Collections.emptyList()).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
 
@@ -498,10 +503,14 @@ class RecommendServiceTest {
         doReturn(similarityPage).when(userSimilarityMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
 
         // user's own learned records have chapterIds
-        UserLearningRecord learned = UserLearningRecord.builder().chapterId(1L).userId(1L).build();
+        UserLearningRecord learned =
+                UserLearningRecord.builder().chapterId(1L).userId(1L).build();
         // similar user's records have null chapterIds
-        UserLearningRecord nullChapter = UserLearningRecord.builder().chapterId(null).userId(2L).build();
-        doReturn(List.of(learned), List.of(nullChapter)).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+        UserLearningRecord nullChapter =
+                UserLearningRecord.builder().chapterId(null).userId(2L).build();
+        doReturn(List.of(learned), List.of(nullChapter))
+                .when(userLearningRecordMapper)
+                .selectList(any(LambdaQueryWrapper.class));
         Chapter learnedChapter = Chapter.builder().id(1L).courseId(1L).build();
         doReturn(List.of(learnedChapter)).when(chapterMapper).selectList(any(LambdaQueryWrapper.class));
         doReturn(Collections.emptyList()).when(userChapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
@@ -536,8 +545,8 @@ class RecommendServiceTest {
     @Test
     @DisplayName("画像推荐：答题正确率为0时不过滤难度")
     void recommendByProfileQuizZeroCorrectRate() {
-        UserProfileResponse.QuizStats quizStats = UserProfileResponse.QuizStats.builder()
-                .correctRate(0.0).build();
+        UserProfileResponse.QuizStats quizStats =
+                UserProfileResponse.QuizStats.builder().correctRate(0.0).build();
         UserProfileResponse profile = UserProfileResponse.builder()
                 .userId("1")
                 .interestCategoryIds(List.of(1L))
