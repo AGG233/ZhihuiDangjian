@@ -283,7 +283,7 @@ class CourseAdminAccessAspectTest {
 
         ProceedingJoinPoint jp = mock(ProceedingJoinPoint.class);
         MethodSignature sig = mock(MethodSignature.class);
-        lenient().when(sig.getMethod()).thenReturn(mock(Method.class));
+        lenient().when(sig.getMethod()).thenReturn(findMethod("courseAction", CourseRequest.class));
         lenient().when(sig.getParameterNames()).thenReturn(new String[0]);
         lenient().when(jp.getSignature()).thenReturn(sig);
         lenient().when(jp.getArgs()).thenReturn(new Object[0]);
@@ -307,7 +307,7 @@ class CourseAdminAccessAspectTest {
 
     private ProceedingJoinPoint mockJoinPoint(String[] paramNames, Object[] args, Method realMethod) {
         MethodSignature sig = mock(MethodSignature.class);
-        Method method = realMethod != null ? realMethod : mock(Method.class);
+        Method method = realMethod != null ? realMethod : findMethod("courseAction", CourseRequest.class);
         lenient().when(sig.getMethod()).thenReturn(method);
         lenient().when(sig.getParameterNames()).thenReturn(paramNames);
 

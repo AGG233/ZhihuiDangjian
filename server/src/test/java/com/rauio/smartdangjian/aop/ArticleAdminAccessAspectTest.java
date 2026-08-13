@@ -7,6 +7,8 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Method;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.junit.jupiter.api.DisplayName;
@@ -24,6 +26,7 @@ import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.aop.ArticleAdminAccessAspect;
 import com.rauio.smartdangjian.server.content.mapper.ArticleMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.Article;
+import com.rauio.smartdangjian.server.content.pojo.request.ArticleRequest;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -159,12 +162,24 @@ class ArticleAdminAccessAspectTest {
 
         ProceedingJoinPoint jp = mock(ProceedingJoinPoint.class);
         MethodSignature sig = mock(MethodSignature.class);
-        lenient().when(sig.getMethod()).thenReturn(mock(java.lang.reflect.Method.class));
+        lenient().when(sig.getMethod()).thenReturn(findMethod("dummyArticleAction", ArticleRequest.class));
         lenient().when(sig.getParameterNames()).thenReturn(new String[0]);
         lenient().when(jp.getSignature()).thenReturn(sig);
         lenient().when(jp.getArgs()).thenReturn(new Object[0]);
 
         return new DataScopeContext(jp, access, user);
+    }
+
+    private String dummyArticleAction(ArticleRequest request) {
+        return null;
+    }
+
+    private Method findMethod(String name, Class<?>... paramTypes) {
+        try {
+            return getClass().getDeclaredMethod(name, paramTypes);
+        } catch (Exception e) {
+            throw new AssertionError("Method not found: " + name, e);
+        }
     }
 
     private DataScopeAccess createAccess(String id) {
