@@ -14,7 +14,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
+import com.rauio.smartdangjian.server.search.pojo.response.HotCategoryResponse;
+import com.rauio.smartdangjian.server.search.pojo.response.HotCourseResponse;
+import com.rauio.smartdangjian.server.search.pojo.response.LearningTrendResponse;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
+import com.rauio.smartdangjian.server.search.service.HotSpotService;
 import com.rauio.smartdangjian.server.search.service.RecommendService;
 import com.rauio.smartdangjian.server.search.service.SearchService;
 import com.rauio.smartdangjian.server.search.service.UserProfileService;
@@ -30,6 +34,9 @@ class SearchControllerTest {
 
     @Mock
     private UserProfileService userProfileService;
+
+    @Mock
+    private HotSpotService hotSpotService;
 
     @InjectMocks
     private SearchController searchController;
@@ -74,8 +81,7 @@ class SearchControllerTest {
     @Test
     @DisplayName("recommend 委托 Service 返回推荐")
     void recommendDelegates() {
-        UserProfileResponse profile =
-                UserProfileResponse.builder().userId("1").build();
+        UserProfileResponse profile = UserProfileResponse.builder().userId("1").build();
         when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
         Page<Long> recPage = new Page<>(1, 10);
         recPage.setRecords(List.of(1L));
@@ -90,13 +96,62 @@ class SearchControllerTest {
     @Test
     @DisplayName("getProfile 委托 Service 返回用户画像")
     void getProfileDelegates() {
-        UserProfileResponse profile =
-                UserProfileResponse.builder().userId("1").build();
+        UserProfileResponse profile = UserProfileResponse.builder().userId("1").build();
         when(userProfileService.getCurrentUserProfile()).thenReturn(profile);
 
         var result = searchController.getProfile();
 
         assertThat(result).isNotNull();
         assertThat(result.getData().getUserId()).isEqualTo("1");
+    }
+
+    @Test
+    @DisplayName("hotCourses 委托 Service 返回热门课程列表")
+    void hotCoursesDelegates() {
+        List<HotCourseResponse> hotCourses = List.of(HotCourseResponse.builder()
+                .courseId(1L)
+                .title("热门课程")
+                .hotScore(100)
+                .build());
+        when(hotSpotService.getHotCourses(10)).thenReturn(hotCourses);
+
+        var result = searchController.hotCourses(10);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getData()).hasSize(1);
+        assertThat(result.getData().get(0).getTitle()).isEqualTo("热门课程");
+    }
+
+    @Test
+    @DisplayName("hotCategories 委托 Service 返回热门分类列表")
+    void hotCategoriesDelegates() {
+        List<HotCategoryResponse> hotCategories = List.of(HotCategoryResponse.builder()
+                .categoryId(1L)
+                .categoryName("党建理论")
+                .enrollmentSum(150)
+                .build());
+        when(hotSpotService.getHotCategories(5)).thenReturn(hotCategories);
+
+        var result = searchController.hotCategories(5);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getData()).hasSize(1);
+        assertThat(result.getData().get(0).getCategoryName()).isEqualTo("党建理论");
+    }
+
+    @Test
+    @DisplayName("learningTrend 委托 Service 返回学习趋势列表")
+    void learningTrendDelegates() {
+        List<LearningTrendResponse> trend = List.of(LearningTrendResponse.builder()
+                .date(java.time.LocalDate.of(2026, 8, 1))
+                .learningCount(3)
+                .build());
+        when(hotSpotService.getLearningTrend(30)).thenReturn(trend);
+
+        var result = searchController.learningTrend(30);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getData()).hasSize(1);
+        assertThat(result.getData().get(0).getLearningCount()).isEqualTo(3);
     }
 }

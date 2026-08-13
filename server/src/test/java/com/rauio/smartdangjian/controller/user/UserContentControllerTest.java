@@ -13,6 +13,7 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +32,9 @@ import com.rauio.smartdangjian.server.content.spec.BlockType;
         classes = UserContentControllerTest.TestConfig.class)
 @DisplayName("用户内容块接口测试")
 class UserContentControllerTest extends BaseControllerTest {
+
+    @Value("${app.content.carousel.chapter-id:1145141919810}")
+    private Long carouselParentId;
 
     @SpringBootConfiguration
     static class TestConfig extends CommonTestConfig {
@@ -56,8 +60,9 @@ class UserContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /carousel - 获取轮播图列表成功")
         void getCarouselSuccess() throws Exception {
-            List<ContentBlockResponse> voList = ContentTestDataFactory.createContentBlockResponseList(3);
-            when(chapterContentBlockService.getByChapterId(1145141919810L)).thenReturn(voList);
+            List<ContentBlockResponse> voList =
+                    ContentTestDataFactory.createContentBlockResponseList(3, carouselParentId);
+            when(chapterContentBlockService.getByChapterId(carouselParentId)).thenReturn(voList);
 
             mockMvc.perform(get(CAROUSEL_URL))
                     .andExpect(status().isOk())
@@ -68,8 +73,8 @@ class UserContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /carousel - 返回的 VO 包含正确字段")
         void getCarouselContainsAllFields() throws Exception {
-            ContentBlockResponse vo = ContentTestDataFactory.createCarouselResponse(1145141919810L, BlockType.Image);
-            when(chapterContentBlockService.getByChapterId(1145141919810L)).thenReturn(List.of(vo));
+            ContentBlockResponse vo = ContentTestDataFactory.createCarouselResponse(carouselParentId, BlockType.Image);
+            when(chapterContentBlockService.getByChapterId(carouselParentId)).thenReturn(List.of(vo));
 
             mockMvc.perform(get(CAROUSEL_URL))
                     .andExpect(status().isOk())
@@ -89,7 +94,8 @@ class UserContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 400")
         void getCarouselThrowsBusinessException() throws Exception {
-            when(chapterContentBlockService.getByChapterId(1145141919810L)).thenThrow(new BusinessException(4000, "轮播图查询失败"));
+            when(chapterContentBlockService.getByChapterId(carouselParentId))
+                    .thenThrow(new BusinessException(4000, "轮播图查询失败"));
 
             mockMvc.perform(get(CAROUSEL_URL))
                     .andExpect(status().isBadRequest())
@@ -100,7 +106,8 @@ class UserContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 RuntimeException 返回 500")
         void getCarouselThrowsRuntimeException() throws Exception {
-            when(chapterContentBlockService.getByChapterId(1145141919810L)).thenThrow(new RuntimeException("数据库连接失败"));
+            when(chapterContentBlockService.getByChapterId(carouselParentId))
+                    .thenThrow(new RuntimeException("数据库连接失败"));
 
             mockMvc.perform(get(CAROUSEL_URL))
                     .andExpect(status().isInternalServerError())
@@ -110,7 +117,7 @@ class UserContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 返回 null 时正常处理")
         void getCarouselReturnsNull() throws Exception {
-            when(chapterContentBlockService.getByChapterId(1145141919810L)).thenReturn(null);
+            when(chapterContentBlockService.getByChapterId(carouselParentId)).thenReturn(null);
 
             mockMvc.perform(get(CAROUSEL_URL))
                     .andExpect(status().isOk())
@@ -130,7 +137,7 @@ class UserContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("轮播图为空时返回空列表")
         void getCarouselEmpty() throws Exception {
-            when(chapterContentBlockService.getByChapterId(1145141919810L)).thenReturn(List.of());
+            when(chapterContentBlockService.getByChapterId(carouselParentId)).thenReturn(List.of());
 
             mockMvc.perform(get(CAROUSEL_URL))
                     .andExpect(status().isOk())
@@ -141,8 +148,9 @@ class UserContentControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("大量轮播图（10 个）正常返回")
         void getCarouselWithManyItems() throws Exception {
-            List<ContentBlockResponse> voList = ContentTestDataFactory.createContentBlockResponseList(10);
-            when(chapterContentBlockService.getByChapterId(1145141919810L)).thenReturn(voList);
+            List<ContentBlockResponse> voList =
+                    ContentTestDataFactory.createContentBlockResponseList(10, carouselParentId);
+            when(chapterContentBlockService.getByChapterId(carouselParentId)).thenReturn(voList);
 
             mockMvc.perform(get(CAROUSEL_URL))
                     .andExpect(status().isOk())
@@ -163,8 +171,9 @@ class UserContentControllerTest extends BaseControllerTest {
         @DisplayName("STUDENT 用户可正常访问 GET /carousel")
         void studentCanAccessCarousel() throws Exception {
             // Default context is SCHOOL; no @PermissionAccess on UserContentController
-            List<ContentBlockResponse> voList = ContentTestDataFactory.createContentBlockResponseList(1);
-            when(chapterContentBlockService.getByChapterId(1145141919810L)).thenReturn(voList);
+            List<ContentBlockResponse> voList =
+                    ContentTestDataFactory.createContentBlockResponseList(1, carouselParentId);
+            when(chapterContentBlockService.getByChapterId(carouselParentId)).thenReturn(voList);
 
             mockMvc.perform(get(CAROUSEL_URL))
                     .andExpect(status().isOk())

@@ -47,10 +47,10 @@ public final class ContentTestDataFactory {
                 .build();
     }
 
-    public static ChapterContentBlock createCarouselBlock(Long id, BlockType blockType) {
+    public static ChapterContentBlock createCarouselBlock(Long id, Long chapterId, BlockType blockType) {
         return ChapterContentBlock.builder()
                 .id(id)
-                .chapterId(1145141919810L)
+                .chapterId(chapterId)
                 .orderIndex(0)
                 .blockType(blockType)
                 .textContent("轮播图内容")
@@ -63,7 +63,7 @@ public final class ContentTestDataFactory {
         List<ChapterContentBlock> list = new ArrayList<>();
         BlockType[] types = BlockType.values();
         for (int i = 1; i <= count; i++) {
-            list.add(createCarouselBlock((long) i, types[i % types.length]));
+            list.add(createCarouselBlock((long) i, chapterId, types[i % types.length]));
         }
         return list;
     }
@@ -85,11 +85,11 @@ public final class ContentTestDataFactory {
         return createContentBlockResponse(parentId, blockType, "轮播图内容");
     }
 
-    public static List<ContentBlockResponse> createContentBlockResponseList(int count) {
+    public static List<ContentBlockResponse> createContentBlockResponseList(int count, Long parentId) {
         List<ContentBlockResponse> list = new ArrayList<>();
         BlockType[] types = BlockType.values();
         for (int i = 1; i <= count; i++) {
-            list.add(createCarouselResponse(1145141919810L, types[i % types.length]));
+            list.add(createCarouselResponse(parentId, types[i % types.length]));
         }
         return list;
     }

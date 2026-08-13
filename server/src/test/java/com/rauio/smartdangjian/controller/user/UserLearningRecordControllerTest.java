@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
@@ -24,8 +25,11 @@ import com.rauio.smartdangjian.controller.factory.LearningTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.learning.controller.user.UserLearningRecordController;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserLearningRecordRequest;
+import com.rauio.smartdangjian.server.learning.pojo.response.DayFrequencyStat;
+import com.rauio.smartdangjian.server.learning.pojo.response.FrequencyStatsResponse;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
+import com.rauio.smartdangjian.server.user.service.UserService;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
@@ -36,13 +40,17 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
     @SpringBootConfiguration
     static class TestConfig extends CommonTestConfig {
         @Bean
-        public UserLearningRecordController userLearningRecordController(UserLearningRecordService recordService) {
-            return new UserLearningRecordController(recordService);
+        public UserLearningRecordController userLearningRecordController(
+                UserLearningRecordService recordService, UserService userService) {
+            return new UserLearningRecordController(recordService, userService);
         }
     }
 
     @MockitoBean
     private UserLearningRecordService recordService;
+
+    @MockitoBean
+    private UserService userService;
 
     // ═══════════════════════════════════════════════════════════════
     // 正常场景
@@ -116,6 +124,30 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
                     .andExpect(jsonPath("$.code").value("200"))
                     .andExpect(jsonPath("$.data").value(true));
         }
+
+        @Test
+        @DisplayName("GET /stats/frequency - 碎片化学习频率统计成功")
+        void getFrequencyStatsSuccess() throws Exception {
+            when(userService.getCurrentUserId()).thenReturn("1");
+            when(recordService.getFrequencyStats(1L, 7))
+                    .thenReturn(FrequencyStatsResponse.builder()
+                            .days(List.of(DayFrequencyStat.builder()
+                                    .date(LocalDate.of(2026, 8, 12))
+                                    .recordCount(2L)
+                                    .totalDuration(1200L)
+                                    .build()))
+                            .totalCount(2)
+                            .totalDuration(1200)
+                            .avgPerDay(0.0666)
+                            .build());
+
+            mockMvc.perform(get("/api/learning/records/stats/frequency").param("days", "7"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"))
+                    .andExpect(jsonPath("$.data.totalCount").value(2))
+                    .andExpect(jsonPath("$.data.days[0].recordCount").value(2))
+                    .andExpect(jsonPath("$.data.days[0].date").value("2026-08-12"));
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -164,7 +196,8 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST / - Service 抛出 RuntimeException 返回 500")
         void createThrowsRuntimeException() throws Exception {
-            when(recordService.create(any(UserLearningRecordRequest.class))).thenThrow(new RuntimeException("创建学习记录异常"));
+            when(recordService.create(any(UserLearningRecordRequest.class)))
+                    .thenThrow(new RuntimeException("创建学习记录异常"));
 
             mockMvc.perform(post("/api/learning/records")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -264,8 +297,7 @@ class UserLearningRecordControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET /user/{userId}/chapter/{chapterId} - 空结果集返回空列表")
         void getByUserIdAndChapterIdEmptyResult() throws Exception {
-            when(recordService.getByUserIdAndChapterId(9999L, 9999L))
-                    .thenReturn(List.of());
+            when(recordService.getByUserIdAndChapterId(9999L, 9999L)).thenReturn(List.of());
 
             mockMvc.perform(get("/api/learning/records/users/9999/chapters/9999"))
                     .andExpect(status().isOk())

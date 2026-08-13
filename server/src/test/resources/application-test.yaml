@@ -25,6 +25,11 @@ spring:
         options:
           model: deepseek-chat
 
+app:
+  content:
+    carousel:
+      chapter-id: 1145141919810
+
 auth:
   captcha:
     test-code: TEST8888

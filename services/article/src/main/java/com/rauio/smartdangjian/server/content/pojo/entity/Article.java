@@ -39,6 +39,10 @@ public class Article {
     @Schema(description = "发布时间")
     private LocalDateTime publishedAt;
 
+    @TableField("source_url")
+    @Schema(description = "原文链接，爬虫写入时用于去重和溯源")
+    private String sourceUrl;
+
     @TableField("created_at")
     @Schema(description = "创建时间")
     private LocalDateTime createdAt;

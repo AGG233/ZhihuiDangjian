@@ -19,6 +19,8 @@ import com.rauio.smartdangjian.server.learning.mapper.UserLearningRecordMapper;
 import com.rauio.smartdangjian.server.learning.pojo.convertor.UserLearningRecordConvertor;
 import com.rauio.smartdangjian.server.learning.pojo.entity.UserLearningRecord;
 import com.rauio.smartdangjian.server.learning.pojo.request.UserLearningRecordRequest;
+import com.rauio.smartdangjian.server.learning.pojo.response.DayFrequencyStat;
+import com.rauio.smartdangjian.server.learning.pojo.response.FrequencyStatsResponse;
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMapper, UserLearningRecord> {
+
+    private static final int DEFAULT_STATS_DAYS = 30;
+    private static final int MAX_STATS_DAYS = 365;
 
     private final UserLearningRecordConvertor convertor;
     private final KnowledgeGraphService knowledgeGraphService;
@@ -94,6 +99,43 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
                 .eq(UserLearningRecord::getUserId, userId)
                 .ge(UserLearningRecord::getCreatedAt, threshold)
                 .orderByDesc(UserLearningRecord::getCreatedAt));
+    }
+
+    /**
+     * 按日粒度统计用户在近 N 天（默认 30）的碎片化学习频率。
+     *
+     * <p>聚合基于 user_learning_record 真实数据（GROUP BY DATE(start_time)），
+     * 仅返回存在学习记录的日期；无记录时返回空明细与零值汇总。
+     *
+     * @param userId 用户 ID
+     * @param days 统计窗口天数，为空或非正数时取默认 30，最大 365
+     * @return 每日明细 + 总次数 / 总时长 / 日均频次
+     */
+    public FrequencyStatsResponse getFrequencyStats(Long userId, Integer days) {
+        int effectiveDays = resolveStatsDays(days);
+        LocalDateTime startTime = LocalDateTime.now().minusDays(effectiveDays);
+        List<DayFrequencyStat> dayStats = this.getBaseMapper().selectFrequencyStats(userId, startTime);
+
+        long totalCount = dayStats.stream().mapToLong(DayFrequencyStat::getRecordCount).sum();
+        long totalDuration = dayStats.stream().mapToLong(DayFrequencyStat::getTotalDuration).sum();
+        double avgPerDay = (double) totalCount / effectiveDays;
+
+        return FrequencyStatsResponse.builder()
+                .days(dayStats)
+                .totalCount(totalCount)
+                .totalDuration(totalDuration)
+                .avgPerDay(avgPerDay)
+                .build();
+    }
+
+    private int resolveStatsDays(Integer days) {
+        if (days == null || days <= 0) {
+            return DEFAULT_STATS_DAYS;
+        }
+        if (days > MAX_STATS_DAYS) {
+            throw new BusinessException(LearningErrorConstants.STATS_DAYS_OUT_OF_RANGE, "统计天数超出范围（最大365）");
+        }
+        return days;
     }
 
     /**

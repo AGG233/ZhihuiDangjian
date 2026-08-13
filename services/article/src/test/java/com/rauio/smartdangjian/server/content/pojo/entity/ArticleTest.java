@@ -20,6 +20,7 @@ class ArticleTest {
                 .authorId(1L)
                 .title("测试文章标题")
                 .summary("测试文章摘要")
+                .sourceUrl("https://example.com/original")
                 .status(ArticleStatus.Published)
                 .publishedAt(now)
                 .createdAt(now)
@@ -30,6 +31,7 @@ class ArticleTest {
         assertThat(article.getAuthorId()).isEqualTo(1L);
         assertThat(article.getTitle()).isEqualTo("测试文章标题");
         assertThat(article.getSummary()).isEqualTo("测试文章摘要");
+        assertThat(article.getSourceUrl()).isEqualTo("https://example.com/original");
         assertThat(article.getStatus()).isEqualTo(ArticleStatus.Published);
         assertThat(article.getPublishedAt()).isEqualTo(now);
         assertThat(article.getCreatedAt()).isEqualTo(now);

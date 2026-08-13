@@ -4,13 +4,14 @@ import java.util.List;
 
 import jakarta.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
-import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
 import com.rauio.smartdangjian.server.content.service.ChapterContentBlockService;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,9 @@ import lombok.RequiredArgsConstructor;
 @SaCheckRole("MANAGER")
 public class AdminContentController {
 
-    private static final Long CAROUSEL_PARENT_ID = 1145141919810L;
+    /** 轮播图父章节 ID，默认兼容既有数据 */
+    @Value("${app.content.carousel.chapter-id:1145141919810}")
+    private Long carouselParentId;
 
     private final ChapterContentBlockService chapterContentBlockService;
 
@@ -36,7 +39,7 @@ public class AdminContentController {
     @PostMapping("/carousel")
     public Result<Boolean> addCarousel(@RequestBody @Valid List<ChapterContentBlock> chapterContentBlocks) {
         for (ChapterContentBlock block : chapterContentBlocks) {
-            block.setChapterId(CAROUSEL_PARENT_ID);
+            block.setChapterId(carouselParentId);
         }
         return Result.ok(chapterContentBlockService.saveBatch(chapterContentBlocks));
     }

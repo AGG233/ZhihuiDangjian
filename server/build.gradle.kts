@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":services:quiz"))
     implementation(project(":services:resource"))
     implementation(project(":services:search"))
+    implementation(project(":services:task"))
     implementation(project(":services:user"))
     implementation(libs.flyway.core)
     runtimeOnly(libs.flyway.mysql)

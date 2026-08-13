@@ -8,6 +8,7 @@ import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
+import com.rauio.smartdangjian.server.quiz.pojo.response.ChapterAccuracyResponse;
 import com.rauio.smartdangjian.server.quiz.pojo.response.UserQuizAnswerResponse;
 import com.rauio.smartdangjian.server.quiz.service.UserQuizAnswerService;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -58,6 +59,14 @@ public class UserQuizAnswerController {
             @Parameter(name = "optionId", description = "选项ID") @PathVariable Long optionId) {
         return Result.ok(
                 toUserQuizAnswerResponse(userQuizAnswerService.getByUserIdAndQuizIdAndOptionId(id, quizId, optionId)));
+    }
+
+    @Operation(summary = "获取用户按章节答题准确率", description = "按章节聚合用户答题记录数、答对数与正确率")
+    @GetMapping("/users/{id}/accuracy/by-chapter")
+    @ResourceAccess(id = "#id")
+    public Result<List<ChapterAccuracyResponse>> getAccuracyByChapter(
+            @Parameter(name = "id", description = "用户ID") @PathVariable Long id) {
+        return Result.ok(userQuizAnswerService.getAccuracyByChapter(id));
     }
 
     @Operation(summary = "提交答题", description = "用户提交一道题的答案")
