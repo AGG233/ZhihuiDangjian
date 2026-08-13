@@ -32,6 +32,7 @@ import org.mockito.quality.Strictness;
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.task.constants.TaskErrorConstants;
 import com.rauio.smartdangjian.server.task.mapper.TaskAcceptanceMapper;
@@ -312,6 +313,70 @@ class TaskServiceTest {
                         assertThat(((BusinessException) e).getCode()).isEqualTo(TaskErrorConstants.TASK_NOT_FOUND));
     }
 
+    @Test
+    @DisplayName("提交任务：进度为 null 抛 9008")
+    void submitNullProgressThrows() {
+        when(taskMapper.selectById(TASK_ID)).thenReturn(publishedTask());
+
+        assertThatThrownBy(() -> taskService.submit(
+                        TASK_ID, TaskSubmitRequest.builder().progress(null).build()))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(TaskErrorConstants.TASK_PROGRESS_INVALID));
+    }
+
+    @Test
+    @DisplayName("提交任务：进度为负数抛 9008")
+    void submitNegativeProgressThrows() {
+        when(taskMapper.selectById(TASK_ID)).thenReturn(publishedTask());
+
+        assertThatThrownBy(() -> taskService.submit(
+                        TASK_ID, TaskSubmitRequest.builder().progress(-1).build()))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(TaskErrorConstants.TASK_PROGRESS_INVALID));
+    }
+
+    @Test
+    @DisplayName("领取任务：落库失败抛 9007")
+    void acceptSaveFailsThrows() {
+        when(taskMapper.selectById(TASK_ID)).thenReturn(publishedTask());
+        when(taskAcceptanceMapper.selectCount(any())).thenReturn(0L);
+        when(taskAcceptanceMapper.insert(any(TaskAcceptance.class))).thenReturn(0);
+
+        assertThatThrownBy(() -> taskService.accept(TASK_ID))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(TaskErrorConstants.TASK_SAVE_FAILED));
+    }
+
+    @Test
+    @DisplayName("提交任务：更新失败抛 9009")
+    void submitUpdateFailsThrows() {
+        when(taskMapper.selectById(TASK_ID)).thenReturn(publishedTask());
+        when(taskAcceptanceMapper.selectOne(any(), anyBoolean()))
+                .thenReturn(acceptance(TaskAcceptanceStatus.ACCEPTED, 0));
+        when(taskAcceptanceMapper.updateById(any(TaskAcceptance.class))).thenReturn(0);
+
+        assertThatThrownBy(() -> taskService.submit(
+                        TASK_ID, TaskSubmitRequest.builder().progress(50).build()))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(TaskErrorConstants.TASK_UPDATE_FAILED));
+    }
+
+    @Test
+    @DisplayName("领取任务：未登录抛 RESOURCE_NOT_AUTHORIZED")
+    void acceptNotLoggedInThrows() {
+        when(taskMapper.selectById(TASK_ID)).thenReturn(publishedTask());
+        mockLoggedOut();
+
+        assertThatThrownBy(() -> taskService.accept(TASK_ID))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(ErrorConstants.RESOURCE_NOT_AUTHORIZED));
+    }
+
     // ==================== helpers ====================
 
     private Task publishedTask() {
@@ -333,6 +398,12 @@ class TaskServiceTest {
         stpUtilMock = mockStatic(StpUtil.class);
         stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
         stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn(String.valueOf(userId));
+    }
+
+    private void mockLoggedOut() {
+        closeMock();
+        stpUtilMock = mockStatic(StpUtil.class);
+        stpUtilMock.when(StpUtil::isLogin).thenReturn(false);
     }
 
     private void closeMock() {

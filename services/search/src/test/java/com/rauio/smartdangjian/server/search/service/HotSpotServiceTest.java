@@ -310,4 +310,178 @@ class HotSpotServiceTest {
 
         assertThat(result).isEmpty();
     }
+
+    // ==================== 边界分支 ====================
+
+    @Test
+    @DisplayName("getHotCourses topN<=0 时使用默认 Top N")
+    void hotCoursesTopNNonPositiveUsesDefault() {
+        Course c1 = Course.builder().id(1L).title("课程A").enrollmentCount(100).build();
+        doReturn(List.of(c1)).when(courseMapper).selectList(any(LambdaQueryWrapper.class));
+
+        List<HotCourseResponse> result = hotSpotService.getHotCourses(0);
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("getHotCourses 课程查询结果为 null 时返回空列表")
+    void hotCoursesNullCourseListReturnsEmpty() {
+        doReturn(null).when(courseMapper).selectList(any(LambdaQueryWrapper.class));
+
+        assertThat(hotSpotService.getHotCourses(10)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getHotCourses 学习记录查询结果为 null 时退化为纯 enrollment 排序")
+    void hotCoursesNullLearningRecordsTreatsAsZero() {
+        Course c1 = Course.builder().id(1L).title("课程A").enrollmentCount(100).build();
+        doReturn(List.of(c1)).when(courseMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(null).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+
+        List<HotCourseResponse> result = hotSpotService.getHotCourses(10);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getRecentLearnerCount()).isZero();
+    }
+
+    @Test
+    @DisplayName("getHotCourses 学习记录 chapterId 全为 null 时无最近学习人数")
+    void hotCoursesRecordsWithNullChapterIdSkipped() {
+        Course c1 = Course.builder().id(1L).title("课程A").enrollmentCount(100).build();
+        doReturn(List.of(c1)).when(courseMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(List.of(UserLearningRecord.builder().userId(1L).chapterId(null).build()))
+                .when(learningRecordMapper)
+                .selectList(any(LambdaQueryWrapper.class));
+
+        List<HotCourseResponse> result = hotSpotService.getHotCourses(10);
+
+        assertThat(result.get(0).getRecentLearnerCount()).isZero();
+    }
+
+    @Test
+    @DisplayName("getHotCourses 章节无 courseId 时不计入最近学习人数")
+    void hotCoursesChapterWithoutCourseIdSkipped() {
+        Course c1 = Course.builder().id(1L).title("课程A").enrollmentCount(100).build();
+        doReturn(List.of(c1)).when(courseMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(List.of(UserLearningRecord.builder().userId(1L).chapterId(10L).build()))
+                .when(learningRecordMapper)
+                .selectList(any(LambdaQueryWrapper.class));
+        doReturn(List.of(Chapter.builder().id(10L).courseId(null).build()))
+                .when(chapterMapper)
+                .selectList(any(LambdaQueryWrapper.class));
+
+        List<HotCourseResponse> result = hotSpotService.getHotCourses(10);
+
+        assertThat(result.get(0).getRecentLearnerCount()).isZero();
+    }
+
+    @Test
+    @DisplayName("getHotCourses 学习记录 userId 为 null 时不计入")
+    void hotCoursesRecordWithNullUserIdSkipped() {
+        Course c1 = Course.builder().id(1L).title("课程A").enrollmentCount(100).build();
+        doReturn(List.of(c1)).when(courseMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(List.of(UserLearningRecord.builder().userId(null).chapterId(10L).build()))
+                .when(learningRecordMapper)
+                .selectList(any(LambdaQueryWrapper.class));
+        doReturn(List.of(Chapter.builder().id(10L).courseId(1L).build()))
+                .when(chapterMapper)
+                .selectList(any(LambdaQueryWrapper.class));
+
+        List<HotCourseResponse> result = hotSpotService.getHotCourses(10);
+
+        assertThat(result.get(0).getRecentLearnerCount()).isZero();
+    }
+
+    @Test
+    @DisplayName("getHotCategories topN<=0 时使用默认 Top N")
+    void hotCategoriesTopNNonPositiveUsesDefault() {
+        Course c1 = Course.builder().id(1L).enrollmentCount(100).build();
+        doReturn(List.of(c1)).when(courseMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(List.of(CategoryCourse.builder().categoryId(1L).courseId(1L).build()))
+                .when(categoryCourseMapper)
+                .selectList(any(LambdaQueryWrapper.class));
+        Category cat1 = new Category();
+        cat1.setId(1L);
+        cat1.setName("党建理论");
+        doReturn(List.of(cat1)).when(categoryMapper).selectList(any(LambdaQueryWrapper.class));
+
+        List<HotCategoryResponse> result = hotSpotService.getHotCategories(0);
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("getHotCategories 课程查询结果为 null 时返回空列表")
+    void hotCategoriesNullCourseListReturnsEmpty() {
+        doReturn(null).when(courseMapper).selectList(any(LambdaQueryWrapper.class));
+
+        assertThat(hotSpotService.getHotCategories(10)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getHotCategories 课程 id 为 null 且关联 enrollment 缺失时返回空列表")
+    void hotCategoriesCourseWithNullIdFiltered() {
+        Course c1 = Course.builder().id(null).enrollmentCount(100).build();
+        doReturn(List.of(c1)).when(courseMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(List.of(CategoryCourse.builder().categoryId(1L).courseId(1L).build()))
+                .when(categoryCourseMapper)
+                .selectList(any(LambdaQueryWrapper.class));
+
+        assertThat(hotSpotService.getHotCategories(10)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getHotCategories 关联查询结果为 null 时返回空列表")
+    void hotCategoriesNullRelationsReturnsEmpty() {
+        Course c1 = Course.builder().id(1L).enrollmentCount(100).build();
+        doReturn(List.of(c1)).when(courseMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(null).when(categoryCourseMapper).selectList(any(LambdaQueryWrapper.class));
+
+        assertThat(hotSpotService.getHotCategories(10)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getHotCategories 关联 categoryId 为 null 时跳过并返回空列表")
+    void hotCategoriesRelationWithNullCategoryIdSkipped() {
+        Course c1 = Course.builder().id(1L).enrollmentCount(100).build();
+        doReturn(List.of(c1)).when(courseMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(List.of(CategoryCourse.builder().categoryId(null).courseId(1L).build()))
+                .when(categoryCourseMapper)
+                .selectList(any(LambdaQueryWrapper.class));
+
+        assertThat(hotSpotService.getHotCategories(10)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getLearningTrend days<=0 时使用默认统计天数")
+    void learningTrendNonPositiveDaysUsesDefault() {
+        UserLearningRecord r1 = UserLearningRecord.builder()
+                .startTime(LocalDateTime.now().minusDays(1))
+                .duration(100)
+                .build();
+        doReturn(List.of(r1)).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+
+        List<LearningTrendResponse> result = hotSpotService.getLearningTrend(0);
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("getLearningTrend 记录查询结果为 null 时返回空列表")
+    void learningTrendNullRecordsReturnsEmpty() {
+        doReturn(null).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+
+        assertThat(hotSpotService.getLearningTrend(30)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getLearningTrend 记录 startTime 为 null 时跳过")
+    void learningTrendRecordWithNullStartTimeSkipped() {
+        UserLearningRecord r1 =
+                UserLearningRecord.builder().startTime(null).duration(100).build();
+        doReturn(List.of(r1)).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+
+        assertThat(hotSpotService.getLearningTrend(30)).isEmpty();
+    }
 }

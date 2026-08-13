@@ -368,6 +368,17 @@ class ArticleServiceTest {
                 .isEqualTo(ArticleErrorConstants.ARTICLE_NOT_FOUND);
     }
 
+    @Test
+    @DisplayName("update 文章ID为 null 时抛出 BusinessException")
+    void updateThrowsWhenIdNull() {
+        ArticleRequest dto = ArticleRequest.builder().title("无ID文章").build();
+
+        assertThatThrownBy(() -> articleService.update(dto))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(ArticleErrorConstants.ARTICLE_NOT_FOUND);
+    }
+
     // ================================================================
     // delete
     // ================================================================
@@ -674,5 +685,21 @@ class ArticleServiceTest {
         List<Article> result = articleService.getArticlesByCategoryId(2L);
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getDetail 无分类关联时 categoryId 为 null")
+    void getDetailWithoutCategoryRelationReturnsNullCategoryId() {
+        Article article = Article.builder().id(1L).title("无分类文章").build();
+        doReturn(article).when(articleService).getById(1L);
+        when(convertor.toResponse(article)).thenReturn(ArticleResponse.builder().id(1L).title("无分类文章").build());
+        when(categoryArticleMapper.selectOne(any())).thenReturn(null);
+        when(articleContentBlockMapper.selectList(any())).thenReturn(Collections.emptyList());
+        when(articleContentBlockConvertor.toResponseList(anyList())).thenReturn(Collections.emptyList());
+
+        ArticleResponse result = articleService.getDetail(1L);
+
+        assertThat(result.getCategoryId()).isNull();
+        assertThat(result.getContentBlocks()).isEmpty();
     }
 }

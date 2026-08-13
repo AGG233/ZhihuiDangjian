@@ -22,6 +22,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.comment.constants.ContentInteractionErrorConstants;
 import com.rauio.smartdangjian.server.content.comment.mapper.InteractionTargetMapper;
@@ -181,5 +182,48 @@ class LikeServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .satisfies(e -> assertThat(((BusinessException) e).getCode())
                         .isEqualTo(ContentInteractionErrorConstants.TARGET_TYPE_INVALID));
+    }
+
+    @Test
+    @DisplayName("toggle 文章目标：校验文章存在并点赞成功")
+    void toggleArticleTargetLikes() {
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("100");
+        doReturn(1L).when(interactionTargetMapper).countArticleById(2L);
+        doReturn(null).when(likeService).getOne(any(LambdaQueryWrapper.class));
+        doReturn(true).when(likeService).save(any(LikeRecord.class));
+        doReturn(1L).when(likeService).count(any(LambdaQueryWrapper.class));
+
+        LikeStatusResponse result = likeService.toggle("article", 2L);
+
+        assertThat(result.getLiked()).isTrue();
+        assertThat(result.getCount()).isEqualTo(1);
+        verify(interactionTargetMapper).countArticleById(2L);
+    }
+
+    @Test
+    @DisplayName("toggle 点赞落库失败抛 3309")
+    void toggleSaveFailsThrows() {
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("100");
+        doReturn(1L).when(interactionTargetMapper).countCourseById(1L);
+        doReturn(null).when(likeService).getOne(any(LambdaQueryWrapper.class));
+        doReturn(false).when(likeService).save(any(LikeRecord.class));
+
+        assertThatThrownBy(() -> likeService.toggle("course", 1L))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(ContentInteractionErrorConstants.LIKE_TOGGLE_FAILED));
+    }
+
+    @Test
+    @DisplayName("toggle 未登录抛 RESOURCE_NOT_AUTHORIZED")
+    void toggleNotLoggedInThrows() {
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn(null);
+        doReturn(1L).when(interactionTargetMapper).countCourseById(1L);
+
+        assertThatThrownBy(() -> likeService.toggle("course", 1L))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(ErrorConstants.RESOURCE_NOT_AUTHORIZED));
+        verify(likeService, never()).save(any(LikeRecord.class));
     }
 }

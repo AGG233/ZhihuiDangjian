@@ -26,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.comment.constants.ContentInteractionErrorConstants;
 import com.rauio.smartdangjian.server.content.comment.mapper.CommentMapper;
@@ -336,6 +337,94 @@ class CommentServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .satisfies(e -> assertThat(((BusinessException) e).getCode())
                         .isEqualTo(ContentInteractionErrorConstants.COMMENT_NOT_FOUND));
+        verify(commentService, never()).removeById(any(Long.class));
+    }
+
+    @Test
+    @DisplayName("发表评论：content 为 null 抛 3303")
+    void createNullContentThrows() {
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("100");
+        doReturn(1L).when(interactionTargetMapper).countCourseById(1L);
+
+        CommentCreateRequest request = CommentCreateRequest.builder()
+                .targetType("course")
+                .targetId(1L)
+                .content(null)
+                .build();
+
+        assertThatThrownBy(() -> commentService.create(request))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(ContentInteractionErrorConstants.COMMENT_CONTENT_EMPTY));
+    }
+
+    @Test
+    @DisplayName("发表评论：落库失败抛 3307")
+    void createSaveFailsThrows() {
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("100");
+        doReturn(1L).when(interactionTargetMapper).countCourseById(1L);
+        doReturn(false).when(commentService).save(any(Comment.class));
+
+        CommentCreateRequest request = CommentCreateRequest.builder()
+                .targetType("course")
+                .targetId(1L)
+                .content("内容")
+                .build();
+
+        assertThatThrownBy(() -> commentService.create(request))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(ContentInteractionErrorConstants.COMMENT_SAVE_FAILED));
+    }
+
+    @Test
+    @DisplayName("发表评论：未登录抛 RESOURCE_NOT_AUTHORIZED")
+    void createNotLoggedInThrows() {
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn(null);
+        doReturn(1L).when(interactionTargetMapper).countCourseById(1L);
+
+        CommentCreateRequest request = CommentCreateRequest.builder()
+                .targetType("course")
+                .targetId(1L)
+                .content("内容")
+                .build();
+
+        assertThatThrownBy(() -> commentService.create(request))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(ErrorConstants.RESOURCE_NOT_AUTHORIZED));
+        verify(commentService, never()).save(any(Comment.class));
+    }
+
+    @Test
+    @DisplayName("删除评论：评论 userId 为 null 时无权删除抛 3306")
+    void deleteCommentWithNullUserIdThrows() {
+        doReturn(Comment.builder().id(1L).userId(null).build())
+                .when(commentService)
+                .getById(1L);
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("100");
+        securityUtilsMock.when(SecurityUtils::getCurrentUserType).thenReturn(UserType.STUDENT);
+
+        assertThatThrownBy(() -> commentService.delete(1L))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(ContentInteractionErrorConstants.COMMENT_DELETE_FORBIDDEN));
+        verify(commentService, never()).removeById(any(Long.class));
+    }
+
+    @Test
+    @DisplayName("删除评论：未登录抛 3306")
+    void deleteNotLoggedInThrows() {
+        doReturn(Comment.builder().id(1L).userId(100L).build())
+                .when(commentService)
+                .getById(1L);
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn(null);
+        securityUtilsMock.when(SecurityUtils::getCurrentUserType).thenReturn(null);
+
+        assertThatThrownBy(() -> commentService.delete(1L))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(ContentInteractionErrorConstants.COMMENT_DELETE_FORBIDDEN));
         verify(commentService, never()).removeById(any(Long.class));
     }
 }

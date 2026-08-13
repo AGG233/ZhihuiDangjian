@@ -249,6 +249,20 @@ class UserQuizAnswerServiceTest {
         verify(quizOptionService, never()).getById(anyLong());
     }
 
+    @Test
+    @DisplayName("create 题目分值为 null 时按 0 分判分")
+    void createNullScoreTreatedAsZero() {
+        UserQuizAnswer answer = answer(1L, 1L, 1L);
+        when(quizService.get(1L)).thenReturn(quiz("single_choice", null));
+        when(quizOptionService.getById(1L)).thenReturn(option(1L, 1L, true));
+        doReturn(true).when(userQuizAnswerService).save(any(UserQuizAnswer.class));
+
+        userQuizAnswerService.create(answer);
+
+        assertThat(answer.getIsCorrect()).isEqualTo(1);
+        assertThat(answer.getScoreObtained()).isZero();
+    }
+
     // ==================== create 失败路径 ====================
 
     @Test
@@ -584,6 +598,31 @@ class UserQuizAnswerServiceTest {
         List<ChapterAccuracyResponse> result = userQuizAnswerService.getAccuracyByChapter(1L);
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getAccuracyByChapter 题目数/答对数为 null 时按 0 处理")
+    void getAccuracyByChapterNullCountsTreatedAsZero() {
+        when(mapper.selectChapterAccuracyByUserId(1L)).thenReturn(List.of(row(10L, null, null)));
+
+        List<ChapterAccuracyResponse> result = userQuizAnswerService.getAccuracyByChapter(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getQuestionCount()).isZero();
+        assertThat(result.get(0).getCorrectCount()).isZero();
+        assertThat(result.get(0).getAccuracy()).isZero();
+    }
+
+    @Test
+    @DisplayName("getAccuracyByChapter 题目数为 0 时正确率为 0")
+    void getAccuracyByChapterZeroQuestionCount() {
+        when(mapper.selectChapterAccuracyByUserId(1L)).thenReturn(List.of(row(10L, 0, 0)));
+
+        List<ChapterAccuracyResponse> result = userQuizAnswerService.getAccuracyByChapter(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getQuestionCount()).isZero();
+        assertThat(result.get(0).getAccuracy()).isZero();
     }
 
     // ==================== helpers ====================

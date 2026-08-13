@@ -279,6 +279,87 @@ class AdminTaskServiceTest {
         verify(taskMapper, never()).deleteById(any(Long.class));
     }
 
+    @Test
+    @DisplayName("创建任务：落库失败抛 9005")
+    void createSaveFailsThrows() {
+        when(taskMapper.insert(any(Task.class))).thenReturn(0);
+
+        assertThatThrownBy(() -> adminTaskService.create(TaskCreateRequest.builder()
+                        .title("任务")
+                        .taskType(TaskType.CUSTOM)
+                        .build()))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(TaskErrorConstants.TASK_SAVE_FAILED));
+    }
+
+    @Test
+    @DisplayName("更新任务：更新失败抛 9006")
+    void updateUpdateFailsThrows() {
+        when(taskMapper.selectById(1L))
+                .thenReturn(Task.builder().id(1L).status(TaskStatus.DRAFT).build());
+        when(taskMapper.updateById(any(Task.class))).thenReturn(0);
+
+        assertThatThrownBy(() -> adminTaskService.update(
+                        1L, TaskUpdateRequest.builder().title("新标题").build()))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(TaskErrorConstants.TASK_UPDATE_FAILED));
+    }
+
+    @Test
+    @DisplayName("删除任务：删除失败抛 9008")
+    void deleteRemoveFailsThrows() {
+        when(taskMapper.selectById(1L)).thenReturn(Task.builder().id(1L).build());
+        when(taskMapper.deleteById(1L)).thenReturn(0);
+
+        assertThatThrownBy(() -> adminTaskService.delete(1L))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(TaskErrorConstants.TASK_DELETE_FAILED));
+    }
+
+    @Test
+    @DisplayName("更新任务：全字段更新均落库")
+    void updateAllFieldsPersists() {
+        when(taskMapper.selectById(1L))
+                .thenReturn(Task.builder().id(1L).status(TaskStatus.DRAFT).build());
+        when(taskMapper.updateById(any(Task.class))).thenReturn(1);
+
+        adminTaskService.update(
+                1L,
+                TaskUpdateRequest.builder()
+                        .title("新标题")
+                        .description("新描述")
+                        .taskType(TaskType.LEARNING)
+                        .points(50)
+                        .deadline(LocalDateTime.of(2026, 10, 1, 0, 0))
+                        .build());
+
+        ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
+        verify(taskMapper).updateById(captor.capture());
+        Task updated = captor.getValue();
+        assertThat(updated.getTitle()).isEqualTo("新标题");
+        assertThat(updated.getDescription()).isEqualTo("新描述");
+        assertThat(updated.getTaskType()).isEqualTo(TaskType.LEARNING);
+        assertThat(updated.getPoints()).isEqualTo(50);
+        assertThat(updated.getDeadline()).isEqualTo(LocalDateTime.of(2026, 10, 1, 0, 0));
+    }
+
+    @Test
+    @DisplayName("状态流转：draft → draft 非法抛 9007")
+    void transitionDraftToDraftIsRejected() {
+        when(taskMapper.selectById(1L))
+                .thenReturn(Task.builder().id(1L).status(TaskStatus.DRAFT).build());
+
+        assertThatThrownBy(() -> adminTaskService.update(
+                        1L, TaskUpdateRequest.builder().status(TaskStatus.DRAFT).build()))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(TaskErrorConstants.TASK_INVALID_STATUS_TRANSITION));
+        verify(taskMapper, never()).updateById(any(Task.class));
+    }
+
     // ==================== helpers ====================
 
     private void mockLoggedIn(Long userId) {
