@@ -10,4 +10,5 @@ public class GraphErrorConstants {
     public static final int COURSE_NOT_FOUND = 7003;
     public static final int PARTY_ENTITY_TYPE_INVALID = 7004;
     public static final int PARTY_ENTITY_ID_REQUIRED = 7005;
+    public static final int PARTY_SEED_READ_FAILED = 7006;
 }
