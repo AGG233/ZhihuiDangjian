@@ -11,3 +11,5 @@ exclude_paths:
   - "server/src/test/java/com/rauio/smartdangjian/crosslayer/task/TaskAcceptanceCrossLayerTest.java"
   - "services/quiz/src/test/java/com/rauio/smartdangjian/server/quiz/service/UserQuizAnswerServiceTest.java"
   - "services/task/src/test/java/com/rauio/smartdangjian/server/task/constants/TaskErrorConstantsTest.java"
+  - "server/src/test/java/com/rauio/smartdangjian/migration/ScormMigrationTest.java"
+  - "server/src/test/java/com/rauio/smartdangjian/crosslayer/quiz/ScormRegistrationCrossLayerTest.java"
