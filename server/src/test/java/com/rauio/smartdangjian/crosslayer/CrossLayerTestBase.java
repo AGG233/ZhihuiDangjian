@@ -35,6 +35,9 @@ import cn.dev33.satoken.stp.StpUtil;
             "NEO4J_URI=bolt://localhost:7687",
             "NEO4J_USERNAME=neo4j",
             "NEO4J_PASSWORD=password",
+            // 测试环境禁用向量库与 embedding 选择，避免 dashscope/openai 双 EmbeddingModel 冲突及真实 API 调用
+            "spring.ai.model.embedding=dashscope",
+            "spring.ai.vectorstore.type=none",
             "app.security.enabled=false"
         })
 public abstract class CrossLayerTestBase {
