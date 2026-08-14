@@ -2,7 +2,8 @@ package com.rauio.smartdangjian;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,14 +13,17 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
-
-import com.rauio.smartdangjian.utils.spec.UserType;
 
 @AutoConfigureMockMvc(addFilters = false)
 @TestPropertySource(
@@ -33,7 +37,10 @@ import com.rauio.smartdangjian.utils.spec.UserType;
             "DATABASE_PASSWORD=",
             "NEO4J_URI=bolt://localhost:7687",
             "NEO4J_USERNAME=neo4j",
-            "NEO4J_PASSWORD=password"
+            "NEO4J_PASSWORD=password",
+            // 测试环境禁用向量库与 embedding 选择，避免 dashscope/openai 双 EmbeddingModel 冲突及真实 API 调用
+            "spring.ai.model.embedding=dashscope",
+            "spring.ai.vectorstore.type=none"
         })
 public abstract class BaseControllerTest {
 
@@ -80,5 +87,12 @@ public abstract class BaseControllerTest {
                 HibernateJpaAutoConfiguration.class,
                 com.rauio.smartdangjian.config.TransactionConfig.class
             })
-    protected static class CommonTestConfig {}
+    protected static class CommonTestConfig implements WebMvcConfigurer {
+
+        @Override
+        public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+            // elearning-module-parser 传递引入 jackson-dataformat-xml，移除 XML converter 保证默认 JSON 响应
+            converters.removeIf(converter -> converter instanceof MappingJackson2XmlHttpMessageConverter);
+        }
+    }
 }

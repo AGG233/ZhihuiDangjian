@@ -3,6 +3,8 @@ spring-boot = "3.5.4"
 spring-dependency-management = "1.1.7"
 spring-ai = "1.1.2"
 spring-ai-ali = "1.1.2.0"
+dashscope = "2.22.29"
+scorm-parser = "1.2.1"
 spring-redisson = "4.3.0"
 flyway = "10.22.0"
 
@@ -52,6 +54,10 @@ spring-boot-configuration-processor = { module = "org.springframework.boot:sprin
 # AI
 spring-ai-starter-model-openai = { module = "org.springframework.ai:spring-ai-starter-model-openai" }
 spring-ai-starter-mcp-client = { module = "org.springframework.ai:spring-ai-starter-mcp-client-webflux" }
+spring-ai-starter-vector-store-neo4j = { module = "org.springframework.ai:spring-ai-starter-vector-store-neo4j" }
+spring-ai-alibaba-autoconfigure-dashscope = { module = "com.alibaba.cloud.ai:spring-ai-alibaba-autoconfigure-dashscope", version.ref = "spring-ai-ali" }
+dashscope-sdk = { module = "com.alibaba:dashscope-sdk-java", version.ref = "dashscope" }
+scorm-parser = { module = "dev.jcputney:elearning-module-parser", version.ref = "scorm-parser" }
 spring-ai-alibaba-agent-framework = { module = "com.alibaba.cloud.ai:spring-ai-alibaba-agent-framework", version.ref = "spring-ai-ali" }
 
 # Security

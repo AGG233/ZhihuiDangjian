@@ -157,7 +157,8 @@ class PromptServiceTest {
         request.setRole("SYSTEM");
 
         doReturn(true).when(promptService).save(any(AiPrompts.class));
-        AiPromptResponse expectedResponse = AiPromptResponse.builder().enabled(false).sort(0).build();
+        AiPromptResponse expectedResponse =
+                AiPromptResponse.builder().enabled(false).sort(0).build();
         doReturn(expectedResponse).when(convertor).toResponse(any(AiPrompts.class));
 
         AiPromptResponse result = promptService.create(request);
@@ -258,7 +259,8 @@ class PromptServiceTest {
     @Test
     @DisplayName("getByIdResponse 返回转换后的提示词")
     void getByIdResponse() {
-        AiPrompts mockPrompt = AiPrompts.builder().id(1L).name("test").content("content").build();
+        AiPrompts mockPrompt =
+                AiPrompts.builder().id(1L).name("test").content("content").build();
         doReturn(mockPrompt).when(promptService).getById("test-id");
         AiPromptResponse expected = AiPromptResponse.builder().name("test").build();
         doReturn(expected).when(convertor).toResponse(mockPrompt);
@@ -293,9 +295,8 @@ class PromptServiceTest {
         request.setRole("system");
 
         doReturn(true).when(promptService).save(any(AiPrompts.class));
-        AiPromptResponse expectedResponse = AiPromptResponse.builder()
-                .role(PromptRoleEnum.SYSTEM)
-                .build();
+        AiPromptResponse expectedResponse =
+                AiPromptResponse.builder().role(PromptRoleEnum.SYSTEM).build();
         doReturn(expectedResponse).when(convertor).toResponse(any(AiPrompts.class));
 
         AiPromptResponse result = promptService.create(request);
@@ -306,12 +307,9 @@ class PromptServiceTest {
     @Test
     @DisplayName("buildSystemPrompt 正确处理包含特殊字符的内容")
     void buildSystemPromptWithSpecialCharacters() {
-        AiPrompts p1 = AiPrompts.builder()
-                .content("含双引号\"和换行符的内容\n新行")
-                .build();
-        AiPrompts p2 = AiPrompts.builder()
-                .content("模板块 ${variable} 和 {placeholder}")
-                .build();
+        AiPrompts p1 = AiPrompts.builder().content("含双引号\"和换行符的内容\n新行").build();
+        AiPrompts p2 =
+                AiPrompts.builder().content("模板块 ${variable} 和 {placeholder}").build();
         doReturn(List.of(p1, p2)).when(promptService).listEnabledSystemPrompts("CHAT");
 
         String prompt = promptService.buildSystemPrompt("CHAT");

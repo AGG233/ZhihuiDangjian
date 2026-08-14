@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -192,13 +191,13 @@ class LLMServiceTest {
     void graphRunnerException() {
         AiChatRequest request = new AiChatRequest("session-1", "你好");
         when(userService.getCurrentUserId()).thenReturn("user-1");
-        when(aiAgentRegistry.getCoordinator()).thenAnswer(inv -> { throw new GraphRunnerException("图运行错误"); });
+        when(aiAgentRegistry.getCoordinator()).thenAnswer(inv -> {
+            throw new GraphRunnerException("图运行错误");
+        });
 
         Flux<AiChatResponse> result = llmService.chat(request);
 
-        StepVerifier.create(result)
-                .expectError(GraphRunnerException.class)
-                .verify();
+        StepVerifier.create(result).expectError(GraphRunnerException.class).verify();
     }
 
     @Test
@@ -207,8 +206,7 @@ class LLMServiceTest {
         AiChatRequest request = new AiChatRequest("session-1", "你好");
         when(userService.getCurrentUserId()).thenReturn("user-1");
         when(aiAgentRegistry.getCoordinator()).thenReturn(coordinator);
-        when(coordinator.stream(anyString(), any(RunnableConfig.class)))
-                .thenReturn(Flux.never());
+        when(coordinator.stream(anyString(), any(RunnableConfig.class))).thenReturn(Flux.never());
 
         StepVerifier.withVirtualTime(() -> llmService.chat(request))
                 .assertNext(r -> {
@@ -241,8 +239,7 @@ class LLMServiceTest {
         lenient().when(am.getText()).thenReturn("");
         when(output.message()).thenReturn(am);
 
-        when(coordinator.stream(anyString(), any(RunnableConfig.class)))
-                .thenReturn(Flux.just(output));
+        when(coordinator.stream(anyString(), any(RunnableConfig.class))).thenReturn(Flux.just(output));
 
         Flux<AiChatResponse> result = llmService.chat(request);
 
@@ -269,8 +266,7 @@ class LLMServiceTest {
         when(trm.getResponses()).thenReturn(List.of(tr));
         when(output.message()).thenReturn(trm);
 
-        when(coordinator.stream(anyString(), any(RunnableConfig.class)))
-                .thenReturn(Flux.just(output));
+        when(coordinator.stream(anyString(), any(RunnableConfig.class))).thenReturn(Flux.just(output));
 
         Flux<AiChatResponse> result = llmService.chat(request);
 
@@ -296,8 +292,7 @@ class LLMServiceTest {
         lenient().when(output.node()).thenReturn("some-node");
         when(output.message()).thenReturn(mock(Message.class));
 
-        when(coordinator.stream(anyString(), any(RunnableConfig.class)))
-                .thenReturn(Flux.just(output));
+        when(coordinator.stream(anyString(), any(RunnableConfig.class))).thenReturn(Flux.just(output));
 
         Flux<AiChatResponse> result = llmService.chat(request);
 
@@ -359,8 +354,7 @@ class LLMServiceTest {
         lenient().when(output.message()).thenReturn(new AssistantMessage("流式文本"));
         when(output.node()).thenReturn(null);
 
-        when(coordinator.stream(anyString(), any(RunnableConfig.class)))
-                .thenReturn(Flux.just(output));
+        when(coordinator.stream(anyString(), any(RunnableConfig.class))).thenReturn(Flux.just(output));
 
         Flux<AiChatResponse> result = llmService.chat(request);
 
@@ -384,7 +378,8 @@ class LLMServiceTest {
 
         llmService.chat(request).blockLast();
 
-        verify(aiMemoryService).saveConversation(eq("user-1"), eq("session-1"), eq("COORDINATOR"), eq("消息"), eq("[AI 未返回文本内容]"));
+        verify(aiMemoryService)
+                .saveConversation(eq("user-1"), eq("session-1"), eq("COORDINATOR"), eq("消息"), eq("[AI 未返回文本内容]"));
     }
 
     @Test
@@ -397,8 +392,7 @@ class LLMServiceTest {
         NodeOutput nonStreamingOutput = mock(NodeOutput.class);
         when(nonStreamingOutput.node()).thenReturn("tool-agent");
 
-        when(coordinator.stream(anyString(), any(RunnableConfig.class)))
-                .thenReturn(Flux.just(nonStreamingOutput));
+        when(coordinator.stream(anyString(), any(RunnableConfig.class))).thenReturn(Flux.just(nonStreamingOutput));
 
         Flux<AiChatResponse> result = llmService.chat(request);
 
@@ -424,8 +418,7 @@ class LLMServiceTest {
         lenient().when(output.node()).thenReturn("tool-agent");
         when(output.message()).thenReturn(mock(Message.class));
 
-        when(coordinator.stream(anyString(), any(RunnableConfig.class)))
-                .thenReturn(Flux.just(output));
+        when(coordinator.stream(anyString(), any(RunnableConfig.class))).thenReturn(Flux.just(output));
 
         Flux<AiChatResponse> result = llmService.chat(request);
 
@@ -445,14 +438,13 @@ class LLMServiceTest {
         AiChatRequest request = new AiChatRequest("session-1", "你好");
         when(userService.getCurrentUserId()).thenReturn("user-1");
         when(aiAgentRegistry.getCoordinator()).thenReturn(coordinator);
-        when(coordinator.stream(anyString(), any(RunnableConfig.class)))
-                .thenAnswer(inv -> { throw new GraphRunnerException("图运行错误"); });
+        when(coordinator.stream(anyString(), any(RunnableConfig.class))).thenAnswer(inv -> {
+            throw new GraphRunnerException("图运行错误");
+        });
 
         Flux<AiChatResponse> result = llmService.chat(request);
 
-        StepVerifier.create(result)
-                .expectError(GraphRunnerException.class)
-                .verify();
+        StepVerifier.create(result).expectError(GraphRunnerException.class).verify();
     }
 
     @Test
@@ -471,8 +463,7 @@ class LLMServiceTest {
         when(am.getToolCalls()).thenReturn(List.of());
         when(output.message()).thenReturn(am);
 
-        when(coordinator.stream(anyString(), any(RunnableConfig.class)))
-                .thenReturn(Flux.just(output));
+        when(coordinator.stream(anyString(), any(RunnableConfig.class))).thenReturn(Flux.just(output));
 
         Flux<AiChatResponse> result = llmService.chat(request);
 
@@ -499,12 +490,12 @@ class LLMServiceTest {
         when(am.getText()).thenReturn(null);
         lenient().when(finishedOutput.message()).thenReturn(am);
 
-        when(coordinator.stream(anyString(), any(RunnableConfig.class)))
-                .thenReturn(Flux.just(finishedOutput));
+        when(coordinator.stream(anyString(), any(RunnableConfig.class))).thenReturn(Flux.just(finishedOutput));
 
         llmService.chat(request).blockLast();
 
-        verify(aiMemoryService).saveConversation(eq("user-1"), eq("session-1"), eq("COORDINATOR"), eq("消息"), eq("[AI 未返回文本内容]"));
+        verify(aiMemoryService)
+                .saveConversation(eq("user-1"), eq("session-1"), eq("COORDINATOR"), eq("消息"), eq("[AI 未返回文本内容]"));
     }
 
     @Test
@@ -523,8 +514,7 @@ class LLMServiceTest {
         when(trm.getResponses()).thenReturn(List.of(tr));
         when(output.message()).thenReturn(trm);
 
-        when(coordinator.stream(anyString(), any(RunnableConfig.class)))
-                .thenReturn(Flux.just(output));
+        when(coordinator.stream(anyString(), any(RunnableConfig.class))).thenReturn(Flux.just(output));
 
         Flux<AiChatResponse> result = llmService.chat(request);
 

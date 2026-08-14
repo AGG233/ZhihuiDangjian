@@ -75,8 +75,7 @@ class QuizManageToolTest {
                 Map.of("optionText", "A", "isCorrect", true, "orderIndex", "A"),
                 Map.of("optionText", "B", "isCorrect", false, "orderIndex", "B"));
 
-        Boolean result =
-                quizManageTool.createQuiz("1", "Q1", "single_choice", 5, "easy", "explanation", options);
+        Boolean result = quizManageTool.createQuiz("1", "Q1", "single_choice", 5, "easy", "explanation", options);
 
         assertThat(result).isTrue();
         verify(quizService, times(1))
@@ -116,11 +115,9 @@ class QuizManageToolTest {
         });
         when(quizOptionService.create(any(), any(QuizOption.class))).thenReturn(true);
 
-        List<Map<String, Object>> options = List.of(
-                Map.of("optionText", "A", "isCorrect", "yes", "orderIndex", "A"));
+        List<Map<String, Object>> options = List.of(Map.of("optionText", "A", "isCorrect", "yes", "orderIndex", "A"));
 
-        Boolean result =
-                quizManageTool.createQuiz("1", "Q", "single_choice", 5, "easy", null, options);
+        Boolean result = quizManageTool.createQuiz("1", "Q", "single_choice", 5, "easy", null, options);
 
         assertThat(result).isTrue();
         verify(quizOptionService).create(any(), argThat(opt -> opt.getIsCorrect() == null));
@@ -131,8 +128,8 @@ class QuizManageToolTest {
     void createQuizThrowsWhenSaveFails() {
         when(quizService.create(any(Quiz.class))).thenReturn(false);
 
-        assertThatThrownBy(() -> quizManageTool.createQuiz(
-                        "1", "Q3", "single_choice", 5, "easy", null, Collections.emptyList()))
+        assertThatThrownBy(() ->
+                        quizManageTool.createQuiz("1", "Q3", "single_choice", 5, "easy", null, Collections.emptyList()))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("测验创建失败");
     }
@@ -149,8 +146,7 @@ class QuizManageToolTest {
 
         List<Map<String, Object>> options = List.of(Map.of("optionText", "A", "isCorrect", true, "orderIndex", "A"));
 
-        assertThatThrownBy(
-                        () -> quizManageTool.createQuiz("1", "Q4", "single_choice", 5, "easy", null, options))
+        assertThatThrownBy(() -> quizManageTool.createQuiz("1", "Q4", "single_choice", 5, "easy", null, options))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("选项创建失败");
     }
@@ -220,8 +216,14 @@ class QuizManageToolTest {
         @Test
         @DisplayName("全字段更新成功")
         void fullUpdate() {
-            Quiz existing = Quiz.builder().id(1L).question("旧题目").score(5).difficulty("easy")
-                    .explanation("旧解析").isActive(true).build();
+            Quiz existing = Quiz.builder()
+                    .id(1L)
+                    .question("旧题目")
+                    .score(5)
+                    .difficulty("easy")
+                    .explanation("旧解析")
+                    .isActive(true)
+                    .build();
             when(quizService.get(1L)).thenReturn(existing);
             when(quizService.update(existing)).thenReturn(true);
 
@@ -239,8 +241,14 @@ class QuizManageToolTest {
         @Test
         @DisplayName("部分字段更新时只修改非空字段")
         void partialUpdate() {
-            Quiz existing = Quiz.builder().id(1L).question("原题").score(5).difficulty("easy")
-                    .explanation("原解析").isActive(true).build();
+            Quiz existing = Quiz.builder()
+                    .id(1L)
+                    .question("原题")
+                    .score(5)
+                    .difficulty("easy")
+                    .explanation("原解析")
+                    .isActive(true)
+                    .build();
             when(quizService.get(1L)).thenReturn(existing);
             when(quizService.update(existing)).thenReturn(true);
 
@@ -267,8 +275,14 @@ class QuizManageToolTest {
         @Test
         @DisplayName("update only when isActive provided, question stays null")
         void updateWithoutQuestion() {
-            Quiz existing = Quiz.builder().id(1L).question("原题").score(5).difficulty("easy")
-                    .explanation("原解析").isActive(true).build();
+            Quiz existing = Quiz.builder()
+                    .id(1L)
+                    .question("原题")
+                    .score(5)
+                    .difficulty("easy")
+                    .explanation("原解析")
+                    .isActive(true)
+                    .build();
             when(quizService.get(1L)).thenReturn(existing);
             when(quizService.update(existing)).thenReturn(true);
 
@@ -283,8 +297,14 @@ class QuizManageToolTest {
         @Test
         @DisplayName("update with all fields as null keeps original values")
         void updateAllNullFields() {
-            Quiz existing = Quiz.builder().id(1L).question("题").score(5).difficulty("easy")
-                    .explanation("解析").isActive(true).build();
+            Quiz existing = Quiz.builder()
+                    .id(1L)
+                    .question("题")
+                    .score(5)
+                    .difficulty("easy")
+                    .explanation("解析")
+                    .isActive(true)
+                    .build();
             when(quizService.get(1L)).thenReturn(existing);
             when(quizService.update(existing)).thenReturn(true);
 
@@ -349,11 +369,9 @@ class QuizManageToolTest {
         });
         when(quizOptionService.create(any(), any(QuizOption.class))).thenReturn(true);
 
-        List<Map<String, Object>> options = List.of(
-                Map.of("orderIndex", "A"));
+        List<Map<String, Object>> options = List.of(Map.of("orderIndex", "A"));
 
-        Boolean result =
-                quizManageTool.createQuiz("1", "Q", "single_choice", 5, "easy", null, options);
+        Boolean result = quizManageTool.createQuiz("1", "Q", "single_choice", 5, "easy", null, options);
 
         assertThat(result).isTrue();
         verify(quizOptionService).create(any(), argThat(opt -> opt.getOptionText() == null));
@@ -369,11 +387,9 @@ class QuizManageToolTest {
         });
         when(quizOptionService.create(any(), any(QuizOption.class))).thenReturn(true);
 
-        List<Map<String, Object>> options = List.of(
-                Map.of("optionText", "A", "isCorrect", true));
+        List<Map<String, Object>> options = List.of(Map.of("optionText", "A", "isCorrect", true));
 
-        Boolean result =
-                quizManageTool.createQuiz("1", "Q", "single_choice", 5, "easy", null, options);
+        Boolean result = quizManageTool.createQuiz("1", "Q", "single_choice", 5, "easy", null, options);
 
         assertThat(result).isTrue();
         verify(quizOptionService).create(any(), argThat(opt -> opt.getOrderIndex() == null));

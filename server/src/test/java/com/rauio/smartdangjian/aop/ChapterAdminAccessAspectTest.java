@@ -108,7 +108,7 @@ class ChapterAdminAccessAspectTest {
 
             ChapterRequest chapter = ChapterRequest.builder().courseId("1").build();
             Method realMethod = findMethod("chapterAction", ChapterRequest.class);
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"chapter"}, new Object[]{chapter}, realMethod);
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"chapter"}, new Object[] {chapter}, realMethod);
             DataScopeContext context = mockContext(jp, DataScopeAction.CREATE, "", "#chapter");
 
             aspect.before(context);
@@ -121,7 +121,7 @@ class ChapterAdminAccessAspectTest {
 
             ChapterRequest chapter = ChapterRequest.builder().courseId("1").build();
             Method realMethod = findMethod("chapterAction", ChapterRequest.class);
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"chapter"}, new Object[]{chapter}, realMethod);
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"chapter"}, new Object[] {chapter}, realMethod);
             DataScopeContext context = mockContext(jp, DataScopeAction.CREATE, "", "#chapter");
 
             assertThatThrownBy(() -> aspect.before(context))
@@ -146,7 +146,7 @@ class ChapterAdminAccessAspectTest {
 
             ChapterRequest chapter = ChapterRequest.builder().courseId("1").build();
             Method realMethod = findMethod("chapterAction", ChapterRequest.class);
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"chapter"}, new Object[]{chapter}, realMethod);
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"chapter"}, new Object[] {chapter}, realMethod);
             DataScopeContext context = mockContext(jp, DataScopeAction.UPDATE, "", "#chapter");
 
             aspect.before(context);
@@ -159,7 +159,7 @@ class ChapterAdminAccessAspectTest {
 
             ChapterRequest chapter = ChapterRequest.builder().courseId("1").build();
             Method realMethod = findMethod("chapterAction", ChapterRequest.class);
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"chapter"}, new Object[]{chapter}, realMethod);
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"chapter"}, new Object[] {chapter}, realMethod);
             DataScopeContext context = mockContext(jp, DataScopeAction.UPDATE, "", "#chapter");
 
             assertThatThrownBy(() -> aspect.before(context))
@@ -249,7 +249,7 @@ class ChapterAdminAccessAspectTest {
     @Test
     @DisplayName("CREATE 操作请求体为空抛出异常")
     void createBodyNull() {
-        ProceedingJoinPoint jp = mockJoinPoint(new String[]{}, new Object[]{});
+        ProceedingJoinPoint jp = mockJoinPoint(new String[] {}, new Object[] {});
         DataScopeContext context = mockContext(jp, DataScopeAction.CREATE, "", "#chapter");
         assertThatThrownBy(() -> aspect.before(context))
                 .isInstanceOf(BusinessException.class)
@@ -259,7 +259,7 @@ class ChapterAdminAccessAspectTest {
     @Test
     @DisplayName("UPDATE 操作请求体为空抛出异常")
     void updateBodyNull() {
-        ProceedingJoinPoint jp = mockJoinPoint(new String[]{}, new Object[]{});
+        ProceedingJoinPoint jp = mockJoinPoint(new String[] {}, new Object[] {});
         DataScopeContext context = mockContext(jp, DataScopeAction.UPDATE, "", "#chapter");
         assertThatThrownBy(() -> aspect.before(context))
                 .isInstanceOf(BusinessException.class)

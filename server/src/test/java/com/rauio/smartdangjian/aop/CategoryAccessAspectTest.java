@@ -106,7 +106,7 @@ class CategoryAccessAspectTest {
             parent.setUniversityId("uni1");
             when(categoryService.getById("1")).thenReturn(parent);
 
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"id"}, new Object[]{1L});
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"id"}, new Object[] {1L});
             DataScopeContext context = mockContext(jp, DataScopeAction.CREATE, "'1'", "#children");
 
             aspect.before(context);
@@ -117,7 +117,7 @@ class CategoryAccessAspectTest {
         void createChildParentNotFound() {
             when(categoryService.getById("1")).thenReturn(null);
 
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"id"}, new Object[]{1L});
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"id"}, new Object[] {1L});
             DataScopeContext context = mockContext(jp, DataScopeAction.CREATE, "'1'", "#children");
 
             assertThatThrownBy(() -> aspect.before(context))
@@ -133,7 +133,7 @@ class CategoryAccessAspectTest {
             parent.setUniversityId(null); // public category
             when(categoryService.getById("1")).thenReturn(parent);
 
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"id"}, new Object[]{1L});
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"id"}, new Object[] {1L});
             DataScopeContext context = mockContext(jp, DataScopeAction.CREATE, "'1'", "#children");
 
             assertThatThrownBy(() -> aspect.before(context))
@@ -149,7 +149,7 @@ class CategoryAccessAspectTest {
             parent.setUniversityId("uni2");
             when(categoryService.getById("1")).thenReturn(parent);
 
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"id"}, new Object[]{1L});
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"id"}, new Object[] {1L});
             DataScopeContext context = mockContext(jp, DataScopeAction.CREATE, "'1'", "#children");
 
             assertThatThrownBy(() -> aspect.before(context))
@@ -174,7 +174,7 @@ class CategoryAccessAspectTest {
 
             CategoryRequest body = CategoryRequest.builder().name("新名称").build();
             Method realMethod = findMethod("dummyUpdate", CategoryRequest.class, Long.class);
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"dto", "id"}, new Object[]{body, 1L}, realMethod);
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"dto", "id"}, new Object[] {body, 1L}, realMethod);
             DataScopeContext context = mockContext(jp, DataScopeAction.UPDATE, "'1'", "#dto");
 
             aspect.before(context);
@@ -185,7 +185,7 @@ class CategoryAccessAspectTest {
         void updateCategoryNotFound() {
             when(categoryService.getById("1")).thenReturn(null);
 
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"id"}, new Object[]{1L});
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"id"}, new Object[] {1L});
             DataScopeContext context = mockContext(jp, DataScopeAction.UPDATE, "'1'", "");
 
             assertThatThrownBy(() -> aspect.before(context))
@@ -201,7 +201,7 @@ class CategoryAccessAspectTest {
             category.setUniversityId("uni2");
             when(categoryService.getById("1")).thenReturn(category);
 
-            ProceedingJoinPoint jp = mockJoinPoint(new String[]{"id"}, new Object[]{1L});
+            ProceedingJoinPoint jp = mockJoinPoint(new String[] {"id"}, new Object[] {1L});
             DataScopeContext context = mockContext(jp, DataScopeAction.UPDATE, "'1'", "");
 
             assertThatThrownBy(() -> aspect.before(context))
@@ -500,13 +500,19 @@ class CategoryAccessAspectTest {
         }
 
         @Override
-        public Long getId() { return id; }
+        public Long getId() {
+            return id;
+        }
 
         @Override
-        public UserType getUserType() { return userType; }
+        public UserType getUserType() {
+            return userType;
+        }
 
         @Override
-        public String getUniversityId() { return universityId; }
+        public String getUniversityId() {
+            return universityId;
+        }
     }
 
     private static CategoryResponse createCategoryResponse(Long id, String universityId) {

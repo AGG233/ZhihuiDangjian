@@ -46,13 +46,9 @@ class MapperScanRegistrationTest {
             }
         }
 
-        assertThat(found)
-                .as("扫描未发现任何 Mapper 接口，扫描逻辑可能失效")
-                .isNotEmpty();
+        assertThat(found).as("扫描未发现任何 Mapper 接口，扫描逻辑可能失效").isNotEmpty();
         assertThat(found).contains(TaskMapper.class.getName(), TaskAcceptanceMapper.class.getName());
-        assertThat(missing)
-                .as("以下 Mapper 接口缺少 @Mapper 注解，无法被 @MapperScan 注册")
-                .isEmpty();
+        assertThat(missing).as("以下 Mapper 接口缺少 @Mapper 注解，无法被 @MapperScan 注册").isEmpty();
     }
 
     private boolean hasInterface(String[] interfaceNames, String target) {

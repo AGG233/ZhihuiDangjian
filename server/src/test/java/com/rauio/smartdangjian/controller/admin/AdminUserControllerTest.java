@@ -1,11 +1,9 @@
 package com.rauio.smartdangjian.controller.admin;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -13,14 +11,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
-import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -35,11 +30,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import cn.dev33.satoken.stp.StpUtil;
-
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.server.user.constants.UserErrorConstants;
 import com.rauio.smartdangjian.server.user.controller.admin.AdminUserController;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
@@ -61,7 +55,10 @@ import com.rauio.smartdangjian.utils.spec.UserType;
             "DATABASE_PASSWORD=",
             "NEO4J_URI=bolt://localhost:7687",
             "NEO4J_USERNAME=neo4j",
-            "NEO4J_PASSWORD=password"
+            "NEO4J_PASSWORD=password",
+            // 测试环境禁用向量库与 embedding 选择，避免 dashscope/openai 双 EmbeddingModel 冲突及真实 API 调用
+            "spring.ai.model.embedding=dashscope",
+            "spring.ai.vectorstore.type=none"
         })
 @DisplayName("管理员用户接口测试")
 class AdminUserControllerTest extends BaseControllerTest {
@@ -74,7 +71,8 @@ class AdminUserControllerTest extends BaseControllerTest {
                 com.rauio.smartdangjian.config.TransactionConfig.class
             })
     @EnableWebMvc
-    static class TestConfig {
+    // 继承 CommonTestConfig 以复用 XML converter 移除逻辑（jackson-dataformat-xml 传递依赖导致无 Accept 请求默认返回 XML）
+    static class TestConfig extends BaseControllerTest.CommonTestConfig {
         @Bean
         public AdminUserController adminUserController(UserService userService) {
             return new AdminUserController(userService);
@@ -710,7 +708,7 @@ class AdminUserControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(UserTestDataFactory.toJson(dto)))
-                                        .andExpect(status().isOk());
+                    .andExpect(status().isOk());
         }
 
         @Test
@@ -726,7 +724,7 @@ class AdminUserControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(UserTestDataFactory.toJson(dto)))
-                                        .andExpect(status().isOk());
+                    .andExpect(status().isOk());
         }
 
         @Test
@@ -742,7 +740,7 @@ class AdminUserControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(UserTestDataFactory.toJson(dto)))
-                                        .andExpect(status().isOk());
+                    .andExpect(status().isOk());
         }
     }
 
@@ -769,7 +767,7 @@ class AdminUserControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(UserTestDataFactory.toJson(dto)))
-                                        .andExpect(status().isOk());
+                    .andExpect(status().isOk());
         }
 
         @Test
@@ -785,7 +783,7 @@ class AdminUserControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(UserTestDataFactory.toJson(dto)))
-                                        .andExpect(status().isOk());
+                    .andExpect(status().isOk());
         }
 
         @Test
@@ -803,7 +801,7 @@ class AdminUserControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(UserTestDataFactory.toJson(dto)))
-                                        .andExpect(status().isOk());
+                    .andExpect(status().isOk());
         }
 
         @Test
@@ -820,7 +818,7 @@ class AdminUserControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(UserTestDataFactory.toJson(dto)))
-                                        .andExpect(status().isOk());
+                    .andExpect(status().isOk());
         }
 
         @Test
@@ -836,7 +834,7 @@ class AdminUserControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(UserTestDataFactory.toJson(dto)))
-                                        .andExpect(status().isOk());
+                    .andExpect(status().isOk());
         }
 
         /**
@@ -874,14 +872,14 @@ class AdminUserControllerTest extends BaseControllerTest {
                     return "uni1";
                 }
             };
-        setSecurityContext(UserType.STUDENT, student.getId(), student.getUniversityId());
+            setSecurityContext(UserType.STUDENT, student.getId(), student.getUniversityId());
 
             when(userService.getAdminPage(any(UserRequest.class), anyInt(), anyInt()))
                     .thenReturn(com.baomidou.mybatisplus.extension.plugins.pagination.Page.of(0, 10));
             mockMvc.perform(post("/api/admin/users/search")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
-                                        .andExpect(status().isOk());
+                    .andExpect(status().isOk());
         }
 
         /**

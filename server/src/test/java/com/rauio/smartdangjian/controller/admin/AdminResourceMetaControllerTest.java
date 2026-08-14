@@ -80,8 +80,8 @@ class AdminResourceMetaControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET / - 查询资源元数据列表成功")
         void listResourceMetaSuccess() throws Exception {
-            List<ResourceMeta> list = List.of(
-                    BannerTestDataFactory.createResourceMeta(1L), BannerTestDataFactory.createResourceMeta(2L));
+            List<ResourceMeta> list =
+                    List.of(BannerTestDataFactory.createResourceMeta(1L), BannerTestDataFactory.createResourceMeta(2L));
             when(resourceMetaService.list(any(), any(), any(), any(), any())).thenReturn(list);
 
             mockMvc.perform(get("/api/admin/resource/files"))
@@ -211,8 +211,7 @@ class AdminResourceMetaControllerTest extends BaseControllerTest {
         @DisplayName("GET / - 带查询参数筛选")
         void listWithQueryParams() throws Exception {
             List<ResourceMeta> list = List.of(BannerTestDataFactory.createResourceMeta(1L));
-            when(resourceMetaService.list(eq(1L), any(), any(), any(), any()))
-                    .thenReturn(list);
+            when(resourceMetaService.list(eq(1L), any(), any(), any(), any())).thenReturn(list);
 
             mockMvc.perform(get("/api/admin/resource/files")
                             .param("uploaderId", "1")

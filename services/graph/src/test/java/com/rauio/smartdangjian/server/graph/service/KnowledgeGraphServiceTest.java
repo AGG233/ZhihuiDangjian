@@ -11,7 +11,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +36,6 @@ import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
-import com.rauio.smartdangjian.server.graph.constants.GraphErrorConstants;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphEdgeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphNodeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
@@ -83,8 +81,7 @@ class KnowledgeGraphServiceTest {
     @SuppressWarnings("unchecked")
     private Neo4jClient.RecordFetchSpec<Map<String, Object>> setupFetchChain() {
         Neo4jClient.UnboundRunnableSpec spec = setupQueryChain();
-        Neo4jClient.RecordFetchSpec<Map<String, Object>> fetchSpec =
-                mock(Neo4jClient.RecordFetchSpec.class);
+        Neo4jClient.RecordFetchSpec<Map<String, Object>> fetchSpec = mock(Neo4jClient.RecordFetchSpec.class);
         lenient().when(spec.fetch()).thenReturn(fetchSpec);
         return fetchSpec;
     }
@@ -188,9 +185,13 @@ class KnowledgeGraphServiceTest {
 
     // ==================== Helper: Build test rows ====================
 
-    private Map<String, Object> fullRow(String userId, String userName,
-            String courseId, String courseTitle,
-            String chapterId, String chapterTitle) {
+    private Map<String, Object> fullRow(
+            String userId,
+            String userName,
+            String courseId,
+            String courseTitle,
+            String chapterId,
+            String chapterTitle) {
         Map<String, Object> row = new HashMap<>();
         row.put("u", mockUserNode(userId, userName));
         row.put("c", mockCourseNode(courseId, courseTitle));
@@ -221,8 +222,16 @@ class KnowledgeGraphServiceTest {
         @Test
         @DisplayName("upsertLearningGraph 成功创建图谱关系")
         void upsertLearningGraphSuccess() {
-            User user = User.builder().id(USER_ID).username("zhangsan").realName("张三").build();
-            Chapter chapter = Chapter.builder().id(CHAPTER_ID).courseId(COURSE_ID).title("第一章").build();
+            User user = User.builder()
+                    .id(USER_ID)
+                    .username("zhangsan")
+                    .realName("张三")
+                    .build();
+            Chapter chapter = Chapter.builder()
+                    .id(CHAPTER_ID)
+                    .courseId(COURSE_ID)
+                    .title("第一章")
+                    .build();
             Course course = Course.builder().id(COURSE_ID).title("测试课程").build();
 
             when(userMapper.selectById(USER_ID)).thenReturn(user);
@@ -251,12 +260,15 @@ class KnowledgeGraphServiceTest {
             assertThat(result.getNodes()).hasSize(3);
             assertThat(result.getEdges()).hasSize(3);
 
-            assertThat(result.getNodes()).extracting(GraphNodeResponse::getId)
+            assertThat(result.getNodes())
+                    .extracting(GraphNodeResponse::getId)
                     .containsExactlyInAnyOrder("User:1", "Course:1", "Chapter:1");
-            assertThat(result.getNodes()).extracting(GraphNodeResponse::getName)
+            assertThat(result.getNodes())
+                    .extracting(GraphNodeResponse::getName)
                     .containsExactlyInAnyOrder("张三", "测试课程", "第一章");
 
-            assertThat(result.getEdges()).extracting(GraphEdgeResponse::getType)
+            assertThat(result.getEdges())
+                    .extracting(GraphEdgeResponse::getType)
                     .containsExactlyInAnyOrder("LEARNED", "HAS_CHAPTER", "LEARNED_CHAPTER");
         }
 
@@ -281,7 +293,8 @@ class KnowledgeGraphServiceTest {
             assertThat(result.getNodes()).hasSize(3);
             // r3 is null so no LEARNED_CHAPTER edge
             assertThat(result.getEdges()).hasSize(2);
-            assertThat(result.getEdges()).extracting(GraphEdgeResponse::getType)
+            assertThat(result.getEdges())
+                    .extracting(GraphEdgeResponse::getType)
                     .containsExactlyInAnyOrder("LEARNED", "HAS_CHAPTER");
         }
 
@@ -308,7 +321,8 @@ class KnowledgeGraphServiceTest {
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(3);
             // User node id should be "User:1" (from asLong())
-            assertThat(result.getNodes()).filteredOn(n -> n.getLabel().equals("User"))
+            assertThat(result.getNodes())
+                    .filteredOn(n -> n.getLabel().equals("User"))
                     .singleElement()
                     .extracting(GraphNodeResponse::getId)
                     .isEqualTo("User:1");
@@ -317,8 +331,16 @@ class KnowledgeGraphServiceTest {
         @Test
         @DisplayName("upsertLearningGraph 当 realName 为 null 时使用 username")
         void upsertLearningGraphWithUsernameFallback() {
-            User user = User.builder().id(USER_ID_NO_REAL_NAME).username("lisi").realName(null).build();
-            Chapter chapter = Chapter.builder().id(CHAPTER_ID).courseId(COURSE_ID).title("第一章").build();
+            User user = User.builder()
+                    .id(USER_ID_NO_REAL_NAME)
+                    .username("lisi")
+                    .realName(null)
+                    .build();
+            Chapter chapter = Chapter.builder()
+                    .id(CHAPTER_ID)
+                    .courseId(COURSE_ID)
+                    .title("第一章")
+                    .build();
             Course course = Course.builder().id(COURSE_ID).title("测试课程").build();
 
             when(userMapper.selectById(USER_ID_NO_REAL_NAME)).thenReturn(user);
@@ -371,7 +393,8 @@ class KnowledgeGraphServiceTest {
             when(userMapper.selectById(USER_ID))
                     .thenReturn(User.builder().id(USER_ID).username("test").build());
             when(chapterMapper.selectById(CHAPTER_ID))
-                    .thenReturn(Chapter.builder().id(CHAPTER_ID).courseId(COURSE_ID).build());
+                    .thenReturn(
+                            Chapter.builder().id(CHAPTER_ID).courseId(COURSE_ID).build());
             when(courseMapper.selectById(COURSE_ID)).thenReturn(null);
 
             assertThatThrownBy(() -> knowledgeGraphService.upsertLearningGraph(USER_ID, CHAPTER_ID))
@@ -425,7 +448,8 @@ class KnowledgeGraphServiceTest {
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(1);
-            assertThat(result.getNodes()).singleElement()
+            assertThat(result.getNodes())
+                    .singleElement()
                     .extracting(GraphNodeResponse::getId, GraphNodeResponse::getLabel)
                     .containsExactly("User:1", "User");
             assertThat(result.getEdges()).isEmpty();
@@ -457,7 +481,8 @@ class KnowledgeGraphServiceTest {
             // Total unique: 5 edges (LEARNED is duplicated between rows)
             assertThat(result.getEdges()).hasSize(5);
 
-            assertThat(result.getNodes()).extracting(GraphNodeResponse::getId)
+            assertThat(result.getNodes())
+                    .extracting(GraphNodeResponse::getId)
                     .containsExactlyInAnyOrder("User:1", "Course:1", "Chapter:1", "Chapter:2");
         }
 
@@ -479,7 +504,8 @@ class KnowledgeGraphServiceTest {
             assertThat(result).isNotNull();
             // Key should be "User:100" (internal id fallback)
             assertThat(result.getNodes()).hasSize(1);
-            assertThat(result.getNodes()).singleElement()
+            assertThat(result.getNodes())
+                    .singleElement()
                     .extracting(GraphNodeResponse::getId)
                     .isEqualTo("User:100");
             // Name fallback should be the id since no name/title
@@ -511,7 +537,8 @@ class KnowledgeGraphServiceTest {
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(1);
-            assertThat(result.getNodes()).singleElement()
+            assertThat(result.getNodes())
+                    .singleElement()
                     .extracting(GraphNodeResponse::getId)
                     .isEqualTo("User:200");
         }
@@ -521,7 +548,7 @@ class KnowledgeGraphServiceTest {
         void getUserGraphNodeWithEmptyLabels() {
             Neo4jClient.RecordFetchSpec<Map<String, Object>> fetchSpec = setupFetchChain();
             Node node = mock(Node.class);
-            when(node.labels()).thenReturn(List.of());  // empty labels
+            when(node.labels()).thenReturn(List.of()); // empty labels
             when(node.containsKey("id")).thenReturn(false);
             when(node.containsKey("name")).thenReturn(false);
             when(node.containsKey("title")).thenReturn(false);
@@ -540,7 +567,8 @@ class KnowledgeGraphServiceTest {
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(1);
-            assertThat(result.getNodes()).singleElement()
+            assertThat(result.getNodes())
+                    .singleElement()
                     .extracting(GraphNodeResponse::getId, GraphNodeResponse::getLabel)
                     .containsExactly("Node:300", "Node");
         }
@@ -594,7 +622,8 @@ class KnowledgeGraphServiceTest {
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(1);
-            assertThat(result.getNodes()).singleElement()
+            assertThat(result.getNodes())
+                    .singleElement()
                     .extracting(GraphNodeResponse::getName)
                     .isEqualTo("42");
         }
@@ -618,8 +647,6 @@ class KnowledgeGraphServiceTest {
             assertThat(result.getNodes()).isEmpty();
             assertThat(result.getEdges()).isEmpty();
         }
-
-
 
         @Test
         @DisplayName("getUserGraph readName with name key null value uses title")
@@ -653,7 +680,8 @@ class KnowledgeGraphServiceTest {
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(1);
-            assertThat(result.getNodes()).singleElement()
+            assertThat(result.getNodes())
+                    .singleElement()
                     .extracting(GraphNodeResponse::getName)
                     .isEqualTo("课程名称");
         }
@@ -688,7 +716,8 @@ class KnowledgeGraphServiceTest {
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(1);
-            assertThat(result.getNodes()).singleElement()
+            assertThat(result.getNodes())
+                    .singleElement()
                     .extracting(GraphNodeResponse::getName)
                     .isEqualTo("1");
         }
@@ -713,7 +742,8 @@ class KnowledgeGraphServiceTest {
             assertThat(result.getNodes()).hasSize(3);
             // r1 is not a Relationship so not added as edge
             assertThat(result.getEdges()).hasSize(2);
-            assertThat(result.getEdges()).extracting(GraphEdgeResponse::getType)
+            assertThat(result.getEdges())
+                    .extracting(GraphEdgeResponse::getType)
                     .containsExactlyInAnyOrder("HAS_CHAPTER", "LEARNED_CHAPTER");
         }
 
@@ -726,7 +756,7 @@ class KnowledgeGraphServiceTest {
             row.put("c", mockCourseNode("1", "测试课程"));
             row.put("ch", mockChapterNode("1", "第一章"));
             row.put("r1", mockRelationship("LEARNED"));
-            row.put("r2", null);  // r2 is null, courseKey and chapterKey are non-null
+            row.put("r2", null); // r2 is null, courseKey and chapterKey are non-null
             row.put("r3", mockRelationship("LEARNED_CHAPTER"));
             when(fetchSpec.all()).thenReturn((Collection) List.of(row));
 
@@ -735,7 +765,8 @@ class KnowledgeGraphServiceTest {
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(3);
             assertThat(result.getEdges()).hasSize(2);
-            assertThat(result.getEdges()).extracting(GraphEdgeResponse::getType)
+            assertThat(result.getEdges())
+                    .extracting(GraphEdgeResponse::getType)
                     .containsExactlyInAnyOrder("LEARNED", "LEARNED_CHAPTER");
         }
 
@@ -768,7 +799,7 @@ class KnowledgeGraphServiceTest {
             row.put("u", mockUserNode("1", "张三"));
             row.put("c", mockCourseNode("1", "测试课程"));
             row.put("ch", mockChapterNode("1", "第一章"));
-            row.put("r1", null);  // No LEARNED edge
+            row.put("r1", null); // No LEARNED edge
             row.put("r2", mockRelationship("HAS_CHAPTER"));
             row.put("r3", mockRelationship("LEARNED_CHAPTER"));
             when(fetchSpec.all()).thenReturn((Collection) List.of(row));
@@ -778,7 +809,8 @@ class KnowledgeGraphServiceTest {
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(3);
             assertThat(result.getEdges()).hasSize(2);
-            assertThat(result.getEdges()).extracting(GraphEdgeResponse::getType)
+            assertThat(result.getEdges())
+                    .extracting(GraphEdgeResponse::getType)
                     .containsExactlyInAnyOrder("HAS_CHAPTER", "LEARNED_CHAPTER");
         }
 
@@ -809,7 +841,8 @@ class KnowledgeGraphServiceTest {
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(1);
-            assertThat(result.getNodes()).singleElement()
+            assertThat(result.getNodes())
+                    .singleElement()
                     .extracting(GraphNodeResponse::getId)
                     .isEqualTo("User:999");
         }
@@ -841,10 +874,12 @@ class KnowledgeGraphServiceTest {
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).hasSize(1);
-            assertThat(result.getNodes()).singleElement()
+            assertThat(result.getNodes())
+                    .singleElement()
                     .extracting(GraphNodeResponse::getId)
                     .isEqualTo("User:str-001");
         }
+
         @Test
         @DisplayName("buildGraph partial short-circuit: r1/r2/r3 with missing intermediate nodes")
         void buildGraphPartialShortCircuit() {

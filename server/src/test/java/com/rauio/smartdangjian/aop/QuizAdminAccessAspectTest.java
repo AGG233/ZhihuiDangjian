@@ -110,11 +110,16 @@ class QuizAdminAccessAspectTest {
         @Test
         @DisplayName("QUIZ 资源完整链路通过")
         void quizResourcePasses() {
-            DataScopeContext context = mockContext(UserType.SCHOOL, 1L, "uni1", DataScopeAction.UPDATE, "'1'", "'QUIZ'");
-            when(quizMapper.selectById(1L)).thenReturn(Quiz.builder().id(1L).chapterId(1L).build());
-            when(chapterMapper.selectById(1L)).thenReturn(Chapter.builder().id(1L).courseId(1L).build());
-            when(courseMapper.selectById(1L)).thenReturn(Course.builder().id(1L).creatorId(1L).build());
-            when(userMapper.selectById(1L)).thenReturn(User.builder().id(1L).universityId("uni1").build());
+            DataScopeContext context =
+                    mockContext(UserType.SCHOOL, 1L, "uni1", DataScopeAction.UPDATE, "'1'", "'QUIZ'");
+            when(quizMapper.selectById(1L))
+                    .thenReturn(Quiz.builder().id(1L).chapterId(1L).build());
+            when(chapterMapper.selectById(1L))
+                    .thenReturn(Chapter.builder().id(1L).courseId(1L).build());
+            when(courseMapper.selectById(1L))
+                    .thenReturn(Course.builder().id(1L).creatorId(1L).build());
+            when(userMapper.selectById(1L))
+                    .thenReturn(User.builder().id(1L).universityId("uni1").build());
 
             aspect.before(context);
         }
@@ -122,7 +127,8 @@ class QuizAdminAccessAspectTest {
         @Test
         @DisplayName("题目不存在时抛出异常")
         void quizNotFound() {
-            DataScopeContext context = mockContext(UserType.SCHOOL, 1L, "uni1", DataScopeAction.UPDATE, "'1'", "'QUIZ'");
+            DataScopeContext context =
+                    mockContext(UserType.SCHOOL, 1L, "uni1", DataScopeAction.UPDATE, "'1'", "'QUIZ'");
             when(quizMapper.selectById(1L)).thenReturn(null);
 
             assertThatThrownBy(() -> aspect.before(context))
@@ -133,8 +139,10 @@ class QuizAdminAccessAspectTest {
         @Test
         @DisplayName("章节不存在时抛出异常")
         void chapterNotFound() {
-            DataScopeContext context = mockContext(UserType.SCHOOL, 1L, "uni1", DataScopeAction.UPDATE, "'1'", "'QUIZ'");
-            when(quizMapper.selectById(1L)).thenReturn(Quiz.builder().id(1L).chapterId(1L).build());
+            DataScopeContext context =
+                    mockContext(UserType.SCHOOL, 1L, "uni1", DataScopeAction.UPDATE, "'1'", "'QUIZ'");
+            when(quizMapper.selectById(1L))
+                    .thenReturn(Quiz.builder().id(1L).chapterId(1L).build());
             when(chapterMapper.selectById(1L)).thenReturn(null);
 
             assertThatThrownBy(() -> aspect.before(context))
@@ -145,9 +153,12 @@ class QuizAdminAccessAspectTest {
         @Test
         @DisplayName("课程不存在时抛出异常")
         void courseNotFound() {
-            DataScopeContext context = mockContext(UserType.SCHOOL, 1L, "uni1", DataScopeAction.UPDATE, "'1'", "'QUIZ'");
-            when(quizMapper.selectById(1L)).thenReturn(Quiz.builder().id(1L).chapterId(1L).build());
-            when(chapterMapper.selectById(1L)).thenReturn(Chapter.builder().id(1L).courseId(1L).build());
+            DataScopeContext context =
+                    mockContext(UserType.SCHOOL, 1L, "uni1", DataScopeAction.UPDATE, "'1'", "'QUIZ'");
+            when(quizMapper.selectById(1L))
+                    .thenReturn(Quiz.builder().id(1L).chapterId(1L).build());
+            when(chapterMapper.selectById(1L))
+                    .thenReturn(Chapter.builder().id(1L).courseId(1L).build());
             when(courseMapper.selectById(1L)).thenReturn(null);
 
             assertThatThrownBy(() -> aspect.before(context))
@@ -158,10 +169,14 @@ class QuizAdminAccessAspectTest {
         @Test
         @DisplayName("创建人不存在时抛出异常")
         void creatorNotFound() {
-            DataScopeContext context = mockContext(UserType.SCHOOL, 1L, "uni1", DataScopeAction.UPDATE, "'1'", "'QUIZ'");
-            when(quizMapper.selectById(1L)).thenReturn(Quiz.builder().id(1L).chapterId(1L).build());
-            when(chapterMapper.selectById(1L)).thenReturn(Chapter.builder().id(1L).courseId(1L).build());
-            when(courseMapper.selectById(1L)).thenReturn(Course.builder().id(1L).creatorId(1L).build());
+            DataScopeContext context =
+                    mockContext(UserType.SCHOOL, 1L, "uni1", DataScopeAction.UPDATE, "'1'", "'QUIZ'");
+            when(quizMapper.selectById(1L))
+                    .thenReturn(Quiz.builder().id(1L).chapterId(1L).build());
+            when(chapterMapper.selectById(1L))
+                    .thenReturn(Chapter.builder().id(1L).courseId(1L).build());
+            when(courseMapper.selectById(1L))
+                    .thenReturn(Course.builder().id(1L).creatorId(1L).build());
             when(userMapper.selectById(1L)).thenReturn(null);
 
             assertThatThrownBy(() -> aspect.before(context))
@@ -172,11 +187,16 @@ class QuizAdminAccessAspectTest {
         @Test
         @DisplayName("创建人与当前用户不同校时抛出异常")
         void creatorDifferentUniversity() {
-            DataScopeContext context = mockContext(UserType.SCHOOL, 1L, "uni1", DataScopeAction.UPDATE, "'1'", "'QUIZ'");
-            when(quizMapper.selectById(1L)).thenReturn(Quiz.builder().id(1L).chapterId(1L).build());
-            when(chapterMapper.selectById(1L)).thenReturn(Chapter.builder().id(1L).courseId(1L).build());
-            when(courseMapper.selectById(1L)).thenReturn(Course.builder().id(1L).creatorId(1L).build());
-            when(userMapper.selectById(1L)).thenReturn(User.builder().id(1L).universityId("uni2").build());
+            DataScopeContext context =
+                    mockContext(UserType.SCHOOL, 1L, "uni1", DataScopeAction.UPDATE, "'1'", "'QUIZ'");
+            when(quizMapper.selectById(1L))
+                    .thenReturn(Quiz.builder().id(1L).chapterId(1L).build());
+            when(chapterMapper.selectById(1L))
+                    .thenReturn(Chapter.builder().id(1L).courseId(1L).build());
+            when(courseMapper.selectById(1L))
+                    .thenReturn(Course.builder().id(1L).creatorId(1L).build());
+            when(userMapper.selectById(1L))
+                    .thenReturn(User.builder().id(1L).universityId("uni2").build());
 
             assertThatThrownBy(() -> aspect.before(context))
                     .isInstanceOf(BusinessException.class)
@@ -193,12 +213,18 @@ class QuizAdminAccessAspectTest {
         @Test
         @DisplayName("OPTION 资源完整链路通过")
         void optionResourcePasses() {
-            DataScopeContext context = mockContext(UserType.SCHOOL, 1L, "uni1", DataScopeAction.UPDATE, "'1'", "'OPTION'");
-            when(quizOptionMapper.selectById("1")).thenReturn(QuizOption.builder().id(1L).quizId(1L).build());
-            when(quizMapper.selectById(1L)).thenReturn(Quiz.builder().id(1L).chapterId(1L).build());
-            when(chapterMapper.selectById(1L)).thenReturn(Chapter.builder().id(1L).courseId(1L).build());
-            when(courseMapper.selectById(1L)).thenReturn(Course.builder().id(1L).creatorId(1L).build());
-            when(userMapper.selectById(1L)).thenReturn(User.builder().id(1L).universityId("uni1").build());
+            DataScopeContext context =
+                    mockContext(UserType.SCHOOL, 1L, "uni1", DataScopeAction.UPDATE, "'1'", "'OPTION'");
+            when(quizOptionMapper.selectById("1"))
+                    .thenReturn(QuizOption.builder().id(1L).quizId(1L).build());
+            when(quizMapper.selectById(1L))
+                    .thenReturn(Quiz.builder().id(1L).chapterId(1L).build());
+            when(chapterMapper.selectById(1L))
+                    .thenReturn(Chapter.builder().id(1L).courseId(1L).build());
+            when(courseMapper.selectById(1L))
+                    .thenReturn(Course.builder().id(1L).creatorId(1L).build());
+            when(userMapper.selectById(1L))
+                    .thenReturn(User.builder().id(1L).universityId("uni1").build());
 
             aspect.before(context);
         }
@@ -206,7 +232,8 @@ class QuizAdminAccessAspectTest {
         @Test
         @DisplayName("选项不存在时抛出异常")
         void optionNotFound() {
-            DataScopeContext context = mockContext(UserType.SCHOOL, 1L, "uni1", DataScopeAction.UPDATE, "'1'", "'OPTION'");
+            DataScopeContext context =
+                    mockContext(UserType.SCHOOL, 1L, "uni1", DataScopeAction.UPDATE, "'1'", "'OPTION'");
             when(quizOptionMapper.selectById("1")).thenReturn(null);
 
             assertThatThrownBy(() -> aspect.before(context))

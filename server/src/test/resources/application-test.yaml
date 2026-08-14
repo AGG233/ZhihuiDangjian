@@ -45,3 +45,8 @@ dromara:
         bucket: test-bucket
         domain: http://localhost
         base-path: /
+
+app:
+  content:
+    carousel:
+      chapter-id: 1145141919810

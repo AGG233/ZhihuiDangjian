@@ -42,6 +42,8 @@ public class LearningTool {
             @ToolParam(description = "章节 ID") String chapterId,
             ToolContext toolContext) {
         return userLearningRecordService.getByUserIdAndCourseIdAndChapterId(
-                IdUtil.parseNullable(ToolContextUtil.getUserId(toolContext, userService)), IdUtil.parse(courseId), IdUtil.parse(chapterId));
+                IdUtil.parseNullable(ToolContextUtil.getUserId(toolContext, userService)),
+                IdUtil.parse(courseId),
+                IdUtil.parse(chapterId));
     }
 }

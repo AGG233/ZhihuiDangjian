@@ -64,7 +64,8 @@ class QuizToolTest {
             ToolContext toolContext = mock(ToolContext.class);
 
             try (MockedStatic<ToolContextUtil> mocked = mockStatic(ToolContextUtil.class)) {
-                mocked.when(() -> ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-1");
+                mocked.when(() -> ToolContextUtil.getUserId(toolContext, userService))
+                        .thenReturn("user-1");
 
                 realChain(message);
 
@@ -88,7 +89,8 @@ class QuizToolTest {
 
             try (MockedStatic<ToolContextUtil> mocked = mockStatic(ToolContextUtil.class)) {
                 mocked.when(() -> ToolContextUtil.getSessionId(toolContext)).thenReturn("context-session");
-                mocked.when(() -> ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-2");
+                mocked.when(() -> ToolContextUtil.getUserId(toolContext, userService))
+                        .thenReturn("user-2");
 
                 realChain(message);
 
@@ -105,7 +107,8 @@ class QuizToolTest {
 
             try (MockedStatic<ToolContextUtil> mocked = mockStatic(ToolContextUtil.class)) {
                 mocked.when(() -> ToolContextUtil.getSessionId(toolContext)).thenReturn("blank-session");
-                mocked.when(() -> ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-3");
+                mocked.when(() -> ToolContextUtil.getUserId(toolContext, userService))
+                        .thenReturn("user-3");
 
                 realChain(null);
 
@@ -121,7 +124,8 @@ class QuizToolTest {
             ToolContext toolContext = mock(ToolContext.class);
 
             try (MockedStatic<ToolContextUtil> mocked = mockStatic(ToolContextUtil.class)) {
-                mocked.when(() -> ToolContextUtil.getUserId(toolContext, userService)).thenReturn("user-4");
+                mocked.when(() -> ToolContextUtil.getUserId(toolContext, userService))
+                        .thenReturn("user-4");
 
                 realChain(null);
 

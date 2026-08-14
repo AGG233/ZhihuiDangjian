@@ -4,7 +4,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -15,12 +14,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -35,14 +31,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.resource.controller.user.FileController;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
-import com.rauio.smartdangjian.server.resource.controller.user.FileController;
 import com.rauio.smartdangjian.server.resource.service.FileService;
-
-import cn.dev33.satoken.stp.StpUtil;
-
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = FileControllerTest.TestConfig.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -57,10 +51,13 @@ import cn.dev33.satoken.stp.StpUtil;
             "DATABASE_PASSWORD=",
             "NEO4J_URI=bolt://localhost:7687",
             "NEO4J_USERNAME=neo4j",
-            "NEO4J_PASSWORD=password"
+            "NEO4J_PASSWORD=password",
+            // 测试环境禁用向量库与 embedding 选择，避免 dashscope/openai 双 EmbeddingModel 冲突及真实 API 调用
+            "spring.ai.model.embedding=dashscope",
+            "spring.ai.vectorstore.type=none"
         })
 @DisplayName("文件资源接口测试 (FileController)")
-class FileControllerTest {
+class FileControllerTest extends BaseControllerTest {
 
     @SpringBootConfiguration
     @EnableAutoConfiguration(
@@ -70,7 +67,7 @@ class FileControllerTest {
                 com.rauio.smartdangjian.config.TransactionConfig.class
             })
     @EnableWebMvc
-    static class TestConfig {
+    static class TestConfig extends BaseControllerTest.CommonTestConfig {
         @Bean
         public FileController fileController(FileService fileService) {
             return new FileController(fileService);
@@ -181,8 +178,7 @@ class FileControllerTest {
         @Test
         @DisplayName("GET /{id}/download — 获取文件下载链接")
         void getDownloadUrlReturnsUrlString() throws Exception {
-            when(fileService.getDownloadUrl(1L))
-                    .thenReturn("https://cos.example.com/image/uuid-test.png?sign=xyz");
+            when(fileService.getDownloadUrl(1L)).thenReturn("https://cos.example.com/image/uuid-test.png?sign=xyz");
 
             mockMvc.perform(get("/api/resource/files/1/download"))
                     .andExpect(status().isOk())
@@ -197,8 +193,7 @@ class FileControllerTest {
             when(fileService.upload(any())).thenReturn(uploadResp);
             when(fileService.confirmUpload(1L)).thenReturn(FileTestDataFactory.createPublicResourceMeta());
             when(fileService.getFileInfo(1L)).thenReturn(FileTestDataFactory.createFileInfoResponse());
-            when(fileService.getDownloadUrl(1L))
-                    .thenReturn("https://cos.example.com/image/uuid-test.png?sign=xyz");
+            when(fileService.getDownloadUrl(1L)).thenReturn("https://cos.example.com/image/uuid-test.png?sign=xyz");
 
             mockMvc.perform(post("/api/resource/files/upload")
                             .contentType(MediaType.APPLICATION_JSON)

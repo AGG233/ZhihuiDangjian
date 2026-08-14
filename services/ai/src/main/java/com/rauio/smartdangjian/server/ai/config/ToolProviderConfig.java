@@ -14,6 +14,7 @@ import com.rauio.smartdangjian.server.ai.tool.LearningPathTool;
 import com.rauio.smartdangjian.server.ai.tool.LearningTool;
 import com.rauio.smartdangjian.server.ai.tool.QuizManageTool;
 import com.rauio.smartdangjian.server.ai.tool.QuizTool;
+import com.rauio.smartdangjian.server.ai.tool.RagSearchTool;
 import com.rauio.smartdangjian.server.ai.tool.RecommendTool;
 import com.rauio.smartdangjian.server.ai.tool.UserInfoTool;
 import com.rauio.smartdangjian.server.ai.tool.UserProfileTool;
@@ -64,6 +65,11 @@ public class ToolProviderConfig {
         return MethodToolCallbackProvider.builder()
                 .toolObjects(contentSearchTool)
                 .build();
+    }
+
+    @Bean
+    public ToolCallbackProvider ragSearchToolProvider(RagSearchTool ragSearchTool) {
+        return MethodToolCallbackProvider.builder().toolObjects(ragSearchTool).build();
     }
 
     @Bean

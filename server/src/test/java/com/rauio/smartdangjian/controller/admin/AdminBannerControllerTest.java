@@ -52,8 +52,8 @@ class AdminBannerControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET / - 获取轮播图列表成功")
         void listBannersSuccess() throws Exception {
-            List<ResourceMeta> banners = List.of(
-                    BannerTestDataFactory.createResourceMeta(1L), BannerTestDataFactory.createResourceMeta(2L));
+            List<ResourceMeta> banners =
+                    List.of(BannerTestDataFactory.createResourceMeta(1L), BannerTestDataFactory.createResourceMeta(2L));
             when(bannerService.getList()).thenReturn(banners);
 
             mockMvc.perform(get("/api/admin/resource/banners"))

@@ -13,6 +13,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -28,12 +29,10 @@ import com.rauio.smartdangjian.server.quiz.pojo.entity.QuizOption;
 import com.rauio.smartdangjian.server.quiz.service.QuizOptionService;
 import com.rauio.smartdangjian.server.quiz.service.QuizService;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class AiQuizGeneratorTool {
 
     private final ObjectProvider<ChatModel> chatModelProvider;
@@ -42,6 +41,21 @@ public class AiQuizGeneratorTool {
     private final QuizService quizService;
     private final QuizOptionService quizOptionService;
     private final ObjectMapper objectMapper;
+
+    public AiQuizGeneratorTool(
+            @Qualifier("dashScopeChatModel") ObjectProvider<ChatModel> chatModelProvider,
+            ChapterService chapterService,
+            ChapterContentBlockService chapterContentBlockService,
+            QuizService quizService,
+            QuizOptionService quizOptionService,
+            ObjectMapper objectMapper) {
+        this.chatModelProvider = chatModelProvider;
+        this.chapterService = chapterService;
+        this.chapterContentBlockService = chapterContentBlockService;
+        this.quizService = quizService;
+        this.quizOptionService = quizOptionService;
+        this.objectMapper = objectMapper;
+    }
 
     @Tool(name = "generateMiniQuiz", description = "根据章节ID或主题，自动生成一道小问答并保存到数据库。AI会提取章节内容或主题要点生成题目、选项和解析。")
     public Map<String, Object> generateMiniQuiz(
@@ -117,7 +131,10 @@ public class AiQuizGeneratorTool {
         }
 
         Quiz quiz = Quiz.builder()
-                .chapterId(effectiveChapterId != null && !effectiveChapterId.isBlank() ? IdUtil.parseNullable(effectiveChapterId) : null)
+                .chapterId(
+                        effectiveChapterId != null && !effectiveChapterId.isBlank()
+                                ? IdUtil.parseNullable(effectiveChapterId)
+                                : null)
                 .question(question)
                 .questionType(effectiveQuestionType)
                 .score(5)

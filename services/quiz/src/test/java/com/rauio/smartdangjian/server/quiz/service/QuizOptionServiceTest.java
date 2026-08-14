@@ -99,16 +99,8 @@ class QuizOptionServiceTest {
     @Test
     @DisplayName("getByQuizId 根据测验 ID 返回选项列表")
     void getByQuizIdReturnsOptionList() {
-        QuizOption opt1 = QuizOption.builder()
-                .id(1L)
-                .quizId(1L)
-                .optionText("A")
-                .build();
-        QuizOption opt2 = QuizOption.builder()
-                .id(1L)
-                .quizId(1L)
-                .optionText("B")
-                .build();
+        QuizOption opt1 = QuizOption.builder().id(1L).quizId(1L).optionText("A").build();
+        QuizOption opt2 = QuizOption.builder().id(1L).quizId(1L).optionText("B").build();
         doReturn(List.of(opt1, opt2)).when(quizOptionService).list(any(Wrapper.class));
 
         List<QuizOption> result = quizOptionService.getByQuizId(1L);
@@ -218,11 +210,8 @@ class QuizOptionServiceTest {
                 .optionText("正确答案")
                 .isCorrect(true)
                 .build();
-        UserQuizAnswer answer = UserQuizAnswer.builder()
-                .id(1L)
-                .userId(1L)
-                .quizId(1L)
-                .build();
+        UserQuizAnswer answer =
+                UserQuizAnswer.builder().id(1L).userId(1L).quizId(1L).build();
 
         when(userService.getCurrentUser()).thenReturn(studentUser);
         doReturn(option).when(quizOptionService).getById(1L);

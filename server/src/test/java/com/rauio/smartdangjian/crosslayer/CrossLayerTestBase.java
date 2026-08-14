@@ -4,6 +4,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.MockedStatic;
@@ -12,9 +14,12 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.utils.spec.UserType;
@@ -35,6 +40,9 @@ import cn.dev33.satoken.stp.StpUtil;
             "NEO4J_URI=bolt://localhost:7687",
             "NEO4J_USERNAME=neo4j",
             "NEO4J_PASSWORD=password",
+            // 测试环境禁用向量库与 embedding 选择，避免 dashscope/openai 双 EmbeddingModel 冲突及真实 API 调用
+            "spring.ai.model.embedding=dashscope",
+            "spring.ai.vectorstore.type=none",
             "app.security.enabled=false"
         })
 public abstract class CrossLayerTestBase {
@@ -67,9 +75,20 @@ public abstract class CrossLayerTestBase {
         stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
         stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn(String.valueOf(userId));
         CurrentUserPrincipal principal = new CurrentUserPrincipal() {
-            @Override public Long getId() { return userId; }
-            @Override public UserType getUserType() { return userType; }
-            @Override public String getUniversityId() { return universityId; }
+            @Override
+            public Long getId() {
+                return userId;
+            }
+
+            @Override
+            public UserType getUserType() {
+                return userType;
+            }
+
+            @Override
+            public String getUniversityId() {
+                return universityId;
+            }
         };
         SaSession session = mock(SaSession.class);
         when(session.get("user")).thenReturn(principal);
@@ -99,5 +118,12 @@ public abstract class CrossLayerTestBase {
                 HibernateJpaAutoConfiguration.class,
                 com.rauio.smartdangjian.config.TransactionConfig.class
             })
-    protected static class CrossLayerTestConfig {}
+    protected static class CrossLayerTestConfig implements WebMvcConfigurer {
+
+        @Override
+        public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+            // elearning-module-parser 传递引入 jackson-dataformat-xml，移除 XML converter 保证默认 JSON 响应
+            converters.removeIf(converter -> converter instanceof MappingJackson2XmlHttpMessageConverter);
+        }
+    }
 }

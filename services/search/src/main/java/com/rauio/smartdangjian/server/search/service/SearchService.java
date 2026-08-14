@@ -87,8 +87,7 @@ public class SearchService {
 
         // 搜索结果不足时，用推荐补充
         if (records.size() < pageSize) {
-            Set<Long> existingIds =
-                    records.stream().map(CourseResponse::getId).collect(Collectors.toSet());
+            Set<Long> existingIds = records.stream().map(CourseResponse::getId).collect(Collectors.toSet());
 
             String userIdStr = userService.getCurrentUserId();
             Long userId = IdUtil.parse(userIdStr);

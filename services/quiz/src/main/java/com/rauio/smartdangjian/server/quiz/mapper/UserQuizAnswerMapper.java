@@ -22,7 +22,8 @@ public interface UserQuizAnswerMapper extends BaseMapper<UserQuizAnswer> {
      * isCorrect=0（错误）均不计答对，与 UserProfileService.buildQuizStats 的
      * correctRate 口径保持一致。
      */
-    String CHAPTER_ACCURACY_SQL = """
+    String CHAPTER_ACCURACY_SQL =
+            """
             SELECT q.chapter_id AS chapterId,
                    COUNT(*) AS questionCount,
                    SUM(CASE WHEN uqa.is_correct = 1 THEN 1 ELSE 0 END) AS correctCount

@@ -381,7 +381,8 @@ class HotSpotServiceTest {
     void hotCoursesRecordWithNullUserIdSkipped() {
         Course c1 = Course.builder().id(1L).title("课程A").enrollmentCount(100).build();
         doReturn(List.of(c1)).when(courseMapper).selectList(any(LambdaQueryWrapper.class));
-        doReturn(List.of(UserLearningRecord.builder().userId(null).chapterId(10L).build()))
+        doReturn(List.of(
+                        UserLearningRecord.builder().userId(null).chapterId(10L).build()))
                 .when(learningRecordMapper)
                 .selectList(any(LambdaQueryWrapper.class));
         doReturn(List.of(Chapter.builder().id(10L).courseId(1L).build()))

@@ -56,7 +56,7 @@ public class AgentModuleConfig {
 
     @Bean
     public AiAgentRegistry aiAgentRegistry(
-            ChatModel chatModel,
+            @Qualifier("dashScopeChatModel") ChatModel chatModel,
             RedisSaver redisSaver,
             PromptService promptService,
             AiMemoryService aiMemoryService,
@@ -69,6 +69,7 @@ public class AgentModuleConfig {
             @Qualifier("userProfileToolProvider") ToolCallbackProvider userProfileToolProvider,
             @Qualifier("quizManageToolProvider") ToolCallbackProvider quizManageToolProvider,
             @Qualifier("contentSearchToolProvider") ToolCallbackProvider contentSearchToolProvider,
+            @Qualifier("ragSearchToolProvider") ToolCallbackProvider ragSearchToolProvider,
             @Qualifier("aiQuizGeneratorToolProvider") ToolCallbackProvider aiQuizGeneratorToolProvider,
             @Qualifier("articleDetailToolProvider") ToolCallbackProvider articleDetailToolProvider,
             @Qualifier("contentReviewToolProvider") ToolCallbackProvider contentReviewToolProvider,
@@ -81,7 +82,11 @@ public class AgentModuleConfig {
                 .description(AiAgentType.STUDY_ASSISTANT.description())
                 .model(chatModel)
                 .toolCallbackProviders(
-                        userInfoToolProvider, learningToolProvider, recommendToolProvider, userProfileToolProvider)
+                        userInfoToolProvider,
+                        learningToolProvider,
+                        recommendToolProvider,
+                        userProfileToolProvider,
+                        ragSearchToolProvider)
                 .saver(redisSaver)
                 .hooks(skillsAgentHook)
                 .interceptors(
@@ -96,7 +101,11 @@ public class AgentModuleConfig {
                 .name(AiAgentType.CONTENT_DISCOVERY.agentName())
                 .description(AiAgentType.CONTENT_DISCOVERY.description())
                 .model(chatModel)
-                .toolCallbackProviders(contentSearchToolProvider, recommendToolProvider, articleDetailToolProvider)
+                .toolCallbackProviders(
+                        contentSearchToolProvider,
+                        recommendToolProvider,
+                        articleDetailToolProvider,
+                        ragSearchToolProvider)
                 .saver(redisSaver)
                 .hooks(skillsAgentHook)
                 .interceptors(new DynamicSystemPromptInterceptor(
@@ -115,6 +124,7 @@ public class AgentModuleConfig {
                         quizManageToolProvider,
                         aiQuizGeneratorToolProvider,
                         contentSearchToolProvider,
+                        ragSearchToolProvider,
                         quizToolProvider,
                         learningToolProvider,
                         userQuizAnswerToolProvider,
