@@ -4,8 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,6 +23,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.quiz.constants.QuizErrorConstants;
@@ -86,6 +89,33 @@ class ScormPackageServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .satisfies(e -> assertThat(((BusinessException) e).getCode())
                         .isEqualTo(QuizErrorConstants.SCORM_PACKAGE_INVALID));
+        verify(scormPackageService, never()).save(any(ScormPackage.class));
+    }
+
+    @Test
+    @DisplayName("parseAndSave 文件名为 null：抛 BusinessException 且错误码 SCORM_PACKAGE_INVALID")
+    void parseAndSaveRejectsNullFilename() {
+        MockMultipartFile zipFile = new MockMultipartFile("file", (String) null, "application/zip", new byte[] {1});
+
+        assertThatThrownBy(() -> scormPackageService.parseAndSave(zipFile))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(QuizErrorConstants.SCORM_PACKAGE_INVALID));
+        verify(scormPackageService, never()).save(any(ScormPackage.class));
+    }
+
+    @Test
+    @DisplayName("parseAndSave 读取文件字节失败：抛 BusinessException 且错误码 SCORM_PARSE_FAILED")
+    void parseAndSaveThrowsWhenReadFails() throws IOException {
+        MultipartFile zipFile = mock(MultipartFile.class);
+        when(zipFile.getOriginalFilename()).thenReturn("course.zip");
+        when(zipFile.getBytes()).thenThrow(new IOException("读取失败"));
+
+        assertThatThrownBy(() -> scormPackageService.parseAndSave(zipFile))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e ->
+                        assertThat(((BusinessException) e).getCode()).isEqualTo(QuizErrorConstants.SCORM_PARSE_FAILED))
+                .hasMessageContaining("读取 SCORM 包文件失败");
         verify(scormPackageService, never()).save(any(ScormPackage.class));
     }
 

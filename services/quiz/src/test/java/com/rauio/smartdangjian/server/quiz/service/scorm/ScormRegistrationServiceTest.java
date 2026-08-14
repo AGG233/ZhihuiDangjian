@@ -122,6 +122,19 @@ class ScormRegistrationServiceTest {
     }
 
     @Test
+    @DisplayName("submit 用户ID为空串：抛 BusinessException 且错误码 RESOURCE_NOT_AUTHORIZED")
+    void submitThrowsWhenUserIdBlank() {
+        try (MockedStatic<SecurityUtils> securityUtils = mockStatic(SecurityUtils.class)) {
+            securityUtils.when(SecurityUtils::getCurrentUserId).thenReturn("   ");
+
+            assertThatThrownBy(() -> scormRegistrationService.submit(10L, request("sco-1", "completed", null)))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                            .isEqualTo(ErrorConstants.RESOURCE_NOT_AUTHORIZED));
+        }
+    }
+
+    @Test
     @DisplayName("submit 落库失败：抛 BusinessException 且错误码 SCORM_REGISTRATION_SAVE_FAILED")
     void submitThrowsWhenSaveFails() {
         try (MockedStatic<SecurityUtils> securityUtils = mockStatic(SecurityUtils.class)) {
@@ -131,6 +144,24 @@ class ScormRegistrationServiceTest {
             doReturn(false).when(scormRegistrationService).save(any(ScormRegistration.class));
 
             assertThatThrownBy(() -> scormRegistrationService.submit(10L, request("sco-1", "completed", null)))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                            .isEqualTo(QuizErrorConstants.SCORM_REGISTRATION_SAVE_FAILED));
+        }
+    }
+
+    @Test
+    @DisplayName("submit 更新已有记录失败：抛 BusinessException 且错误码 SCORM_REGISTRATION_SAVE_FAILED")
+    void submitThrowsWhenUpdateFails() {
+        try (MockedStatic<SecurityUtils> securityUtils = mockStatic(SecurityUtils.class)) {
+            securityUtils.when(SecurityUtils::getCurrentUserId).thenReturn("1");
+            when(scormPackageService.getById(10L)).thenReturn(pkg(10L, "Course A"));
+            doReturn(registration(99L, 1L, 10L, "sco-1"))
+                    .when(scormRegistrationService)
+                    .getOne(any(Wrapper.class));
+            doReturn(false).when(scormRegistrationService).updateById(any(ScormRegistration.class));
+
+            assertThatThrownBy(() -> scormRegistrationService.submit(10L, request("sco-1", "passed", "95.00")))
                     .isInstanceOf(BusinessException.class)
                     .satisfies(e -> assertThat(((BusinessException) e).getCode())
                             .isEqualTo(QuizErrorConstants.SCORM_REGISTRATION_SAVE_FAILED));
@@ -175,6 +206,22 @@ class ScormRegistrationServiceTest {
         List<ScormSummaryResponse> result = scormRegistrationService.getSummary(1L);
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getSummary 学习包缺失时 title 为 null")
+    void getSummaryTitleNullWhenPackageMissing() {
+        doReturn(List.of(registration(1L, 1L, 20L, "sco-a", "completed", "80")))
+                .when(scormRegistrationService)
+                .list(any(Wrapper.class));
+        when(scormPackageMapper.selectBatchIds(any())).thenReturn(List.of());
+
+        List<ScormSummaryResponse> result = scormRegistrationService.getSummary(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getPackageId()).isEqualTo(20L);
+        assertThat(result.get(0).getTitle()).isNull();
+        assertThat(result.get(0).getAvgScore()).isEqualByComparingTo(new BigDecimal("80.00"));
     }
 
     @Test
