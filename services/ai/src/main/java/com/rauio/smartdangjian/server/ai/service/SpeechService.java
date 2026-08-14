@@ -11,6 +11,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,6 +43,7 @@ public class SpeechService {
     private final Recognition recognition;
     private final ExecutorService executor;
 
+    @Autowired
     public SpeechService(@Value("${spring.ai.dashscope.api-key}") String apiKey) {
         this(apiKey, new Recognition());
     }
