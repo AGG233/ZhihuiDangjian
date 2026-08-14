@@ -3,6 +3,7 @@ package com.rauio.smartdangjian.server.ai.rag;
 import org.neo4j.driver.Driver;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.neo4j.Neo4jVectorStore;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,7 +18,8 @@ import org.springframework.context.annotation.Configuration;
 public class RagConfig {
 
     @Bean
-    public Neo4jVectorStore neo4jVectorStore(Driver driver, EmbeddingModel embeddingModel) {
+    public Neo4jVectorStore neo4jVectorStore(
+            Driver driver, @Qualifier("dashscopeEmbeddingModel") EmbeddingModel embeddingModel) {
         return Neo4jVectorStore.builder(driver, embeddingModel)
                 .databaseName("neo4j")
                 .distanceType(Neo4jVectorStore.Neo4jDistanceType.COSINE)
