@@ -3,10 +3,12 @@ package com.rauio.smartdangjian.server.ai.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,6 +18,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.alibaba.dashscope.audio.asr.recognition.Recognition;
 import com.alibaba.dashscope.audio.asr.recognition.RecognitionParam;
@@ -74,6 +77,60 @@ class SpeechServiceTest {
         ArgumentCaptor<RecognitionParam> paramCaptor = ArgumentCaptor.forClass(RecognitionParam.class);
         verify(recognition).call(paramCaptor.capture(), any(File.class));
         assertThat(paramCaptor.getValue().getFormat()).isEqualTo("wav");
+    }
+
+    @Test
+    @DisplayName("transcribe 按 .pcm 扩展名推断 format")
+    void transcribeInfersPcmFormat() {
+        when(recognition.call(any(RecognitionParam.class), any(File.class))).thenReturn("转写结果");
+
+        MockMultipartFile audio = new MockMultipartFile("file", "voice.pcm", "audio/pcm", new byte[] {1, 2, 3});
+        speechService.transcribe(audio);
+
+        ArgumentCaptor<RecognitionParam> paramCaptor = ArgumentCaptor.forClass(RecognitionParam.class);
+        verify(recognition).call(paramCaptor.capture(), any(File.class));
+        assertThat(paramCaptor.getValue().getFormat()).isEqualTo("pcm");
+    }
+
+    @Test
+    @DisplayName("transcribe 文件名缺失时默认 wav 格式")
+    void transcribeDefaultsToWavWhenFilenameMissing() {
+        when(recognition.call(any(RecognitionParam.class), any(File.class))).thenReturn("转写结果");
+
+        MockMultipartFile audio = new MockMultipartFile("file", (String) null, "audio/wav", new byte[] {1, 2, 3});
+        speechService.transcribe(audio);
+
+        ArgumentCaptor<RecognitionParam> paramCaptor = ArgumentCaptor.forClass(RecognitionParam.class);
+        verify(recognition).call(paramCaptor.capture(), any(File.class));
+        assertThat(paramCaptor.getValue().getFormat()).isEqualTo("wav");
+    }
+
+    @Test
+    @DisplayName("读取音频字节失败时抛出业务错误")
+    void transcribeThrowsWhenReadBytesFails() throws IOException {
+        MultipartFile audio = mock(MultipartFile.class);
+        when(audio.getOriginalFilename()).thenReturn("voice.wav");
+        when(audio.getBytes()).thenThrow(new IOException("磁盘读取失败"));
+
+        assertThatThrownBy(() -> speechService.transcribe(audio))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(AiErrorConstants.VOICE_TRANSCRIBE_FAILED))
+                .hasMessageContaining("读取音频文件失败");
+    }
+
+    @Test
+    @DisplayName("音频字节为 null 时抛出业务错误")
+    void transcribeRejectsNullBytes() throws IOException {
+        MultipartFile audio = mock(MultipartFile.class);
+        when(audio.getOriginalFilename()).thenReturn("voice.wav");
+        when(audio.getBytes()).thenReturn(null);
+
+        assertThatThrownBy(() -> speechService.transcribe(audio))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(AiErrorConstants.VOICE_TRANSCRIBE_FAILED))
+                .hasMessageContaining("音频文件内容为空");
     }
 
     @Test

@@ -3,6 +3,7 @@ package com.rauio.smartdangjian.server.ai.rag;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,6 +22,7 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
 
 import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.ai.constants.AiErrorConstants;
 import com.rauio.smartdangjian.server.content.pojo.entity.Article;
 import com.rauio.smartdangjian.server.content.pojo.response.ArticleResponse;
 import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
@@ -122,6 +124,34 @@ class DocumentIngestionServiceTest {
                     .hasMessageContaining("不支持的文档类型");
             verify(vectorStore, never()).add(anyList());
         }
+
+        @Test
+        @DisplayName("ID 非数字时抛出 BusinessException 8006 且不调用 add")
+        void invalidIdThrows() {
+            assertThatThrownBy(() -> documentIngestionService.ingestById("article", "abc"))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                            .isEqualTo(AiErrorConstants.DOCUMENT_TYPE_INVALID))
+                    .hasMessageContaining("文档 ID 格式错误");
+            verify(vectorStore, never()).add(anyList());
+        }
+
+        @Test
+        @DisplayName("vectorStore 写入失败时抛出 BusinessException 8007")
+        void ingestThrowsWhenVectorStoreWriteFails() {
+            Article article = Article.builder().id(1L).title("标题").build();
+            ArticleResponse detail =
+                    ArticleResponse.builder().id(1L).title("标题").build();
+            when(articleService.get(1L)).thenReturn(article);
+            when(articleService.getDetail(1L)).thenReturn(detail);
+            doThrow(new RuntimeException("Neo4j 连接失败")).when(vectorStore).add(anyList());
+
+            assertThatThrownBy(() -> documentIngestionService.ingestById("article", "1"))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                            .isEqualTo(AiErrorConstants.DOCUMENT_INGEST_FAILED))
+                    .hasMessageContaining("文档入库失败");
+        }
     }
 
     @Nested
@@ -148,6 +178,62 @@ class DocumentIngestionServiceTest {
     }
 
     @Nested
+    @DisplayName("空内容与空块分支")
+    class EmptyContentTest {
+
+        @Test
+        @DisplayName("文章无标题/摘要/正文时产生 0 个文档且不调用 add")
+        void emptyArticleProducesNoDocuments() {
+            Article article = Article.builder().id(1L).build();
+            when(articleService.get(1L)).thenReturn(article);
+            when(articleService.getDetail(1L))
+                    .thenReturn(ArticleResponse.builder().id(1L).build());
+
+            int count = documentIngestionService.ingestById("article", "1");
+
+            assertThat(count).isZero();
+            verify(vectorStore, never()).add(anyList());
+        }
+
+        @Test
+        @DisplayName("章节无标题/描述且内容块为 null 时产生 0 个文档")
+        void emptyChapterProducesNoDocuments() {
+            when(chapterService.get(10L))
+                    .thenReturn(ChapterResponse.builder().id(10L).build());
+            when(chapterContentBlockService.getByChapterId(10L)).thenReturn(null);
+
+            int count = documentIngestionService.ingestById("chapter", "10");
+
+            assertThat(count).isZero();
+            verify(vectorStore, never()).add(anyList());
+        }
+
+        @Test
+        @DisplayName("空文本内容块被跳过（仅非空块参与入库）")
+        void emptyBlockTextIsSkipped() {
+            Article article = Article.builder().id(1L).title("标题").build();
+            ContentBlockResponse emptyBlock = new ContentBlockResponse();
+            emptyBlock.setTextContent("");
+            ContentBlockResponse nullBlock = new ContentBlockResponse();
+            nullBlock.setTextContent(null);
+            ArticleResponse detail = ArticleResponse.builder()
+                    .id(1L)
+                    .title("标题")
+                    .contentBlocks(List.of(emptyBlock, nullBlock, block("有效正文")))
+                    .build();
+            when(articleService.get(1L)).thenReturn(article);
+            when(articleService.getDetail(1L)).thenReturn(detail);
+
+            int count = documentIngestionService.ingestById("article", "1");
+
+            assertThat(count).isEqualTo(1);
+            ArgumentCaptor<List<Document>> captor = ArgumentCaptor.forClass(List.class);
+            verify(vectorStore).add(captor.capture());
+            assertThat(captor.getValue().get(0).getText()).contains("有效正文");
+        }
+    }
+
+    @Nested
     @DisplayName("splitChunks 静态切分")
     class SplitChunksTest {
 
@@ -166,6 +252,16 @@ class DocumentIngestionServiceTest {
             for (String chunk : chunks) {
                 assertThat(chunk.length()).isLessThanOrEqualTo(500);
             }
+        }
+
+        @Test
+        @DisplayName("多段累计超过 500 字时按段 flush 切块")
+        void multipleParagraphsExceedingChunkSizeFlush() {
+            String text = "a".repeat(300) + "\n" + "b".repeat(300);
+            List<String> chunks = DocumentIngestionService.splitChunks(text);
+            assertThat(chunks).hasSize(2);
+            assertThat(chunks.get(0)).hasSize(300);
+            assertThat(chunks.get(1)).hasSize(300);
         }
 
         @Test
