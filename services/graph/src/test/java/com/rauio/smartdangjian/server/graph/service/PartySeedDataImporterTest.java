@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.server.graph.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -26,7 +27,10 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.graph.constants.GraphErrorConstants;
 import com.rauio.smartdangjian.server.graph.pojo.response.PartySeedImportResponse;
 
 @ExtendWith(MockitoExtension.class)
@@ -144,5 +148,57 @@ class PartySeedDataImporterTest {
         assertThat(result.getPersonEventCount()).isEqualTo(personEventCount);
         assertThat(result.getDocumentTheoryCount()).isEqualTo(documentTheoryCount);
         assertThat(result.getTotal()).isEqualTo(total);
+    }
+
+    @Test
+    @DisplayName("readSeedCsv 跳过表头与空行并解析带引号字段")
+    void readSeedCsvSkipsHeaderAndBlankLinesAndParsesQuotedFields() {
+        List<List<String>> rows =
+                ReflectionTestUtils.invokeMethod(partySeedDataImporter, "readSeedCsv", "seed/csv_variants.csv");
+
+        assertThat(rows).hasSize(2);
+        assertThat(rows.get(0)).containsExactly("plain", "普通", "无引号", "1893", "1976");
+        assertThat(rows.get(1)).containsExactly("q1", "带,逗号\"引号\"字段", "描述", "", "");
+    }
+
+    @Test
+    @DisplayName("parseCsvLine 解析逗号与双引号转义字段")
+    void parseCsvLineHandlesCommasAndEscapedQuotes() {
+        List<String> fields =
+                ReflectionTestUtils.invokeMethod(partySeedDataImporter, "parseCsvLine", "a,\"b,c\",\"d\"\"e\",f");
+
+        assertThat(fields).containsExactly("a", "b,c", "d\"e", "f");
+    }
+
+    @Test
+    @DisplayName("parseCsvLine 处理行尾闭合引号（转义边界）")
+    void parseCsvLineHandlesTrailingQuoteAtEndOfLine() {
+        List<String> fields = ReflectionTestUtils.invokeMethod(partySeedDataImporter, "parseCsvLine", "\"x\"");
+
+        assertThat(fields).containsExactly("x");
+    }
+
+    @Test
+    @DisplayName("parseIntOrNull 空串与 null 返回 null，数字解析为整数")
+    void parseIntOrNullReturnsNullForNullOrBlank() {
+        Integer nullResult = ReflectionTestUtils.invokeMethod(partySeedDataImporter, "parseIntOrNull", (Object) null);
+        Integer blankResult = ReflectionTestUtils.invokeMethod(partySeedDataImporter, "parseIntOrNull", "");
+        Integer whitespaceResult = ReflectionTestUtils.invokeMethod(partySeedDataImporter, "parseIntOrNull", "   ");
+        Integer numberResult = ReflectionTestUtils.invokeMethod(partySeedDataImporter, "parseIntOrNull", "1893");
+
+        assertThat(nullResult).isNull();
+        assertThat(blankResult).isNull();
+        assertThat(whitespaceResult).isNull();
+        assertThat(numberResult).isEqualTo(1893);
+    }
+
+    @Test
+    @DisplayName("readSeedCsv 资源缺失时抛出 PARTY_SEED_READ_FAILED")
+    void readSeedCsvMissingResourceThrowsBusinessException() {
+        assertThatThrownBy(() ->
+                        ReflectionTestUtils.invokeMethod(partySeedDataImporter, "readSeedCsv", "seed/nonexistent.csv"))
+                .isInstanceOf(BusinessException.class)
+                .extracting(e -> ((BusinessException) e).getCode())
+                .isEqualTo(GraphErrorConstants.PARTY_SEED_READ_FAILED);
     }
 }

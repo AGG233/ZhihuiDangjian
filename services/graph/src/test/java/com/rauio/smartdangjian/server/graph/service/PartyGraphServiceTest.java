@@ -94,6 +94,43 @@ class PartyGraphServiceTest {
         return rel;
     }
 
+    private Value mockNullValue() {
+        Value val = mock(Value.class);
+        when(val.isNull()).thenReturn(true);
+        return val;
+    }
+
+    private Value mockIntValue(long value) {
+        Value val = mock(Value.class);
+        Type type = mock(Type.class);
+        when(val.isNull()).thenReturn(false);
+        when(type.name()).thenReturn("INTEGER");
+        when(val.type()).thenReturn(type);
+        when(val.asLong()).thenReturn(value);
+        return val;
+    }
+
+    private Node mockNode(String label, Long neo4jId, Value idValue, Value nameValue, Value titleValue) {
+        Node node = mock(Node.class);
+        when(node.labels()).thenReturn(label == null ? List.of() : List.of(label));
+        if (neo4jId != null) {
+            when(node.id()).thenReturn(neo4jId);
+        }
+        if (idValue != null) {
+            when(node.containsKey("id")).thenReturn(true);
+            when(node.get("id")).thenReturn(idValue);
+        }
+        if (nameValue != null) {
+            when(node.containsKey("name")).thenReturn(true);
+            when(node.get("name")).thenReturn(nameValue);
+        }
+        if (titleValue != null) {
+            when(node.containsKey("title")).thenReturn(true);
+            when(node.get("title")).thenReturn(titleValue);
+        }
+        return node;
+    }
+
     private Map<String, Object> bindParams(ArgumentCaptor<Object> bindCaptor, ArgumentCaptor<String> toCaptor) {
         Map<String, Object> params = new LinkedHashMap<>();
         List<Object> values = bindCaptor.getAllValues();
@@ -342,6 +379,194 @@ class PartyGraphServiceTest {
 
             assertThat(result).isNotNull();
             assertThat(result.getNodes()).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("GraphBuildBranchTests — buildGraph 分支覆盖")
+    class GraphBuildBranchTests {
+
+        @Test
+        @DisplayName("源节点非 Node 时跳过该行边")
+        void nonNodeSourceYieldsNoEdge() {
+            Chain chain = new Chain();
+            Map<String, Object> row = new HashMap<>();
+            row.put("n", "not-a-node");
+            row.put("r", mockRelationship("PARTICIPATED_IN"));
+            row.put("m", mockPartyNode("Event", "e1", "中共一大"));
+            when(chain.fetchSpec.all()).thenReturn((Collection) List.of(row));
+
+            KnowledgeGraphResponse result = partyGraphService.queryByType("Person");
+
+            assertThat(result.getNodes()).hasSize(1);
+            assertThat(result.getNodes())
+                    .singleElement()
+                    .extracting(GraphNodeResponse::getId)
+                    .isEqualTo("Event:e1");
+            assertThat(result.getEdges()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("目标节点非 Node 时跳过该行边")
+        void nonNodeTargetYieldsNoEdge() {
+            Chain chain = new Chain();
+            Map<String, Object> row = new HashMap<>();
+            row.put("n", mockPartyNode("Person", "p1", "毛泽东"));
+            row.put("r", mockRelationship("PARTICIPATED_IN"));
+            row.put("m", "not-a-node");
+            when(chain.fetchSpec.all()).thenReturn((Collection) List.of(row));
+
+            KnowledgeGraphResponse result = partyGraphService.queryByType("Person");
+
+            assertThat(result.getNodes()).hasSize(1);
+            assertThat(result.getNodes())
+                    .singleElement()
+                    .extracting(GraphNodeResponse::getId)
+                    .isEqualTo("Person:p1");
+            assertThat(result.getEdges()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("节点无 label 时回退为 Node")
+        void nodeWithoutLabelsUsesNodeFallbackLabel() {
+            Chain chain = new Chain();
+            Map<String, Object> row = new HashMap<>();
+            row.put("n", mockNode(null, null, mockStringValue("p1"), mockStringValue("毛泽东"), null));
+            row.put("r", null);
+            row.put("m", mockPartyNode("Event", "e1", "中共一大"));
+            when(chain.fetchSpec.all()).thenReturn((Collection) List.of(row));
+
+            KnowledgeGraphResponse result = partyGraphService.queryByType("Person");
+
+            assertThat(result.getNodes()).extracting(GraphNodeResponse::getId).contains("Node:p1");
+            assertThat(result.getNodes())
+                    .extracting(GraphNodeResponse::getLabel)
+                    .contains("Node");
+        }
+
+        @Test
+        @DisplayName("节点缺少 id 属性时回退 Neo4j 内部 ID")
+        void nodeWithoutIdPropertyFallsBackToNeo4jId() {
+            Chain chain = new Chain();
+            Map<String, Object> row = new HashMap<>();
+            row.put("n", mockNode("Person", 42L, null, mockStringValue("毛泽东"), null));
+            row.put("r", null);
+            row.put("m", mockPartyNode("Event", "e1", "中共一大"));
+            when(chain.fetchSpec.all()).thenReturn((Collection) List.of(row));
+
+            KnowledgeGraphResponse result = partyGraphService.queryByType("Person");
+
+            assertThat(result.getNodes()).extracting(GraphNodeResponse::getId).contains("Person:42");
+        }
+
+        @Test
+        @DisplayName("节点 id 属性为 null 时回退 Neo4j 内部 ID")
+        void nodeWithNullIdPropertyFallsBackToNeo4jId() {
+            Chain chain = new Chain();
+            Map<String, Object> row = new HashMap<>();
+            row.put("n", mockNode("Person", 42L, mockNullValue(), mockStringValue("毛泽东"), null));
+            row.put("r", null);
+            row.put("m", mockPartyNode("Event", "e1", "中共一大"));
+            when(chain.fetchSpec.all()).thenReturn((Collection) List.of(row));
+
+            KnowledgeGraphResponse result = partyGraphService.queryByType("Person");
+
+            assertThat(result.getNodes()).extracting(GraphNodeResponse::getId).contains("Person:42");
+        }
+
+        @Test
+        @DisplayName("节点 id 为整数时按数值读取")
+        void nodeWithIntegerIdUsesNumericValue() {
+            Chain chain = new Chain();
+            Map<String, Object> row = new HashMap<>();
+            row.put("n", mockNode("Person", null, mockIntValue(123L), mockStringValue("毛泽东"), null));
+            row.put("r", null);
+            row.put("m", mockPartyNode("Event", "e1", "中共一大"));
+            when(chain.fetchSpec.all()).thenReturn((Collection) List.of(row));
+
+            KnowledgeGraphResponse result = partyGraphService.queryByType("Person");
+
+            assertThat(result.getNodes()).extracting(GraphNodeResponse::getId).contains("Person:123");
+        }
+
+        @Test
+        @DisplayName("节点无 name 与 title 时名称回退为 id")
+        void nodeWithoutNameOrTitleFallsBackToId() {
+            Chain chain = new Chain();
+            Map<String, Object> row = new HashMap<>();
+            row.put("n", mockNode("Person", null, mockStringValue("p1"), null, null));
+            row.put("r", null);
+            row.put("m", mockPartyNode("Event", "e1", "中共一大"));
+            when(chain.fetchSpec.all()).thenReturn((Collection) List.of(row));
+
+            KnowledgeGraphResponse result = partyGraphService.queryByType("Person");
+
+            assertThat(result.getNodes()).extracting(GraphNodeResponse::getName).contains("p1");
+        }
+
+        @Test
+        @DisplayName("节点无 name 时名称回退为 title")
+        void nodeWithoutNameUsesTitle() {
+            Chain chain = new Chain();
+            Map<String, Object> row = new HashMap<>();
+            row.put("n", mockNode("Person", null, mockStringValue("p1"), null, mockStringValue("毛泽东")));
+            row.put("r", null);
+            row.put("m", mockPartyNode("Event", "e1", "中共一大"));
+            when(chain.fetchSpec.all()).thenReturn((Collection) List.of(row));
+
+            KnowledgeGraphResponse result = partyGraphService.queryByType("Person");
+
+            assertThat(result.getNodes()).extracting(GraphNodeResponse::getName).contains("毛泽东");
+        }
+
+        @Test
+        @DisplayName("节点 name 为 null 时名称回退为 title")
+        void nodeWithNullNameUsesTitle() {
+            Chain chain = new Chain();
+            Map<String, Object> row = new HashMap<>();
+            row.put("n", mockNode("Person", null, mockStringValue("p1"), mockNullValue(), mockStringValue("毛泽东")));
+            row.put("r", null);
+            row.put("m", mockPartyNode("Event", "e1", "中共一大"));
+            when(chain.fetchSpec.all()).thenReturn((Collection) List.of(row));
+
+            KnowledgeGraphResponse result = partyGraphService.queryByType("Person");
+
+            assertThat(result.getNodes()).extracting(GraphNodeResponse::getName).contains("毛泽东");
+        }
+
+        @Test
+        @DisplayName("节点 title 为 null 时名称回退为 id")
+        void nodeWithNullTitleFallsBackToId() {
+            Chain chain = new Chain();
+            Map<String, Object> row = new HashMap<>();
+            row.put("n", mockNode("Person", null, mockStringValue("p1"), null, mockNullValue()));
+            row.put("r", null);
+            row.put("m", mockPartyNode("Event", "e1", "中共一大"));
+            when(chain.fetchSpec.all()).thenReturn((Collection) List.of(row));
+
+            KnowledgeGraphResponse result = partyGraphService.queryByType("Person");
+
+            assertThat(result.getNodes()).extracting(GraphNodeResponse::getName).contains("p1");
+        }
+
+        @Test
+        @DisplayName("重复行去重节点与边")
+        void duplicateRowsAreDeduplicated() {
+            Chain chain = new Chain();
+            Map<String, Object> row1 = new HashMap<>();
+            row1.put("n", mockPartyNode("Person", "p1", "毛泽东"));
+            row1.put("r", mockRelationship("PARTICIPATED_IN"));
+            row1.put("m", mockPartyNode("Event", "e1", "中共一大"));
+            Map<String, Object> row2 = new HashMap<>();
+            row2.put("n", mockPartyNode("Person", "p1", "毛泽东"));
+            row2.put("r", mockRelationship("PARTICIPATED_IN"));
+            row2.put("m", mockPartyNode("Event", "e1", "中共一大"));
+            when(chain.fetchSpec.all()).thenReturn((Collection) List.of(row1, row2));
+
+            KnowledgeGraphResponse result = partyGraphService.queryByType("Person");
+
+            assertThat(result.getNodes()).hasSize(2);
+            assertThat(result.getEdges()).hasSize(1);
         }
     }
 }
