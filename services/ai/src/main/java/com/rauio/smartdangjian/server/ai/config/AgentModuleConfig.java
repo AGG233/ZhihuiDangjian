@@ -56,7 +56,7 @@ public class AgentModuleConfig {
 
     @Bean
     public AiAgentRegistry aiAgentRegistry(
-            ChatModel chatModel,
+            @Qualifier("dashScopeChatModel") ChatModel chatModel,
             RedisSaver redisSaver,
             PromptService promptService,
             AiMemoryService aiMemoryService,
