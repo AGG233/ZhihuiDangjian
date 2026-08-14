@@ -7,6 +7,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -631,5 +632,206 @@ class UserProfileServiceTest {
         assertThat(summary.getTheory().getCompletionRate()).isZero();
         assertThat(summary.getPolicyComprehension().getAvgCorrectRate()).isZero();
         assertThat(summary.getPolicyComprehension().getTotalAnswers()).isZero();
+    }
+
+    // ==================== buildDynamicProfile 边界分支 ====================
+
+    @Test
+    @DisplayName("热点标签：章节标题为null被过滤且超过3个标签时截断Top3")
+    void buildDynamicProfileHotTagsFilterNullTitleAndLimitTop3() {
+        String userId = "user-1";
+        LocalDateTime now = LocalDateTime.now();
+
+        List<UserLearningRecord> hotRecords = new ArrayList<>();
+        for (int i = 0; i < 4; i++) hotRecords.add(record(1L, now, now, 100));
+        hotRecords.add(record(2L, now, now, 100));
+        for (int i = 0; i < 3; i++) hotRecords.add(record(3L, now, now, 100));
+        for (int i = 0; i < 2; i++) hotRecords.add(record(4L, now, now, 100));
+        hotRecords.add(record(5L, now, now, 100));
+        doReturn(hotRecords, Collections.emptyList())
+                .when(learningRecordMapper)
+                .selectList(any(LambdaQueryWrapper.class));
+
+        List<Chapter> hotChapters = List.of(
+                Chapter.builder().id(1L).title("标签A").build(),
+                Chapter.builder().id(2L).title(null).build(),
+                Chapter.builder().id(3L).title("标签C").build(),
+                Chapter.builder().id(4L).title("标签D").build(),
+                Chapter.builder().id(5L).title("标签E").build());
+        doReturn(hotChapters).when(chapterMapper).selectList(any(LambdaQueryWrapper.class));
+
+        doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+
+        DynamicProfileResponse profile = userProfileService.buildDynamicProfile(userId);
+
+        assertThat(profile.getHotTags()).hasSize(3);
+        assertThat(profile.getHotTags().get(0).getTag()).isEqualTo("标签A");
+        assertThat(profile.getHotTags().get(0).getCount()).isEqualTo(4L);
+        assertThat(profile.getHotTags().get(1).getTag()).isEqualTo("标签C");
+        assertThat(profile.getHotTags().get(2).getTag()).isEqualTo("标签D");
+        assertThat(profile.getHotTags()).noneMatch(t -> "标签E".equals(t.getTag()));
+        assertThat(profile.getHotTags()).noneMatch(t -> t.getTag() == null);
+    }
+
+    @Test
+    @DisplayName("成长趋势：startTime为空回退createdAt、duration为空计0、时间全空与answerTime为空被排除")
+    void buildDynamicProfileGrowthTrendCoversWeekBoundaryBranches() {
+        String userId = "user-1";
+        LocalDateTime now = LocalDateTime.now();
+
+        UserLearningRecord r1 = record(1L, now, now, 100);
+        UserLearningRecord r2 = record(1L, null, now, 200);
+        UserLearningRecord r3 = record(1L, now, now, null);
+        UserLearningRecord r4 = record(1L, null, null, 50);
+        doReturn(Collections.emptyList(), List.of(r1, r2, r3, r4))
+                .when(learningRecordMapper)
+                .selectList(any(LambdaQueryWrapper.class));
+
+        UserQuizAnswer a1 = UserQuizAnswer.builder()
+                .userId(1L)
+                .quizId(1L)
+                .isCorrect(1)
+                .answerTime(now)
+                .build();
+        UserQuizAnswer a2 = UserQuizAnswer.builder()
+                .userId(1L)
+                .quizId(2L)
+                .isCorrect(1)
+                .answerTime(null)
+                .build();
+        doReturn(List.of(a1, a2), Collections.emptyList(), Collections.emptyList())
+                .when(quizAnswerMapper)
+                .selectList(any(LambdaQueryWrapper.class));
+
+        DynamicProfileResponse profile = userProfileService.buildDynamicProfile(userId);
+
+        assertThat(profile.getGrowthTrend()).hasSize(8);
+        assertThat(profile.getGrowthTrend().get(7).getStudyDuration()).isEqualTo(300);
+        assertThat(profile.getGrowthTrend().get(7).getQuizAccuracy()).isEqualTo(1.0);
+    }
+
+    @Test
+    @DisplayName("薄弱域：答题记录quizId全为空时提前返回空列表")
+    void buildDynamicProfileWeakDomainsWithNullQuizIdsReturnsEarly() {
+        String userId = "user-1";
+
+        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+
+        UserQuizAnswer a1 =
+                UserQuizAnswer.builder().userId(1L).quizId(null).isCorrect(1).build();
+        UserQuizAnswer a2 =
+                UserQuizAnswer.builder().userId(1L).quizId(null).isCorrect(0).build();
+        doReturn(Collections.emptyList(), List.of(a1, a2), List.of(a1, a2))
+                .when(quizAnswerMapper)
+                .selectList(any(LambdaQueryWrapper.class));
+
+        DynamicProfileResponse profile = userProfileService.buildDynamicProfile(userId);
+
+        assertThat(profile.getWeakDomains()).isEmpty();
+        verify(quizMapper, never()).selectList(any(LambdaQueryWrapper.class));
+    }
+
+    @Test
+    @DisplayName("薄弱域：题目chapterId为null时跳过且无有效章节映射返回空列表")
+    void buildDynamicProfileWeakDomainsWithNullChapterIdSkipsAndReturnsEmpty() {
+        String userId = "user-1";
+
+        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+
+        UserQuizAnswer a1 =
+                UserQuizAnswer.builder().userId(1L).quizId(1L).isCorrect(1).build();
+        UserQuizAnswer a2 =
+                UserQuizAnswer.builder().userId(1L).quizId(1L).isCorrect(0).build();
+        doReturn(Collections.emptyList(), List.of(a1, a2), List.of(a1, a2))
+                .when(quizAnswerMapper)
+                .selectList(any(LambdaQueryWrapper.class));
+
+        Quiz quiz = Quiz.builder().id(1L).difficulty("easy").chapterId(null).build();
+        doReturn(List.of(quiz)).when(quizMapper).selectList(any(LambdaQueryWrapper.class));
+
+        DynamicProfileResponse profile = userProfileService.buildDynamicProfile(userId);
+
+        assertThat(profile.getWeakDomains()).isEmpty();
+        verify(chapterMapper, never()).selectList(any(LambdaQueryWrapper.class));
+    }
+
+    @Test
+    @DisplayName("薄弱域：章节标题为null使用fallback名称且正确率达标章节不计入")
+    void buildDynamicProfileWeakDomainsWithMissingChapterTitle() {
+        String userId = "user-1";
+
+        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+
+        UserQuizAnswer a1 =
+                UserQuizAnswer.builder().userId(1L).quizId(1L).isCorrect(1).build();
+        UserQuizAnswer a3 =
+                UserQuizAnswer.builder().userId(1L).quizId(3L).isCorrect(0).build();
+        UserQuizAnswer a4 =
+                UserQuizAnswer.builder().userId(1L).quizId(3L).isCorrect(0).build();
+        doReturn(Collections.emptyList(), List.of(a1, a3, a4), List.of(a1, a3, a4))
+                .when(quizAnswerMapper)
+                .selectList(any(LambdaQueryWrapper.class));
+
+        Quiz quiz1 = Quiz.builder().id(1L).difficulty("easy").chapterId(10L).build();
+        Quiz quiz3 = Quiz.builder().id(3L).difficulty("easy").chapterId(30L).build();
+        doReturn(List.of(quiz1, quiz3)).when(quizMapper).selectList(any(LambdaQueryWrapper.class));
+
+        Chapter strong = Chapter.builder().id(10L).title("强章节").build();
+        Chapter weakNoTitle = Chapter.builder().id(30L).title(null).build();
+        doReturn(List.of(strong, weakNoTitle)).when(chapterMapper).selectList(any(LambdaQueryWrapper.class));
+
+        DynamicProfileResponse profile = userProfileService.buildDynamicProfile(userId);
+
+        assertThat(profile.getWeakDomains())
+                .anyMatch(w -> "CHAPTER".equals(w.getType()) && "章节30".equals(w.getName()) && w.getAccuracy() == 0.0);
+        assertThat(profile.getWeakDomains()).noneMatch(w -> "CHAPTER".equals(w.getType()) && "强章节".equals(w.getName()));
+    }
+
+    // ==================== 当前用户入口 ====================
+
+    @Test
+    @DisplayName("getCurrentUserDynamicProfile 获取当前用户ID后委托 buildDynamicProfile")
+    void getCurrentUserDynamicProfileDelegatesToBuildDynamicProfile() {
+        doReturn("current-user").when(userService).getCurrentUserId();
+
+        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+
+        DynamicProfileResponse profile = userProfileService.getCurrentUserDynamicProfile();
+
+        assertThat(profile.getHotTags()).isEmpty();
+        assertThat(profile.getGrowthTrend()).hasSize(8);
+        assertThat(profile.getWeakDomains()).isEmpty();
+        verify(userService).getCurrentUserId();
+    }
+
+    @Test
+    @DisplayName("getCurrentUserLearningSummary 获取当前用户ID后委托 getLearningSummary")
+    void getCurrentUserLearningSummaryDelegatesToGetLearningSummary() {
+        doReturn("current-user").when(userService).getCurrentUserId();
+
+        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+
+        LearningSummaryResponse summary = userProfileService.getCurrentUserLearningSummary();
+
+        assertThat(summary.getTheory().getTotalDuration()).isZero();
+        assertThat(summary.getTheory().getCompletionRate()).isZero();
+        assertThat(summary.getPolicyComprehension().getAvgCorrectRate()).isZero();
+        assertThat(summary.getPolicyComprehension().getTotalAnswers()).isZero();
+        verify(userService).getCurrentUserId();
+    }
+
+    private UserLearningRecord record(
+            Long chapterId, LocalDateTime startTime, LocalDateTime createdAt, Integer duration) {
+        return UserLearningRecord.builder()
+                .userId(1L)
+                .chapterId(chapterId)
+                .startTime(startTime)
+                .createdAt(createdAt)
+                .duration(duration)
+                .build();
     }
 }
