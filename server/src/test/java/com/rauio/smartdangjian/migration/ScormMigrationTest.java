@@ -53,7 +53,7 @@ class ScormMigrationTest {
     }
 
     @Test
-    @DisplayName("V7 重复执行：幂等，不抛异常且表结构未被破坏")
+    @DisplayName("V10 重复执行：幂等，不抛异常且表结构未被破坏")
     void secondExecutionIsIdempotent() throws Exception {
         executeMigration();
         executeMigration();
@@ -66,7 +66,7 @@ class ScormMigrationTest {
 
     private void executeMigration() throws Exception {
         try (InputStreamReader reader = new InputStreamReader(
-                ScormMigrationTest.class.getResourceAsStream("/db/migration/V7__scorm_tables.sql"),
+                ScormMigrationTest.class.getResourceAsStream("/db/migration/V10__scorm_tables.sql"),
                 StandardCharsets.UTF_8)) {
             RunScript.execute(connection, reader);
         }
