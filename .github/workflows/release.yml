@@ -23,7 +23,7 @@ jobs:
   release:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     permissions:
       contents: read
       security-events: write
@@ -31,6 +31,8 @@ jobs:
     needs: []
     outputs:
       version: ${{ steps.meta.outputs.version }}
+      image_repository: ${{ steps.image.outputs.image_repository }}
+      ghcr_image_repository: ${{ steps.image.outputs.ghcr_image_repository }}
     steps:
       - uses: actions/checkout@v4
 
@@ -54,11 +56,71 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Using version: ${VERSION}"
 
+      - name: Resolve Aliyun image
+        id: image
+        shell: bash
+        env:
+          ALIYUN_IMAGE_REPOSITORY: ${{ vars.ALIYUN_IMAGE_REPOSITORY }}
+          ALIYUN_REGISTRY: ${{ vars.ALIYUN_REGISTRY }}
+          ALIYUN_NAMESPACE: ${{ vars.ALIYUN_NAMESPACE }}
+          ALIYUN_REPOSITORY: ${{ vars.ALIYUN_REPOSITORY }}
+          ALIYUN_REGISTRY_USERNAME: ${{ secrets.ALIYUN_REGISTRY_USERNAME }}
+          ALIYUN_REGISTRY_PASSWORD: ${{ secrets.ALIYUN_REGISTRY_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          for name in ALIYUN_REGISTRY_USERNAME ALIYUN_REGISTRY_PASSWORD; do
+            if [ -z "${!name:-}" ]; then
+              echo "ERROR: ${name} is required for Aliyun image publishing."
+              exit 1
+            fi
+          done
+
+          if [ -n "${ALIYUN_IMAGE_REPOSITORY:-}" ]; then
+            IMAGE_REPOSITORY="${ALIYUN_IMAGE_REPOSITORY#https://}"
+            IMAGE_REPOSITORY="${IMAGE_REPOSITORY#http://}"
+            IMAGE_REPOSITORY="${IMAGE_REPOSITORY%/}"
+            REGISTRY="${IMAGE_REPOSITORY%%/*}"
+          else
+            for name in ALIYUN_REGISTRY ALIYUN_NAMESPACE ALIYUN_REPOSITORY; do
+              if [ -z "${!name:-}" ]; then
+                echo "ERROR: ${name} is required when ALIYUN_IMAGE_REPOSITORY is not set."
+                exit 1
+              fi
+            done
+
+            REGISTRY="${ALIYUN_REGISTRY#https://}"
+            REGISTRY="${REGISTRY#http://}"
+            REGISTRY="${REGISTRY%/}"
+            NAMESPACE="${ALIYUN_NAMESPACE#/}"
+            NAMESPACE="${NAMESPACE%/}"
+            REPOSITORY="${ALIYUN_REPOSITORY#/}"
+            REPOSITORY="${REPOSITORY%/}"
+            IMAGE_REPOSITORY="${REGISTRY}/${NAMESPACE}/${REPOSITORY}"
+          fi
+
+          if [ "$REGISTRY" = "$IMAGE_REPOSITORY" ]; then
+            echo "ERROR: Aliyun image repository must include registry, namespace, and repository."
+            exit 1
+          fi
+
+          GHCR_IMAGE_REPOSITORY="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/zhihuidangjian"
+
+          echo "registry=${REGISTRY}" >> "$GITHUB_OUTPUT"
+          echo "image_repository=${IMAGE_REPOSITORY}" >> "$GITHUB_OUTPUT"
+          echo "ghcr_image_repository=${GHCR_IMAGE_REPOSITORY}" >> "$GITHUB_OUTPUT"
+          echo "Using image repository: ${IMAGE_REPOSITORY}"
+          echo "Using GHCR image repository: ${GHCR_IMAGE_REPOSITORY}"
+
       - name: Build bootJar
         run: ./gradlew --no-daemon clean :server:bootJar -x test
 
-      - name: Set lowercase image name
-        run: echo "IMAGE_NAME=${GITHUB_REPOSITORY_OWNER,,}/zhihuidangjian" >> "$GITHUB_ENV"
+      - name: Login to Aliyun Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ steps.image.outputs.registry }}
+          username: ${{ secrets.ALIYUN_REGISTRY_USERNAME }}
+          password: ${{ secrets.ALIYUN_REGISTRY_PASSWORD }}
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -74,7 +136,9 @@ jobs:
         id: docker-meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: |
+            ${{ steps.image.outputs.image_repository }}
+            ${{ steps.image.outputs.ghcr_image_repository }}
           tags: |
             type=semver,pattern={{version}}
 
@@ -84,9 +148,23 @@ jobs:
           context: .
           file: server/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          tags: |
+            ${{ steps.image.outputs.ghcr_image_repository }}:${{ steps.meta.outputs.version }}
+            ${{ steps.image.outputs.ghcr_image_repository }}:latest
           labels: ${{ steps.docker-meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
+
+      - name: Build and push Docker image (Aliyun ACR)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: server/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.image.outputs.image_repository }}:${{ steps.meta.outputs.version }}
+            ${{ steps.image.outputs.image_repository }}:latest
+          labels: ${{ steps.docker-meta.outputs.labels }}
+          platforms: linux/amd64
 
   # ── Stage 2: Deploy to Server ────────────────────────────────────────
   deploy:
@@ -104,9 +182,27 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_KEY }}
+          command_timeout: 30m
+          envs: APP_IMAGE=${{ needs.release.outputs.image_repository }}:${{ needs.release.outputs.version }}
           script: |
+            set -euo pipefail
             cd /www/server/panel/data/compose/test
-            docker-compose pull
+
+            # 一次性兼容：旧 compose 写死 ghcr.io 时改为支持 APP_IMAGE 变量
+            if [ -f docker-compose.yml ] && grep -q 'image: ghcr.io/agg233/zhihuidangjian:latest' docker-compose.yml; then
+              sed -i 's|image: ghcr.io/agg233/zhihuidangjian:latest|image: ${APP_IMAGE:-ghcr.io/agg233/zhihuidangjian:latest}|' docker-compose.yml
+            fi
+
+            # 写入本次部署的阿里云镜像地址
+            touch .env
+            if grep -q '^APP_IMAGE=' .env; then
+              sed -i "s|^APP_IMAGE=.*|APP_IMAGE=${APP_IMAGE}|" .env
+            else
+              echo "APP_IMAGE=${APP_IMAGE}" >> .env
+            fi
+
+            # 只拉取应用镜像，避免每次拉 neo4j/redis 大镜像
+            docker-compose pull app
             docker-compose up -d
             docker image prune -f
 
