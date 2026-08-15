@@ -27,6 +27,26 @@ public class UserProfileResponse {
     @Schema(description = "答题统计信息")
     private QuizStats quiz;
 
+    @Schema(description = "互动表现统计信息（评论/点赞/活跃度）")
+    private InteractionStats interaction;
+
+    @Data
+    @Builder
+    @Schema(description = "互动表现统计")
+    public static class InteractionStats {
+        @Schema(description = "评论数", example = "5")
+        private int commentCount;
+
+        @Schema(description = "获赞数（他人对本人评论的点赞）", example = "12")
+        private int likeReceivedCount;
+
+        @Schema(description = "点赞数（本人点赞数）", example = "8")
+        private int likeGivenCount;
+
+        @Schema(description = "近8周有互动行为的周数", example = "3")
+        private int activeWeeks;
+    }
+
     @Data
     @Builder
     @Schema(description = "学习统计")

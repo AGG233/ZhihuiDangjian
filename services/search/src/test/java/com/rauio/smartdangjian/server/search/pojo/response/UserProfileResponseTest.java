@@ -90,4 +90,25 @@ class UserProfileResponseTest {
         assertThat(stats.getAvgTimeSpent()).isZero();
         assertThat(stats.getByDifficulty()).isNull();
     }
+
+    @Test
+    @DisplayName("InteractionStats 构建与默认值（互动表现维度）")
+    void interactionStatsBuildAndDefaults() {
+        UserProfileResponse.InteractionStats stats = UserProfileResponse.InteractionStats.builder()
+                .commentCount(5)
+                .likeReceivedCount(12)
+                .likeGivenCount(8)
+                .activeWeeks(3)
+                .build();
+
+        assertThat(stats.getCommentCount()).isEqualTo(5);
+        assertThat(stats.getLikeReceivedCount()).isEqualTo(12);
+        assertThat(stats.getLikeGivenCount()).isEqualTo(8);
+        assertThat(stats.getActiveWeeks()).isEqualTo(3);
+
+        UserProfileResponse.InteractionStats empty =
+                UserProfileResponse.InteractionStats.builder().build();
+        assertThat(empty.getCommentCount()).isZero();
+        assertThat(empty.getActiveWeeks()).isZero();
+    }
 }
