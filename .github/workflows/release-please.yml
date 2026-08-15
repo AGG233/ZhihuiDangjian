@@ -1,10 +1,9 @@
 name: release-please
 on:
-  push:
-    branches: [master]
   # 固定时间自动发版：UTC 16:00 = 北京时间次日凌晨 0:00（GitHub cron 固定 UTC）
   schedule:
     - cron: '0 16 * * *'
+  # 手动触发：可随时执行发版检查与自动合并
   workflow_dispatch: {}
 concurrency:
   group: release-please-${{ github.ref }}
@@ -23,11 +22,11 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
-      # push 触发只创建/更新 release PR（等待 0:00 或手动合并，不立即发版）；
-      # schedule / workflow_dispatch 触发时对挂起的 release PR 启用 auto-merge：
-      # CI 全绿后自动 squash 合并（标题保持 `chore(master): release <版本>`，
-      # release-please 据此识别 release commit 并打 tag，避免重复发版），
-      # 随后 push master 触发 release-please 打 tag，release.yml 构建+部署。
+      # 发版仅由固定时间或手动触发：schedule / workflow_dispatch 运行时，
+      # release-please 创建/更新 release PR，并对挂起的 release PR 启用 auto-merge：
+      # CI 全绿后自动 squash 合并（标题保持 `chore(master): release <版本>`）。
+      # 合并后不会立即发版；下一次 release-please 运行（固定时间/手动）时
+      # 会识别 release commit 并打 tag，随后 release.yml 构建+部署。
       # 注意：outputs.pr 是 PullRequest 对象的 JSON 字符串，需用 jq 提取编号；
       # 对空值/null/非 JSON 输出做防护，避免 auto-merge 步骤意外失败。
       - name: Auto-merge release PR
