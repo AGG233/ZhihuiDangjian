@@ -1,11 +1,15 @@
 package com.rauio.smartdangjian.server.search.pojo.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Schema(description = "热门分类视图对象")
 public class HotCategoryResponse {
 

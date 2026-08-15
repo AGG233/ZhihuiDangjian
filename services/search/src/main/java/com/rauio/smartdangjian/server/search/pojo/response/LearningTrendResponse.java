@@ -3,11 +3,15 @@ package com.rauio.smartdangjian.server.search.pojo.response;
 import java.time.LocalDate;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Schema(description = "学习趋势视图对象")
 public class LearningTrendResponse {
 
