@@ -349,6 +349,8 @@ async function main() {
     let skipped = 0;
     const failures = [];
 
+    // 第一遍：跳过项即时打印，其余构建请求描述（不发起请求）
+    const tasks = [];
     for (const item of operations) {
         const {pathName, method, operation, pathItem} = item;
         const skipReason = shouldSkip(pathName, method, operation);
@@ -388,32 +390,52 @@ async function main() {
             requestBody = formData.toString();
         }
 
-        try {
-            const {response, body} = await requestJson(url, {
-                method: method.toUpperCase(),
-                headers,
-                body: ["GET", "HEAD"].includes(method.toUpperCase()) ? undefined : requestBody,
-            });
+        tasks.push({
+            label,
+            url,
+            method: method.toUpperCase(),
+            headers,
+            body: ["GET", "HEAD"].includes(method.toUpperCase()) ? undefined : requestBody,
+        });
+    }
 
-            if (response.status >= 500) {
-                failures.push({
-                    label,
-                    status: response.status,
-                    body,
-                });
-                console.log(`FAIL ${label} -> HTTP ${response.status}`);
-                continue;
-            }
+    // 分批并发执行（每批 CONCURRENCY 个），结果按原顺序收集
+    const CONCURRENCY = 8;
+    const results = [];
+    for (let i = 0; i < tasks.length; i += CONCURRENCY) {
+        const batch = tasks.slice(i, i + CONCURRENCY);
+        const batchResults = await Promise.all(
+            batch.map(async (task) => {
+                try {
+                    const {response, body} = await requestJson(task.url, {
+                        method: task.method,
+                        headers: task.headers,
+                        body: task.body,
+                    });
+                    return {label: task.label, status: response.status, body};
+                } catch (error) {
+                    return {
+                        label: task.label,
+                        status: "NETWORK_ERROR",
+                        body: error instanceof Error ? error.message : String(error),
+                    };
+                }
+            })
+        );
+        results.push(...batchResults);
+    }
 
+    // 按原顺序输出结果并汇总（5xx 与网络错误视为失败，其余通过）
+    for (const result of results) {
+        if (result.status === "NETWORK_ERROR") {
+            failures.push({label: result.label, status: "NETWORK_ERROR", body: result.body});
+            console.log(`FAIL ${result.label} -> ${result.body}`);
+        } else if (result.status >= 500) {
+            failures.push({label: result.label, status: result.status, body: result.body});
+            console.log(`FAIL ${result.label} -> HTTP ${result.status}`);
+        } else {
             passed += 1;
-            console.log(`PASS ${label} -> HTTP ${response.status}`);
-        } catch (error) {
-            failures.push({
-                label,
-                status: "NETWORK_ERROR",
-                body: error instanceof Error ? error.message : String(error),
-            });
-            console.log(`FAIL ${label} -> ${error instanceof Error ? error.message : String(error)}`);
+            console.log(`PASS ${result.label} -> HTTP ${result.status}`);
         }
     }
 
