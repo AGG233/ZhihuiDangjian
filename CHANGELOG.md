@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.3](https://github.com/AGG233/ZhihuiDangjian/compare/v0.8.2...v0.8.3) (2026-08-15)
+
+
+### Bug Fixes
+
+* resolve review findings from [#86](https://github.com/AGG233/ZhihuiDangjian/issues/86) [#88](https://github.com/AGG233/ZhihuiDangjian/issues/88) [#89](https://github.com/AGG233/ZhihuiDangjian/issues/89) ([#92](https://github.com/AGG233/ZhihuiDangjian/issues/92)) ([4cc8801](https://github.com/AGG233/ZhihuiDangjian/commit/4cc8801fcd15471094fd52add483271be83d63b1))
+
 ## [0.8.2](https://github.com/AGG233/ZhihuiDangjian/compare/v0.8.1...v0.8.2) (2026-08-15)
 
 
