@@ -1,6 +1,7 @@
 package com.rauio.smartdangjian.server.resource.controller.admin;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -70,40 +71,40 @@ class AdminResourceMetaControllerTest {
     @DisplayName("update 委托 service 更新资源")
     void update() {
         ResourceMetaUpdateRequest request = new ResourceMetaUpdateRequest();
-        when(resourceMetaService.update(1L, request)).thenReturn(true);
+        doNothing().when(resourceMetaService).update(1L, request);
 
         var result = controller.update(1L, request);
 
-        assertThat(result.getData()).isTrue();
+        assertThat(result.getData()).isNull();
     }
 
     @Test
     @DisplayName("deleteById 委托 service 删除资源")
     void deleteById() {
-        when(resourceMetaService.delete(1L)).thenReturn(true);
+        doNothing().when(resourceMetaService).delete(1L);
 
         var result = controller.deleteById(1L);
 
-        assertThat(result.getData()).isTrue();
+        assertThat(result.getData()).isNull();
     }
 
     @Test
     @DisplayName("delete 按哈希删除")
     void deleteByHash() {
-        when(resourceMetaService.deleteByHash("hash123")).thenReturn(true);
+        doNothing().when(resourceMetaService).deleteByHash("hash123");
 
         var result = controller.delete("hash123");
 
-        assertThat(result.getData()).isTrue();
+        assertThat(result.getData()).isNull();
     }
 
     @Test
     @DisplayName("delete 批量按哈希删除")
     void deleteByHashes() {
-        when(resourceMetaService.deleteByHashes(List.of("h1", "h2"))).thenReturn(true);
+        doNothing().when(resourceMetaService).deleteByHashes(List.of("h1", "h2"));
 
         var result = controller.delete(new String[] {"h1", "h2"});
 
-        assertThat(result.getData()).isTrue();
+        assertThat(result.getData()).isNull();
     }
 }

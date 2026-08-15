@@ -7,7 +7,6 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
-import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.pojo.response.Result;
@@ -15,8 +14,8 @@ import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaCreateRequest;
 import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaUpdateRequest;
 import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
-import com.rauio.smartdangjian.utils.spec.UserType;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -66,15 +65,17 @@ public class AdminResourceMetaController {
     @Operation(summary = "更新资源元数据", description = "根据资源ID更新原始文件名、对象存储键、资源类型、状态")
     @PutMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.RESOURCE_META_ADMIN, action = DataScopeAction.UPDATE, id = "#id")
-    public Result<Boolean> update(@PathVariable Long id, @RequestBody @Valid ResourceMetaUpdateRequest request) {
-        return Result.ok(resourceMetaService.update(id, request));
+    public Result<Void> update(@PathVariable Long id, @RequestBody @Valid ResourceMetaUpdateRequest request) {
+        resourceMetaService.update(id, request);
+        return Result.ok(null);
     }
 
     @Operation(summary = "删除资源元数据", description = "根据资源ID删除资源元数据、关联内容块及COS对象")
     @DeleteMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.RESOURCE_META_ADMIN, action = DataScopeAction.DELETE, id = "#id")
-    public Result<Boolean> deleteById(@PathVariable Long id) {
-        return Result.ok(resourceMetaService.delete(id));
+    public Result<Void> deleteById(@PathVariable Long id) {
+        resourceMetaService.delete(id);
+        return Result.ok(null);
     }
 
     @Operation(summary = "删除单个文件", description = "根据文件hash值删除")
@@ -83,8 +84,9 @@ public class AdminResourceMetaController {
             resource = DataScopeResources.RESOURCE_META_ADMIN,
             action = DataScopeAction.DELETE,
             query = "#hash")
-    public Result<Boolean> delete(@PathVariable String hash) {
-        return Result.ok(resourceMetaService.deleteByHash(hash));
+    public Result<Void> delete(@PathVariable String hash) {
+        resourceMetaService.deleteByHash(hash);
+        return Result.ok(null);
     }
 
     @Operation(summary = "批量删除文件", description = "根据hash值批量删除文件")
@@ -93,7 +95,8 @@ public class AdminResourceMetaController {
             resource = DataScopeResources.RESOURCE_META_ADMIN,
             action = DataScopeAction.DELETE,
             query = "#hash")
-    public Result<Boolean> delete(@RequestParam String[] hash) {
-        return Result.ok(resourceMetaService.deleteByHashes(List.of(hash)));
+    public Result<Void> delete(@RequestParam String[] hash) {
+        resourceMetaService.deleteByHashes(List.of(hash));
+        return Result.ok(null);
     }
 }

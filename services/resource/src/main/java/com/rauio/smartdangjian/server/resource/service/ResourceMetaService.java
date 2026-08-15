@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.server.resource.service;
 
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,7 +77,14 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         return this.list(wrapper);
     }
 
-    public Boolean update(Long id, ResourceMetaUpdateRequest request) {
+    /**
+     * 更新资源元数据。写操作统一驱逐 {@code resourceMeta} 缓存，避免 {@link #getByHash} 脏读。
+     *
+     * @param id 资源 ID
+     * @param request 更新请求
+     */
+    @CacheEvict(value = "resourceMeta", allEntries = true)
+    public void update(Long id, ResourceMetaUpdateRequest request) {
         ResourceMeta existing = this.get(id);
         validateDuplicate(id, existing.getHash(), existing.getObjectKey());
 
@@ -100,33 +108,63 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
         if (!this.updateById(meta)) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_UPDATE_FAILED, "更新资源失败");
         }
-        return true;
     }
 
-    public Boolean delete(Long id) {
+    /**
+     * 更新资源状态（如上传确认 UPLOADING → PUBLIC），并驱逐缓存。
+     *
+     * @param id 资源 ID
+     * @param status 目标状态
+     */
+    @CacheEvict(value = "resourceMeta", allEntries = true)
+    public void updateStatus(Long id, Integer status) {
+        ResourceMeta meta = this.get(id);
+        meta.setStatus(status);
+        if (!this.updateById(meta)) {
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_UPDATE_FAILED, "更新资源状态失败");
+        }
+    }
+
+    /**
+     * 删除资源。
+     *
+     * @param id 资源 ID
+     */
+    @CacheEvict(value = "resourceMeta", allEntries = true)
+    public void delete(Long id) {
         this.get(id);
 
         if (!this.removeById(id)) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_DELETE_FAILED, "删除资源失败");
         }
-        return true;
     }
 
-    public Boolean deleteByHash(String hash) {
+    /**
+     * 按哈希删除资源。
+     *
+     * @param hash 资源哈希
+     */
+    @CacheEvict(value = "resourceMeta", allEntries = true)
+    public void deleteByHash(String hash) {
         ResourceMeta meta = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
                 .eq(ResourceMeta::getHash, hash)
                 .last("limit 1"));
         if (meta == null) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在");
         }
-        return delete(meta.getId());
+        delete(meta.getId());
     }
 
-    public Boolean deleteByHashes(List<String> hashes) {
+    /**
+     * 批量按哈希删除资源。
+     *
+     * @param hashes 资源哈希列表
+     */
+    @CacheEvict(value = "resourceMeta", allEntries = true)
+    public void deleteByHashes(List<String> hashes) {
         for (String hash : hashes) {
             deleteByHash(hash);
         }
-        return true;
     }
 
     private void validateDuplicate(Long currentId, String hash, String objectKey) {

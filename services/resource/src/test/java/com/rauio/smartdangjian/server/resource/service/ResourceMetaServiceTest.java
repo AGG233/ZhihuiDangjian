@@ -213,9 +213,7 @@ class ResourceMetaServiceTest {
 
         doReturn(true).when(resourceMetaService).updateById(any(ResourceMeta.class));
 
-        Boolean result = resourceMetaService.update(RESOURCE_ID, request);
-
-        assertThat(result).isTrue();
+        resourceMetaService.update(RESOURCE_ID, request);
     }
 
     // ==================== delete ====================
@@ -228,9 +226,7 @@ class ResourceMetaServiceTest {
                 .getById(RESOURCE_ID);
         doReturn(true).when(resourceMetaService).removeById(RESOURCE_ID);
 
-        Boolean result = resourceMetaService.delete(RESOURCE_ID);
-
-        assertThat(result).isTrue();
+        resourceMetaService.delete(RESOURCE_ID);
     }
 
     @Test
@@ -259,9 +255,7 @@ class ResourceMetaServiceTest {
                 .getById(RESOURCE_ID);
         doReturn(true).when(resourceMetaService).removeById(RESOURCE_ID);
 
-        Boolean result = resourceMetaService.deleteByHash(HASH);
-
-        assertThat(result).isTrue();
+        resourceMetaService.deleteByHash(HASH);
     }
 
     // ==================== deleteByHashes ====================
@@ -277,9 +271,7 @@ class ResourceMetaServiceTest {
                 .getById(RESOURCE_ID);
         doReturn(true).when(resourceMetaService).removeById(RESOURCE_ID);
 
-        Boolean result = resourceMetaService.deleteByHashes(List.of(HASH));
-
-        assertThat(result).isTrue();
+        resourceMetaService.deleteByHashes(List.of(HASH));
     }
 
     // ==================== create - objectKey duplicate ====================
@@ -328,9 +320,7 @@ class ResourceMetaServiceTest {
 
         doReturn(true).when(resourceMetaService).updateById(any(ResourceMeta.class));
 
-        Boolean result = resourceMetaService.update(RESOURCE_ID, request);
-
-        assertThat(result).isTrue();
+        resourceMetaService.update(RESOURCE_ID, request);
     }
 
     // ==================== update - failed ====================

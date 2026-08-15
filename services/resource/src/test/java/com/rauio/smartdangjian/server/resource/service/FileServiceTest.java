@@ -7,14 +7,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
 import org.dromara.x.file.storage.core.FileInfo;
@@ -208,7 +205,7 @@ class FileServiceTest {
         @Test
         @DisplayName("正常下载：COS 生成预签名下载 URL 成功，返回 URL 字符串")
         void getDownloadUrlSuccess() {
-            ResourceMeta meta = createResourceMeta();
+            ResourceMeta meta = createPublicResourceMeta();
             when(resourceMetaService.get(RESOURCE_ID)).thenReturn(meta);
             when(fileStorageService.generatePresignedUrl()).thenReturn(pretreatment);
 
@@ -222,9 +219,22 @@ class FileServiceTest {
         }
 
         @Test
+        @DisplayName("资源未公开（UPLOADING/HIDDEN）时拒绝生成下载 URL")
+        void getDownloadUrlRejectsNonPublic() {
+            ResourceMeta meta = createResourceMeta();
+            when(resourceMetaService.get(RESOURCE_ID)).thenReturn(meta);
+
+            assertThatThrownBy(() -> fileService.getDownloadUrl(RESOURCE_ID))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("code", ResourceErrorConstants.RESOURCE_NOT_FOUND)
+                    .hasMessageContaining("未公开");
+            verify(fileStorageService, never()).generatePresignedUrl();
+        }
+
+        @Test
         @DisplayName("COS 异常：generatePresignedUrl 抛出异常，抛出 BusinessException(RESOURCE_NOT_FOUND)")
         void getDownloadUrlCosException() {
-            ResourceMeta meta = createResourceMeta();
+            ResourceMeta meta = createPublicResourceMeta();
             when(resourceMetaService.get(RESOURCE_ID)).thenReturn(meta);
             when(fileStorageService.generatePresignedUrl()).thenReturn(pretreatment);
 
@@ -265,13 +275,20 @@ class FileServiceTest {
                     .objectKey(OBJECT_KEY)
                     .status(ResourceStatusConstants.UPLOADING)
                     .build();
-            when(resourceMetaService.get(RESOURCE_ID)).thenReturn(meta);
+            ResourceMeta updated = ResourceMeta.builder()
+                    .id(RESOURCE_ID)
+                    .uploaderId(1L)
+                    .hash("uuid-hash")
+                    .objectKey(OBJECT_KEY)
+                    .status(ResourceStatusConstants.PUBLIC)
+                    .build();
+            when(resourceMetaService.get(RESOURCE_ID)).thenReturn(meta, updated);
             when(fileStorageService.exists(any(FileInfo.class))).thenReturn(true);
 
             ResourceMeta result = fileService.confirmUpload(RESOURCE_ID);
 
             assertThat(result.getStatus()).isEqualTo(ResourceStatusConstants.PUBLIC);
-            verify(resourceMetaService).updateById(meta);
+            verify(resourceMetaService).updateStatus(RESOURCE_ID, ResourceStatusConstants.PUBLIC);
         }
 
         @Test
@@ -302,10 +319,8 @@ class FileServiceTest {
         @Test
         @DisplayName("成功保存本地文件")
         void handleUploadCallbackSuccess() {
-            ResourceMeta meta = ResourceMeta.builder()
-                    .id(RESOURCE_ID)
-                    .objectKey(OBJECT_KEY)
-                    .build();
+            ResourceMeta meta =
+                    ResourceMeta.builder().id(RESOURCE_ID).objectKey(OBJECT_KEY).build();
             when(resourceMetaService.get(RESOURCE_ID)).thenReturn(meta);
 
             fileService.handleUploadCallback(RESOURCE_ID, mock(InputStream.class));
@@ -323,7 +338,7 @@ class FileServiceTest {
         @Test
         @DisplayName("根据ID获取文件信息")
         void getFileInfoById() {
-            ResourceMeta meta = createResourceMeta();
+            ResourceMeta meta = createPublicResourceMeta();
             when(resourceMetaService.get(RESOURCE_ID)).thenReturn(meta);
             when(fileStorageService.generatePresignedUrl()).thenReturn(pretreatment);
 
@@ -340,9 +355,21 @@ class FileServiceTest {
         }
 
         @Test
+        @DisplayName("根据ID获取未公开资源信息被拒绝")
+        void getFileInfoRejectsNonPublic() {
+            ResourceMeta meta = createResourceMeta();
+            when(resourceMetaService.get(RESOURCE_ID)).thenReturn(meta);
+
+            assertThatThrownBy(() -> fileService.getFileInfo(RESOURCE_ID))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("code", ResourceErrorConstants.RESOURCE_NOT_FOUND)
+                    .hasMessageContaining("未公开");
+        }
+
+        @Test
         @DisplayName("根据hash获取文件信息")
         void getFileInfoByHash() {
-            ResourceMeta meta = createResourceMeta();
+            ResourceMeta meta = createPublicResourceMeta();
             when(resourceMetaService.getByHash("uuid-hash")).thenReturn(meta);
             when(fileStorageService.generatePresignedUrl()).thenReturn(pretreatment);
 
@@ -354,6 +381,23 @@ class FileServiceTest {
 
             assertThat(response).isNotNull();
             assertThat(response.getHash()).isEqualTo("uuid-hash");
+        }
+
+        @Test
+        @DisplayName("根据hash获取未公开资源信息被拒绝")
+        void getFileInfoByHashRejectsNonPublic() {
+            ResourceMeta meta = ResourceMeta.builder()
+                    .id(RESOURCE_ID)
+                    .hash("uuid-hash")
+                    .objectKey(OBJECT_KEY)
+                    .status(ResourceStatusConstants.HIDDEN)
+                    .build();
+            when(resourceMetaService.getByHash("uuid-hash")).thenReturn(meta);
+
+            assertThatThrownBy(() -> fileService.getFileInfoByHash("uuid-hash"))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("code", ResourceErrorConstants.RESOURCE_NOT_FOUND)
+                    .hasMessageContaining("未公开");
         }
     }
 
@@ -397,8 +441,16 @@ class FileServiceTest {
         @Test
         @DisplayName("getBatchByIds 返回多个URL")
         void getBatchByIds() {
-            ResourceMeta meta1 = ResourceMeta.builder().id(1L).objectKey("image/a.png").build();
-            ResourceMeta meta2 = ResourceMeta.builder().id(2L).objectKey("image/b.png").build();
+            ResourceMeta meta1 = ResourceMeta.builder()
+                    .id(1L)
+                    .objectKey("image/a.png")
+                    .status(ResourceStatusConstants.PUBLIC)
+                    .build();
+            ResourceMeta meta2 = ResourceMeta.builder()
+                    .id(2L)
+                    .objectKey("image/b.png")
+                    .status(ResourceStatusConstants.PUBLIC)
+                    .build();
             when(resourceMetaService.get(1L)).thenReturn(meta1);
             when(resourceMetaService.get(2L)).thenReturn(meta2);
             when(fileStorageService.generatePresignedUrl()).thenReturn(pretreatment);
@@ -416,7 +468,12 @@ class FileServiceTest {
         @Test
         @DisplayName("getBatchByHashes 返回多个URL")
         void getBatchByHashes() {
-            ResourceMeta meta = ResourceMeta.builder().id(1L).hash("hash1").objectKey("image/a.png").build();
+            ResourceMeta meta = ResourceMeta.builder()
+                    .id(1L)
+                    .hash("hash1")
+                    .objectKey("image/a.png")
+                    .status(ResourceStatusConstants.PUBLIC)
+                    .build();
             when(resourceMetaService.getByHash("hash1")).thenReturn(meta);
             // Use lazy answer for repeated calls
             when(fileStorageService.generatePresignedUrl()).thenReturn(pretreatment);
@@ -440,7 +497,12 @@ class FileServiceTest {
         @Test
         @DisplayName("根据hash获取下载URL")
         void getByHash() {
-            ResourceMeta meta = ResourceMeta.builder().id(1L).hash("hash1").objectKey("image/a.png").build();
+            ResourceMeta meta = ResourceMeta.builder()
+                    .id(1L)
+                    .hash("hash1")
+                    .objectKey("image/a.png")
+                    .status(ResourceStatusConstants.PUBLIC)
+                    .build();
             when(resourceMetaService.getByHash("hash1")).thenReturn(meta);
             when(fileStorageService.generatePresignedUrl()).thenReturn(pretreatment);
 
@@ -451,6 +513,22 @@ class FileServiceTest {
             String url = fileService.getByHash("hash1");
 
             assertThat(url).isEqualTo(COS_URL);
+        }
+
+        @Test
+        @DisplayName("未公开资源按hash获取下载URL被拒绝")
+        void getByHashRejectsNonPublic() {
+            ResourceMeta meta = ResourceMeta.builder()
+                    .id(1L)
+                    .hash("hash1")
+                    .objectKey("image/a.png")
+                    .build();
+            when(resourceMetaService.getByHash("hash1")).thenReturn(meta);
+
+            assertThatThrownBy(() -> fileService.getByHash("hash1"))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("code", ResourceErrorConstants.RESOURCE_NOT_FOUND)
+                    .hasMessageContaining("未公开");
         }
     }
 }
