@@ -13,6 +13,7 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -25,6 +26,13 @@ public class RedisConfig {
         ObjectMapper om = new ObjectMapper();
         om.registerModule(new JavaTimeModule());
         om.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        // 缓存序列化必须携带类型信息：GenericJackson2JsonRedisSerializer 传入自定义
+        // ObjectMapper 时不会自动启用 default typing，反序列化将退化为 LinkedHashMap，
+        // 导致 @Cacheable 方法二次调用抛 ClassCastException
+        om.activateDefaultTyping(
+                om.getPolymorphicTypeValidator(),
+                ObjectMapper.DefaultTyping.NON_FINAL,
+                JsonTypeInfo.As.PROPERTY);
         return om;
     }
 
