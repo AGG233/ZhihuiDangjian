@@ -9,6 +9,4 @@ public class ChapterErrorConstants {
     public static final int CHAPTER_ALREADY_EXISTS = 3102;
     public static final int CHAPTER_CREATE_FAILED = 3103;
     public static final int CHAPTER_MIN_REQUIRED = 3104;
-    public static final int CHAPTER_UPDATE_FAILED = 3105;
-    public static final int CHAPTER_DELETE_FAILED = 3106;
 }

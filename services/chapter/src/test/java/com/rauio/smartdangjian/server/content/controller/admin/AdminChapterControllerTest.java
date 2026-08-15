@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.pojo.response.Result;
+import com.rauio.smartdangjian.server.content.constants.ChapterErrorConstants;
 import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
 import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
@@ -154,7 +155,8 @@ class AdminChapterControllerTest {
 
         assertThatThrownBy(() -> controller.create(dto))
                 .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("章节无法创建");
+                .extracting("code")
+                .isEqualTo(ChapterErrorConstants.CHAPTER_CREATE_FAILED);
     }
 
     // ================================================================

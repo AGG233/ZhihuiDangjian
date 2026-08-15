@@ -7,15 +7,20 @@ import static org.mockito.Mockito.*;
 
 import java.util.List;
 
+import org.apache.ibatis.builder.MapperBuilderAssistant;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.resource.constants.ResourceStatusConstants;
 import com.rauio.smartdangjian.server.resource.mapper.ResourceMetaMapper;
@@ -25,6 +30,14 @@ import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaUpdateRe
 
 @ExtendWith(MockitoExtension.class)
 class ResourceMetaServiceTest {
+
+    @BeforeAll
+    static void initMybatisTableInfo() {
+        // 初始化 MyBatis-Plus Lambda 元数据，便于在无 Spring 上下文中解析列名
+        MybatisConfiguration configuration = new MybatisConfiguration();
+        MapperBuilderAssistant assistant = new MapperBuilderAssistant(configuration, "");
+        TableInfoHelper.initTableInfo(assistant, ResourceMeta.class);
+    }
 
     @Mock
     private ResourceMetaMapper mapper;
@@ -310,7 +323,8 @@ class ResourceMetaServiceTest {
                 .status(1)
                 .build();
         doReturn(existing).when(resourceMetaService).getById(RESOURCE_ID);
-        doReturn(existing).when(resourceMetaService).getOne(any(LambdaQueryWrapper.class));
+        // 查重查询已排除当前 id，无其他重复记录时返回 null
+        doReturn(null).when(resourceMetaService).getOne(any(LambdaQueryWrapper.class));
 
         ResourceMetaUpdateRequest request = new ResourceMetaUpdateRequest();
         request.setObjectKey("new/key.png");
@@ -347,6 +361,35 @@ class ResourceMetaServiceTest {
         assertThatThrownBy(() -> resourceMetaService.update(RESOURCE_ID, request))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("对象存储键已存在");
+    }
+
+    @Test
+    @DisplayName("update 查重时排除当前记录 id")
+    void updateDuplicateCheckExcludesCurrentId() {
+        ResourceMeta existing = ResourceMeta.builder()
+                .id(RESOURCE_ID)
+                .uploaderId(1L)
+                .hash(HASH)
+                .objectKey(OBJECT_KEY)
+                .originalName("old.png")
+                .resourceType(0)
+                .status(1)
+                .build();
+        doReturn(existing).when(resourceMetaService).getById(RESOURCE_ID);
+        doReturn(null).when(resourceMetaService).getOne(any(LambdaQueryWrapper.class));
+        doReturn(true).when(resourceMetaService).updateById(any(ResourceMeta.class));
+
+        ResourceMetaUpdateRequest request = new ResourceMetaUpdateRequest();
+        request.setObjectKey("new/key.png");
+
+        resourceMetaService.update(RESOURCE_ID, request);
+
+        ArgumentCaptor<LambdaQueryWrapper<ResourceMeta>> captor = ArgumentCaptor.forClass(LambdaQueryWrapper.class);
+        verify(resourceMetaService, times(2)).getOne(captor.capture());
+        for (LambdaQueryWrapper<ResourceMeta> wrapper : captor.getAllValues()) {
+            String sql = wrapper.getSqlSegment().toUpperCase();
+            assertThat(sql).contains("ID <>");
+        }
     }
 
     // ==================== update - failed ====================

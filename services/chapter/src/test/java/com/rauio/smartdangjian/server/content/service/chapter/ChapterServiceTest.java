@@ -247,8 +247,8 @@ class ChapterServiceTest {
     }
 
     @Test
-    @DisplayName("update 更新失败时抛出 BusinessException")
-    void updateThrowsExceptionWhenUpdateFails() {
+    @DisplayName("update updateById 返回 false（无变化/并发已删除）时不抛异常")
+    void updateDoesNotThrowWhenUpdateByIdReturnsFalse() {
         ChapterRequest dto = ChapterRequest.builder().title("更新章节").build();
         Chapter entity = Chapter.builder().title("更新章节").build();
         Chapter existing = Chapter.builder().id(1L).title("旧章节").build();
@@ -256,9 +256,9 @@ class ChapterServiceTest {
         when(chapterConvertor.toEntity(dto)).thenReturn(entity);
         doReturn(false).when(chapterService).updateById(any(Chapter.class));
 
-        assertThatThrownBy(() -> chapterService.update(dto, 1L))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("章节更新失败");
+        chapterService.update(dto, 1L);
+
+        verify(chapterService).updateById(entity);
     }
 
     // ================================================================
@@ -321,14 +321,14 @@ class ChapterServiceTest {
     }
 
     @Test
-    @DisplayName("delete 删除失败时抛出 BusinessException")
-    void deleteThrowsExceptionWhenDeleteFails() {
+    @DisplayName("delete removeById 返回 false（无变化/并发已删除）时不抛异常")
+    void deleteDoesNotThrowWhenRemoveByIdReturnsFalse() {
         Chapter existing = Chapter.builder().id(1L).title("第一章").build();
         doReturn(existing).when(chapterService).getById(1L);
         doReturn(false).when(chapterService).removeById(1L);
 
-        assertThatThrownBy(() -> chapterService.delete(1L))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("章节删除失败");
+        chapterService.delete(1L);
+
+        verify(chapterService).removeById(1L);
     }
 }

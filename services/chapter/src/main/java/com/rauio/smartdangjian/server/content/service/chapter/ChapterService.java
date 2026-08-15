@@ -91,9 +91,9 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
 
         Chapter entity = chapterConvertor.toEntity(dto);
         entity.setId(chapterId);
-        if (!this.updateById(entity)) {
-            throw new BusinessException(ChapterErrorConstants.CHAPTER_UPDATE_FAILED, "章节更新失败");
-        }
+        // 不依赖 updateById 返回值判断失败：MyBatis-Plus 在字段无变化时可能返回 false（影响行数 0），
+        // 但并非真实失败；存在性已在上方校验，真正的 SQL 异常会抛出并由全局异常处理。
+        this.updateById(entity);
     }
 
     /**
@@ -117,8 +117,8 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
         if (existing == null) {
             throw new BusinessException(ChapterErrorConstants.CHAPTER_NOT_FOUND, "章节不存在");
         }
-        if (!this.removeById(chapterId)) {
-            throw new BusinessException(ChapterErrorConstants.CHAPTER_DELETE_FAILED, "章节删除失败");
-        }
+        // 与 update 同理：removeById 返回 false 多为影响行数 0（如并发已删除），不视为失败；
+        // 真正的 SQL 异常会抛出并由全局异常处理。
+        this.removeById(chapterId);
     }
 }
