@@ -30,6 +30,9 @@ app:
     carousel:
       chapter-id: 1145141919810
 
+sa-token:
+  jwt-secret-key: test-jwt-secret-key
+
 auth:
   captcha:
     test-code: TEST8888

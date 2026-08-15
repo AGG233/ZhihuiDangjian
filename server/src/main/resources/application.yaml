@@ -50,8 +50,9 @@ sa-token:
   is-log: false
   token-style: random-64
   is-write-header: true
-  # JWT 签名密钥（sa-token-jwt simple 模式）；生产环境必须注入 SA_TOKEN_JWT_SECRET_KEY
-  jwt-secret-key: ${SA_TOKEN_JWT_SECRET_KEY:smartdangjian-dev-jwt-secret-please-override}
+  # JWT 签名密钥（sa-token-jwt simple 模式）；生产环境必须显式注入 SA_TOKEN_JWT_SECRET_KEY，
+  # 否则以占位符 CHANGE_ME_IN_PROD 启动会被启动时的 fail-fast 校验拦截。
+  jwt-secret-key: ${SA_TOKEN_JWT_SECRET_KEY:CHANGE_ME_IN_PROD}
 
 app:
   content:

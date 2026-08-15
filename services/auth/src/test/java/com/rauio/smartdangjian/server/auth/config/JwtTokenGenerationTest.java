@@ -4,11 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.context.mock.SaTokenContextMockUtil;
@@ -25,6 +29,8 @@ class JwtTokenGenerationTest {
 
     private static final String TEST_SECRET_KEY = "test-jwt-secret-key-0123456789abcdef";
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @BeforeEach
     void setUp() {
         SaTokenContextMockUtil.setMockContext();
@@ -36,8 +42,8 @@ class JwtTokenGenerationTest {
     }
 
     @Test
-    @DisplayName("login 后签发三段式 JWT token，payload 可解码且含 loginId")
-    void loginIssuesJwtToken() {
+    @DisplayName("login 后签发三段式 HS256 JWT token，header 与 payload 均可解析且含 loginId")
+    void loginIssuesJwtToken() throws Exception {
         SaManager.getConfig().setJwtSecretKey(TEST_SECRET_KEY);
         StpLogic stpLogic = new StpLogicJwtForSimple();
         stpLogic.login(10001L);
@@ -46,9 +52,11 @@ class JwtTokenGenerationTest {
         String[] parts = token.split("\\.");
         assertThat(parts).hasSize(3);
 
-        String payload = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
-        assertThat(payload).contains("loginId");
-        assertThat(payload).contains("10001");
+        Map<String, Object> header = decodeJson(parts[0]);
+        assertThat(header).containsEntry("typ", "JWT").containsEntry("alg", "HS256");
+
+        Map<String, Object> payload = decodeJson(parts[1]);
+        assertThat(String.valueOf(payload.get("loginId"))).isEqualTo("10001");
     }
 
     @Test
@@ -61,5 +69,10 @@ class JwtTokenGenerationTest {
         String token = stpLogic.getTokenValue();
         Object loginId = stpLogic.getLoginIdByToken(token);
         assertThat(String.valueOf(loginId)).isEqualTo("10002");
+    }
+
+    private Map<String, Object> decodeJson(String segment) throws Exception {
+        String json = new String(Base64.getUrlDecoder().decode(segment), StandardCharsets.UTF_8);
+        return objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {});
     }
 }
