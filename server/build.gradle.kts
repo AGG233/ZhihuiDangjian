@@ -27,3 +27,9 @@ dependencies {
     testImplementation("com.h2database:h2")
     testImplementation(libs.mybatis.plus.join.starter)
 }
+
+// server 模块测试类最多（约 2300+），并行 fork 可显著缩短测试墙钟时间；
+// JaCoCo 多 fork 执行数据由 Gradle 合并，见 jacocoRootReport 验证
+tasks.withType<Test>().configureEach {
+    maxParallelForks = 2
+}
