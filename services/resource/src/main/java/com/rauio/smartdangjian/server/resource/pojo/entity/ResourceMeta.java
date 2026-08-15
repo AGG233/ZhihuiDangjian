@@ -7,11 +7,15 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("resource_meta")
 @Schema(description = "资源元数据实体，对应resource_meta表，记录文件上传后的归属、名称、哈希、对象存储键、类型和状态")
 public class ResourceMeta {

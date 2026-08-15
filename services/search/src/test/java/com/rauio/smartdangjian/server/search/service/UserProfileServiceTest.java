@@ -3,9 +3,11 @@ package com.rauio.smartdangjian.server.search.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +15,7 @@ import java.util.List;
 
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +27,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rauio.smartdangjian.server.content.comment.mapper.CommentMapper;
+import com.rauio.smartdangjian.server.content.comment.mapper.LikeRecordMapper;
+import com.rauio.smartdangjian.server.content.comment.pojo.entity.Comment;
+import com.rauio.smartdangjian.server.content.comment.pojo.entity.LikeRecord;
 import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
@@ -39,6 +47,8 @@ import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
 import com.rauio.smartdangjian.server.search.pojo.response.DynamicProfileResponse;
 import com.rauio.smartdangjian.server.search.pojo.response.LearningSummaryResponse;
 import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
+import com.rauio.smartdangjian.server.user.mapper.UserSimilarityMapper;
+import com.rauio.smartdangjian.server.user.pojo.entity.UserSimilarity;
 import com.rauio.smartdangjian.server.user.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
@@ -55,6 +65,25 @@ class UserProfileServiceTest {
         TableInfoHelper.initTableInfo(assistant, UserChapterProgress.class);
         TableInfoHelper.initTableInfo(assistant, UserQuizAnswer.class);
         TableInfoHelper.initTableInfo(assistant, Quiz.class);
+        TableInfoHelper.initTableInfo(assistant, Comment.class);
+        TableInfoHelper.initTableInfo(assistant, LikeRecord.class);
+        TableInfoHelper.initTableInfo(assistant, UserSimilarity.class);
+    }
+
+    @BeforeEach
+    void stubInteractionAndCfDefaults() {
+        // 互动统计与协同过滤的默认空数据，避免未 stub 的 mock 返回 null
+        lenient().when(commentMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(0L);
+        lenient().when(commentMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(Collections.emptyList());
+        lenient()
+                .when(likeRecordMapper.selectCount(any(LambdaQueryWrapper.class)))
+                .thenReturn(0L);
+        lenient()
+                .when(likeRecordMapper.selectList(any(LambdaQueryWrapper.class)))
+                .thenReturn(Collections.emptyList());
+        lenient()
+                .when(userSimilarityMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class)))
+                .thenReturn(new Page<>(1, 3));
     }
 
     @Mock
@@ -74,6 +103,15 @@ class UserProfileServiceTest {
 
     @Mock
     private CategoryCourseMapper categoryCourseMapper;
+
+    @Mock
+    private CommentMapper commentMapper;
+
+    @Mock
+    private LikeRecordMapper likeRecordMapper;
+
+    @Mock
+    private UserSimilarityMapper userSimilarityMapper;
 
     @Mock
     private UserService userService;
@@ -833,5 +871,129 @@ class UserProfileServiceTest {
                 .createdAt(createdAt)
                 .duration(duration)
                 .build();
+    }
+
+    // ==================== 互动表现维度（4.5） ====================
+
+    @Test
+    @DisplayName("getProfile 聚合互动维度：评论数/点赞数/活跃周数")
+    void getProfileAggregatesInteractionStats() {
+        String userId = "user-1";
+        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+
+        // 活跃周数：取本周期内评论与点赞的 createdAt
+        doReturn(List.of(Comment.builder().createdAt(LocalDateTime.now()).build()))
+                .when(commentMapper)
+                .selectList(any(LambdaQueryWrapper.class));
+        doReturn(2L).when(commentMapper).selectCount(any(LambdaQueryWrapper.class));
+        doReturn(3L).when(likeRecordMapper).selectCount(any(LambdaQueryWrapper.class));
+        doReturn(List.of(LikeRecord.builder().createdAt(LocalDateTime.now()).build()))
+                .when(likeRecordMapper)
+                .selectList(any(LambdaQueryWrapper.class));
+
+        UserProfileResponse profile = userProfileService.getProfile(userId);
+
+        assertThat(profile.getInteraction()).isNotNull();
+        assertThat(profile.getInteraction().getCommentCount()).isEqualTo(2L);
+        assertThat(profile.getInteraction().getLikeGivenCount()).isEqualTo(3L);
+        assertThat(profile.getInteraction().getActiveWeeks()).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("getLearningSummary 含互动表现维度（成长图谱三维）")
+    void learningSummaryIncludesInteractionDimension() {
+        String userId = "user-1";
+        doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(chapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(commentMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(5L).when(commentMapper).selectCount(any(LambdaQueryWrapper.class));
+        doReturn(7L).when(likeRecordMapper).selectCount(any(LambdaQueryWrapper.class));
+
+        LearningSummaryResponse summary = userProfileService.getLearningSummary(userId);
+
+        assertThat(summary.getInteraction()).isNotNull();
+        assertThat(summary.getInteraction().getCommentCount()).isEqualTo(5L);
+        assertThat(summary.getInteraction().getLikeGivenCount()).isEqualTo(7L);
+        assertThat(summary.getInteraction().getActiveWeeks()).isZero();
+    }
+
+    // ==================== 协同过滤画像强化（1.6-B） ====================
+
+    @Test
+    @DisplayName("buildDynamicProfile 融合相似用户热点：按相似度加权并入 hotTags")
+    void dynamicProfileMergesCfHotTags() {
+        String userId = "user-1";
+        // 自有热点：党章学习 ×2
+        UserLearningRecord own1 = UserLearningRecord.builder()
+                .userId(1L)
+                .chapterId(1L)
+                .duration(100)
+                .startTime(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
+                .build();
+        UserLearningRecord own2 = UserLearningRecord.builder()
+                .userId(1L)
+                .chapterId(1L)
+                .duration(100)
+                .startTime(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
+
+        Chapter c1 = Chapter.builder().id(1L).title("党章学习").build();
+        Chapter c2 = Chapter.builder().id(2L).title("党史学习").build();
+        doReturn(List.of(c1, c2)).when(chapterMapper).selectList(any(LambdaQueryWrapper.class));
+
+        // 相似用户 1001（score 0.9）：党史学习 ×2 → 热度 9×2=18；相似用户 1002（score 0.5）：党史学习 ×1 → 5
+        Page<UserSimilarity> similarityPage = new Page<>(1, 3);
+        similarityPage.setRecords(List.of(
+                UserSimilarity.builder()
+                        .userId1(1L)
+                        .userId2(1001L)
+                        .similarityScore(new BigDecimal("0.9"))
+                        .build(),
+                UserSimilarity.builder()
+                        .userId1(1L)
+                        .userId2(1002L)
+                        .similarityScore(new BigDecimal("0.5"))
+                        .build()));
+        doReturn(similarityPage).when(userSimilarityMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+
+        // 相似用户的近 30 天学习记录。buildDynamicProfile 的调用顺序：
+        // mergeHotTags(buildRecentHotTags → learningRecordMapper #1, buildCfHotTags → #2)
+        // 之后 buildGrowthTrend → #3、buildWeakDomains（不查 learningRecordMapper）
+        UserLearningRecord peer1a = UserLearningRecord.builder()
+                .userId(1001L)
+                .chapterId(2L)
+                .createdAt(LocalDateTime.now())
+                .build();
+        UserLearningRecord peer1b = UserLearningRecord.builder()
+                .userId(1001L)
+                .chapterId(2L)
+                .createdAt(LocalDateTime.now())
+                .build();
+        UserLearningRecord peer2 = UserLearningRecord.builder()
+                .userId(1002L)
+                .chapterId(2L)
+                .createdAt(LocalDateTime.now())
+                .build();
+        doReturn(List.of(own1, own2), List.of(peer1a, peer1b, peer2), List.of(own1, own2))
+                .when(learningRecordMapper)
+                .selectList(any(LambdaQueryWrapper.class));
+
+        DynamicProfileResponse profile = userProfileService.buildDynamicProfile(userId);
+
+        // 自有「党章学习」2 + 协同过滤「党史学习」(9×2+5=23) 均进入 Top3
+        assertThat(profile.getHotTags()).hasSize(2);
+        assertThat(profile.getHotTags()).anyMatch(t -> "党章学习".equals(t.getTag()) && t.getCount() == 2L);
+        assertThat(profile.getHotTags()).anyMatch(t -> "党史学习".equals(t.getTag()) && t.getCount() == 23L);
+        // 加权热点排序：党史学习(23) 应在 党章学习(2) 之前
+        assertThat(profile.getHotTags().get(0).getTag()).isEqualTo("党史学习");
     }
 }

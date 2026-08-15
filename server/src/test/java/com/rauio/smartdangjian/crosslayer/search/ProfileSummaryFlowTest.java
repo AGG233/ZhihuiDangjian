@@ -2,13 +2,16 @@ package com.rauio.smartdangjian.crosslayer.search;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +24,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.crosslayer.CrossLayerTestBase;
+import com.rauio.smartdangjian.server.content.comment.mapper.CommentMapper;
+import com.rauio.smartdangjian.server.content.comment.mapper.LikeRecordMapper;
+import com.rauio.smartdangjian.server.content.comment.pojo.entity.Comment;
+import com.rauio.smartdangjian.server.content.comment.pojo.entity.LikeRecord;
 import com.rauio.smartdangjian.server.content.mapper.CategoryCourseMapper;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.CategoryCourse;
@@ -36,7 +44,10 @@ import com.rauio.smartdangjian.server.quiz.pojo.entity.Quiz;
 import com.rauio.smartdangjian.server.quiz.pojo.entity.UserQuizAnswer;
 import com.rauio.smartdangjian.server.search.pojo.response.DynamicProfileResponse;
 import com.rauio.smartdangjian.server.search.pojo.response.LearningSummaryResponse;
+import com.rauio.smartdangjian.server.search.pojo.response.UserProfileResponse;
 import com.rauio.smartdangjian.server.search.service.UserProfileService;
+import com.rauio.smartdangjian.server.user.mapper.UserSimilarityMapper;
+import com.rauio.smartdangjian.server.user.pojo.entity.UserSimilarity;
 import com.rauio.smartdangjian.server.user.service.UserService;
 
 /**
@@ -70,10 +81,35 @@ class ProfileSummaryFlowTest extends CrossLayerTestBase {
     private CategoryCourseMapper categoryCourseMapper;
 
     @MockitoBean
+    private CommentMapper commentMapper;
+
+    @MockitoBean
+    private LikeRecordMapper likeRecordMapper;
+
+    @MockitoBean
+    private UserSimilarityMapper userSimilarityMapper;
+
+    @MockitoBean
     private UserService userService;
 
     @Autowired
     private UserProfileService userProfileService;
+
+    @BeforeEach
+    void stubInteractionAndCfDefaults() {
+        // 互动统计与协同过滤的默认空数据，避免未 stub 的 mock 返回 null
+        lenient().when(commentMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(0L);
+        lenient().when(commentMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(Collections.emptyList());
+        lenient()
+                .when(likeRecordMapper.selectCount(any(LambdaQueryWrapper.class)))
+                .thenReturn(0L);
+        lenient()
+                .when(likeRecordMapper.selectList(any(LambdaQueryWrapper.class)))
+                .thenReturn(Collections.emptyList());
+        lenient()
+                .when(userSimilarityMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class)))
+                .thenReturn(new Page<>(1, 3));
+    }
 
     @BeforeAll
     static void initMybatisPlus() {
@@ -85,6 +121,9 @@ class ProfileSummaryFlowTest extends CrossLayerTestBase {
         TableInfoHelper.initTableInfo(assistant, Quiz.class);
         TableInfoHelper.initTableInfo(assistant, Chapter.class);
         TableInfoHelper.initTableInfo(assistant, CategoryCourse.class);
+        TableInfoHelper.initTableInfo(assistant, Comment.class);
+        TableInfoHelper.initTableInfo(assistant, LikeRecord.class);
+        TableInfoHelper.initTableInfo(assistant, UserSimilarity.class);
     }
 
     @SpringBootConfiguration
@@ -98,6 +137,9 @@ class ProfileSummaryFlowTest extends CrossLayerTestBase {
                 QuizMapper quizMapper,
                 ChapterMapper chapterMapper,
                 CategoryCourseMapper categoryCourseMapper,
+                CommentMapper commentMapper,
+                LikeRecordMapper likeRecordMapper,
+                UserSimilarityMapper userSimilarityMapper,
                 UserService userService) {
             return new UserProfileService(
                     learningRecordMapper,
@@ -106,6 +148,9 @@ class ProfileSummaryFlowTest extends CrossLayerTestBase {
                     quizMapper,
                     chapterMapper,
                     categoryCourseMapper,
+                    commentMapper,
+                    likeRecordMapper,
+                    userSimilarityMapper,
                     userService);
         }
     }
@@ -269,5 +314,31 @@ class ProfileSummaryFlowTest extends CrossLayerTestBase {
         assertThat(profile.getGrowthTrend().get(7).getStudyDuration()).isZero();
         assertThat(profile.getGrowthTrend().get(7).getQuizAccuracy()).isZero();
         assertThat(profile.getWeakDomains()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("评论+点赞数据：画像互动维度聚合正确（4.5）")
+    void interactionDimensionAggregatesCorrectly() {
+        when(commentMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(2L);
+        when(likeRecordMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(3L);
+        // 活跃周数：取本周期内评论与点赞的 createdAt
+        when(commentMapper.selectList(any(LambdaQueryWrapper.class)))
+                .thenReturn(
+                        List.of(Comment.builder().createdAt(LocalDateTime.now()).build()));
+        when(likeRecordMapper.selectList(any(LambdaQueryWrapper.class)))
+                .thenReturn(List.of(
+                        LikeRecord.builder().createdAt(LocalDateTime.now()).build()));
+
+        when(learningRecordMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(Collections.emptyList());
+        when(chapterProgressMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(Collections.emptyList());
+        when(chapterProgressMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(0L);
+        when(quizAnswerMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(Collections.emptyList());
+
+        UserProfileResponse profile = userProfileService.getProfile("1");
+
+        assertThat(profile.getInteraction()).isNotNull();
+        assertThat(profile.getInteraction().getCommentCount()).isEqualTo(2L);
+        assertThat(profile.getInteraction().getLikeGivenCount()).isEqualTo(3L);
+        assertThat(profile.getInteraction().getActiveWeeks()).isEqualTo(1L);
     }
 }

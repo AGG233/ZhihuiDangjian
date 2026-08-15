@@ -8,6 +8,10 @@ import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rauio.smartdangjian.config.RedisConfig;
+
 @DisplayName("UserProfileResponse 用户画像视图对象")
 class UserProfileResponseTest {
 
@@ -89,5 +93,51 @@ class UserProfileResponseTest {
         assertThat(stats.getCorrectRate()).isZero();
         assertThat(stats.getAvgTimeSpent()).isZero();
         assertThat(stats.getByDifficulty()).isNull();
+    }
+
+    @Test
+    @DisplayName("InteractionStats 构建与默认值（互动表现维度）")
+    void interactionStatsBuildAndDefaults() {
+        UserProfileResponse.InteractionStats stats = UserProfileResponse.InteractionStats.builder()
+                .commentCount(5)
+                .likeGivenCount(8)
+                .activeWeeks(3)
+                .build();
+
+        assertThat(stats.getCommentCount()).isEqualTo(5L);
+        assertThat(stats.getLikeGivenCount()).isEqualTo(8L);
+        assertThat(stats.getActiveWeeks()).isEqualTo(3L);
+
+        UserProfileResponse.InteractionStats empty =
+                UserProfileResponse.InteractionStats.builder().build();
+        assertThat(empty.getCommentCount()).isZero();
+        assertThat(empty.getActiveWeeks()).isZero();
+    }
+
+    @Test
+    @DisplayName("序列化 round-trip：含非空 InteractionStats 的画像经缓存序列化后类型与字段保留")
+    void interactionStatsSerializationRoundTrip() throws JsonProcessingException {
+        UserProfileResponse.InteractionStats interaction = UserProfileResponse.InteractionStats.builder()
+                .commentCount(5L)
+                .likeGivenCount(8L)
+                .activeWeeks(3L)
+                .build();
+
+        UserProfileResponse profile = UserProfileResponse.builder()
+                .userId("1")
+                .interaction(interaction)
+                .build();
+
+        ObjectMapper mapper = RedisConfig.createCacheObjectMapper();
+        String json = mapper.writeValueAsString(profile);
+        UserProfileResponse restored = mapper.readValue(json, UserProfileResponse.class);
+
+        assertThat(restored).isNotNull();
+        assertThat(restored.getInteraction()).isNotNull();
+        assertThat(restored.getInteraction()).isInstanceOf(UserProfileResponse.InteractionStats.class);
+        assertThat(restored.getInteraction().getCommentCount()).isEqualTo(5L);
+        assertThat(restored.getInteraction().getLikeGivenCount()).isEqualTo(8L);
+        assertThat(restored.getInteraction().getActiveWeeks()).isEqualTo(3L);
+        assertThat(restored.getInteraction()).isEqualTo(interaction);
     }
 }

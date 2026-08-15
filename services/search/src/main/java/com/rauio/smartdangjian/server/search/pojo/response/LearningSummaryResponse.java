@@ -15,6 +15,23 @@ public class LearningSummaryResponse {
     @Schema(description = "政策理解维度：章节测试平均正确率")
     private PolicyDimension policyComprehension;
 
+    @Schema(description = "互动表现维度：评论、点赞与活跃度")
+    private InteractionDimension interaction;
+
+    @Data
+    @Builder
+    @Schema(description = "互动表现维度")
+    public static class InteractionDimension {
+        @Schema(description = "评论数", example = "5")
+        private long commentCount;
+
+        @Schema(description = "点赞数（本人点赞数）", example = "8")
+        private long likeGivenCount;
+
+        @Schema(description = "近8周有互动行为的周数", example = "3")
+        private long activeWeeks;
+    }
+
     @Data
     @Builder
     @Schema(description = "理论维度")

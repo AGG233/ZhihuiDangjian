@@ -4,11 +4,15 @@ import java.util.List;
 import java.util.Map;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Schema(description = "用户画像视图对象")
 public class UserProfileResponse {
 
@@ -27,8 +31,29 @@ public class UserProfileResponse {
     @Schema(description = "答题统计信息")
     private QuizStats quiz;
 
+    @Schema(description = "互动表现统计信息（评论/点赞/活跃度）")
+    private InteractionStats interaction;
+
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "互动表现统计")
+    public static class InteractionStats {
+        @Schema(description = "评论数", example = "5")
+        private long commentCount;
+
+        @Schema(description = "点赞数（本人点赞数）", example = "8")
+        private long likeGivenCount;
+
+        @Schema(description = "近8周有互动行为的周数", example = "3")
+        private long activeWeeks;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Schema(description = "学习统计")
     public static class LearningStats {
         @Schema(description = "学习总时长（秒）", example = "3600")
@@ -49,6 +74,8 @@ public class UserProfileResponse {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Schema(description = "知识统计")
     public static class KnowledgeStats {
         @Schema(description = "平均学习进度", example = "76.5")
@@ -63,6 +90,8 @@ public class UserProfileResponse {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Schema(description = "答题统计")
     public static class QuizStats {
         @Schema(description = "总答题数", example = "50")
