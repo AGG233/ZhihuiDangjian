@@ -1,7 +1,7 @@
 package com.rauio.smartdangjian.server.content.constants;
 
 /**
- * 文章模块错误码常量（范围 9000-9099）
+ * 文章模块错误码常量（范围 3400-3499）
  */
 public class ArticleErrorConstants {
 

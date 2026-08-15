@@ -4,10 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
 import java.util.Set;
 import java.util.UUID;
 
@@ -18,7 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
@@ -39,7 +39,7 @@ class ResourceMetaCacheCrossLayerTest extends CrossLayerTestBase {
     @Autowired
     private ResourceMetaService resourceMetaService;
 
-    @Autowired
+    @MockitoBean
     private ResourceMetaMapper resourceMetaMapper;
 
     @Autowired
@@ -49,38 +49,8 @@ class ResourceMetaCacheCrossLayerTest extends CrossLayerTestBase {
             "hash-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
 
     @SpringBootConfiguration
+    @Import(ResourceMetaService.class)
     static class TestConfig extends CrossLayerTestConfig {
-
-        @Bean
-        ResourceMetaMapper resourceMetaMapper() {
-            return mock(ResourceMetaMapper.class);
-        }
-
-        @Bean
-        @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
-        ResourceMetaService resourceMetaService(ResourceMetaMapper resourceMetaMapper) {
-            ResourceMetaService service = new ResourceMetaService();
-            try {
-                Field field = findBaseMapperField(ResourceMetaService.class);
-                field.setAccessible(true);
-                field.set(service, resourceMetaMapper);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to set baseMapper on ResourceMetaService", e);
-            }
-            return service;
-        }
-
-        private static Field findBaseMapperField(Class<?> clazz) throws NoSuchFieldException {
-            Class<?> current = clazz;
-            while (current != null) {
-                try {
-                    return current.getDeclaredField("baseMapper");
-                } catch (NoSuchFieldException e) {
-                    current = current.getSuperclass();
-                }
-            }
-            throw new NoSuchFieldException("baseMapper");
-        }
 
         @Bean
         AbstractPlatformTransactionManager transactionManager() {

@@ -22,7 +22,6 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import com.rauio.smartdangjian.server.auth.pojo.Captcha;
 
@@ -78,19 +77,20 @@ class CaptchaServiceTest {
     }
 
     @Test
-    @DisplayName("validate testCode 配置不为空且匹配时直接返回 true")
+    @DisplayName("validate testCode 配置不为空且匹配时返回 true 并消费验证码")
     void validateReturnsTrueWhenTestCodeMatches() {
-        ReflectionTestUtils.setField(captchaService, "testCode", "9999");
+        captchaService.setTestCode("9999");
 
         Boolean result = captchaService.validate("any-uuid", "9999");
 
         assertThat(result).isTrue();
+        verify(redisTemplate).delete("captcha:any-uuid");
     }
 
     @Test
     @DisplayName("validate testCode 配置不为空但不匹配时继续校验 Redis 并消费")
     void validateFallsThroughToRedisWhenTestCodeMismatches() {
-        ReflectionTestUtils.setField(captchaService, "testCode", "9999");
+        captchaService.setTestCode("9999");
         when(valueOps.get(eq("captcha:uuid-1"))).thenReturn("1234");
 
         Boolean result = captchaService.validate("uuid-1", "1234");
@@ -135,7 +135,7 @@ class CaptchaServiceTest {
     @Test
     @DisplayName("validate testCode is blank non-null falls through to Redis")
     void validateBlankTestCodeFallsThroughToRedis() {
-        ReflectionTestUtils.setField(captchaService, "testCode", "");
+        captchaService.setTestCode("");
         when(valueOps.get(eq("captcha:uuid-1"))).thenReturn("1234");
 
         Boolean result = captchaService.validate("uuid-1", "1234");

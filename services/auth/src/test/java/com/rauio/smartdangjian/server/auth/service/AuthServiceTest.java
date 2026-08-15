@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
@@ -20,8 +21,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
@@ -44,7 +43,6 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.crypto.digest.BCrypt;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class AuthServiceTest {
 
     @Mock
@@ -68,8 +66,8 @@ class AuthServiceTest {
     @SuppressWarnings("unchecked")
     void setUp() {
         valueOps = mock(ValueOperations.class);
-        when(redisTemplate.opsForValue()).thenReturn(valueOps);
-        when(valueOps.get(anyString())).thenReturn(null);
+        lenient().when(redisTemplate.opsForValue()).thenReturn(valueOps);
+        lenient().when(valueOps.get(anyString())).thenReturn(null);
     }
 
     // ================================================================
@@ -428,6 +426,24 @@ class AuthServiceTest {
     }
 
     @Test
+    @DisplayName("register 插入用户失败时抛出 BusinessException(REGISTER_FAILED)")
+    void registerThrowsWhenInsertFails() {
+        RegisterRequest request = createRegisterRequest();
+        when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
+        when(userMapper.exists(any())).thenReturn(false, false, false, false);
+        when(userMapper.insert(any(User.class))).thenReturn(0);
+
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.hashpw(anyString())).thenReturn(newEncodedPassword());
+
+            assertThatThrownBy(() -> authService.register(request))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("code")
+                    .isEqualTo(AuthErrorConstants.REGISTER_FAILED);
+        }
+    }
+
+    @Test
     @DisplayName("register email 为 null 时跳过邮箱校验")
     void registerSkipsEmailCheckWhenEmailIsNull() {
         RegisterRequest request = createRegisterRequest();
@@ -534,7 +550,7 @@ class AuthServiceTest {
         ChangePasswordRequest request = createChangePasswordRequest();
         User user = createUser(1L, "testuser");
         user.setPassword(newEncodedPassword());
-        org.mockito.Mockito.doThrow(new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "密码修改失败"))
+        org.mockito.Mockito.doThrow(new BusinessException(UserErrorConstants.PASSWORD_CHANGE_ERROR, "密码修改失败"))
                 .when(userService)
                 .updatePassword(1L, request.getNewPassword());
 
@@ -549,7 +565,7 @@ class AuthServiceTest {
             assertThatThrownBy(() -> authService.changePassword(request))
                     .isInstanceOf(BusinessException.class)
                     .extracting("code")
-                    .isEqualTo(UserErrorConstants.USER_NOT_EXISTS);
+                    .isEqualTo(UserErrorConstants.PASSWORD_CHANGE_ERROR);
         }
     }
 

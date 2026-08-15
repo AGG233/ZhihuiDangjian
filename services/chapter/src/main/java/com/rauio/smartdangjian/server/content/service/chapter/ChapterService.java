@@ -12,6 +12,7 @@ import com.rauio.smartdangjian.server.content.constants.ChapterErrorConstants;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterContentBlockConvertor;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterConvertor;
+import com.rauio.smartdangjian.server.content.pojo.dto.ContentBlockDto;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
 import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
@@ -48,9 +49,8 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
      * 创建章节及其内容块。
      *
      * @param dto 创建的新章节
-     * @return 创建结果
      */
-    public Boolean create(ChapterRequest dto) {
+    public void create(ChapterRequest dto) {
         if (this.getOne(new LambdaQueryWrapper<Chapter>()
                         .eq(Chapter::getCourseId, dto.getCourseId())
                         .eq(Chapter::getTitle, dto.getTitle()))
@@ -65,15 +65,16 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
         }
 
         if (dto.getContent() != null && !dto.getContent().isEmpty()) {
-            dto.getContent().forEach(blockDto -> {
+            for (ContentBlockDto blockDto : dto.getContent()) {
                 ChapterContentBlock block = chapterContentBlockConvertor.toEntity(blockDto);
                 block.setChapterId(chapter.getId());
-                chapterContentService.create(block);
-            });
+                if (!chapterContentService.create(block)) {
+                    throw new BusinessException(ChapterErrorConstants.CHAPTER_CREATE_FAILED, "章节内容块创建失败");
+                }
+            }
         } else {
             throw new BusinessException(ChapterErrorConstants.CHAPTER_MIN_REQUIRED, "课程至少需要一个章节");
         }
-        return true;
     }
 
     /**
@@ -90,6 +91,8 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
 
         Chapter entity = chapterConvertor.toEntity(dto);
         entity.setId(chapterId);
+        // 不依赖 updateById 返回值判断失败：MyBatis-Plus 在字段无变化时可能返回 false（影响行数 0），
+        // 但并非真实失败；存在性已在上方校验，真正的 SQL 异常会抛出并由全局异常处理。
         this.updateById(entity);
     }
 
@@ -114,6 +117,8 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
         if (existing == null) {
             throw new BusinessException(ChapterErrorConstants.CHAPTER_NOT_FOUND, "章节不存在");
         }
+        // 与 update 同理：removeById 返回 false 多为影响行数 0（如并发已删除），不视为失败；
+        // 真正的 SQL 异常会抛出并由全局异常处理。
         this.removeById(chapterId);
     }
 }

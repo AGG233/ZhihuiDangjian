@@ -26,6 +26,15 @@ public class CaptchaService {
     private String testCode;
 
     /**
+     * 供测试动态切换测试验证码；生产环境通过配置注入，不主动调用。
+     *
+     * @param testCode 测试验证码，传 null 可关闭测试码短路
+     */
+    public void setTestCode(String testCode) {
+        this.testCode = testCode;
+    }
+
+    /**
      * 生成对外展示用验证码信息。
      *
      * @return 不包含明文验证码的验证码对象
@@ -66,6 +75,10 @@ public class CaptchaService {
      */
     public Boolean validate(String uuid, String code) {
         if (testCode != null && !testCode.isBlank() && testCode.equals(code)) {
+            // 测试码也遵循一次性消费，避免同一 uuid 被重放（uuid 为空时无需删除）
+            if (uuid != null) {
+                redisTemplate.delete("captcha:" + uuid);
+            }
             return true;
         }
         if (uuid == null || code == null) {

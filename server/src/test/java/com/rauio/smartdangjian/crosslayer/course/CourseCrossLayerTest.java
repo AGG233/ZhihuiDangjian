@@ -3,13 +3,10 @@ package com.rauio.smartdangjian.crosslayer.course;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.lang.reflect.Field;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
@@ -49,71 +47,27 @@ class CourseCrossLayerTest extends CrossLayerTestBase {
     @Autowired
     private CourseService courseService;
 
-    @Autowired
+    @MockitoBean
     private CourseMapper courseMapper;
 
     @MockitoBean
     private UserService userService;
 
-    @Autowired
+    @MockitoBean
     private CourseConvertor courseConvertor;
 
-    @Autowired
+    @MockitoBean
     private CategoryCourseMapper categoryCourseMapper;
 
     @BeforeEach
     void resetMocks() {
-        // @Bean 手动注册的 mock 不会自动重置，跨用例隔离
+        // @MockitoBean 手动 mock 不会自动重置，跨用例隔离
         reset(courseMapper, courseConvertor, categoryCourseMapper);
     }
 
     @SpringBootConfiguration
+    @Import(CourseService.class)
     static class TestConfig extends CrossLayerTestConfig {
-
-        @Bean
-        CourseMapper courseMapper() {
-            return mock(CourseMapper.class);
-        }
-
-        @Bean
-        CourseConvertor courseConvertor() {
-            return mock(CourseConvertor.class);
-        }
-
-        @Bean
-        CategoryCourseMapper categoryCourseMapper() {
-            return mock(CategoryCourseMapper.class);
-        }
-
-        @Bean
-        @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
-        CourseService courseService(
-                UserService userService,
-                CourseConvertor convertor,
-                CategoryCourseMapper categoryCourseMapper,
-                CourseMapper courseMapper) {
-            CourseService service = new CourseService(userService, convertor, categoryCourseMapper);
-            try {
-                Field field = findBaseMapperField(service.getClass());
-                field.setAccessible(true);
-                field.set(service, courseMapper);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to set baseMapper on CourseService", e);
-            }
-            return service;
-        }
-
-        private static Field findBaseMapperField(Class<?> clazz) throws NoSuchFieldException {
-            Class<?> current = clazz;
-            while (current != null) {
-                try {
-                    return current.getDeclaredField("baseMapper");
-                } catch (NoSuchFieldException e) {
-                    current = current.getSuperclass();
-                }
-            }
-            throw new NoSuchFieldException("baseMapper");
-        }
 
         @Bean
         AbstractPlatformTransactionManager transactionManager() {

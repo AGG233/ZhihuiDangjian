@@ -25,4 +25,5 @@ public class AuthErrorConstants {
     public static final int LOGIN_FAILED = 1016;
     public static final int ACCOUNT_LOCKED = 1017;
     public static final int REGISTER_TYPE_FORBIDDEN = 1018;
+    public static final int REGISTER_FAILED = 1019;
 }

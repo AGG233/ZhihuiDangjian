@@ -4,12 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
 import java.util.Set;
 import java.util.UUID;
 
@@ -20,8 +18,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.rauio.smartdangjian.crosslayer.CrossLayerTestBase;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
@@ -39,8 +38,11 @@ class UserCacheEvictionCrossLayerTest extends CrossLayerTestBase {
     @Autowired
     private UserService userService;
 
-    @Autowired
+    @MockitoBean
     private UserMapper userMapper;
+
+    @MockitoBean
+    private UserConvertor userConvertor;
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -48,44 +50,8 @@ class UserCacheEvictionCrossLayerTest extends CrossLayerTestBase {
     private String uniquePassport;
 
     @SpringBootConfiguration
-    static class TestConfig extends CrossLayerTestConfig {
-
-        @Bean
-        UserMapper userMapper() {
-            return mock(UserMapper.class);
-        }
-
-        @Bean
-        UserConvertor userConvertor() {
-            return mock(UserConvertor.class);
-        }
-
-        @Bean
-        @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
-        UserService userService(UserConvertor convertor, UserMapper userMapper) {
-            UserService service = new UserService(convertor);
-            try {
-                Field field = findBaseMapperField(UserService.class);
-                field.setAccessible(true);
-                field.set(service, userMapper);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to set baseMapper on UserService", e);
-            }
-            return service;
-        }
-
-        private static Field findBaseMapperField(Class<?> clazz) throws NoSuchFieldException {
-            Class<?> current = clazz;
-            while (current != null) {
-                try {
-                    return current.getDeclaredField("baseMapper");
-                } catch (NoSuchFieldException e) {
-                    current = current.getSuperclass();
-                }
-            }
-            throw new NoSuchFieldException("baseMapper");
-        }
-    }
+    @Import(UserService.class)
+    static class TestConfig extends CrossLayerTestConfig {}
 
     @BeforeEach
     void setUpUniqueKey() {

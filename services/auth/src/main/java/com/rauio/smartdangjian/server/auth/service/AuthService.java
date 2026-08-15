@@ -124,7 +124,9 @@ public class AuthService {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        userMapper.insert(user);
+        if (userMapper.insert(user) <= 0) {
+            throw new BusinessException(AuthErrorConstants.REGISTER_FAILED, "注册失败");
+        }
     }
 
     public void changePassword(ChangePasswordRequest request) {
@@ -154,10 +156,8 @@ public class AuthService {
      */
     private void recordLoginFail(String lockKey) {
         Long count = redisTemplate.opsForValue().increment(lockKey);
-        if (count != null && count == 1L) {
-            redisTemplate.expire(lockKey, LOCK_DURATION);
-        }
-        if (count != null && count >= MAX_LOGIN_FAILS) {
+        // 每次失败都刷新锁定窗口，避免攻击者分散失败时间绕过锁定
+        if (count != null) {
             redisTemplate.expire(lockKey, LOCK_DURATION);
         }
     }

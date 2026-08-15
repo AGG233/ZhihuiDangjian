@@ -86,16 +86,15 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
     @CacheEvict(value = "resourceMeta", allEntries = true)
     public void update(Long id, ResourceMetaUpdateRequest request) {
         ResourceMeta existing = this.get(id);
-        validateDuplicate(id, existing.getHash(), existing.getObjectKey());
+        String targetObjectKey =
+                StringUtils.isNotBlank(request.getObjectKey()) ? request.getObjectKey() : existing.getObjectKey();
+        validateDuplicate(id, existing.getHash(), targetObjectKey);
 
         ResourceMeta meta = ResourceMeta.builder()
                 .id(id)
                 .uploaderId(existing.getUploaderId())
                 .hash(existing.getHash())
-                .objectKey(
-                        StringUtils.isNotBlank(request.getObjectKey())
-                                ? request.getObjectKey()
-                                : existing.getObjectKey())
+                .objectKey(targetObjectKey)
                 .originalName(
                         StringUtils.isNotBlank(request.getOriginalName())
                                 ? request.getOriginalName()
@@ -170,15 +169,17 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
     private void validateDuplicate(Long currentId, String hash, String objectKey) {
         ResourceMeta sameHash = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
                 .eq(StringUtils.isNotBlank(hash), ResourceMeta::getHash, hash)
+                .ne(currentId != null, ResourceMeta::getId, currentId)
                 .last("limit 1"));
-        if (sameHash != null && !sameHash.getId().equals(currentId)) {
+        if (sameHash != null) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_HASH_EXISTS, "资源哈希已存在");
         }
 
         ResourceMeta sameObjectKey = this.getOne(new LambdaQueryWrapper<ResourceMeta>()
                 .eq(StringUtils.isNotBlank(objectKey), ResourceMeta::getObjectKey, objectKey)
+                .ne(currentId != null, ResourceMeta::getId, currentId)
                 .last("limit 1"));
-        if (sameObjectKey != null && !sameObjectKey.getId().equals(currentId)) {
+        if (sameObjectKey != null) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_OBJECT_KEY_EXISTS, "对象存储键已存在");
         }
     }
