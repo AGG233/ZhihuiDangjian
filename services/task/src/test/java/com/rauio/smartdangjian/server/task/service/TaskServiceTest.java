@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
@@ -159,6 +160,21 @@ class TaskServiceTest {
                 .satisfies(e -> assertThat(((BusinessException) e).getCode())
                         .isEqualTo(TaskErrorConstants.TASK_ALREADY_ACCEPTED));
         verify(taskAcceptanceMapper, never()).insert(any(TaskAcceptance.class));
+    }
+
+    @Test
+    @DisplayName("领取任务：并发冲突（唯一约束）时抛 TASK_ALREADY_ACCEPTED")
+    void acceptDuplicateKeyThrows() {
+        when(taskMapper.selectById(TASK_ID)).thenReturn(publishedTask());
+        when(taskAcceptanceMapper.selectCount(any())).thenReturn(0L);
+        doThrow(new org.springframework.dao.DuplicateKeyException("uk_task_acceptance_task_user"))
+                .when(taskAcceptanceMapper)
+                .insert(any(TaskAcceptance.class));
+
+        assertThatThrownBy(() -> taskService.accept(TASK_ID))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(TaskErrorConstants.TASK_ALREADY_ACCEPTED));
     }
 
     @Test

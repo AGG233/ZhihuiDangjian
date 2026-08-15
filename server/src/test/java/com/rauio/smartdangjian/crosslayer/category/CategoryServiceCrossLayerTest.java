@@ -3,6 +3,7 @@ package com.rauio.smartdangjian.crosslayer.category;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -21,6 +22,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.crosslayer.CrossLayerTestBase;
 import com.rauio.smartdangjian.exception.BusinessException;
@@ -156,6 +158,7 @@ class CategoryServiceCrossLayerTest extends CrossLayerTestBase {
     void getShouldReturnCategoryResponse() {
         Category category = createCategory(1L, "root", 0, null, null);
         when(categoryMapper.selectById(1L)).thenReturn(category);
+        when(categoryMapper.selectList(nullable(Wrapper.class))).thenReturn(Collections.emptyList());
         CategoryResponse response = createResponse(1L, "root");
         response.setChildren(Collections.emptyList());
         when(categoryConvertor.toResponse(category)).thenReturn(response);
@@ -164,6 +167,29 @@ class CategoryServiceCrossLayerTest extends CrossLayerTestBase {
 
         assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getName()).isEqualTo("root");
+    }
+
+    @Test
+    @DisplayName("get should assemble full subtree from parentId relations in one query")
+    void getShouldAssembleCompleteSubtree() {
+        Category root = createCategory(1L, "root", 0, null, "123");
+        Category child = createCategory(2L, "child", 1, 1L, "123");
+        Category grandchild = createCategory(3L, "grand", 2, 2L, "123");
+        when(categoryMapper.selectById(1L)).thenReturn(root);
+        when(categoryMapper.selectList(nullable(Wrapper.class))).thenReturn(List.of(child, grandchild));
+
+        CategoryResponse rootResp = createResponse(1L, "root");
+        CategoryResponse childResp = createResponse(2L, "child");
+        CategoryResponse grandResp = createResponse(3L, "grand");
+        when(categoryConvertor.toResponse(root)).thenReturn(rootResp);
+        when(categoryConvertor.toResponse(child)).thenReturn(childResp);
+        when(categoryConvertor.toResponse(grandchild)).thenReturn(grandResp);
+
+        CategoryResponse result = categoryService.get(1L);
+
+        assertThat(result.getChildren()).hasSize(1);
+        assertThat(result.getChildren().get(0).getChildren()).hasSize(1);
+        assertThat(result.getChildren().get(0).getChildren().get(0).getName()).isEqualTo("grand");
     }
 
     // ==================== create ====================

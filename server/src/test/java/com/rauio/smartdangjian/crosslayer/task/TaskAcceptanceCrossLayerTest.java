@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -308,6 +309,24 @@ class TaskAcceptanceCrossLayerTest extends CrossLayerTestBase {
                 .satisfies(e -> assertThat(((BusinessException) e).getCode())
                         .isEqualTo(TaskErrorConstants.TASK_ALREADY_ACCEPTED));
         verify(taskAcceptanceMapper, never()).insert(any(TaskAcceptance.class));
+    }
+
+    @Test
+    @DisplayName("学生并发领取冲突：insert 唯一约束冲突抛 9002（竞态兜底）")
+    void studentConcurrentAcceptConflictThrows() {
+        setStudentContext(STUDENT_ID, "uni1");
+        when(taskMapper.selectById(TASK_ID))
+                .thenReturn(
+                        Task.builder().id(TASK_ID).status(TaskStatus.PUBLISHED).build());
+        when(taskAcceptanceMapper.selectCount(any())).thenReturn(0L);
+        doThrow(new org.springframework.dao.DuplicateKeyException("uk_task_acceptance_task_user"))
+                .when(taskAcceptanceMapper)
+                .insert(any(TaskAcceptance.class));
+
+        assertThatThrownBy(() -> taskService.accept(TASK_ID))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(e -> assertThat(((BusinessException) e).getCode())
+                        .isEqualTo(TaskErrorConstants.TASK_ALREADY_ACCEPTED));
     }
 
     @Test

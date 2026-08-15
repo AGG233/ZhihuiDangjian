@@ -82,8 +82,9 @@ public class ChapterContentBlockService extends ServiceImpl<ChapterContentBlockM
      * @return 该章节的所有内容块
      */
     public List<ContentBlockResponse> getByChapterId(Long chapterId) {
-        return convertor.toResponseList(
-                this.list(new LambdaQueryWrapper<ChapterContentBlock>().eq(ChapterContentBlock::getChapterId, chapterId)));
+        return convertor.toResponseList(this.list(new LambdaQueryWrapper<ChapterContentBlock>()
+                .eq(ChapterContentBlock::getChapterId, chapterId)
+                .orderByAsc(ChapterContentBlock::getOrderIndex)));
     }
 
     /**
@@ -93,7 +94,6 @@ public class ChapterContentBlockService extends ServiceImpl<ChapterContentBlockM
      * @return 所有内容块
      */
     public List<ContentBlockResponse> getByResourceIds(List<Long> ids) {
-        return convertor.toResponseList(
-                ids.stream().map(this::getById).collect(Collectors.toList()));
+        return convertor.toResponseList(ids.stream().map(this::getById).collect(Collectors.toList()));
     }
 }

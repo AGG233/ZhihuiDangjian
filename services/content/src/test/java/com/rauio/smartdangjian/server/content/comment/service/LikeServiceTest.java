@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -77,6 +78,25 @@ class LikeServiceTest {
         assertThat(captor.getValue().getUserId()).isEqualTo(100L);
         assertThat(captor.getValue().getTargetType()).isEqualTo("course");
         assertThat(captor.getValue().getTargetId()).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("toggle 并发冲突：唯一约束冲突时回退为取消，返回未赞")
+    void toggleDuplicateKeyFallsBackToUnlike() {
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("100");
+        doReturn(1L).when(interactionTargetMapper).countCourseById(1L);
+        doReturn(null).when(likeService).getOne(any(LambdaQueryWrapper.class));
+        doThrow(new org.springframework.dao.DuplicateKeyException("uk_like_user_target"))
+                .when(likeService)
+                .save(any(LikeRecord.class));
+        doReturn(true).when(likeService).remove(any(LambdaQueryWrapper.class));
+        doReturn(0L).when(likeService).count(any(LambdaQueryWrapper.class));
+
+        LikeStatusResponse result = likeService.toggle("course", 1L);
+
+        assertThat(result.getLiked()).isFalse();
+        assertThat(result.getCount()).isZero();
+        verify(likeService).remove(any(LambdaQueryWrapper.class));
     }
 
     @Test

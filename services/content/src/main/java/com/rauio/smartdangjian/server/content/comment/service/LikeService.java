@@ -57,10 +57,19 @@ public class LikeService extends ServiceImpl<LikeRecordMapper, LikeRecord> {
                     .targetType(targetType)
                     .targetId(targetId)
                     .build();
-            if (!this.save(record)) {
-                throw new BusinessException(LIKE_TOGGLE_FAILED, "点赞失败");
+            try {
+                if (!this.save(record)) {
+                    throw new BusinessException(LIKE_TOGGLE_FAILED, "点赞失败");
+                }
+                liked = true;
+            } catch (org.springframework.dao.DuplicateKeyException e) {
+                // 并发双击：唯一约束 uk_like_user_target 冲突视为已点赞，回退为取消
+                this.remove(new LambdaQueryWrapper<LikeRecord>()
+                        .eq(LikeRecord::getUserId, userId)
+                        .eq(LikeRecord::getTargetType, targetType)
+                        .eq(LikeRecord::getTargetId, targetId));
+                liked = false;
             }
-            liked = true;
         }
         long count = countByTarget(targetType, targetId);
         return LikeStatusResponse.builder().liked(liked).count(count).build();

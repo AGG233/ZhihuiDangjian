@@ -1,7 +1,11 @@
 package com.rauio.smartdangjian.server.content.controller.admin;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
@@ -14,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
 import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
@@ -59,11 +64,8 @@ class AdminChapterControllerTest {
     @Test
     @DisplayName("get 返回的 Result 包含成功状态码")
     void getShouldReturnSuccessResult() {
-        ChapterResponse vo = ChapterResponse.builder()
-                .id(1L)
-                .courseId(1L)
-                .title("第一章")
-                .build();
+        ChapterResponse vo =
+                ChapterResponse.builder().id(1L).courseId(1L).title("第一章").build();
         when(chapterService.get(1L)).thenReturn(vo);
 
         Result<ChapterResponse> result = controller.get(1L);
@@ -161,31 +163,30 @@ class AdminChapterControllerTest {
     // ================================================================
 
     @Test
-    @DisplayName("update 更新章节成功时返回 true")
-    void updateShouldReturnTrue() {
+    @DisplayName("update 更新章节成功时返回空 Result")
+    void updateShouldReturnSuccess() {
         ChapterRequest dto =
                 ChapterRequest.builder().title("更新章节").description("更新描述").build();
-        when(chapterService.update(any(ChapterRequest.class))).thenReturn(true);
+        doNothing().when(chapterService).update(dto, 1L);
 
-        Result<Boolean> result = controller.update(dto);
+        Result<Void> result = controller.update(1L, dto);
 
         assertThat(result).isNotNull();
-        assertThat(result.getData()).isTrue();
+        assertThat(result.getData()).isNull();
         assertThat(result.getCode()).isEqualTo("200");
+        verify(chapterService).update(dto, 1L);
     }
 
     @Test
-    @DisplayName("update 更新章节失败时返回 false")
-    void updateShouldReturnFalseWhenServiceFails() {
+    @DisplayName("update 章节不存在时抛出 BusinessException")
+    void updateShouldThrowWhenServiceThrows() {
         ChapterRequest dto =
                 ChapterRequest.builder().title("失败更新").description("描述").build();
-        when(chapterService.update(any(ChapterRequest.class))).thenReturn(false);
+        doThrow(new BusinessException(3101, "章节不存在")).when(chapterService).update(dto, 999L);
 
-        Result<Boolean> result = controller.update(dto);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getData()).isFalse();
-        assertThat(result.getCode()).isEqualTo("200");
+        assertThatThrownBy(() -> controller.update(999L, dto))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("章节不存在");
     }
 
     // ================================================================
@@ -193,26 +194,25 @@ class AdminChapterControllerTest {
     // ================================================================
 
     @Test
-    @DisplayName("delete 删除章节成功时返回 true")
-    void deleteShouldReturnTrue() {
-        when(chapterService.delete(1L)).thenReturn(true);
+    @DisplayName("delete 删除章节成功时返回空 Result")
+    void deleteShouldReturnSuccess() {
+        doNothing().when(chapterService).delete(1L);
 
-        Result<Boolean> result = controller.delete(1L);
+        Result<Void> result = controller.delete(1L);
 
         assertThat(result).isNotNull();
-        assertThat(result.getData()).isTrue();
+        assertThat(result.getData()).isNull();
         assertThat(result.getCode()).isEqualTo("200");
+        verify(chapterService).delete(1L);
     }
 
     @Test
-    @DisplayName("delete 删除不存在的章节时返回 false")
-    void deleteShouldReturnFalseWhenChapterNotFound() {
-        when(chapterService.delete(999L)).thenReturn(false);
+    @DisplayName("delete 删除不存在的章节时抛出 BusinessException")
+    void deleteShouldThrowWhenServiceThrows() {
+        doThrow(new BusinessException(3101, "章节不存在")).when(chapterService).delete(999L);
 
-        Result<Boolean> result = controller.delete(999L);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getData()).isFalse();
-        assertThat(result.getCode()).isEqualTo("200");
+        assertThatThrownBy(() -> controller.delete(999L))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("章节不存在");
     }
 }

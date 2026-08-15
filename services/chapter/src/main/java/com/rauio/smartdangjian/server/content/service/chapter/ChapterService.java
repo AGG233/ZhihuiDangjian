@@ -10,8 +10,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.content.constants.ChapterErrorConstants;
 import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
-import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterConvertor;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterContentBlockConvertor;
+import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterConvertor;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
 import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
@@ -80,10 +80,17 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
      * 更新章节信息。
      *
      * @param dto 前端传入的章节
-     * @return 修改结果
+     * @param chapterId 章节ID
      */
-    public Boolean update(ChapterRequest dto) {
-        return this.updateById(chapterConvertor.toEntity(dto));
+    public void update(ChapterRequest dto, Long chapterId) {
+        Chapter existing = this.getById(chapterId);
+        if (existing == null) {
+            throw new BusinessException(ChapterErrorConstants.CHAPTER_NOT_FOUND, "章节不存在");
+        }
+
+        Chapter entity = chapterConvertor.toEntity(dto);
+        entity.setId(chapterId);
+        this.updateById(entity);
     }
 
     /**
@@ -101,9 +108,12 @@ public class ChapterService extends ServiceImpl<ChapterMapper, Chapter> {
      * 删除章节。
      *
      * @param chapterId 章节ID
-     * @return 删除结果
      */
-    public Boolean delete(Long chapterId) {
-        return this.removeById(chapterId);
+    public void delete(Long chapterId) {
+        Chapter existing = this.getById(chapterId);
+        if (existing == null) {
+            throw new BusinessException(ChapterErrorConstants.CHAPTER_NOT_FOUND, "章节不存在");
+        }
+        this.removeById(chapterId);
     }
 }

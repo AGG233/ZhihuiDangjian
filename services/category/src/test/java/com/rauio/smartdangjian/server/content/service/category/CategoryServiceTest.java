@@ -87,58 +87,69 @@ class CategoryServiceTest {
 
         doReturn(category).when(categoryService).getById(1L);
         doReturn(vo).when(convertor).toResponse(category);
+        doReturn(Collections.emptyList()).when(categoryService).list();
 
         CategoryResponse result = categoryService.get(1L);
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getName()).isEqualTo("根目录");
+        assertThat(result.getChildren()).isEmpty();
         verify(convertor).toResponse(category);
     }
 
     @Test
-    @DisplayName("get 查询目录存在且有子节点时不发生子节点递归（子节点无更深层子节点）")
-    void getWhenCategoryHasChildrenWithoutGrandchildren() {
-        Category category = createCategory(1L, "根目录", 0, null);
-        CategoryResponse childVO1 = createCategoryResponse(2L, "子目录1", 1L, Collections.emptyList());
-        CategoryResponse childVO2 = createCategoryResponse(3L, "子目录2", 1L, Collections.emptyList());
-        CategoryResponse parentVO = createCategoryResponse(1L, "根目录", null, List.of(childVO1, childVO2));
+    @DisplayName("get 返回包含直接子目录的子树")
+    void getReturnsDirectChildrenTree() {
+        Category root = createCategory(1L, "根目录", 0, null);
+        Category child1 = createCategory(2L, "子目录1", 1, 1L);
+        Category child2 = createCategory(3L, "子目录2", 1, 1L);
+        CategoryResponse rootVO = createCategoryResponse(1L, "根目录", null, null);
+        CategoryResponse child1VO = createCategoryResponse(2L, "子目录1", 1L, null);
+        CategoryResponse child2VO = createCategoryResponse(3L, "子目录2", 1L, null);
 
-        doReturn(category).when(categoryService).getById(1L);
-        doReturn(parentVO).when(convertor).toResponse(category);
+        doReturn(root).when(categoryService).getById(1L);
+        doReturn(rootVO).when(convertor).toResponse(root);
+        doReturn(child1VO).when(convertor).toResponse(child1);
+        doReturn(child2VO).when(convertor).toResponse(child2);
+        doReturn(List.of(child1, child2)).when(categoryService).list();
 
         CategoryResponse result = categoryService.get(1L);
 
-        assertThat(result).isNotNull();
         assertThat(result.getChildren()).hasSize(2);
-        // 子节点没有 children，所以不会递归调用 get
+        assertThat(result.getChildren().get(0).getName()).isEqualTo("子目录1");
+        assertThat(result.getChildren().get(1).getName()).isEqualTo("子目录2");
+        // 基于内存组树，不再递归调用 getById 处理子节点
         verify(categoryService, times(1)).getById(1L);
     }
 
     @Test
-    @DisplayName("get 查询目录存在且有孙子节点时递归调用 get")
-    void getWhenCategoryHasNestedGrandchildrenRecursivelyProcesses() {
-        Category category = createCategory(1L, "根目录", 0, null);
-        Category childCategory = createCategory(2L, "子目录", 1, 1L);
+    @DisplayName("get 多级分类返回完整子树（含孙子节点）")
+    void getReturnsCompleteSubtreeWithGrandchildren() {
+        Category root = createCategory(1L, "根目录", 0, null);
+        Category child = createCategory(2L, "子目录", 1, 1L);
+        Category grandchild = createCategory(4L, "孙子目录", 2, 2L);
+        Category leaf = createCategory(3L, "叶子子目录", 1, 1L);
 
-        CategoryResponse grandchildVO = createCategoryResponse(4L, "孙子目录", 2L, Collections.emptyList());
-        CategoryResponse childVO = createCategoryResponse(2L, "子目录", 1L, List.of(grandchildVO));
-        CategoryResponse leafChildVO = createCategoryResponse(3L, "叶子子目录", 1L, Collections.emptyList());
-        CategoryResponse parentVO = createCategoryResponse(1L, "根目录", null, List.of(childVO, leafChildVO));
+        CategoryResponse rootVO = createCategoryResponse(1L, "根目录", null, null);
+        CategoryResponse childVO = createCategoryResponse(2L, "子目录", 1L, null);
+        CategoryResponse grandchildVO = createCategoryResponse(4L, "孙子目录", 2L, null);
+        CategoryResponse leafVO = createCategoryResponse(3L, "叶子子目录", 1L, null);
 
-        CategoryResponse retrievedChildVO = createCategoryResponse(2L, "子目录", 1L, List.of(grandchildVO));
-
-        doReturn(category).when(categoryService).getById(1L);
-        doReturn(parentVO).when(convertor).toResponse(category);
-        // 递归调用 get("2") 时
-        doReturn(childCategory).when(categoryService).getById(2L);
-        doReturn(retrievedChildVO).when(convertor).toResponse(childCategory);
+        doReturn(root).when(categoryService).getById(1L);
+        doReturn(rootVO).when(convertor).toResponse(root);
+        doReturn(childVO).when(convertor).toResponse(child);
+        doReturn(grandchildVO).when(convertor).toResponse(grandchild);
+        doReturn(leafVO).when(convertor).toResponse(leaf);
+        doReturn(List.of(child, leaf, grandchild)).when(categoryService).list();
 
         CategoryResponse result = categoryService.get(1L);
 
-        assertThat(result).isNotNull();
+        assertThat(result.getChildren()).hasSize(2);
+        CategoryResponse childResp = result.getChildren().get(0);
+        assertThat(childResp.getChildren()).hasSize(1);
+        assertThat(childResp.getChildren().get(0).getName()).isEqualTo("孙子目录");
         verify(categoryService, times(1)).getById(1L);
-        verify(categoryService, times(1)).getById(2L);
     }
 
     // ==================== getRootList ====================
@@ -585,7 +596,8 @@ class CategoryServiceTest {
         doReturn(child2).when(categoryService).getById(12L);
         // Sequential stubs: parent list returns children, each child list returns empty
         doReturn(List.of(child1, child2), Collections.emptyList(), Collections.emptyList())
-                .when(categoryService).list(any(LambdaQueryWrapper.class));
+                .when(categoryService)
+                .list(any(LambdaQueryWrapper.class));
         doReturn(true).when(categoryService).removeById(anyLong());
 
         Boolean result = categoryService.deleteByIdWithChildren(10L);
