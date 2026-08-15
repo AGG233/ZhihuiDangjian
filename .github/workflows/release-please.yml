@@ -2,6 +2,10 @@ name: release-please
 on:
   push:
     branches: [master]
+  # 固定时间自动发版：UTC 16:00 = 北京时间次日凌晨 0:00（GitHub cron 固定 UTC）
+  schedule:
+    - cron: '0 16 * * *'
+  workflow_dispatch: {}
 concurrency:
   group: release-please-${{ github.ref }}
   cancel-in-progress: false
@@ -13,7 +17,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: googleapis/release-please-action@v5
+        id: release-please
         with:
           token: ${{ secrets.GH_PAT }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      # push 触发只创建/更新 release PR（等待 0:00 或手动合并，不立即发版）；
+      # schedule / workflow_dispatch 触发时对挂起的 release PR 启用 auto-merge：
+      # CI 全绿后自动 squash 合并（标题保持 `chore(master): release <版本>`，
+      # release-please 据此识别 release commit 并打 tag，避免重复发版），
+      # 随后 push master 触发 release-please 打 tag，release.yml 构建+部署。
+      # 注意：outputs.pr 是 PullRequest 对象的 JSON 字符串，需用 jq 提取编号。
+      - name: Auto-merge release PR
+        if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && steps.release-please.outputs.pr != ''
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          PR_JSON: ${{ steps.release-please.outputs.pr }}
+        run: |
+          PR_NUMBER=$(printf '%s' "$PR_JSON" | jq -r '.number')
+          gh pr merge --auto --squash --delete-branch "$PR_NUMBER"
