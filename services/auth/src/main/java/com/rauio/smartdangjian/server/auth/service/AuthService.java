@@ -1,14 +1,13 @@
 package com.rauio.smartdangjian.server.auth.service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-
-import cn.hutool.crypto.digest.BCrypt;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
 import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
@@ -19,27 +18,48 @@ import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
+import com.rauio.smartdangjian.utils.spec.UserType;
 
 import cn.dev33.satoken.stp.SaLoginModel;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.crypto.digest.BCrypt;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
+    /** 登录失败计数 Redis 键前缀 */
+    private static final String LOGIN_FAIL_KEY_PREFIX = "login:fail:";
+
+    /** 登录失败锁定阈值 */
+    private static final long MAX_LOGIN_FAILS = 5;
+
+    /** 登录锁定时长 */
+    private static final Duration LOCK_DURATION = Duration.ofMinutes(15);
+
     private final CaptchaService captchaService;
     private final UserMapper userMapper;
     private final UserService userService;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     public LoginResponse login(LoginRequest loginRequest) {
         if (!captchaService.validate(loginRequest.getCaptchaUUID(), loginRequest.getCaptchaCode())) {
             throw new BusinessException(AuthErrorConstants.CAPTCHA_ERROR, "验证码错误");
         }
 
-        User user = userService.getByPassport(loginRequest.getPassport());
+        String passport = loginRequest.getPassport();
+        String lockKey = LOGIN_FAIL_KEY_PREFIX + passport;
+        // 失败计数达到阈值才视为锁定（计数 key 在首次失败时即存在，不能仅凭 key 存在判断）
+        Object failCount = redisTemplate.opsForValue().get(lockKey);
+        if (failCount instanceof Number n && n.longValue() >= MAX_LOGIN_FAILS) {
+            throw new BusinessException(AuthErrorConstants.ACCOUNT_LOCKED, "登录失败次数过多，账号已临时锁定，请15分钟后再试");
+        }
+
+        User user = userService.getByPassport(passport);
         if (user == null) {
-            throw new BusinessException(AuthErrorConstants.USER_NOT_FOUND, "用户不存在");
+            recordLoginFail(lockKey);
+            throw new BusinessException(AuthErrorConstants.LOGIN_FAILED, "用户名或密码错误");
         }
 
         if (user.getStatus() == AccountStatus.BANNED) {
@@ -50,15 +70,16 @@ public class AuthService {
         }
 
         if (!BCrypt.checkpw(loginRequest.getPassword(), user.getPassword())) {
-            throw new BusinessException(AuthErrorConstants.PASSWORD_ERROR, "密码错误");
+            recordLoginFail(lockKey);
+            throw new BusinessException(AuthErrorConstants.LOGIN_FAILED, "用户名或密码错误");
         }
+
+        redisTemplate.delete(lockKey);
 
         String platform = loginRequest.getPlatform() != null ? loginRequest.getPlatform() : "web";
         long timeout = "app".equals(platform) ? 2592000L : 7200L;
 
-        StpUtil.login(user.getId(), SaLoginModel.create()
-                .setDevice(platform)
-                .setTimeout(timeout));
+        StpUtil.login(user.getId(), SaLoginModel.create().setDevice(platform).setTimeout(timeout));
 
         StpUtil.getSession().set("user", user);
 
@@ -69,9 +90,15 @@ public class AuthService {
         StpUtil.logout();
     }
 
-    public Result<Object> register(RegisterRequest registerRequest) {
+    public void register(RegisterRequest registerRequest) {
         if (!captchaService.validate(registerRequest.getCaptchaUUID(), registerRequest.getCaptchaCode())) {
             throw new BusinessException(AuthErrorConstants.CAPTCHA_ERROR, "验证码错误");
+        }
+
+        // 公开注册仅允许学生角色，防止匿名提权为 SCHOOL/MANAGER
+        UserType type = registerRequest.getType();
+        if (type != null && type != UserType.STUDENT) {
+            throw new BusinessException(AuthErrorConstants.REGISTER_TYPE_FORBIDDEN, "仅支持学生注册");
         }
 
         checkEmailRegistered(registerRequest.getEmail());
@@ -91,14 +118,13 @@ public class AuthService {
                 .phone(registerRequest.getPhone())
                 .universityId(registerRequest.getUniversityId())
                 .joinPartyDate(registerRequest.getJoinPartyDate())
-                .userType(registerRequest.getType())
+                .userType(UserType.STUDENT)
                 .status(AccountStatus.ACTIVE)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
 
         userMapper.insert(user);
-        return Result.ok("注册成功！");
     }
 
     public void changePassword(ChangePasswordRequest request) {
@@ -116,12 +142,24 @@ public class AuthService {
             throw new BusinessException(AuthErrorConstants.OLD_PASSWORD_ERROR, "旧密码错误");
         }
 
-        user.setPassword(BCrypt.hashpw(request.getNewPassword()));
-        user.setUpdatedAt(LocalDateTime.now());
-        if (userMapper.updateById(user) <= 0) {
-            throw new BusinessException(AuthErrorConstants.PASSWORD_CHANGE_ERROR, "密码修改失败");
+        // 走 UserService 以触发用户缓存整体驱逐，避免旧密码哈希仍被缓存命中
+        userService.updatePassword(user.getId(), request.getNewPassword());
+
+        User updated = userMapper.selectById(userId);
+        StpUtil.getSession().set("user", updated);
+    }
+
+    /**
+     * 记录一次登录失败；达到阈值时设置锁定 key。
+     */
+    private void recordLoginFail(String lockKey) {
+        Long count = redisTemplate.opsForValue().increment(lockKey);
+        if (count != null && count == 1L) {
+            redisTemplate.expire(lockKey, LOCK_DURATION);
         }
-        StpUtil.getSession().set("user", user);
+        if (count != null && count >= MAX_LOGIN_FAILS) {
+            redisTemplate.expire(lockKey, LOCK_DURATION);
+        }
     }
 
     private void checkEmailRegistered(String email) {

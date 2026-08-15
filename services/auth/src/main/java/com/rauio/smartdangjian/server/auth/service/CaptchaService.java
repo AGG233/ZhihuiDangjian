@@ -57,7 +57,8 @@ public class CaptchaService {
     }
 
     /**
-     * 校验验证码是否正确。
+     * 校验验证码是否正确（一次性消费：无论校验成败均删除 Redis 中的验证码，
+     * 防止同一验证码被重放爆破）。
      *
      * @param uuid 验证码唯一标识
      * @param code 用户输入的验证码
@@ -67,6 +68,12 @@ public class CaptchaService {
         if (testCode != null && !testCode.isBlank() && testCode.equals(code)) {
             return true;
         }
-        return code != null && code.equals(redisTemplate.opsForValue().get("captcha:" + uuid));
+        if (uuid == null || code == null) {
+            return false;
+        }
+        String key = "captcha:" + uuid;
+        Object stored = redisTemplate.opsForValue().get(key);
+        redisTemplate.delete(key);
+        return code.equals(stored);
     }
 }

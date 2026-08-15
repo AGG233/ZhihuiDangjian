@@ -23,7 +23,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.rauio.smartdangjian.BaseControllerTest;
 import com.rauio.smartdangjian.controller.factory.AuthTestDataFactory;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.RegisterRequest;
@@ -91,14 +90,13 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/register - 注册成功")
         void registerSuccess() throws Exception {
-            when(authService.register(any(RegisterRequest.class))).thenReturn(Result.ok("注册成功"));
+            doNothing().when(authService).register(any(RegisterRequest.class));
 
             mockMvc.perform(post("/api/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(AuthTestDataFactory.toJson(AuthTestDataFactory.createRegisterRequest())))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value("注册成功"));
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test
@@ -187,7 +185,7 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/register - Service 抛出 BusinessException 返回 400")
         void registerThrowsBusinessException() throws Exception {
-            when(authService.register(any(RegisterRequest.class))).thenThrow(new BusinessException(4000, "该手机号已被注册"));
+            doThrow(new BusinessException(4000, "该手机号已被注册")).when(authService).register(any(RegisterRequest.class));
 
             mockMvc.perform(post("/api/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -215,7 +213,7 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/register - Service 抛出 RuntimeException 返回 500")
         void registerThrowsRuntimeException() throws Exception {
-            when(authService.register(any(RegisterRequest.class))).thenThrow(new RuntimeException("注册服务异常"));
+            doThrow(new RuntimeException("注册服务异常")).when(authService).register(any(RegisterRequest.class));
 
             mockMvc.perform(post("/api/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -284,7 +282,7 @@ class AuthControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("POST /auth/register - 注册请求含特殊字符用户名")
         void registerWithSpecialChars() throws Exception {
-            when(authService.register(any(RegisterRequest.class))).thenReturn(Result.ok("注册成功"));
+            doNothing().when(authService).register(any(RegisterRequest.class));
 
             RegisterRequest request = AuthTestDataFactory.createRegisterRequest();
             request.setUsername("test_@#$%^&");

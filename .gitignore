@@ -54,3 +54,8 @@ out/
 /CLAUDE.md
 /AGENTS.md
 /docs/
+
+# 本地构建缓存与并行工作树（不进版本库）
+.gradle-home/
+pr2-worktree/
+pr3-worktree/

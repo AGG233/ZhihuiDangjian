@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.server.auth.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -101,15 +102,14 @@ class AuthControllerTest {
     // ================================================================
 
     @Test
-    @DisplayName("register 委托 authService.register 并返回结果")
+    @DisplayName("register 委托 authService.register 并返回空 Result")
     void registerDelegatesToAuthService() {
         RegisterRequest request = new RegisterRequest();
-        Result<Object> serviceResult = Result.ok("注册成功！");
-        when(authService.register(any(RegisterRequest.class))).thenReturn(serviceResult);
+        doNothing().when(authService).register(any(RegisterRequest.class));
 
-        Result<Object> result = authController.register(request);
+        Result<Void> result = authController.register(request);
 
-        assertThat(result).isEqualTo(serviceResult);
+        assertThat(result.getCode()).isEqualTo("200");
         verify(authService).register(request);
     }
 

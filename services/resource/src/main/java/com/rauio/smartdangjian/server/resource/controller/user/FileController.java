@@ -8,8 +8,6 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
-import cn.dev33.satoken.annotation.SaCheckLogin;
-import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
@@ -18,8 +16,9 @@ import com.rauio.smartdangjian.server.resource.pojo.response.FileInfoResponse;
 import com.rauio.smartdangjian.server.resource.pojo.response.FileUploadResponse;
 import com.rauio.smartdangjian.server.resource.service.FileService;
 import com.rauio.smartdangjian.utils.SecurityUtils;
-import com.rauio.smartdangjian.utils.spec.UserType;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -52,9 +51,7 @@ public class FileController {
     @SaCheckLogin
     @SaCheckRole("STUDENT")
     @ResourceAccess(id = "#resourceId", type = "RESOURCE_META")
-    public Result<Void> uploadCallback(
-            @PathVariable Long resourceId,
-            HttpServletRequest request) throws IOException {
+    public Result<Void> uploadCallback(@PathVariable Long resourceId, HttpServletRequest request) throws IOException {
         fileService.handleUploadCallback(resourceId, request.getInputStream());
         return Result.ok(null);
     }
@@ -71,12 +68,16 @@ public class FileController {
     }
 
     @Operation(summary = "根据资源ID获取文件信息", description = "根据资源ID查询文件元数据，并返回包含预签名下载链接的文件信息。下载链接具有时效性，过期后需重新调用。")
+    @SaCheckLogin
+    @SaCheckRole("STUDENT")
     @GetMapping("/by-id/{id}")
     public Result<FileInfoResponse> getById(@PathVariable Long id) {
         return Result.ok(fileService.getFileInfo(id));
     }
 
     @Operation(summary = "根据文件哈希获取文件信息", description = "根据文件内容哈希查询文件元数据，并返回包含预签名下载链接的文件信息。")
+    @SaCheckLogin
+    @SaCheckRole("STUDENT")
     @GetMapping("/by-hash/{hash}")
     public Result<FileInfoResponse> getByHash(@PathVariable String hash) {
         return Result.ok(fileService.getFileInfoByHash(hash));
@@ -92,12 +93,16 @@ public class FileController {
     }
 
     @Operation(summary = "批量根据资源ID获取下载链接", description = "上传一个资源ID列表，返回对应的预签名下载链接列表。顺序与输入列表一致。")
+    @SaCheckLogin
+    @SaCheckRole("STUDENT")
     @PostMapping("/batch/id")
     public Result<List<String>> getBatchById(@RequestBody @Valid List<Long> ids) {
         return Result.ok(fileService.getBatchByIds(ids));
     }
 
     @Operation(summary = "批量根据文件哈希获取下载链接", description = "上传一个文件哈希列表，返回对应的预签名下载链接列表。顺序与输入列表一致。")
+    @SaCheckLogin
+    @SaCheckRole("STUDENT")
     @PostMapping("/batch/hash")
     public Result<List<String>> getBatchByHash(@RequestBody @Valid List<String> hashes) {
         return Result.ok(fileService.getBatchByHashes(hashes));

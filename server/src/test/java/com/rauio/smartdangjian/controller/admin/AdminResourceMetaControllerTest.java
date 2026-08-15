@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -93,48 +94,44 @@ class AdminResourceMetaControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - 更新资源元数据成功")
         void updateResourceMetaSuccess() throws Exception {
-            when(resourceMetaService.update(anyLong(), any())).thenReturn(true);
+            doNothing().when(resourceMetaService).update(anyLong(), any());
 
             mockMvc.perform(put("/api/admin/resource/files/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(ResourceMetaTestDataFactory.toJson(
                                     ResourceMetaTestDataFactory.createResourceMetaUpdateRequest())))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value(true));
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test
         @DisplayName("DELETE /{id} - 删除资源元数据成功")
         void deleteByIdSuccess() throws Exception {
-            when(resourceMetaService.delete(1L)).thenReturn(true);
+            doNothing().when(resourceMetaService).delete(1L);
 
             mockMvc.perform(delete("/api/admin/resource/files/1"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value(true));
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test
         @DisplayName("DELETE /by-hash/{hash} - 按哈希删除资源成功")
         void deleteByHashSuccess() throws Exception {
-            when(resourceMetaService.deleteByHash("hash-123")).thenReturn(true);
+            doNothing().when(resourceMetaService).deleteByHash("hash-123");
 
             mockMvc.perform(delete("/api/admin/resource/files/by-hash/hash-123"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value(true));
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test
         @DisplayName("DELETE / - 批量删除资源成功")
         void batchDeleteSuccess() throws Exception {
-            when(resourceMetaService.deleteByHashes(any())).thenReturn(true);
+            doNothing().when(resourceMetaService).deleteByHashes(any());
 
             mockMvc.perform(delete("/api/admin/resource/files").param("hash", "hash-1", "hash-2"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value(true));
+                    .andExpect(jsonPath("$.code").value("200"));
         }
     }
 
@@ -224,15 +221,14 @@ class AdminResourceMetaControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("PUT /{id} - 空更新请求（所有字段可选）")
         void updateWithEmptyFields() throws Exception {
-            when(resourceMetaService.update(anyLong(), any())).thenReturn(true);
+            doNothing().when(resourceMetaService).update(anyLong(), any());
 
             mockMvc.perform(put("/api/admin/resource/files/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(ResourceMetaTestDataFactory.toJson(
                                     ResourceMetaTestDataFactory.createEmptyUpdateRequest())))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value(true));
+                    .andExpect(jsonPath("$.code").value("200"));
         }
     }
 
@@ -257,7 +253,7 @@ class AdminResourceMetaControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入在 hash 字段")
         void sqlInjectionInHash() throws Exception {
-            when(resourceMetaService.deleteByHash(anyString())).thenReturn(true);
+            doNothing().when(resourceMetaService).deleteByHash(anyString());
 
             mockMvc.perform(delete("/api/admin/resource/files/by-hash/' OR '1'='1"))
                     .andExpect(status().isOk())

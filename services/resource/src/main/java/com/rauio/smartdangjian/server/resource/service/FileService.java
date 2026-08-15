@@ -102,9 +102,9 @@ public class FileService {
         if (!exists) {
             throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "文件尚未上传到存储服务器，请先上传");
         }
-        meta.setStatus(ResourceStatusConstants.PUBLIC);
-        resourceMetaService.updateById(meta);
-        return meta;
+        // 走 service 方法更新状态，确保 resourceMeta 缓存被驱逐
+        resourceMetaService.updateStatus(resourceId, ResourceStatusConstants.PUBLIC);
+        return resourceMetaService.get(resourceId);
     }
 
     public void handleUploadCallback(Long resourceId, InputStream inputStream) {
@@ -121,11 +121,13 @@ public class FileService {
 
     public FileInfoResponse getFileInfo(Long resourceId) {
         ResourceMeta meta = resourceMetaService.get(resourceId);
+        requirePublic(meta);
         return buildFileInfoResponse(meta);
     }
 
     public FileInfoResponse getFileInfoByHash(String hash) {
         ResourceMeta meta = resourceMetaService.getByHash(hash);
+        requirePublic(meta);
         return buildFileInfoResponse(meta);
     }
 
@@ -144,6 +146,7 @@ public class FileService {
 
     public String getDownloadUrl(Long resourceId) {
         ResourceMeta meta = resourceMetaService.get(resourceId);
+        requirePublic(meta);
         return generateDownloadUrl(meta.getObjectKey());
     }
 
@@ -168,7 +171,19 @@ public class FileService {
 
     public String getByHash(String hash) {
         ResourceMeta meta = resourceMetaService.getByHash(hash);
+        requirePublic(meta);
         return generateDownloadUrl(meta.getObjectKey());
+    }
+
+    /**
+     * 仅允许公开（PUBLIC）状态的资源生成下载链接，UPLOADING/HIDDEN 等一律拒绝。
+     *
+     * @param meta 资源元数据
+     */
+    private void requirePublic(ResourceMeta meta) {
+        if (meta.getStatus() == null || meta.getStatus() != ResourceStatusConstants.PUBLIC) {
+            throw new BusinessException(ResourceErrorConstants.RESOURCE_NOT_FOUND, "资源不存在或未公开");
+        }
     }
 
     private String generateDownloadUrl(String objectKey) {

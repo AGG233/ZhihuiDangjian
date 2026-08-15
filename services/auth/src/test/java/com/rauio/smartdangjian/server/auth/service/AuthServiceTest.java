@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
@@ -11,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.UUID;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +20,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
@@ -33,11 +39,12 @@ import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
-import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.session.SaSession;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.crypto.digest.BCrypt;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class AuthServiceTest {
 
     @Mock
@@ -49,8 +56,21 @@ class AuthServiceTest {
     @Mock
     private UserService userService;
 
+    @Mock
+    private RedisTemplate<String, Object> redisTemplate;
+
+    private ValueOperations<String, Object> valueOps;
+
     @InjectMocks
     private AuthService authService;
+
+    @BeforeEach
+    @SuppressWarnings("unchecked")
+    void setUp() {
+        valueOps = mock(ValueOperations.class);
+        when(redisTemplate.opsForValue()).thenReturn(valueOps);
+        when(valueOps.get(anyString())).thenReturn(null);
+    }
 
     // ================================================================
     // login
@@ -80,8 +100,10 @@ class AuthServiceTest {
         when(userService.getByPassport("admin")).thenReturn(user);
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
-             MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
-            bcryptMock.when(() -> BCrypt.checkpw(rawPassword, user.getPassword())).thenReturn(true);
+                MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock
+                    .when(() -> BCrypt.checkpw(rawPassword, user.getPassword()))
+                    .thenReturn(true);
             SaSession session = mock(SaSession.class);
             stpUtilMock.when(StpUtil::getSession).thenReturn(session);
             stpUtilMock.when(StpUtil::getTokenValue).thenReturn("sa-token-abc");
@@ -104,8 +126,10 @@ class AuthServiceTest {
         when(userService.getByPassport("admin")).thenReturn(user);
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
-             MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
-            bcryptMock.when(() -> BCrypt.checkpw(rawPassword, user.getPassword())).thenReturn(true);
+                MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock
+                    .when(() -> BCrypt.checkpw(rawPassword, user.getPassword()))
+                    .thenReturn(true);
             SaSession session = mock(SaSession.class);
             stpUtilMock.when(StpUtil::getSession).thenReturn(session);
             stpUtilMock.when(StpUtil::getTokenValue).thenReturn("sa-token-app");
@@ -128,8 +152,10 @@ class AuthServiceTest {
         when(userService.getByPassport("admin")).thenReturn(user);
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
-             MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
-            bcryptMock.when(() -> BCrypt.checkpw(rawPassword, user.getPassword())).thenReturn(true);
+                MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock
+                    .when(() -> BCrypt.checkpw(rawPassword, user.getPassword()))
+                    .thenReturn(true);
             SaSession session = mock(SaSession.class);
             stpUtilMock.when(StpUtil::getSession).thenReturn(session);
             stpUtilMock.when(StpUtil::getTokenValue).thenReturn("sa-token-null-plat");
@@ -141,7 +167,7 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("login 密码错误时抛出 BusinessException(PASSWORD_ERROR)")
+    @DisplayName("login 密码错误时抛出 BusinessException(LOGIN_FAILED) 并记录失败计数")
     void loginThrowsWhenPasswordMismatch() {
         LoginRequest request = createLoginRequest();
         String rawPassword = request.getPassword();
@@ -149,28 +175,93 @@ class AuthServiceTest {
         user.setPassword(newEncodedPassword());
         when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
         when(userService.getByPassport("admin")).thenReturn(user);
+        when(valueOps.increment("login:fail:admin")).thenReturn(1L);
 
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
-            bcryptMock.when(() -> BCrypt.checkpw(rawPassword, user.getPassword())).thenReturn(false);
+            bcryptMock
+                    .when(() -> BCrypt.checkpw(rawPassword, user.getPassword()))
+                    .thenReturn(false);
 
             assertThatThrownBy(() -> authService.login(request))
                     .isInstanceOf(BusinessException.class)
                     .extracting("code")
-                    .isEqualTo(AuthErrorConstants.PASSWORD_ERROR);
+                    .isEqualTo(AuthErrorConstants.LOGIN_FAILED);
+            verify(redisTemplate).expire(eq("login:fail:admin"), any());
         }
     }
 
     @Test
-    @DisplayName("login 用户不存在时抛出 BusinessException(USER_NOT_FOUND)")
+    @DisplayName("login 用户不存在时抛出 BusinessException(LOGIN_FAILED)（统一错误防枚举）")
     void loginThrowsWhenUserNotFound() {
         LoginRequest request = createLoginRequest();
         when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
         when(userService.getByPassport("admin")).thenReturn(null);
+        when(valueOps.increment("login:fail:admin")).thenReturn(1L);
 
         assertThatThrownBy(() -> authService.login(request))
                 .isInstanceOf(BusinessException.class)
                 .extracting("code")
-                .isEqualTo(AuthErrorConstants.USER_NOT_FOUND);
+                .isEqualTo(AuthErrorConstants.LOGIN_FAILED);
+    }
+
+    @Test
+    @DisplayName("login 账号已锁定（失败次数达阈值）时抛出 BusinessException(ACCOUNT_LOCKED)")
+    void loginThrowsWhenAccountLocked() {
+        LoginRequest request = createLoginRequest();
+        when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
+        when(valueOps.get("login:fail:admin")).thenReturn(5L);
+
+        assertThatThrownBy(() -> authService.login(request))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(AuthErrorConstants.ACCOUNT_LOCKED);
+        verify(userService, org.mockito.Mockito.never()).getByPassport(anyString());
+    }
+
+    @Test
+    @DisplayName("login 失败 5 次后设置锁定 key")
+    void loginLocksAccountAfterFiveFails() {
+        LoginRequest request = createLoginRequest();
+        User user = createUser(1L, "testuser");
+        user.setPassword(newEncodedPassword());
+        when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
+        when(userService.getByPassport("admin")).thenReturn(user);
+        when(valueOps.increment("login:fail:admin")).thenReturn(5L);
+
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.checkpw(anyString(), anyString())).thenReturn(false);
+
+            assertThatThrownBy(() -> authService.login(request))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("code")
+                    .isEqualTo(AuthErrorConstants.LOGIN_FAILED);
+            verify(redisTemplate).expire(eq("login:fail:admin"), any());
+        }
+    }
+
+    @Test
+    @DisplayName("login 成功后清除失败计数")
+    void loginSuccessClearsFailCount() {
+        LoginRequest request = createLoginRequest();
+        String rawPassword = request.getPassword();
+        User user = createUser(1L, "testuser");
+        user.setPassword(newEncodedPassword());
+        when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
+        when(userService.getByPassport("admin")).thenReturn(user);
+
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
+                MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock
+                    .when(() -> BCrypt.checkpw(rawPassword, user.getPassword()))
+                    .thenReturn(true);
+            SaSession session = mock(SaSession.class);
+            stpUtilMock.when(StpUtil::getSession).thenReturn(session);
+            stpUtilMock.when(StpUtil::getTokenValue).thenReturn("sa-token-clear");
+
+            authService.login(request);
+
+            verify(redisTemplate).delete("login:fail:admin");
+        }
     }
 
     @Test
@@ -286,7 +377,7 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("register 所有校验通过且插入成功时返回成功结果")
+    @DisplayName("register 所有校验通过且插入成功时不抛异常")
     void registerSuccessWhenAllChecksPass() {
         RegisterRequest request = createRegisterRequest();
         String rawPassword = request.getPassword();
@@ -297,12 +388,41 @@ class AuthServiceTest {
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
             bcryptMock.when(() -> BCrypt.hashpw(rawPassword)).thenReturn(newEncodedPassword());
 
-            var result = authService.register(request);
+            authService.register(request);
 
-            assertThat(result).isNotNull();
-            assertThat(result.getCode()).isEqualTo("200");
-            assertThat(result.getMessage()).isEqualTo("OK");
             bcryptMock.verify(() -> BCrypt.hashpw(rawPassword));
+            verify(userMapper).insert(any(User.class));
+        }
+    }
+
+    @Test
+    @DisplayName("register 非学生类型被拒绝，抛出 BusinessException(REGISTER_TYPE_FORBIDDEN)")
+    void registerThrowsWhenTypeIsManager() {
+        RegisterRequest request = createRegisterRequest();
+        request.setType(UserType.MANAGER);
+        when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
+
+        assertThatThrownBy(() -> authService.register(request))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(AuthErrorConstants.REGISTER_TYPE_FORBIDDEN);
+        verify(userMapper, org.mockito.Mockito.never()).insert(any(User.class));
+    }
+
+    @Test
+    @DisplayName("register type 为 null 时按学生注册")
+    void registerWithNullTypeDefaultsToStudent() {
+        RegisterRequest request = createRegisterRequest();
+        request.setType(null);
+        when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
+        when(userMapper.exists(any())).thenReturn(false, false, false, false);
+        when(userMapper.insert(any(User.class))).thenReturn(1);
+
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.hashpw(anyString())).thenReturn(newEncodedPassword());
+
+            authService.register(request);
+
             verify(userMapper).insert(any(User.class));
         }
     }
@@ -319,10 +439,9 @@ class AuthServiceTest {
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
             bcryptMock.when(() -> BCrypt.hashpw(anyString())).thenReturn(newEncodedPassword());
 
-            var result = authService.register(request);
+            authService.register(request);
 
-            assertThat(result).isNotNull();
-            assertThat(result.getCode()).isEqualTo("200");
+            verify(userMapper).insert(any(User.class));
         }
     }
 
@@ -367,10 +486,12 @@ class AuthServiceTest {
         user.setPassword(newEncodedPassword());
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
-             MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+                MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
             stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("u1");
             when(userMapper.selectById("u1")).thenReturn(user);
-            bcryptMock.when(() -> BCrypt.checkpw(request.getOldPassword(), user.getPassword())).thenReturn(false);
+            bcryptMock
+                    .when(() -> BCrypt.checkpw(request.getOldPassword(), user.getPassword()))
+                    .thenReturn(false);
 
             assertThatThrownBy(() -> authService.changePassword(request))
                     .isInstanceOf(BusinessException.class)
@@ -380,52 +501,55 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("changePassword 旧密码正确时更新密码并返回 void")
+    @DisplayName("changePassword 旧密码正确时通过 UserService 更新密码并刷新 session")
     void changePasswordSuccessWhenOldPasswordMatches() {
         ChangePasswordRequest request = createChangePasswordRequest();
         String newRawPassword = request.getNewPassword();
         String encodedNewPassword = newEncodedPassword();
         User user = createUser(1L, "testuser");
         user.setPassword(newEncodedPassword());
+        User updatedUser = createUser(1L, "testuser");
+        updatedUser.setPassword(encodedNewPassword);
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
-             MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+                MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
             SaSession session = mock(SaSession.class);
-            stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("u1");
+            stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("1");
             stpUtilMock.when(StpUtil::getSession).thenReturn(session);
-            when(userMapper.selectById("u1")).thenReturn(user);
-            bcryptMock.when(() -> BCrypt.checkpw(request.getOldPassword(), user.getPassword())).thenReturn(true);
-            bcryptMock.when(() -> BCrypt.hashpw(newRawPassword)).thenReturn(encodedNewPassword);
-            when(userMapper.updateById(user)).thenReturn(1);
+            when(userMapper.selectById("1")).thenReturn(user, updatedUser);
+            bcryptMock
+                    .when(() -> BCrypt.checkpw(request.getOldPassword(), user.getPassword()))
+                    .thenReturn(true);
 
             authService.changePassword(request);
 
-            assertThat(user.getPassword()).isEqualTo(encodedNewPassword);
-            verify(userMapper).updateById(user);
-            verify(session).set("user", user);
+            verify(userService).updatePassword(1L, newRawPassword);
+            verify(session).set("user", updatedUser);
         }
     }
 
     @Test
-    @DisplayName("changePassword 更新失败时抛出 BusinessException(PASSWORD_CHANGE_ERROR)")
-    void changePasswordThrowsWhenUpdateFails() {
+    @DisplayName("changePassword UserService 更新失败时异常向上传播")
+    void changePasswordPropagatesUpdateFailure() {
         ChangePasswordRequest request = createChangePasswordRequest();
-        String newRawPassword = request.getNewPassword();
         User user = createUser(1L, "testuser");
         user.setPassword(newEncodedPassword());
+        org.mockito.Mockito.doThrow(new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "密码修改失败"))
+                .when(userService)
+                .updatePassword(1L, request.getNewPassword());
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
-             MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
-            stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("u1");
-            when(userMapper.selectById("u1")).thenReturn(user);
-            bcryptMock.when(() -> BCrypt.checkpw(request.getOldPassword(), user.getPassword())).thenReturn(true);
-            bcryptMock.when(() -> BCrypt.hashpw(newRawPassword)).thenReturn(newEncodedPassword());
-            when(userMapper.updateById(user)).thenReturn(0);
+                MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("1");
+            when(userMapper.selectById("1")).thenReturn(user);
+            bcryptMock
+                    .when(() -> BCrypt.checkpw(request.getOldPassword(), user.getPassword()))
+                    .thenReturn(true);
 
             assertThatThrownBy(() -> authService.changePassword(request))
                     .isInstanceOf(BusinessException.class)
                     .extracting("code")
-                    .isEqualTo(AuthErrorConstants.PASSWORD_CHANGE_ERROR);
+                    .isEqualTo(UserErrorConstants.USER_NOT_EXISTS);
         }
     }
 
@@ -494,10 +618,9 @@ class AuthServiceTest {
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
             bcryptMock.when(() -> BCrypt.hashpw(anyString())).thenReturn(newEncodedPassword());
 
-            var result = authService.register(request);
+            authService.register(request);
 
-            assertThat(result).isNotNull();
-            assertThat(result.getCode()).isEqualTo("200");
+            verify(userMapper).insert(any(User.class));
         }
     }
 
@@ -513,10 +636,9 @@ class AuthServiceTest {
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
             bcryptMock.when(() -> BCrypt.hashpw(anyString())).thenReturn(newEncodedPassword());
 
-            var result = authService.register(request);
+            authService.register(request);
 
-            assertThat(result).isNotNull();
-            assertThat(result.getCode()).isEqualTo("200");
+            verify(userMapper).insert(any(User.class));
         }
     }
 
@@ -532,10 +654,9 @@ class AuthServiceTest {
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
             bcryptMock.when(() -> BCrypt.hashpw(anyString())).thenReturn(newEncodedPassword());
 
-            var result = authService.register(request);
+            authService.register(request);
 
-            assertThat(result).isNotNull();
-            assertThat(result.getCode()).isEqualTo("200");
+            verify(userMapper).insert(any(User.class));
         }
     }
 }
