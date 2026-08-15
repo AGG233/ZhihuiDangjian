@@ -22,12 +22,6 @@ class SecurityConstantsTest {
     }
 
     @Test
-    @DisplayName("DEFAULT_SECRET_KEY 为 ZHDJ")
-    void defaultSecretKey() {
-        assertThat(SecurityConstants.DEFAULT_SECRET_KEY).isEqualTo("ZHDJ");
-    }
-
-    @Test
     @DisplayName("RSA_KEY_ALGORITHM 为 RSA")
     void rsaKeyAlgorithm() {
         assertThat(SecurityConstants.RSA_KEY_ALGORITHM).isEqualTo("RSA");

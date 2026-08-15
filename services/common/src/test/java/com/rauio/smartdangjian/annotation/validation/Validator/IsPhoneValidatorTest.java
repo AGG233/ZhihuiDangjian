@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.annotation.validation.Validator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import jakarta.validation.ConstraintValidatorContext;
 
@@ -15,9 +16,25 @@ class IsPhoneValidatorTest {
     private final IsPhoneValidator validator = new IsPhoneValidator();
 
     @Test
-    @DisplayName("null 手机号返回 false")
-    void nullPhoneReturnsFalse() {
+    @DisplayName("null 手机号 且 required=false 时放行")
+    void nullValueAllowedWhenNotRequired() {
         ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
+        IsPhone annotation = mock(IsPhone.class);
+        when(annotation.required()).thenReturn(false);
+        validator.initialize(annotation);
+
+        boolean result = validator.isValid(null, context);
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("null 手机号 且 required=true 时拒绝")
+    void nullValueRejectedWhenRequired() {
+        ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
+        IsPhone annotation = mock(IsPhone.class);
+        when(annotation.required()).thenReturn(true);
+        validator.initialize(annotation);
 
         boolean result = validator.isValid(null, context);
 

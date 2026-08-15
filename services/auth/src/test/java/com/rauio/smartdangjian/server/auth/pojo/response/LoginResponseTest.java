@@ -12,11 +12,9 @@ class LoginResponseTest {
     void builderSetsFields() {
         LoginResponse response = LoginResponse.builder()
                 .accessToken("access-token-abc")
-                .refreshToken("refresh-token-def")
                 .build();
 
         assertThat(response.getAccessToken()).isEqualTo("access-token-abc");
-        assertThat(response.getRefreshToken()).isEqualTo("refresh-token-def");
     }
 
     @Test
@@ -25,18 +23,7 @@ class LoginResponseTest {
         LoginResponse response = new LoginResponse();
 
         response.setAccessToken("new-access-token");
-        response.setRefreshToken("new-refresh-token");
 
         assertThat(response.getAccessToken()).isEqualTo("new-access-token");
-        assertThat(response.getRefreshToken()).isEqualTo("new-refresh-token");
-    }
-
-    @Test
-    @DisplayName("refreshToken 标注 @Deprecated 但仍可使用")
-    void refreshTokenIsDeprecated() {
-        LoginResponse response =
-                LoginResponse.builder().refreshToken("deprecated-token").build();
-
-        assertThat(response.getRefreshToken()).isEqualTo("deprecated-token");
     }
 }

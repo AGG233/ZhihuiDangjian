@@ -4,7 +4,6 @@ public class SecurityConstants {
     // JWT相关常量
     public static final String ACCESS_TOKEN_PREFIX = "jwt:access:";
     public static final String REFRESH_TOKEN_PREFIX = "jwt:refresh:";
-    public static final String DEFAULT_SECRET_KEY = "ZHDJ";
 
     // RSA相关常量
     public static final String RSA_KEY_ALGORITHM = "RSA";
