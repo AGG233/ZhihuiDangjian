@@ -9,7 +9,10 @@ import java.util.stream.Collectors;
 import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.ai.constants.AiErrorConstants;
 import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
 import com.rauio.smartdangjian.server.graph.constants.GraphConstants;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphEdgeResponse;
@@ -40,6 +43,9 @@ public class GraphEvaluationTool {
     @Tool(name = "getUserKnowledgeGraph", description = "获取当前用户的学习知识图谱结构（节点、关系与覆盖范围摘要），用于对用户知识图谱进行评价分析")
     public Map<String, Object> getUserKnowledgeGraph(ToolContext toolContext) {
         String userId = ToolContextUtil.getUserId(toolContext, userService);
+        if (!StringUtils.hasText(userId)) {
+            throw new BusinessException(AiErrorConstants.USER_ID_REQUIRED, "当前用户 ID 为空，无法获取知识图谱");
+        }
         KnowledgeGraphResponse graph = knowledgeGraphService.getUserGraph(userId);
 
         List<GraphNodeResponse> nodes = graph.getNodes();
@@ -69,8 +75,9 @@ public class GraphEvaluationTool {
                 .distinct()
                 .toList();
 
-        Map<String, Long> edgeTypeCounts =
-                edges.stream().collect(Collectors.groupingBy(GraphEdgeResponse::getType, Collectors.counting()));
+        Map<String, Long> edgeTypeCounts = edges.stream()
+                .filter(e -> e.getType() != null)
+                .collect(Collectors.groupingBy(GraphEdgeResponse::getType, Collectors.counting()));
 
         Map<String, Object> summary = new LinkedHashMap<>();
         summary.put("userId", userId);

@@ -12,4 +12,5 @@ public class AiErrorConstants {
     public static final int VOICE_TRANSCRIBE_FAILED = 8005;
     public static final int DOCUMENT_TYPE_INVALID = 8006;
     public static final int DOCUMENT_INGEST_FAILED = 8007;
+    public static final int USER_ID_REQUIRED = 8008;
 }

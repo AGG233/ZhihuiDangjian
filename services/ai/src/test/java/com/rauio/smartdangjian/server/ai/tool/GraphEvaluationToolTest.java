@@ -1,7 +1,10 @@
 package com.rauio.smartdangjian.server.ai.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -15,7 +18,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.model.ToolContext;
 
-import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
+import com.rauio.smartdangjian.exception.BusinessException;
+import com.rauio.smartdangjian.server.ai.constants.AiErrorConstants;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphEdgeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphNodeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
@@ -37,8 +41,7 @@ class GraphEvaluationToolTest {
     @Test
     @DisplayName("getUserKnowledgeGraph 返回图谱结构摘要（节点/关系统计与名称列表）")
     void getUserKnowledgeGraph() {
-        ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("10001");
+        ToolContext toolContext = new ToolContext(Map.of("userId", "10001"));
 
         KnowledgeGraphResponse graph = KnowledgeGraphResponse.builder()
                 .nodes(List.of(
@@ -90,8 +93,7 @@ class GraphEvaluationToolTest {
     @Test
     @DisplayName("空图谱返回零计数摘要（不抛错）")
     void emptyGraph() {
-        ToolContext toolContext = mock(ToolContext.class);
-        when(ToolContextUtil.getUserId(toolContext, userService)).thenReturn("10002");
+        ToolContext toolContext = new ToolContext(Map.of("userId", "10002"));
         when(knowledgeGraphService.getUserGraph("10002"))
                 .thenReturn(KnowledgeGraphResponse.builder()
                         .nodes(List.of())
@@ -109,5 +111,18 @@ class GraphEvaluationToolTest {
                 .containsEntry("learnedChapterCount", 0L);
         assertThat((List<String>) summary.get("courseNames")).isEmpty();
         assertThat((List<String>) summary.get("chapterNames")).isEmpty();
+    }
+
+    @Test
+    @DisplayName("userId 缺失时抛出 USER_ID_REQUIRED 且不调用 Service")
+    void missingUserIdThrowsBusinessException() {
+        ToolContext toolContext = new ToolContext(Map.of());
+
+        assertThatThrownBy(() -> graphEvaluationTool.getUserKnowledgeGraph(toolContext))
+                .isInstanceOf(BusinessException.class)
+                .extracting(e -> ((BusinessException) e).getCode())
+                .isEqualTo(AiErrorConstants.USER_ID_REQUIRED);
+
+        verify(knowledgeGraphService, never()).getUserGraph(anyString());
     }
 }

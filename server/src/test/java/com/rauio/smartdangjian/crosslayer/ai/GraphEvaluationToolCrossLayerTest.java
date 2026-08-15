@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
@@ -24,7 +25,6 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.neo4j.core.Neo4jClient;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
@@ -35,6 +35,7 @@ import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.graph.constants.GraphConstants;
 import com.rauio.smartdangjian.server.graph.service.KnowledgeGraphService;
 import com.rauio.smartdangjian.server.user.mapper.UserMapper;
 import com.rauio.smartdangjian.server.user.pojo.entity.User;
@@ -45,10 +46,9 @@ import com.rauio.smartdangjian.server.user.service.UserService;
  *
  * <p>装配真实 {@link GraphEvaluationTool} + 真实 {@link KnowledgeGraphService}，
  * Neo4jClient 以 {@link MockitoBean} 提供（fluent 查询链 mock，行数据模拟 Neo4j 返回），
- * 验证 Tool → Service 的 Spring 装配与图谱摘要构建全链路。
+ * 验证 Tool → Service 的 Spring 装配、图谱摘要构建全链路与学习图谱写入（upsertLearningGraph）。
  */
 @SpringBootTest(classes = GraphEvaluationToolCrossLayerTest.TestConfig.class)
-@TestPropertySource(properties = {"spring.ai.model.embedding=dashscope", "spring.ai.vectorstore.type=none"})
 @DisplayName("知识图谱评价调用链跨层回归")
 class GraphEvaluationToolCrossLayerTest extends CrossLayerTestBase {
 
@@ -69,6 +69,9 @@ class GraphEvaluationToolCrossLayerTest extends CrossLayerTestBase {
 
     @Autowired
     private GraphEvaluationTool graphEvaluationTool;
+
+    @Autowired
+    private KnowledgeGraphService knowledgeGraphService;
 
     @BeforeAll
     static void initMybatisPlus() {
@@ -142,12 +145,12 @@ class GraphEvaluationToolCrossLayerTest extends CrossLayerTestBase {
     void toolBuildsGraphSummaryThroughRealService() {
         Neo4jClient.RecordFetchSpec<Map<String, Object>> fetchSpec = setupFetchChain();
         Map<String, Object> row = Map.of(
-                "u", mockNode("User", "10001", "张三"),
-                "c", mockNode("Course", "1", "二十大精神解读"),
-                "ch", mockNode("Chapter", "10", "第一章 大会主题"),
-                "r1", mockRelationship("LEARNED"),
-                "r2", mockRelationship("HAS_CHAPTER"),
-                "r3", mockRelationship("LEARNED_CHAPTER"));
+                "u", mockNode(GraphConstants.LABEL_USER, "10001", "张三"),
+                "c", mockNode(GraphConstants.LABEL_COURSE, "1", "二十大精神解读"),
+                "ch", mockNode(GraphConstants.LABEL_CHAPTER, "10", "第一章 大会主题"),
+                "r1", mockRelationship(GraphConstants.EDGE_LEARNED),
+                "r2", mockRelationship(GraphConstants.EDGE_HAS_CHAPTER),
+                "r3", mockRelationship(GraphConstants.EDGE_LEARNED_CHAPTER));
         stubRows(fetchSpec, List.of(row));
         when(userService.getCurrentUserId()).thenReturn("10001");
 
@@ -164,9 +167,9 @@ class GraphEvaluationToolCrossLayerTest extends CrossLayerTestBase {
         assertThat((List<String>) summary.get("courseNames")).containsExactly("二十大精神解读");
         assertThat((List<String>) summary.get("chapterNames")).containsExactly("第一章 大会主题");
         assertThat((Map<String, Long>) summary.get("edgeTypeCounts"))
-                .containsEntry("LEARNED", 1L)
-                .containsEntry("HAS_CHAPTER", 1L)
-                .containsEntry("LEARNED_CHAPTER", 1L);
+                .containsEntry(GraphConstants.EDGE_LEARNED, 1L)
+                .containsEntry(GraphConstants.EDGE_HAS_CHAPTER, 1L)
+                .containsEntry(GraphConstants.EDGE_LEARNED_CHAPTER, 1L);
     }
 
     @Test
@@ -185,5 +188,23 @@ class GraphEvaluationToolCrossLayerTest extends CrossLayerTestBase {
                 .containsEntry("edgeCount", 0)
                 .containsEntry("courseCount", 0L)
                 .containsEntry("learnedChapterCount", 0L);
+    }
+
+    @Test
+    @DisplayName("Tool 经真实 Service 写入学习图谱：upsertLearningGraph 全链路")
+    void upsertLearningGraphThroughRealService() {
+        User user = User.builder().id(1L).username("zhangsan").realName("张三").build();
+        Chapter chapter = Chapter.builder().id(1L).courseId(1L).title("第一章").build();
+        Course course = Course.builder().id(1L).title("测试课程").build();
+
+        when(userMapper.selectById(1L)).thenReturn(user);
+        when(chapterMapper.selectById(1L)).thenReturn(chapter);
+        when(courseMapper.selectById(1L)).thenReturn(course);
+
+        Neo4jClient.UnboundRunnableSpec spec = setupQueryChain();
+
+        knowledgeGraphService.upsertLearningGraph(1L, 1L);
+
+        verify(spec).run();
     }
 }
