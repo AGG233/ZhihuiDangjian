@@ -32,6 +32,7 @@ import com.rauio.smartdangjian.server.user.service.UserService;
 import com.rauio.smartdangjian.server.user.utils.spec.AccountStatus;
 
 import cn.dev33.satoken.SaManager;
+import cn.dev33.satoken.config.SaTokenConfig;
 import cn.dev33.satoken.context.mock.SaTokenContextMockUtil;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.crypto.digest.BCrypt;
@@ -50,6 +51,8 @@ import cn.hutool.crypto.digest.BCrypt;
 class AuthJwtCrossLayerTest extends CrossLayerTestBase {
 
     private static final String JWT_SECRET_KEY = "test-jwt-secret-key-0123456789abcdef";
+
+    private SaTokenConfig originalConfig;
 
     @MockitoBean
     private UserMapper userMapper;
@@ -89,6 +92,8 @@ class AuthJwtCrossLayerTest extends CrossLayerTestBase {
 
     @BeforeEach
     void setUpJwtContext() {
+        // 保存进入本测试前的 Sa-Token 全局配置，供 @AfterEach 恢复，避免污染同 JVM 其它测试
+        originalConfig = SaManager.getConfig();
         // mock 上下文供 Sa-Token 在无 Web 容器/Redis 时工作（登录与会话读写均走内存）
         SaTokenContextMockUtil.setMockContext();
         SaManager.getConfig().setJwtSecretKey(JWT_SECRET_KEY);
@@ -100,7 +105,23 @@ class AuthJwtCrossLayerTest extends CrossLayerTestBase {
 
     @AfterEach
     void resetJwtContext() {
-        SaManager.getConfig().setJwtSecretKey(null);
+        // 清除本测试通过真实 StpUtil.login() 产生的登录态，避免残留会话/令牌影响其它跨层测试
+        try {
+            if (StpUtil.isLogin()) {
+                StpUtil.logout();
+            }
+        } catch (Exception ignored) {
+            // 上下文可能已被清理或无可注销登录态，忽略
+        }
+        // 清除 mock 上下文，恢复为框架默认上下文
+        SaTokenContextMockUtil.clearContext();
+        // 完整恢复进入测试前的全局配置（含 jwtSecretKey），并重置被注册的 JWT StpLogic
+        if (originalConfig != null) {
+            SaManager.setConfig(originalConfig);
+        } else {
+            SaManager.getConfig().setJwtSecretKey(null);
+        }
+        originalConfig = null;
     }
 
     @Test
