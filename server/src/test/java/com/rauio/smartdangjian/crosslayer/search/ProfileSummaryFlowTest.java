@@ -321,12 +321,9 @@ class ProfileSummaryFlowTest extends CrossLayerTestBase {
     void interactionDimensionAggregatesCorrectly() {
         when(commentMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(2L);
         when(likeRecordMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(3L);
-        Comment c1 = Comment.builder().id(1L).build();
-        Comment c2 = Comment.builder().id(2L).build();
-        // 第一次取评论 ID 列表，第二次取 createdAt（活跃周数）
+        // 活跃周数：取本周期内评论与点赞的 createdAt
         when(commentMapper.selectList(any(LambdaQueryWrapper.class)))
                 .thenReturn(
-                        List.of(c1, c2),
                         List.of(Comment.builder().createdAt(LocalDateTime.now()).build()));
         when(likeRecordMapper.selectList(any(LambdaQueryWrapper.class)))
                 .thenReturn(List.of(
@@ -341,7 +338,6 @@ class ProfileSummaryFlowTest extends CrossLayerTestBase {
 
         assertThat(profile.getInteraction()).isNotNull();
         assertThat(profile.getInteraction().getCommentCount()).isEqualTo(2L);
-        assertThat(profile.getInteraction().getLikeReceivedCount()).isEqualTo(3L);
         assertThat(profile.getInteraction().getLikeGivenCount()).isEqualTo(3L);
         assertThat(profile.getInteraction().getActiveWeeks()).isEqualTo(1L);
     }

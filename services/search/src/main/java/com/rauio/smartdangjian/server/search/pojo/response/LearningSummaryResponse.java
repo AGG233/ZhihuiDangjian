@@ -25,9 +25,6 @@ public class LearningSummaryResponse {
         @Schema(description = "评论数", example = "5")
         private long commentCount;
 
-        @Schema(description = "获赞数（他人对本人评论的点赞）", example = "12")
-        private long likeReceivedCount;
-
         @Schema(description = "点赞数（本人点赞数）", example = "8")
         private long likeGivenCount;
 

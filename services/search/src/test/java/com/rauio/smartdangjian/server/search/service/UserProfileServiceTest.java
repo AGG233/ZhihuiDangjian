@@ -876,7 +876,7 @@ class UserProfileServiceTest {
     // ==================== 互动表现维度（4.5） ====================
 
     @Test
-    @DisplayName("getProfile 聚合互动维度：评论数/获赞数/点赞数/活跃周数")
+    @DisplayName("getProfile 聚合互动维度：评论数/点赞数/活跃周数")
     void getProfileAggregatesInteractionStats() {
         String userId = "user-1";
         doReturn(Collections.emptyList()).when(learningRecordMapper).selectList(any(LambdaQueryWrapper.class));
@@ -884,12 +884,8 @@ class UserProfileServiceTest {
         doReturn(0L).when(chapterProgressMapper).selectCount(any(LambdaQueryWrapper.class));
         doReturn(Collections.emptyList()).when(quizAnswerMapper).selectList(any(LambdaQueryWrapper.class));
 
-        Comment c1 = Comment.builder().id(1L).build();
-        Comment c2 = Comment.builder().id(2L).build();
-        // 第一次 selectList 取评论 ID 列表，第二次取 createdAt（活跃周数，本周 1 条）
-        doReturn(
-                        List.of(c1, c2),
-                        List.of(Comment.builder().createdAt(LocalDateTime.now()).build()))
+        // 活跃周数：取本周期内评论与点赞的 createdAt
+        doReturn(List.of(Comment.builder().createdAt(LocalDateTime.now()).build()))
                 .when(commentMapper)
                 .selectList(any(LambdaQueryWrapper.class));
         doReturn(2L).when(commentMapper).selectCount(any(LambdaQueryWrapper.class));
@@ -904,8 +900,6 @@ class UserProfileServiceTest {
         assertThat(profile.getInteraction().getCommentCount()).isEqualTo(2L);
         assertThat(profile.getInteraction().getLikeGivenCount()).isEqualTo(3L);
         assertThat(profile.getInteraction().getActiveWeeks()).isEqualTo(1L);
-        // 获赞数：他人对本人评论的点赞（commentIds=[1,2]，like 计数 3）
-        assertThat(profile.getInteraction().getLikeReceivedCount()).isEqualTo(3L);
     }
 
     @Test
@@ -925,7 +919,6 @@ class UserProfileServiceTest {
         assertThat(summary.getInteraction()).isNotNull();
         assertThat(summary.getInteraction().getCommentCount()).isEqualTo(5L);
         assertThat(summary.getInteraction().getLikeGivenCount()).isEqualTo(7L);
-        assertThat(summary.getInteraction().getLikeReceivedCount()).isZero();
         assertThat(summary.getInteraction().getActiveWeeks()).isZero();
     }
 

@@ -66,8 +66,6 @@ public class UserProfileService {
     private static final int CF_TOP_K = 3;
     /** 互动活跃度统计窗口（周） */
     private static final int INTERACTION_WEEKS = 8;
-    /** 获赞统计目标类型：评论 */
-    private static final String LIKE_TARGET_COMMENT = "comment";
     /** 协同过滤热点单次权重折算系数（score 0-1 → 热度 0-10） */
     private static final int CF_WEIGHT_SCALE = 10;
 
@@ -133,7 +131,6 @@ public class UserProfileService {
                         .build())
                 .interaction(LearningSummaryResponse.InteractionDimension.builder()
                         .commentCount(interaction.getCommentCount())
-                        .likeReceivedCount(interaction.getLikeReceivedCount())
                         .likeGivenCount(interaction.getLikeGivenCount())
                         .activeWeeks(interaction.getActiveWeeks())
                         .build())
@@ -141,8 +138,8 @@ public class UserProfileService {
     }
 
     /**
-     * 互动表现统计（模块文档 4.5）：评论数、获赞数（他人对本人评论的点赞）、
-     * 点赞数（本人点赞数）、近 {@value #INTERACTION_WEEKS} 周有互动行为的周数。
+     * 互动表现统计（模块文档 4.5）：评论数、点赞数（本人点赞数）、
+     * 近 {@value #INTERACTION_WEEKS} 周有互动行为的周数。
      *
      * @param userId 用户 ID
      * @return 互动表现统计
@@ -151,22 +148,6 @@ public class UserProfileService {
         long commentCount = commentMapper.selectCount(new LambdaQueryWrapper<Comment>().eq(Comment::getUserId, userId));
         long likeGivenCount =
                 likeRecordMapper.selectCount(new LambdaQueryWrapper<LikeRecord>().eq(LikeRecord::getUserId, userId));
-
-        // 获赞数：他人对本人评论的点赞（target_type=comment 且 target_id ∈ 本人评论 ID）
-        long likeReceivedCount = 0;
-        List<Comment> myComments = commentMapper.selectList(
-                new LambdaQueryWrapper<Comment>().eq(Comment::getUserId, userId).select(Comment::getId));
-        if (!myComments.isEmpty()) {
-            List<Long> commentIds = myComments.stream()
-                    .map(Comment::getId)
-                    .filter(Objects::nonNull)
-                    .toList();
-            if (!commentIds.isEmpty()) {
-                likeReceivedCount = likeRecordMapper.selectCount(new LambdaQueryWrapper<LikeRecord>()
-                        .eq(LikeRecord::getTargetType, LIKE_TARGET_COMMENT)
-                        .in(LikeRecord::getTargetId, commentIds));
-            }
-        }
 
         // 活跃周数：近 8 周内有评论或点赞行为的去重周数
         LocalDateTime since = LocalDateTime.now().minusWeeks(INTERACTION_WEEKS);
@@ -191,7 +172,6 @@ public class UserProfileService {
 
         return UserProfileResponse.InteractionStats.builder()
                 .commentCount(commentCount)
-                .likeReceivedCount(likeReceivedCount)
                 .likeGivenCount(likeGivenCount)
                 .activeWeeks(activeWeeks)
                 .build();
@@ -251,7 +231,8 @@ public class UserProfileService {
             if (chapterId == null || !titleMap.containsKey(chapterId)) {
                 continue;
             }
-            BigDecimal score = scoreByPeerId.getOrDefault(record.getUserId(), BigDecimal.ONE);
+            // userId 必在 scoreByPeerId 中（records 的 userId 均来自 peerIds 且已过滤非空）
+            BigDecimal score = scoreByPeerId.get(record.getUserId());
             long weight = Math.max(1L, Math.round(score.doubleValue() * CF_WEIGHT_SCALE));
             weighted.merge(titleMap.get(chapterId), weight, Long::sum);
         }

@@ -100,13 +100,11 @@ class UserProfileResponseTest {
     void interactionStatsBuildAndDefaults() {
         UserProfileResponse.InteractionStats stats = UserProfileResponse.InteractionStats.builder()
                 .commentCount(5)
-                .likeReceivedCount(12)
                 .likeGivenCount(8)
                 .activeWeeks(3)
                 .build();
 
         assertThat(stats.getCommentCount()).isEqualTo(5L);
-        assertThat(stats.getLikeReceivedCount()).isEqualTo(12L);
         assertThat(stats.getLikeGivenCount()).isEqualTo(8L);
         assertThat(stats.getActiveWeeks()).isEqualTo(3L);
 
@@ -121,7 +119,6 @@ class UserProfileResponseTest {
     void interactionStatsSerializationRoundTrip() throws JsonProcessingException {
         UserProfileResponse.InteractionStats interaction = UserProfileResponse.InteractionStats.builder()
                 .commentCount(5L)
-                .likeReceivedCount(12L)
                 .likeGivenCount(8L)
                 .activeWeeks(3L)
                 .build();
@@ -139,7 +136,6 @@ class UserProfileResponseTest {
         assertThat(restored.getInteraction()).isNotNull();
         assertThat(restored.getInteraction()).isInstanceOf(UserProfileResponse.InteractionStats.class);
         assertThat(restored.getInteraction().getCommentCount()).isEqualTo(5L);
-        assertThat(restored.getInteraction().getLikeReceivedCount()).isEqualTo(12L);
         assertThat(restored.getInteraction().getLikeGivenCount()).isEqualTo(8L);
         assertThat(restored.getInteraction().getActiveWeeks()).isEqualTo(3L);
         assertThat(restored.getInteraction()).isEqualTo(interaction);
