@@ -50,10 +50,11 @@ public class AuthController {
         return Result.ok(loginResponse);
     }
 
-    @Operation(summary = "用户注册", description = "注册新用户账户")
+    @Operation(summary = "用户注册", description = "注册新用户账户（仅支持学生角色注册）")
     @PostMapping("/register")
-    public Result<Object> register(@RequestBody @Valid RegisterRequest request) {
-        return authService.register(request);
+    public Result<Void> register(@RequestBody @Valid RegisterRequest request) {
+        authService.register(request);
+        return Result.ok(null);
     }
 
     @Operation(summary = "修改密码", description = "已登录用户修改自己的密码")

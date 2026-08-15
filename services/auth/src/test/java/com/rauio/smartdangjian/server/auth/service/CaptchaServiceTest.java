@@ -88,7 +88,7 @@ class CaptchaServiceTest {
     }
 
     @Test
-    @DisplayName("validate testCode 配置不为空但不匹配时继续校验 Redis")
+    @DisplayName("validate testCode 配置不为空但不匹配时继续校验 Redis 并消费")
     void validateFallsThroughToRedisWhenTestCodeMismatches() {
         ReflectionTestUtils.setField(captchaService, "testCode", "9999");
         when(valueOps.get(eq("captcha:uuid-1"))).thenReturn("1234");
@@ -96,36 +96,40 @@ class CaptchaServiceTest {
         Boolean result = captchaService.validate("uuid-1", "1234");
 
         assertThat(result).isTrue();
+        verify(redisTemplate).delete("captcha:uuid-1");
     }
 
     @Test
-    @DisplayName("validate Redis 中验证码匹配时返回 true")
+    @DisplayName("validate Redis 中验证码匹配时返回 true 并消费删除验证码")
     void validateReturnsTrueWhenRedisCodeMatches() {
         when(valueOps.get(eq("captcha:my-uuid"))).thenReturn("ABCD");
 
         Boolean result = captchaService.validate("my-uuid", "ABCD");
 
         assertThat(result).isTrue();
+        verify(redisTemplate).delete("captcha:my-uuid");
     }
 
     @Test
-    @DisplayName("validate Redis 中验证码不匹配时返回 false")
+    @DisplayName("validate Redis 中验证码不匹配时返回 false 且删除验证码（防重放）")
     void validateReturnsFalseWhenRedisCodeMismatches() {
         when(valueOps.get(eq("captcha:my-uuid"))).thenReturn("ABCD");
 
         Boolean result = captchaService.validate("my-uuid", "WRONG");
 
         assertThat(result).isFalse();
+        verify(redisTemplate).delete("captcha:my-uuid");
     }
 
     @Test
-    @DisplayName("validate Redis 中无验证码时返回 false")
+    @DisplayName("validate Redis 中无验证码时返回 false 并删除 key")
     void validateReturnsFalseWhenRedisHasNoCode() {
         when(valueOps.get(eq("captcha:my-uuid"))).thenReturn(null);
 
         Boolean result = captchaService.validate("my-uuid", "ABCD");
 
         assertThat(result).isFalse();
+        verify(redisTemplate).delete("captcha:my-uuid");
     }
 
     @Test
@@ -137,6 +141,7 @@ class CaptchaServiceTest {
         Boolean result = captchaService.validate("uuid-1", "1234");
 
         assertThat(result).isTrue();
+        verify(redisTemplate).delete("captcha:uuid-1");
     }
 
     @Test

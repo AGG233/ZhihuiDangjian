@@ -20,4 +20,9 @@ public class AuthErrorConstants {
     public static final int USER_NOT_FOUND = 1013;
     public static final int OLD_PASSWORD_ERROR = 1014;
     public static final int PASSWORD_CHANGE_ERROR = 1015;
+
+    // 登录安全（防枚举与防爆破）
+    public static final int LOGIN_FAILED = 1016;
+    public static final int ACCOUNT_LOCKED = 1017;
+    public static final int REGISTER_TYPE_FORBIDDEN = 1018;
 }
