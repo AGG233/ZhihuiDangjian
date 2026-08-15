@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.4](https://github.com/AGG233/ZhihuiDangjian/compare/v0.8.3...v0.8.4) (2026-08-15)
+
+
+### Bug Fixes
+
+* **ci:** disable provenance for aliyun acr push ([#95](https://github.com/AGG233/ZhihuiDangjian/issues/95)) ([ebd6687](https://github.com/AGG233/ZhihuiDangjian/commit/ebd66871d8e25fa5c67fae7823421a674794575a))
+* **ci:** inject app image inside ssh script ([f5d1197](https://github.com/AGG233/ZhihuiDangjian/commit/f5d11973773a589c20508927ad80da5fa78ae48a))
+
 ## [0.8.3](https://github.com/AGG233/ZhihuiDangjian/compare/v0.8.2...v0.8.3) (2026-08-15)
 
 
