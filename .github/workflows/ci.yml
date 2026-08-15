@@ -74,6 +74,7 @@ jobs:
       - name: Start server for API smoke
         env:
           SPRING_PROFILES_ACTIVE: prod
+          SA_TOKEN_JWT_SECRET_KEY: ci-smoke-test-jwt-secret-key-0123456789abcdef
           DATABASE_URL: jdbc:mysql://127.0.0.1:3306/zhdj?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
           DATABASE_USERNAME: root
           DATABASE_PASSWORD: root

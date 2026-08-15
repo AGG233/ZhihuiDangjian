@@ -25,7 +25,6 @@ mapstruct = "1.6.3"
 
 tika = "3.2.2"
 hutool = "5.8.40"
-java-jwt = "4.5.0"
 sensitive-word = "0.29.5"
 
 springdoc = "2.8.13"
@@ -63,6 +62,7 @@ spring-ai-alibaba-agent-framework = { module = "com.alibaba.cloud.ai:spring-ai-a
 # Security
 sa-token-spring-boot3-starter = { module = "cn.dev33:sa-token-spring-boot3-starter", version.ref = "sa-token" }
 sa-token-redis-jackson = { module = "cn.dev33:sa-token-redis-jackson", version.ref = "sa-token" }
+sa-token-jwt = { module = "cn.dev33:sa-token-jwt", version.ref = "sa-token" }
 # Datasource
 hikari-cp = { module = "com.zaxxer:HikariCP", version.ref = "hikari-cp" }
 mysql-connector-j = { module = "com.mysql:mysql-connector-j" }
@@ -77,7 +77,6 @@ redisson = { module = "org.redisson:redisson-spring-boot-starter", version.ref =
 commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }
 commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons-codec" }
 hutool-all = { module = "cn.hutool:hutool-all", version.ref = "hutool" }
-java-jwt = { module = "com.auth0:java-jwt", version.ref = "java-jwt" }
 mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
 mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
 tika-core = { module = "org.apache.tika:tika-core", version.ref = "tika" }
@@ -115,7 +114,8 @@ ai = [
 ]
 sa-token = [
   "sa-token-spring-boot3-starter",
-  "sa-token-redis-jackson"
+  "sa-token-redis-jackson",
+  "sa-token-jwt"
 ]
 datasource-core = [
   "spring-boot-starter-jdbc",

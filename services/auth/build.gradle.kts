@@ -10,9 +10,9 @@ dependencies {
     // implementation(libs.bundles.security)
     implementation(libs.sa.token.spring.boot3.starter)
     implementation(libs.sa.token.redis.jackson)
+    implementation(libs.sa.token.jwt)
     implementation(libs.spring.boot.starter.data.redis)
     implementation(libs.hutool.all)
-    // implementation(libs.java.jwt)
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
