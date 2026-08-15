@@ -23,10 +23,6 @@ import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import cn.dev33.satoken.stp.StpUtil;
-import cn.dev33.satoken.session.SaSession;
-import cn.hutool.crypto.digest.BCrypt;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rauio.smartdangjian.exception.BusinessException;
@@ -38,6 +34,10 @@ import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
+
+import cn.dev33.satoken.session.SaSession;
+import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.crypto.digest.BCrypt;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -343,6 +343,56 @@ class UserServiceTest {
     }
 
     // ================================================================
+    // updatePassword
+    // ================================================================
+
+    @Test
+    @DisplayName("updatePassword 明文密码加密后落库")
+    void updatePasswordEncodesAndUpdates() {
+        User user = createUser(1L, "testuser", "test@example.com", "13800138000");
+        doReturn(user).when(userService).getById(1L);
+        doReturn(true).when(userService).updateById(any(User.class));
+
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.hashpw("raw-password")).thenReturn("encoded-new");
+
+            userService.updatePassword(1L, "raw-password");
+
+            assertThat(user.getPassword()).isEqualTo("encoded-new");
+            bcryptMock.verify(() -> BCrypt.hashpw("raw-password"));
+            verify(userService).updateById(user);
+        }
+    }
+
+    @Test
+    @DisplayName("updatePassword 用户不存在时抛出 BusinessException")
+    void updatePasswordThrowsWhenUserNotFound() {
+        doReturn(null).when(userService).getById(9999L);
+
+        assertThatThrownBy(() -> userService.updatePassword(9999L, "raw-password"))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(UserErrorConstants.USER_NOT_EXISTS);
+    }
+
+    @Test
+    @DisplayName("updatePassword 落库失败时抛出 BusinessException")
+    void updatePasswordThrowsWhenUpdateFails() {
+        User user = createUser(1L, "testuser", "test@example.com", "13800138000");
+        doReturn(user).when(userService).getById(1L);
+        doReturn(false).when(userService).updateById(any(User.class));
+
+        try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
+            bcryptMock.when(() -> BCrypt.hashpw(anyString())).thenReturn("encoded-new");
+
+            assertThatThrownBy(() -> userService.updatePassword(1L, "raw-password"))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("code")
+                    .isEqualTo(UserErrorConstants.USER_NOT_EXISTS);
+        }
+    }
+
+    // ================================================================
     // delete
     // ================================================================
 
@@ -499,7 +549,9 @@ class UserServiceTest {
         doReturn(true).when(userService).updateById(any(User.class));
 
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
-            bcryptMock.when(() -> BCrypt.checkpw("oldPassword", "encodedOldPassword")).thenReturn(true);
+            bcryptMock
+                    .when(() -> BCrypt.checkpw("oldPassword", "encodedOldPassword"))
+                    .thenReturn(true);
             bcryptMock.when(() -> BCrypt.hashpw("newPassword")).thenReturn("encodedNewPassword");
 
             userService.changePassword("oldPassword", "newPassword");
@@ -520,7 +572,9 @@ class UserServiceTest {
         doReturn(user).when(userService).getCurrentUser();
 
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
-            bcryptMock.when(() -> BCrypt.checkpw("wrongPassword", "encodedOldPassword")).thenReturn(false);
+            bcryptMock
+                    .when(() -> BCrypt.checkpw("wrongPassword", "encodedOldPassword"))
+                    .thenReturn(false);
 
             assertThatThrownBy(() -> userService.changePassword("wrongPassword", "newPassword"))
                     .isInstanceOf(BusinessException.class)
@@ -542,7 +596,9 @@ class UserServiceTest {
         doReturn(false).when(userService).updateById(any(User.class));
 
         try (MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
-            bcryptMock.when(() -> BCrypt.checkpw("oldPassword", "encodedOldPassword")).thenReturn(true);
+            bcryptMock
+                    .when(() -> BCrypt.checkpw("oldPassword", "encodedOldPassword"))
+                    .thenReturn(true);
             bcryptMock.when(() -> BCrypt.hashpw("newPassword")).thenReturn("encodedNewPassword");
 
             assertThatThrownBy(() -> userService.changePassword("oldPassword", "newPassword"))

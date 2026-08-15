@@ -2,14 +2,9 @@ package com.rauio.smartdangjian.server.user.service;
 
 import static com.rauio.smartdangjian.constants.RedisConstants.USER_VO_CACHE_PREFIX;
 
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-
-import cn.hutool.crypto.digest.BCrypt;
-
-import cn.dev33.satoken.stp.StpUtil;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -24,6 +19,8 @@ import com.rauio.smartdangjian.server.user.pojo.request.UserRequest;
 import com.rauio.smartdangjian.server.user.pojo.response.UserPublicResponse;
 import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 
+import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.crypto.digest.BCrypt;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -141,7 +138,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param user 用户实体
      * @throws BusinessException 如果更新失败
      */
-    @CachePut(value = USER_VO_CACHE_PREFIX, key = "#id")
+    @CacheEvict(value = USER_VO_CACHE_PREFIX, allEntries = true)
     public void update(Long id, User user) {
         user.setId(id);
         if (StringUtils.isNotBlank(user.getPassword())) {
@@ -149,6 +146,28 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         }
         if (!this.updateById(user)) {
             throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户更新失败");
+        }
+    }
+
+    /**
+     * 修改用户密码（明文入参，内部 bcrypt 加密落库）。
+     * 走 service 代理以触发 {@code user:data:*} 缓存整体驱逐，
+     * 避免修改密码后旧密码哈希仍被缓存命中。
+     *
+     * @param id 用户 ID
+     * @param rawPassword 明文新密码
+     * @throws BusinessException 如果用户不存在或更新失败
+     */
+    @CacheEvict(value = USER_VO_CACHE_PREFIX, allEntries = true)
+    public void updatePassword(Long id, String rawPassword) {
+        User user = this.getById(id);
+        if (user == null) {
+            throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户不存在");
+        }
+        user.setPassword(BCrypt.hashpw(rawPassword));
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        if (!this.updateById(user)) {
+            throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "密码修改失败");
         }
     }
 
