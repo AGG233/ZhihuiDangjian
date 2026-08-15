@@ -1,6 +1,10 @@
 package com.rauio.smartdangjian.server.content.service.category;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,28 +36,55 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
     /**
      * 根据目录 ID 获取目录树详情。
      *
+     * <p>一次查询该目录的全部后代（按 parentId 关系），在内存中组装完整子树，避免依赖转换器 children
+     * 字段（原实现恒为 null 导致死代码、永远返回空子树）。
+     *
      * @param id 目录id
-     * @return  目录以及它的子目录
+     * @return 目录以及它的子目录
      */
     public CategoryResponse get(Long id) {
         Category category = super.getById(id);
-        List<CategoryResponse> children;
         if (category == null) {
             throw new BusinessException(CategoryErrorConstants.CATEGORY_NOT_FOUND, "目录不存在");
         }
 
         CategoryResponse parent = convertor.toResponse(category);
-        children = parent.getChildren();
-
-        if (children != null && !children.isEmpty()) {
-            for (CategoryResponse node : children) {
-                if (!node.getChildren().isEmpty()) {
-                    get(node.getId());
-                }
-            }
-            parent.setChildren(children);
-        }
+        parent.setChildren(buildChildrenTree(id));
         return parent;
+    }
+
+    /**
+     * 一次性查询全部目录，按父目录 ID 组装传入节点下的完整子树。
+     *
+     * @param parentId 子树根目录 ID
+     * @return 该目录下的子目录树
+     */
+    private List<CategoryResponse> buildChildrenTree(Long parentId) {
+        List<Category> all = this.list();
+        if (all == null || all.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Map<Long, List<Category>> childrenByParent =
+                all.stream().filter(c -> c.getParentId() != null).collect(Collectors.groupingBy(Category::getParentId));
+        return collectChildren(childrenByParent, parentId);
+    }
+
+    /**
+     * 递归收集某目录下的直接子目录并逐层填充各自的 children。
+     *
+     * @param childrenByParent parentId -> 子目录列表 的映射
+     * @param parentId 当前父目录 ID
+     * @return 当前父目录下的子目录树
+     */
+    private List<CategoryResponse> collectChildren(Map<Long, List<Category>> childrenByParent, Long parentId) {
+        List<Category> directChildren = childrenByParent.getOrDefault(parentId, Collections.emptyList());
+        List<CategoryResponse> result = new ArrayList<>();
+        for (Category child : directChildren) {
+            CategoryResponse vo = convertor.toResponse(child);
+            vo.setChildren(collectChildren(childrenByParent, child.getId()));
+            result.add(vo);
+        }
+        return result;
     }
 
     /**
@@ -206,5 +237,4 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
         category.setParentId(existing.getParentId());
         return this.updateById(category);
     }
-
 }

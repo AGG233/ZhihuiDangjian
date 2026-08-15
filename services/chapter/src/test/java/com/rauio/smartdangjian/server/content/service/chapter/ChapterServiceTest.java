@@ -20,8 +20,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterConvertor;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterContentBlockConvertor;
+import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterConvertor;
 import com.rauio.smartdangjian.server.content.pojo.dto.ContentBlockDto;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
@@ -92,10 +92,8 @@ class ChapterServiceTest {
         Chapter chapter = Chapter.builder().title("新章节").build();
         chapter.setId(1L);
 
-        ChapterContentBlock block = ChapterContentBlock.builder()
-                .chapterId(1L)
-                .textContent("文本内容")
-                .build();
+        ChapterContentBlock block =
+                ChapterContentBlock.builder().chapterId(1L).textContent("文本内容").build();
 
         doReturn(null).when(chapterService).getOne(any(LambdaQueryWrapper.class));
         when(chapterConvertor.toEntity(dto)).thenReturn(chapter);
@@ -196,30 +194,31 @@ class ChapterServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("update 更新章节成功返回 true")
+    @DisplayName("update 更新章节成功时调用 updateById 且 id 已设置")
     void updateChapterSuccessfully() {
         ChapterRequest dto =
                 ChapterRequest.builder().title("更新章节").description("更新描述").build();
-        Chapter entity = Chapter.builder().id(1L).title("更新章节").build();
+        Chapter entity = Chapter.builder().title("更新章节").build();
+        Chapter existing = Chapter.builder().id(1L).title("旧章节").build();
+        doReturn(existing).when(chapterService).getById(1L);
         when(chapterConvertor.toEntity(dto)).thenReturn(entity);
-        doReturn(true).when(chapterService).updateById(entity);
+        doReturn(true).when(chapterService).updateById(any(Chapter.class));
 
-        Boolean result = chapterService.update(dto);
+        chapterService.update(dto, 1L);
 
-        assertThat(result).isTrue();
+        assertThat(entity.getId()).isEqualTo(1L);
+        verify(chapterService).updateById(entity);
     }
 
     @Test
-    @DisplayName("update 更新失败时返回 false")
-    void updateReturnsFalseWhenUpdateFails() {
-        ChapterRequest dto = ChapterRequest.builder().title("失败更新").build();
-        Chapter entity = Chapter.builder().id(1L).title("失败更新").build();
-        when(chapterConvertor.toEntity(dto)).thenReturn(entity);
-        doReturn(false).when(chapterService).updateById(entity);
+    @DisplayName("update 章节不存在时抛出 BusinessException")
+    void updateThrowsExceptionWhenChapterNotFound() {
+        ChapterRequest dto = ChapterRequest.builder().title("更新章节").build();
+        doReturn(null).when(chapterService).getById(999L);
 
-        Boolean result = chapterService.update(dto);
-
-        assertThat(result).isFalse();
+        assertThatThrownBy(() -> chapterService.update(dto, 999L))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("章节不存在");
     }
 
     // ================================================================
@@ -230,16 +229,8 @@ class ChapterServiceTest {
     @DisplayName("getByCourseId 根据课程 ID 返回章节列表")
     void getByCourseIdReturnsChapterResponseList() {
         List<Chapter> chapters = List.of(
-                Chapter.builder()
-                        .id(1L)
-                        .courseId(1L)
-                        .title("第一章")
-                        .build(),
-                Chapter.builder()
-                        .id(1L)
-                        .courseId(1L)
-                        .title("第二章")
-                        .build());
+                Chapter.builder().id(1L).courseId(1L).title("第一章").build(),
+                Chapter.builder().id(1L).courseId(1L).title("第二章").build());
         List<ChapterResponse> vos = List.of(
                 ChapterResponse.builder().id(1L).title("第一章").build(),
                 ChapterResponse.builder().id(2L).title("第二章").build());
@@ -268,22 +259,24 @@ class ChapterServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("delete 删除章节成功返回 true")
+    @DisplayName("delete 删除存在的章节时调用 removeById")
     void deleteChapterSuccessfully() {
+        Chapter existing = Chapter.builder().id(1L).title("第一章").build();
+        doReturn(existing).when(chapterService).getById(1L);
         doReturn(true).when(chapterService).removeById(1L);
 
-        Boolean result = chapterService.delete(1L);
+        chapterService.delete(1L);
 
-        assertThat(result).isTrue();
+        verify(chapterService).removeById(1L);
     }
 
     @Test
-    @DisplayName("delete 删除不存在的章节返回 false")
-    void deleteReturnsFalseWhenChapterNotFound() {
-        doReturn(false).when(chapterService).removeById(999L);
+    @DisplayName("delete 删除不存在的章节时抛出 BusinessException")
+    void deleteThrowsExceptionWhenChapterNotFound() {
+        doReturn(null).when(chapterService).getById(999L);
 
-        Boolean result = chapterService.delete(999L);
-
-        assertThat(result).isFalse();
+        assertThatThrownBy(() -> chapterService.delete(999L))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("章节不存在");
     }
 }

@@ -106,18 +106,17 @@ public final class CourseTestDataFactory {
 
     // ── PageResponse ─────────────────────────────────────────────────────
 
-    @SuppressWarnings("unchecked")
-    public static PageResponse<Object> createPageResponse(List<?> data, long total, long current, long size) {
-        return PageResponse.<Object>builder()
+    public static <T> PageResponse<T> createPageResponse(List<T> data, long total, long current, long size) {
+        return PageResponse.<T>builder()
                 .total(total)
                 .size(size)
                 .current(current)
-                .list((List<Object>) data)
+                .list(data)
                 .build();
     }
 
-    public static PageResponse<Object> createEmptyPageResponse(long current, long size) {
-        return PageResponse.<Object>builder()
+    public static <T> PageResponse<T> createEmptyPageResponse(long current, long size) {
+        return PageResponse.<T>builder()
                 .total(0L)
                 .size(size)
                 .current(current)

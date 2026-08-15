@@ -4,18 +4,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 
 import java.util.List;
 
+import org.apache.ibatis.builder.MapperBuilderAssistant;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.rauio.smartdangjian.server.content.mapper.ChapterContentBlockMapper;
 import com.rauio.smartdangjian.server.content.pojo.convertor.ChapterContentBlockConvertor;
 import com.rauio.smartdangjian.server.content.pojo.entity.ChapterContentBlock;
@@ -23,6 +29,14 @@ import com.rauio.smartdangjian.server.content.pojo.response.ContentBlockResponse
 
 @ExtendWith(MockitoExtension.class)
 class ChapterContentBlockServiceTest {
+
+    @BeforeAll
+    static void initMybatisTableInfo() {
+        // 初始化 MyBatis-Plus 的 Lambda 元数据缓存，便于在无 Spring 上下文的单测中解析列名
+        MybatisConfiguration configuration = new MybatisConfiguration();
+        MapperBuilderAssistant assistant = new MapperBuilderAssistant(configuration, "");
+        TableInfoHelper.initTableInfo(assistant, ChapterContentBlock.class);
+    }
 
     @Mock
     private ChapterContentBlockMapper mapper;
@@ -42,9 +56,8 @@ class ChapterContentBlockServiceTest {
     @Test
     @DisplayName("create 创建内容块成功")
     void createSuccess() {
-        ChapterContentBlock entity = ChapterContentBlock.builder()
-                .chapterId(CHAPTER_ID)
-                .build();
+        ChapterContentBlock entity =
+                ChapterContentBlock.builder().chapterId(CHAPTER_ID).build();
         doReturn(true).when(service).save(any(ChapterContentBlock.class));
 
         boolean result = service.create(entity);
@@ -55,9 +68,8 @@ class ChapterContentBlockServiceTest {
     @Test
     @DisplayName("create 创建内容块失败")
     void createFailed() {
-        ChapterContentBlock entity = ChapterContentBlock.builder()
-                .chapterId(CHAPTER_ID)
-                .build();
+        ChapterContentBlock entity =
+                ChapterContentBlock.builder().chapterId(CHAPTER_ID).build();
         doReturn(false).when(service).save(any(ChapterContentBlock.class));
 
         boolean result = service.create(entity);
@@ -134,10 +146,8 @@ class ChapterContentBlockServiceTest {
     @Test
     @DisplayName("get 根据ID获取内容块成功")
     void getSuccess() {
-        ChapterContentBlock entity = ChapterContentBlock.builder()
-                .id(BLOCK_ID)
-                .chapterId(CHAPTER_ID)
-                .build();
+        ChapterContentBlock entity =
+                ChapterContentBlock.builder().id(BLOCK_ID).chapterId(CHAPTER_ID).build();
         doReturn(entity).when(service).getById(BLOCK_ID);
 
         ContentBlockResponse response = new ContentBlockResponse();
@@ -184,6 +194,27 @@ class ChapterContentBlockServiceTest {
         List<ContentBlockResponse> result = service.getByChapterId(CHAPTER_ID);
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getByChapterId 查询包含 orderIndex 升序排序")
+    void getByChapterIdOrdersByOrderIndexAsc() {
+        List<ChapterContentBlock> entities = List.of(
+                ChapterContentBlock.builder().id(2L).orderIndex(2).build(),
+                ChapterContentBlock.builder().id(1L).orderIndex(1).build());
+        doReturn(entities).when(service).list(any(LambdaQueryWrapper.class));
+
+        service.getByChapterId(CHAPTER_ID);
+
+        ArgumentCaptor<LambdaQueryWrapper<ChapterContentBlock>> captor =
+                ArgumentCaptor.forClass(LambdaQueryWrapper.class);
+        verify(service).list(captor.capture());
+        String sql = captor.getValue().getSqlSegment().toUpperCase();
+        assertThat(sql)
+                .as("查询条件应包含按 order_index 升序排序")
+                .contains("ORDER BY")
+                .contains("ORDER_INDEX")
+                .contains("ASC");
     }
 
     // ==================== getByResourceIds ====================

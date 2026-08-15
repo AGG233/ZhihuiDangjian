@@ -80,7 +80,10 @@ public class SensitiveDataSerializer extends JsonSerializer<String> implements C
         if (idCard == null || idCard.length() < 10) {
             return idCard;
         }
-        return idCard.substring(0, 3) + "*************" + idCard.substring(idCard.length() - 2);
+        int keepHead = 6;
+        int keepTail = 4;
+        int maskLength = Math.max(0, idCard.length() - keepHead - keepTail);
+        return idCard.substring(0, keepHead) + "*".repeat(maskLength) + idCard.substring(idCard.length() - keepTail);
     }
 
     /**
@@ -107,6 +110,9 @@ public class SensitiveDataSerializer extends JsonSerializer<String> implements C
      */
     private String desensitizeEmail(String email) {
         int atIndex = email.indexOf('@');
+        if (atIndex <= 0) {
+            return email;
+        }
 
         String username = email.substring(0, atIndex);
         String domain = email.substring(atIndex);

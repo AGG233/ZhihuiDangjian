@@ -67,7 +67,7 @@ class UserCourseControllerTest extends BaseControllerTest {
         @DisplayName("GET / - 分页获取课程列表成功")
         void getPageSuccess() throws Exception {
             CourseResponse vo = CourseTestDataFactory.createCourseResponse(1L);
-            PageResponse<Object> pageVO = CourseTestDataFactory.createPageResponse(List.of(vo), 1, 1, 10);
+            PageResponse<CourseResponse> pageVO = CourseTestDataFactory.createPageResponse(List.of(vo), 1, 1, 10);
             when(courseService.getPage(1, 10)).thenReturn(pageVO);
 
             mockMvc.perform(get("/api/content/courses").param("pageNum", "1").param("pageSize", "10"))
@@ -81,7 +81,7 @@ class UserCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET / - 不传分页参数时使用默认值")
         void getPageWithDefaults() throws Exception {
-            PageResponse<Object> emptyPage = CourseTestDataFactory.createEmptyPageResponse(1, 10);
+            PageResponse<CourseResponse> emptyPage = CourseTestDataFactory.createEmptyPageResponse(1, 10);
             when(courseService.getPage(1, 10)).thenReturn(emptyPage);
 
             mockMvc.perform(get("/api/content/courses"))
@@ -161,7 +161,7 @@ class UserCourseControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("GET / - 空分页结果返回空列表")
         void getPageEmptyResult() throws Exception {
-            PageResponse<Object> emptyPage = CourseTestDataFactory.createEmptyPageResponse(1, 10);
+            PageResponse<CourseResponse> emptyPage = CourseTestDataFactory.createEmptyPageResponse(1, 10);
             when(courseService.getPage(1, 10)).thenReturn(emptyPage);
 
             mockMvc.perform(get("/api/content/courses").param("pageNum", "1").param("pageSize", "10"))

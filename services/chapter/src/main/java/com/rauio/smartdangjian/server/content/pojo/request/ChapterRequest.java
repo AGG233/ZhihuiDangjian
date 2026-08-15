@@ -4,6 +4,7 @@ import java.util.List;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import com.rauio.smartdangjian.server.content.pojo.dto.ContentBlockDto;
 
@@ -15,6 +16,9 @@ import lombok.Data;
 @Builder
 @Schema(description = "章节请求体")
 public class ChapterRequest {
+
+    @Schema(description = "章节ID，更新时传入")
+    private Long id;
 
     @Schema(description = "章节所属的课程ID")
     @NotBlank(message = "课程ID不能为空")
@@ -33,7 +37,7 @@ public class ChapterRequest {
     private Integer duration = -1;
 
     @Schema(description = "该章节在课程中的排列顺序，比如第九章", example = "9")
-    @NotBlank(message = "章节顺序不能为空")
+    @NotNull(message = "章节顺序不能为空")
     private Integer orderIndex;
 
     @Schema(description = "章节是否为必学，如果是则为False，默认为false", example = "False")

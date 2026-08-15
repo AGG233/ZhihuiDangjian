@@ -6,7 +6,6 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
-import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
@@ -15,6 +14,7 @@ import com.rauio.smartdangjian.server.content.pojo.request.ChapterRequest;
 import com.rauio.smartdangjian.server.content.pojo.response.ChapterResponse;
 import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -50,18 +50,22 @@ public class AdminChapterController {
     }
 
     @Operation(summary = "更新章节")
-    @PutMapping
-    @DataScopeAccess(resource = DataScopeResources.CHAPTER_ADMIN, action = DataScopeAction.UPDATE, body = "#chapter")
-    public Result<Boolean> update(@RequestBody @Valid ChapterRequest chapter) {
-        Boolean result = chapterService.update(chapter);
-        return Result.ok(result);
+    @PutMapping("/{id}")
+    @DataScopeAccess(
+            resource = DataScopeResources.CHAPTER_ADMIN,
+            action = DataScopeAction.UPDATE,
+            id = "#id",
+            body = "#chapter")
+    public Result<Void> update(@PathVariable Long id, @RequestBody @Valid ChapterRequest chapter) {
+        chapterService.update(chapter, id);
+        return Result.ok();
     }
 
     @Operation(summary = "删除章节", description = "根据章节ID删除章节")
     @DeleteMapping("/{id}")
     @DataScopeAccess(resource = DataScopeResources.CHAPTER_ADMIN, action = DataScopeAction.DELETE, id = "#id")
-    public Result<Boolean> delete(@PathVariable Long id) {
-        Boolean result = chapterService.delete(id);
-        return Result.ok(result);
+    public Result<Void> delete(@PathVariable Long id) {
+        chapterService.delete(id);
+        return Result.ok();
     }
 }

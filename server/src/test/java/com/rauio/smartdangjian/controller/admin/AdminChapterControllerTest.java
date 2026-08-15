@@ -1,6 +1,9 @@
 package com.rauio.smartdangjian.controller.admin;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -53,29 +56,30 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterRequest())))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test
         @DisplayName("更新章节返回成功")
         void updateChapterSuccess() throws Exception {
-            when(chapterService.update(any(ChapterRequest.class))).thenReturn(true);
+            doNothing().when(chapterService).update(any(ChapterRequest.class), eq(1L));
 
-            mockMvc.perform(put("/api/admin/content/chapters")
+            mockMvc.perform(put("/api/admin/content/chapters/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterRequest())))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test
         @DisplayName("删除章节返回成功")
         void deleteChapterSuccess() throws Exception {
-            when(chapterService.delete(1L)).thenReturn(true);
+            doNothing().when(chapterService).delete(1L);
 
             mockMvc.perform(delete("/api/admin/content/chapters/1"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value(true));
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test
@@ -125,14 +129,16 @@ class AdminChapterControllerTest extends BaseControllerTest {
     class ErrorTests {
 
         @Test
-        @DisplayName("Service 抛出 BusinessException 返回 500")
+        @DisplayName("Service 抛出 BusinessException 返回 400")
         void createThrowsBusinessException() throws Exception {
             when(chapterService.create(any(ChapterRequest.class))).thenThrow(new BusinessException(4000, "课程至少需要一个章节"));
 
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterRequest())))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("4000"))
+                    .andExpect(jsonPath("$.message").value("课程至少需要一个章节"));
         }
 
         @Test
@@ -148,26 +154,29 @@ class AdminChapterControllerTest extends BaseControllerTest {
         }
 
         @Test
-        @DisplayName("更新章节时 Service 返回 false 则 code 为 500")
+        @DisplayName("更新章节时 Service 抛出 BusinessException 返回 400")
         void updateReturnsFalse() throws Exception {
-            when(chapterService.update(any(ChapterRequest.class))).thenReturn(false);
+            doThrow(new BusinessException(3101, "章节不存在"))
+                    .when(chapterService)
+                    .update(any(ChapterRequest.class), eq(9999L));
 
-            mockMvc.perform(put("/api/admin/content/chapters")
+            mockMvc.perform(put("/api/admin/content/chapters/9999")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(CourseTestDataFactory.createChapterRequest())))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("3101"))
+                    .andExpect(jsonPath("$.message").value("章节不存在"));
         }
 
         @Test
-        @DisplayName("删除章节时 Service 返回 false 则 code 为 400")
+        @DisplayName("删除章节时 Service 抛出 BusinessException 返回 400")
         void deleteReturnsFalse() throws Exception {
-            when(chapterService.delete(9999L)).thenReturn(false);
+            doThrow(new BusinessException(3101, "章节不存在")).when(chapterService).delete(9999L);
 
             mockMvc.perform(delete("/api/admin/content/chapters/9999"))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("200"))
-                    .andExpect(jsonPath("$.data").value(false))
-                    .andExpect(jsonPath("$.message").value("OK"));
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("3101"))
+                    .andExpect(jsonPath("$.message").value("章节不存在"));
         }
 
         @Test
@@ -200,7 +209,8 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test
@@ -219,7 +229,8 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test
@@ -238,7 +249,8 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         private com.rauio.smartdangjian.server.content.pojo.dto.ContentBlockDto createSimpleContentBlock() {
@@ -269,7 +281,8 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test
@@ -288,7 +301,8 @@ class AdminChapterControllerTest extends BaseControllerTest {
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CourseTestDataFactory.toJson(dto)))
-                    .andExpect(status().is5xxServerError());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("200"));
         }
 
         @Test

@@ -84,8 +84,13 @@ public class TaskService extends ServiceImpl<TaskAcceptanceMapper, TaskAcceptanc
                 .status(TaskAcceptanceStatus.ACCEPTED)
                 .acceptedAt(LocalDateTime.now())
                 .build();
-        if (!this.save(acceptance)) {
-            throw new BusinessException(TASK_SAVE_FAILED, "任务领取失败");
+        try {
+            if (!this.save(acceptance)) {
+                throw new BusinessException(TASK_SAVE_FAILED, "任务领取失败");
+            }
+        } catch (org.springframework.dao.DuplicateKeyException e) {
+            // 并发领取：唯一约束 uk_task_acceptance_task_user 冲突视为重复领取
+            throw new BusinessException(TASK_ALREADY_ACCEPTED, "任务已领取，请勿重复领取");
         }
         return taskConvertor.toAcceptanceResponse(acceptance);
     }

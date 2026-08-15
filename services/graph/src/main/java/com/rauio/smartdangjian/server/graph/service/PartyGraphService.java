@@ -95,7 +95,7 @@ public class PartyGraphService {
     public KnowledgeGraphResponse queryRelated(String entityType, String entityId, List<String> relationTypes) {
         String label = requirePartyLabel(entityType);
         String cypher = "MATCH (n:" + label + " {id:$entityId})-[r]-(m)\n"
-                + "WHERE r.type() IN $relationTypes\n"
+                + "WHERE type(r) IN $relationTypes\n"
                 + "RETURN n, r, m";
 
         List<Map<String, Object>> rows = (List<Map<String, Object>>) neo4jClient

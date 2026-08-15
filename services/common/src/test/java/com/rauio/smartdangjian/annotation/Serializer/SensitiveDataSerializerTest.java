@@ -65,21 +65,31 @@ class SensitiveDataSerializerTest {
     }
 
     @Test
-    @DisplayName("ID_CARD 类型脱敏：前3后2")
+    @DisplayName("ID_CARD 类型脱敏：保留前六后四（340123********1234）")
     void serializeIdCard() throws IOException {
         SensitiveDataSerializer serializer = new SensitiveDataSerializer(Sensitive.SensitiveType.ID_CARD);
         serializer.serialize("340123199001011234", gen, provider);
 
-        verify(gen).writeString("340*************34");
+        verify(gen).writeString("340123********1234");
     }
 
     @Test
-    @DisplayName("ID_CARD 长度不足 10 位时不脱敏")
+    @DisplayName("ID_CARD 短号码按保留位动态生成掩码")
     void serializeShortIdCard() throws IOException {
         SensitiveDataSerializer serializer = new SensitiveDataSerializer(Sensitive.SensitiveType.ID_CARD);
-        serializer.serialize("12345", gen, provider);
+        // 10 位：保留前6后4，中间无掩码，原样返回
+        serializer.serialize("1234567890", gen, provider);
 
-        verify(gen).writeString("12345");
+        verify(gen).writeString("1234567890");
+    }
+
+    @Test
+    @DisplayName("ID_CARD 11 位：保留前6后4，中间 1 位掩码")
+    void serializeElevenDigitIdCard() throws IOException {
+        SensitiveDataSerializer serializer = new SensitiveDataSerializer(Sensitive.SensitiveType.ID_CARD);
+        serializer.serialize("12345678901", gen, provider);
+
+        verify(gen).writeString("123456*8901");
     }
 
     @Test
@@ -267,5 +277,41 @@ class SensitiveDataSerializerTest {
         emailSerializer.serialize("abc@test.com", gen, provider);
 
         verify(gen).writeString("ab*@test.com");
+    }
+
+    @Test
+    @DisplayName("EMAIL 无 @ 时原样返回不崩溃")
+    void serializeEmailWithoutAt() throws IOException {
+        SensitiveDataSerializer emailSerializer = new SensitiveDataSerializer(Sensitive.SensitiveType.EMAIL);
+        emailSerializer.serialize("invalid-email", gen, provider);
+
+        verify(gen).writeString("invalid-email");
+    }
+
+    @Test
+    @DisplayName("EMAIL 空字符串时原样返回不崩溃")
+    void serializeEmailEmptyString() throws IOException {
+        SensitiveDataSerializer emailSerializer = new SensitiveDataSerializer(Sensitive.SensitiveType.EMAIL);
+        emailSerializer.serialize("", gen, provider);
+
+        verify(gen).writeString("");
+    }
+
+    @Test
+    @DisplayName("EMAIL 以 @ 开头时原样返回不崩溃")
+    void serializeEmailLeadingAt() throws IOException {
+        SensitiveDataSerializer emailSerializer = new SensitiveDataSerializer(Sensitive.SensitiveType.EMAIL);
+        emailSerializer.serialize("@domain.com", gen, provider);
+
+        verify(gen).writeString("@domain.com");
+    }
+
+    @Test
+    @DisplayName("ID_CARD 空字符串时原样返回不崩溃")
+    void serializeIdCardEmptyString() throws IOException {
+        SensitiveDataSerializer serializer = new SensitiveDataSerializer(Sensitive.SensitiveType.ID_CARD);
+        serializer.serialize("", gen, provider);
+
+        verify(gen).writeString("");
     }
 }

@@ -286,7 +286,7 @@ class PartyGraphServiceTest {
             verify(neo4jClient).query(cypherCaptor.capture());
             assertThat(cypherCaptor.getValue())
                     .contains("MATCH (n:Person {id:$entityId})-[r]-(m)")
-                    .contains("WHERE r.type() IN $relationTypes");
+                    .contains("WHERE type(r) IN $relationTypes");
 
             ArgumentCaptor<Object> bindCaptor = ArgumentCaptor.forClass(Object.class);
             ArgumentCaptor<String> toCaptor = ArgumentCaptor.forClass(String.class);

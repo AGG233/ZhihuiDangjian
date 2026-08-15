@@ -386,7 +386,7 @@ class PartyGraphFlowTest {
                     .contains("RETURN n, r, m");
             assertThat(queryCyphers.get(1))
                     .contains("MATCH (n:Person {id:$entityId})-[r]-(m)")
-                    .contains("WHERE r.type() IN $relationTypes")
+                    .contains("WHERE type(r) IN $relationTypes")
                     .contains("RETURN n, r, m");
         }
     }

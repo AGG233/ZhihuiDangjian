@@ -82,8 +82,9 @@ public class ArticleContentBlockService extends ServiceImpl<ArticleContentBlockM
      * @return 该文章的所有内容块
      */
     public List<ContentBlockResponse> getByArticleId(Long articleId) {
-        return convertor.toResponseList(
-                this.list(new LambdaQueryWrapper<ArticleContentBlock>().eq(ArticleContentBlock::getArticleId, articleId)));
+        return convertor.toResponseList(this.list(new LambdaQueryWrapper<ArticleContentBlock>()
+                .eq(ArticleContentBlock::getArticleId, articleId)
+                .orderByAsc(ArticleContentBlock::getOrderIndex)));
     }
 
     /**
@@ -93,7 +94,6 @@ public class ArticleContentBlockService extends ServiceImpl<ArticleContentBlockM
      * @return 所有内容块
      */
     public List<ContentBlockResponse> getByResourceIds(List<Long> ids) {
-        return convertor.toResponseList(
-                ids.stream().map(this::getById).collect(Collectors.toList()));
+        return convertor.toResponseList(ids.stream().map(this::getById).collect(Collectors.toList()));
     }
 }

@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -60,6 +61,7 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         return vo;
     }
 
+    @Transactional
     public void create(CourseRequest courseRequest) {
         User user = userService.getCurrentUser();
         Course course = courseConvertor.toCourse(courseRequest);
@@ -77,6 +79,7 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         }
     }
 
+    @Transactional
     public void update(CourseRequest courseRequest, Long id) {
         if (id == null) {
             throw new BusinessException(CourseErrorConstants.COURSE_NOT_FOUND, "课程ID不能为空");
@@ -103,6 +106,7 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         }
     }
 
+    @Transactional
     public void delete(Long courseId) {
         categoryCourseMapper.delete(new LambdaQueryWrapper<CategoryCourse>().eq(CategoryCourse::getCourseId, courseId));
         if (!this.removeById(courseId)) {
@@ -123,14 +127,14 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
         return this.baseMapper.selectLearnedCoursesByUserId(userId);
     }
 
-    public PageResponse<Object> getPage(int pageNum, int pageSize) {
+    public PageResponse<CourseResponse> getPage(int pageNum, int pageSize) {
         Page<Course> page = this.page(new Page<>(pageNum, pageSize));
         List<CourseResponse> courseVOList = toCourseResponseList(page.getRecords());
-        return PageResponse.builder()
+        return PageResponse.<CourseResponse>builder()
                 .total(page.getTotal())
                 .size(page.getSize())
                 .current(page.getCurrent())
-                .list(Collections.singletonList(courseVOList))
+                .list(courseVOList)
                 .build();
     }
 

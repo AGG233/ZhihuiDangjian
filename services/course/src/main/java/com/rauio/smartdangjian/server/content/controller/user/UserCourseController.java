@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
@@ -13,6 +12,7 @@ import com.rauio.smartdangjian.server.content.pojo.response.CourseResponse;
 import com.rauio.smartdangjian.server.content.pojo.response.PageResponse;
 import com.rauio.smartdangjian.server.content.service.course.CourseService;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,7 +34,7 @@ public class UserCourseController {
 
     @Operation(summary = "分页获取课程", description = "根据分页参数获取课程列表")
     @GetMapping
-    public Result<PageResponse<Object>> getPage(
+    public Result<PageResponse<CourseResponse>> getPage(
             @Parameter(name = "pageNum", description = "页码") @RequestParam(defaultValue = "1") int pageNum,
             @Parameter(name = "pageSize", description = "页的大小") @RequestParam(defaultValue = "10") int pageSize) {
         return Result.ok(courseService.getPage(pageNum, pageSize));
