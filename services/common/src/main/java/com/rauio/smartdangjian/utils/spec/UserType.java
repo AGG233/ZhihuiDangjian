@@ -9,19 +9,19 @@ public enum UserType {
     MANAGER("管理员");
 
     @EnumValue
-    private final String Type;
+    private final String type;
 
     UserType(String type) {
-        this.Type = type;
+        this.type = type;
     }
 
     @JsonValue
     public String getType() {
-        return Type;
+        return type;
     }
 
     @Override
     public String toString() {
-        return Type;
+        return type;
     }
 }

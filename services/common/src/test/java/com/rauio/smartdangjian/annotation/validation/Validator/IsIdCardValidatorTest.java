@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.annotation.validation.Validator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import jakarta.validation.ConstraintValidatorContext;
 
@@ -15,9 +16,25 @@ class IsIdCardValidatorTest {
     private final IsIdCardValidator validator = new IsIdCardValidator();
 
     @Test
-    @DisplayName("null 身份证号返回 false")
-    void nullIdCardReturnsFalse() {
+    @DisplayName("null 身份证 且 required=false 时放行")
+    void nullValueAllowedWhenNotRequired() {
         ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
+        IsIdCard annotation = mock(IsIdCard.class);
+        when(annotation.required()).thenReturn(false);
+        validator.initialize(annotation);
+
+        boolean result = validator.isValid(null, context);
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("null 身份证 且 required=true 时拒绝")
+    void nullValueRejectedWhenRequired() {
+        ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
+        IsIdCard annotation = mock(IsIdCard.class);
+        when(annotation.required()).thenReturn(true);
+        validator.initialize(annotation);
 
         boolean result = validator.isValid(null, context);
 

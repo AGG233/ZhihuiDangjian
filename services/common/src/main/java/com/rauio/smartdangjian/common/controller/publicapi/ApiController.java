@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rauio.smartdangjian.common.pojo.response.SchoolResponse;
 import com.rauio.smartdangjian.common.service.UniversitiesService;
 import com.rauio.smartdangjian.pojo.response.Result;
@@ -25,7 +24,7 @@ public class ApiController {
 
     @Operation(summary = "获取所有学校列表", description = "返回系统中所有学校的列表信息")
     @GetMapping("/school/all")
-    public Result<List<SchoolResponse>> school() throws JsonProcessingException {
+    public Result<List<SchoolResponse>> school() {
         List<SchoolResponse> universities = universitiesService.getList();
         return Result.ok(universities);
     }

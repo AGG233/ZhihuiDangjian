@@ -20,7 +20,7 @@ class BusinessExceptionTest {
     @Test
     @DisplayName("单参构造 (message) 设置 code 为 NOT_FOUND(1) 且 message 正确")
     void constructorWithMessageOnly() {
-        BusinessException ex = new BusinessException("资源未找到");
+        BusinessException ex = new BusinessException(com.rauio.smartdangjian.constants.ErrorConstants.NOT_FOUND, "资源未找到");
 
         assertThat(ex.getCode()).isEqualTo(NOT_FOUND);
         assertThat(ex.getMessage()).isEqualTo("资源未找到");
@@ -29,7 +29,7 @@ class BusinessExceptionTest {
     @Test
     @DisplayName("BusinessException 继承自 RuntimeException")
     void extendsRuntimeException() {
-        BusinessException ex = new BusinessException("test");
+        BusinessException ex = new BusinessException(com.rauio.smartdangjian.constants.ErrorConstants.NOT_FOUND, "test");
 
         assertThat(ex).isInstanceOf(RuntimeException.class);
     }

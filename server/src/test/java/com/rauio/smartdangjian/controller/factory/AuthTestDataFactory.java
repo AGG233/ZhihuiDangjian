@@ -73,7 +73,6 @@ public final class AuthTestDataFactory {
     public static LoginResponse createLoginResponse() {
         return LoginResponse.builder()
                 .accessToken("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.test-signature")
-                .refreshToken("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.refresh-signature")
                 .build();
     }
 

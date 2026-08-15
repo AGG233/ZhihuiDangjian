@@ -2,7 +2,6 @@ package com.rauio.smartdangjian.config;
 
 import java.time.Duration;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -21,15 +20,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 @AutoConfiguration
 @EnableCaching
 public class RedisConfig {
-
-    @Value("${spring.data.redis.host}")
-    private String host;
-
-    @Value("${spring.data.redis.port}")
-    private int port;
-
-    @Value("${spring.data.redis.database}")
-    private int database;
 
     private ObjectMapper createObjectMapper() {
         ObjectMapper om = new ObjectMapper();

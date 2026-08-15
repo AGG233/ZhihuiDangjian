@@ -5,8 +5,8 @@ package com.rauio.smartdangjian.server.content.constants;
  */
 public class ArticleErrorConstants {
 
-    public static final int ARTICLE_NOT_FOUND = 9001;
-    public static final int ARTICLE_SAVE_FAILED = 9002;
-    public static final int ARTICLE_UPDATE_FAILED = 9003;
-    public static final int ARTICLE_DELETE_FAILED = 9004;
+    public static final int ARTICLE_NOT_FOUND = 3401;
+    public static final int ARTICLE_SAVE_FAILED = 3402;
+    public static final int ARTICLE_UPDATE_FAILED = 3403;
+    public static final int ARTICLE_DELETE_FAILED = 3404;
 }
