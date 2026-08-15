@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":services:learning"))
     implementation(project(":services:quiz"))
     implementation(project(":services:search"))
+    implementation(project(":services:graph"))
 
     implementation(libs.bundles.common)
     implementation(libs.bundles.ai)

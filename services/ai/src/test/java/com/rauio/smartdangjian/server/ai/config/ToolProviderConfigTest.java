@@ -13,6 +13,7 @@ import com.rauio.smartdangjian.server.ai.tool.ArticleDetailTool;
 import com.rauio.smartdangjian.server.ai.tool.ContentReviewTool;
 import com.rauio.smartdangjian.server.ai.tool.ContentSafetyTool;
 import com.rauio.smartdangjian.server.ai.tool.ContentSearchTool;
+import com.rauio.smartdangjian.server.ai.tool.GraphEvaluationTool;
 import com.rauio.smartdangjian.server.ai.tool.LearningPathTool;
 import com.rauio.smartdangjian.server.ai.tool.LearningTool;
 import com.rauio.smartdangjian.server.ai.tool.QuizManageTool;
@@ -43,7 +44,8 @@ class ToolProviderConfigTest {
                 "articleDetailToolProvider",
                 "contentReviewToolProvider",
                 "contentSafetyToolProvider",
-                "learningPathToolProvider"
+                "learningPathToolProvider",
+                "graphEvaluationToolProvider"
             })
     @DisplayName("所有 ToolCallbackProvider @Bean 方法应返回非空对象")
     void allProvidersAreCreated(String methodName) {
@@ -65,6 +67,8 @@ class ToolProviderConfigTest {
                     case "contentReviewToolProvider" -> config.contentReviewToolProvider(mock(ContentReviewTool.class));
                     case "contentSafetyToolProvider" -> config.contentSafetyToolProvider(mock(ContentSafetyTool.class));
                     case "learningPathToolProvider" -> config.learningPathToolProvider(mock(LearningPathTool.class));
+                    case "graphEvaluationToolProvider" ->
+                        config.graphEvaluationToolProvider(mock(GraphEvaluationTool.class));
                     default -> throw new IllegalArgumentException("Unknown provider: " + methodName);
                 };
         assertThat(provider)
