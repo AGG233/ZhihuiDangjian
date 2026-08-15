@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.8.5](https://github.com/AGG233/ZhihuiDangjian/compare/v0.8.4...v0.8.5) (2026-08-15)
+
+
+### Bug Fixes
+
+* **migrations:** align legacy comment/user_like tables with new schema ([#103](https://github.com/AGG233/ZhihuiDangjian/issues/103)) ([b6a7d42](https://github.com/AGG233/ZhihuiDangjian/commit/b6a7d42f9d48631c76aa8f69cb8301ec95eb364c))
+* **migrations:** renumber new V8-V10 to V12-V14 to avoid legacy checksum conflict ([#102](https://github.com/AGG233/ZhihuiDangjian/issues/102)) ([de44cf6](https://github.com/AGG233/ZhihuiDangjian/commit/de44cf68fca1881bdbb7b9905fb60628d8c24b9d))
+* **migrations:** renumber V5-V7 to V8-V10 and ignore legacy missing migrations ([#100](https://github.com/AGG233/ZhihuiDangjian/issues/100)) ([2992ee7](https://github.com/AGG233/ZhihuiDangjian/commit/2992ee79f177b5b0c59355b34982114362a9e593))
+
 ## [0.8.4](https://github.com/AGG233/ZhihuiDangjian/compare/v0.8.3...v0.8.4) (2026-08-15)
 
 
