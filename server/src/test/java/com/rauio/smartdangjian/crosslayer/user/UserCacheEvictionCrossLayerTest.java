@@ -100,7 +100,6 @@ class UserCacheEvictionCrossLayerTest extends CrossLayerTestBase {
         }
     }
 
-
     @Test
     @DisplayName("getByPassport 写入缓存，updatePassword 后缓存被整体驱逐")
     void passwordUpdateEvictsUserCache() {
