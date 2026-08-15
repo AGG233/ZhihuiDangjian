@@ -10,6 +10,7 @@ import com.rauio.smartdangjian.server.ai.tool.ArticleDetailTool;
 import com.rauio.smartdangjian.server.ai.tool.ContentReviewTool;
 import com.rauio.smartdangjian.server.ai.tool.ContentSafetyTool;
 import com.rauio.smartdangjian.server.ai.tool.ContentSearchTool;
+import com.rauio.smartdangjian.server.ai.tool.GraphEvaluationTool;
 import com.rauio.smartdangjian.server.ai.tool.LearningPathTool;
 import com.rauio.smartdangjian.server.ai.tool.LearningTool;
 import com.rauio.smartdangjian.server.ai.tool.QuizManageTool;
@@ -104,6 +105,13 @@ public class ToolProviderConfig {
     public ToolCallbackProvider learningPathToolProvider(LearningPathTool learningPathTool) {
         return MethodToolCallbackProvider.builder()
                 .toolObjects(learningPathTool)
+                .build();
+    }
+
+    @Bean
+    public ToolCallbackProvider graphEvaluationToolProvider(GraphEvaluationTool graphEvaluationTool) {
+        return MethodToolCallbackProvider.builder()
+                .toolObjects(graphEvaluationTool)
                 .build();
     }
 }
