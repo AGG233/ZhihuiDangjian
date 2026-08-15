@@ -15,6 +15,9 @@ spring:
     url: ${DATABASE_URL:jdbc:mysql://127.0.0.1:3306/zhihuidangjian?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
   flyway:
     baseline-on-migrate: true
+    # 兼容历史数据库：V5-V7 已被旧迁移占用，新迁移重编号为 V8-V10 后，
+    # 需要忽略数据库中缺失的旧 V5-V7 记录，避免启动校验失败。
+    ignore-migration-patterns: "*:missing"
   data:
     redis:
       host: ${REDIS_HOST}
