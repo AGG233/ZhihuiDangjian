@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.2](https://github.com/AGG233/ZhihuiDangjian/compare/v0.8.1...v0.8.2) (2026-08-15)
+
+
+### Bug Fixes
+
+* correct silent failures and concurrency races ([#88](https://github.com/AGG233/ZhihuiDangjian/issues/88)) ([c39be97](https://github.com/AGG233/ZhihuiDangjian/commit/c39be973d5a8648d2eed8e7bc6897883ca451094))
+
 ## [0.8.1](https://github.com/AGG233/ZhihuiDangjian/compare/v0.8.0...v0.8.1) (2026-08-15)
 
 
