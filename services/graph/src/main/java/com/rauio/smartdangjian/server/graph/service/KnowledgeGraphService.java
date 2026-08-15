@@ -13,6 +13,7 @@ import com.rauio.smartdangjian.server.content.mapper.ChapterMapper;
 import com.rauio.smartdangjian.server.content.mapper.CourseMapper;
 import com.rauio.smartdangjian.server.content.pojo.entity.Chapter;
 import com.rauio.smartdangjian.server.content.pojo.entity.Course;
+import com.rauio.smartdangjian.server.graph.constants.GraphConstants;
 import com.rauio.smartdangjian.server.graph.constants.GraphErrorConstants;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphEdgeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphNodeResponse;
@@ -52,18 +53,28 @@ public class KnowledgeGraphService {
         }
 
         String userName = user.getRealName() != null ? user.getRealName() : user.getUsername();
+        String userLabel = GraphConstants.LABEL_USER;
+        String courseLabel = GraphConstants.LABEL_COURSE;
+        String chapterLabel = GraphConstants.LABEL_CHAPTER;
         String cypher =
                 """
-                MERGE (u:User {id:$userId})
+                MERGE (u:%s {id:$userId})
                 SET u.name = $userName
-                MERGE (c:Course {id:$courseId})
+                MERGE (c:%s {id:$courseId})
                 SET c.title = $courseTitle
-                MERGE (ch:Chapter {id:$chapterId})
+                MERGE (ch:%s {id:$chapterId})
                 SET ch.title = $chapterTitle
-                MERGE (u)-[:LEARNED]->(c)
-                MERGE (c)-[:HAS_CHAPTER]->(ch)
-                MERGE (u)-[:LEARNED_CHAPTER]->(ch)
-                """;
+                MERGE (u)-[:%s]->(c)
+                MERGE (c)-[:%s]->(ch)
+                MERGE (u)-[:%s]->(ch)
+                """
+                        .formatted(
+                                userLabel,
+                                courseLabel,
+                                chapterLabel,
+                                GraphConstants.EDGE_LEARNED,
+                                GraphConstants.EDGE_HAS_CHAPTER,
+                                GraphConstants.EDGE_LEARNED_CHAPTER);
 
         neo4jClient
                 .query(cypher)
@@ -91,12 +102,19 @@ public class KnowledgeGraphService {
     public KnowledgeGraphResponse getUserGraph(String userId) {
         String cypher =
                 """
-                MATCH (u:User {id:$userId})
-                OPTIONAL MATCH (u)-[r1:LEARNED]->(c:Course)
-                OPTIONAL MATCH (c)-[r2:HAS_CHAPTER]->(ch:Chapter)
-                OPTIONAL MATCH (u)-[r3:LEARNED_CHAPTER]->(ch)
+                MATCH (u:%s {id:$userId})
+                OPTIONAL MATCH (u)-[r1:%s]->(c:%s)
+                OPTIONAL MATCH (c)-[r2:%s]->(ch:%s)
+                OPTIONAL MATCH (u)-[r3:%s]->(ch)
                 RETURN u, c, ch, r1, r2, r3
-                """;
+                """
+                        .formatted(
+                                GraphConstants.LABEL_USER,
+                                GraphConstants.EDGE_LEARNED,
+                                GraphConstants.LABEL_COURSE,
+                                GraphConstants.EDGE_HAS_CHAPTER,
+                                GraphConstants.LABEL_CHAPTER,
+                                GraphConstants.EDGE_LEARNED_CHAPTER);
 
         List<Map<String, Object>> rows = (List<Map<String, Object>>)
                 neo4jClient.query(cypher).bind(userId).to("userId").fetch().all();
@@ -113,11 +131,17 @@ public class KnowledgeGraphService {
     public KnowledgeGraphResponse getCourseGraph(String courseId) {
         String cypher =
                 """
-                MATCH (c:Course {id:$courseId})
-                OPTIONAL MATCH (c)<-[r1:LEARNED]-(u:User)
-                OPTIONAL MATCH (c)-[r2:HAS_CHAPTER]->(ch:Chapter)
+                MATCH (c:%s {id:$courseId})
+                OPTIONAL MATCH (c)<-[r1:%s]-(u:%s)
+                OPTIONAL MATCH (c)-[r2:%s]->(ch:%s)
                 RETURN c, u, ch, r1, r2
-                """;
+                """
+                        .formatted(
+                                GraphConstants.LABEL_COURSE,
+                                GraphConstants.EDGE_LEARNED,
+                                GraphConstants.LABEL_USER,
+                                GraphConstants.EDGE_HAS_CHAPTER,
+                                GraphConstants.LABEL_CHAPTER);
 
         List<Map<String, Object>> rows = (List<Map<String, Object>>)
                 neo4jClient.query(cypher).bind(courseId).to("courseId").fetch().all();

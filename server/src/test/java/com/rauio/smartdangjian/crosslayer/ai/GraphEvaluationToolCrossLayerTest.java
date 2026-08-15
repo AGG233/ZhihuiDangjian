@@ -114,6 +114,11 @@ class GraphEvaluationToolCrossLayerTest extends CrossLayerTestBase {
         return fetchSpec;
     }
 
+    @SuppressWarnings("unchecked")
+    private void stubRows(Neo4jClient.RecordFetchSpec<Map<String, Object>> fetchSpec, List<Map<String, Object>> rows) {
+        when(fetchSpec.all()).thenReturn((Collection) rows);
+    }
+
     private Node mockNode(String label, String id, String name) {
         Node node = mock(Node.class);
         when(node.labels()).thenReturn(List.of(label));
@@ -143,7 +148,7 @@ class GraphEvaluationToolCrossLayerTest extends CrossLayerTestBase {
                 "r1", mockRelationship("LEARNED"),
                 "r2", mockRelationship("HAS_CHAPTER"),
                 "r3", mockRelationship("LEARNED_CHAPTER"));
-        when(fetchSpec.all()).thenReturn((Collection) List.of(row));
+        stubRows(fetchSpec, List.of(row));
         when(userService.getCurrentUserId()).thenReturn("10001");
 
         ToolContext toolContext = mock(ToolContext.class);

@@ -11,6 +11,7 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Component;
 
 import com.rauio.smartdangjian.server.ai.util.ToolContextUtil;
+import com.rauio.smartdangjian.server.graph.constants.GraphConstants;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphEdgeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.GraphNodeResponse;
 import com.rauio.smartdangjian.server.graph.pojo.response.KnowledgeGraphResponse;
@@ -26,10 +27,6 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class GraphEvaluationTool {
-
-    private static final String LABEL_COURSE = "Course";
-    private static final String LABEL_CHAPTER = "Chapter";
-    private static final String EDGE_LEARNED_CHAPTER = "LEARNED_CHAPTER";
 
     private final KnowledgeGraphService knowledgeGraphService;
     private final UserService userService;
@@ -48,23 +45,25 @@ public class GraphEvaluationTool {
         List<GraphNodeResponse> nodes = graph.getNodes();
         List<GraphEdgeResponse> edges = graph.getEdges();
 
-        long courseCount =
-                nodes.stream().filter(n -> LABEL_COURSE.equals(n.getLabel())).count();
-        long chapterCount =
-                nodes.stream().filter(n -> LABEL_CHAPTER.equals(n.getLabel())).count();
+        long courseCount = nodes.stream()
+                .filter(n -> GraphConstants.LABEL_COURSE.equals(n.getLabel()))
+                .count();
+        long chapterCount = nodes.stream()
+                .filter(n -> GraphConstants.LABEL_CHAPTER.equals(n.getLabel()))
+                .count();
         long learnedChapterCount = edges.stream()
-                .filter(e -> EDGE_LEARNED_CHAPTER.equals(e.getType()))
+                .filter(e -> GraphConstants.EDGE_LEARNED_CHAPTER.equals(e.getType()))
                 .count();
 
         List<String> courseNames = nodes.stream()
-                .filter(n -> LABEL_COURSE.equals(n.getLabel()))
+                .filter(n -> GraphConstants.LABEL_COURSE.equals(n.getLabel()))
                 .map(GraphNodeResponse::getName)
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();
 
         List<String> chapterNames = nodes.stream()
-                .filter(n -> LABEL_CHAPTER.equals(n.getLabel()))
+                .filter(n -> GraphConstants.LABEL_CHAPTER.equals(n.getLabel()))
                 .map(GraphNodeResponse::getName)
                 .filter(Objects::nonNull)
                 .distinct()
