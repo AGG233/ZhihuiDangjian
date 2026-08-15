@@ -9,7 +9,7 @@ services:
       - redis-data:/data
 
   app:
-    image: ghcr.io/agg233/zhihuidangjian:latest
+    image: ${APP_IMAGE:-ghcr.io/agg233/zhihuidangjian:latest}
     container_name: zhihuidangjian
     restart: no
     depends_on:
