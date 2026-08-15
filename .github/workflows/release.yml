@@ -186,10 +186,13 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_KEY }}
           command_timeout: 30m
-          envs: APP_IMAGE=${{ needs.release.outputs.image_repository }}:${{ needs.release.outputs.version }}
           script: |
             set -euo pipefail
             cd /www/server/panel/data/compose/test
+
+            # 直接由 GitHub Actions 注入本次部署的阿里云镜像地址，避免 envs 传递不可靠
+            APP_IMAGE="${{ needs.release.outputs.image_repository }}:${{ needs.release.outputs.version }}"
+            echo "Deploying image: ${APP_IMAGE}"
 
             # 一次性兼容：旧 compose 写死 ghcr.io 时改为支持 APP_IMAGE 变量
             if [ -f docker-compose.yml ] && grep -q 'image: ghcr.io/agg233/zhihuidangjian:latest' docker-compose.yml; then
