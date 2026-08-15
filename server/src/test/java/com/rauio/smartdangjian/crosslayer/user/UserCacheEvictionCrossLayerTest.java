@@ -61,6 +61,7 @@ class UserCacheEvictionCrossLayerTest extends CrossLayerTestBase {
         }
 
         @Bean
+        @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
         UserService userService(UserConvertor convertor, UserMapper userMapper) {
             UserService service = new UserService(convertor);
             try {

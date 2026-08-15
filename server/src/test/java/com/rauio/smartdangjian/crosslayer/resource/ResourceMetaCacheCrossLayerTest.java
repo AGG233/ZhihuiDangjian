@@ -57,6 +57,7 @@ class ResourceMetaCacheCrossLayerTest extends CrossLayerTestBase {
         }
 
         @Bean
+        @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
         ResourceMetaService resourceMetaService(ResourceMetaMapper resourceMetaMapper) {
             ResourceMetaService service = new ResourceMetaService();
             try {
