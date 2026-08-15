@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.9.0](https://github.com/AGG233/ZhihuiDangjian/compare/v0.8.4...v0.9.0) (2026-08-15)
+
+
+### Features
+
+* **ai:** add knowledge graph evaluation tool ([#106](https://github.com/AGG233/ZhihuiDangjian/issues/106)) ([b5ec534](https://github.com/AGG233/ZhihuiDangjian/commit/b5ec5343de2060891a88346901f3f4ba2d225fe7))
+* **auth:** adopt JWT token via sa-token-jwt ([#105](https://github.com/AGG233/ZhihuiDangjian/issues/105)) ([bfadaab](https://github.com/AGG233/ZhihuiDangjian/commit/bfadaabf26068d2bf1b60e8794f15c9256b4afb9))
+* **search:** enrich user profile with interaction stats and CF fusion ([#107](https://github.com/AGG233/ZhihuiDangjian/issues/107)) ([b2c8821](https://github.com/AGG233/ZhihuiDangjian/commit/b2c88215245bb2856320e7d643af97baac5800ac))
+
+
+### Bug Fixes
+
+* **migrations:** align legacy comment/user_like tables with new schema ([#103](https://github.com/AGG233/ZhihuiDangjian/issues/103)) ([b6a7d42](https://github.com/AGG233/ZhihuiDangjian/commit/b6a7d42f9d48631c76aa8f69cb8301ec95eb364c))
+* **migrations:** renumber new V8-V10 to V12-V14 to avoid legacy checksum conflict ([#102](https://github.com/AGG233/ZhihuiDangjian/issues/102)) ([de44cf6](https://github.com/AGG233/ZhihuiDangjian/commit/de44cf68fca1881bdbb7b9905fb60628d8c24b9d))
+* **migrations:** renumber V5-V7 to V8-V10 and ignore legacy missing migrations ([#100](https://github.com/AGG233/ZhihuiDangjian/issues/100)) ([2992ee7](https://github.com/AGG233/ZhihuiDangjian/commit/2992ee79f177b5b0c59355b34982114362a9e593))
+
 ## [0.8.4](https://github.com/AGG233/ZhihuiDangjian/compare/v0.8.3...v0.8.4) (2026-08-15)
 
 
