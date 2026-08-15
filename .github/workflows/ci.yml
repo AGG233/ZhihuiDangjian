@@ -53,27 +53,14 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Cache Gradle
-        uses: actions/cache@v5.0.5
-        with:
-          path: |
-            ~/.gradle/caches/
-            ~/.gradle/wrapper/
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/libs.versions.toml', '**/*.gradle.kts', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
       - name: Grant execute permission
         run: chmod +x gradlew
 
-      - name: Compile sources
-        run: ./gradlew --no-daemon compileJava
-
-      - name: Run tests with coverage
-        run: ./gradlew --no-daemon test integrationTest jacocoRootReport jacocoRootCoverageVerification --continue
+      - name: Compile, test with coverage & build bootJar
+        run: ./gradlew --no-daemon --continue test integrationTest jacocoRootReport jacocoRootCoverageVerification :server:bootJar
 
       - name: Upload coverage to Codacy
         if: always()
@@ -83,9 +70,6 @@ jobs:
           coverage-reports: build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml
           language: java
           force-coverage-parser: jacoco
-
-      - name: Build server bootJar
-        run: ./gradlew --no-daemon :server:bootJar -x test
 
       - name: Start server for API smoke
         env:

@@ -75,6 +75,14 @@ val integrationTest = tasks.register<Test>("integrationTest") {
     useJUnitPlatform()
 }
 
+tasks.withType<Test>().configureEach {
+    // test.exec 是 JaCoCo agent 的副产物，不在 Test 任务的声明输出中；
+    // 构建缓存命中（FROM-CACHE）时该文件不会恢复，会导致 jacocoRootReport
+    // 缺失执行数据、覆盖率门禁假失败（gradle/gradle#25874）。
+    // 因此测试任务一律不进构建缓存，只缓存编译/打包等确定性任务。
+    outputs.doNotCacheIf("JaCoCo exec data is a byproduct and cannot be restored from cache") { true }
+}
+
 tasks.check {
     dependsOn(integrationTest)
 }
