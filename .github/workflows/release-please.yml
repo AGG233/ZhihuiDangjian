@@ -28,12 +28,21 @@ jobs:
       # CI 全绿后自动 squash 合并（标题保持 `chore(master): release <版本>`，
       # release-please 据此识别 release commit 并打 tag，避免重复发版），
       # 随后 push master 触发 release-please 打 tag，release.yml 构建+部署。
-      # 注意：outputs.pr 是 PullRequest 对象的 JSON 字符串，需用 jq 提取编号。
+      # 注意：outputs.pr 是 PullRequest 对象的 JSON 字符串，需用 jq 提取编号；
+      # 对空值/null/非 JSON 输出做防护，避免 auto-merge 步骤意外失败。
       - name: Auto-merge release PR
         if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && steps.release-please.outputs.pr != ''
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
           PR_JSON: ${{ steps.release-please.outputs.pr }}
         run: |
-          PR_NUMBER=$(printf '%s' "$PR_JSON" | jq -r '.number')
+          if [ -z "$PR_JSON" ] || [ "$PR_JSON" = "null" ]; then
+            echo "No release PR to auto-merge"
+            exit 0
+          fi
+          PR_NUMBER=$(printf '%s' "$PR_JSON" | jq -er '.number // empty' || true)
+          if [ -z "$PR_NUMBER" ]; then
+            echo "Invalid release-please output, skip auto-merge"
+            exit 0
+          fi
           gh pr merge --auto --squash --delete-branch "$PR_NUMBER"

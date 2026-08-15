@@ -399,8 +399,12 @@ async function main() {
         });
     }
 
-    // 分批并发执行（每批 CONCURRENCY 个），结果按原顺序收集
-    const CONCURRENCY = 8;
+    // 分批并发执行（每批 CONCURRENCY 个），结果按原顺序收集；
+    // 并发数可通过 API_SMOKE_CONCURRENCY 环境变量调整，默认 8
+    const CONCURRENCY = Number.parseInt(process.env.API_SMOKE_CONCURRENCY ?? "8", 10);
+    if (!Number.isInteger(CONCURRENCY) || CONCURRENCY < 1) {
+        throw new Error("API_SMOKE_CONCURRENCY must be a positive integer");
+    }
     const results = [];
     for (let i = 0; i < tasks.length; i += CONCURRENCY) {
         const batch = tasks.slice(i, i + CONCURRENCY);

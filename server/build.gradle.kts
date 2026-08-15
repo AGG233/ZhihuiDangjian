@@ -28,8 +28,9 @@ dependencies {
     testImplementation(libs.mybatis.plus.join.starter)
 }
 
-// server 模块测试类最多（约 2300+），并行 fork 可显著缩短测试墙钟时间；
+// server 模块 test 任务类最多（约 2300+），并行 fork 可显著缩短测试墙钟时间；
+// 仅对 test 任务启用，避免 integrationTest 多 JVM 并行访问共享服务造成干扰；
 // JaCoCo 多 fork 执行数据由 Gradle 合并，见 jacocoRootReport 验证
-tasks.withType<Test>().configureEach {
+tasks.named<Test>("test") {
     maxParallelForks = 2
 }
