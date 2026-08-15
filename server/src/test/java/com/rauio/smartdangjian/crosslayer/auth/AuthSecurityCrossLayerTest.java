@@ -101,7 +101,7 @@ class AuthSecurityCrossLayerTest extends CrossLayerTestBase {
         request.setUsername("evil-" + UNIQUE);
         request.setPassword("Passw0rd!");
         request.setCaptchaUUID(UNIQUE);
-        request.setCaptchaCode("1234");
+        request.setCaptchaCode("TEST8888");
 
         assertThatThrownBy(() -> authService.register(request))
                 .isInstanceOf(BusinessException.class)

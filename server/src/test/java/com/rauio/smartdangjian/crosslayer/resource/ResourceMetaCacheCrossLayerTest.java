@@ -2,11 +2,12 @@ package com.rauio.smartdangjian.crosslayer.resource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -118,8 +119,9 @@ class ResourceMetaCacheCrossLayerTest extends CrossLayerTestBase {
                 .objectKey("image/a.png")
                 .status(ResourceStatusConstants.UPLOADING)
                 .build();
-        // BaseMapper.selectOne 是 default 方法（内部走 selectList），stub selectList 才生效
-        when(resourceMetaMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(List.of(meta));
+        // BaseMapper.selectOne 是 default 方法（Mockito 不执行其真实实现），
+        // 必须用 doReturn 语法 stub（when 语法会先执行 default 方法拿到 null）
+        doReturn(meta).when(resourceMetaMapper).selectOne(any(), anyBoolean());
         when(resourceMetaMapper.selectById(1L)).thenReturn(meta);
         when(resourceMetaMapper.updateById(any(ResourceMeta.class))).thenReturn(1);
 
@@ -141,8 +143,9 @@ class ResourceMetaCacheCrossLayerTest extends CrossLayerTestBase {
                 .objectKey("image/a.png")
                 .status(ResourceStatusConstants.PUBLIC)
                 .build();
-        // BaseMapper.selectOne 是 default 方法（内部走 selectList），stub selectList 才生效
-        when(resourceMetaMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(List.of(meta));
+        // BaseMapper.selectOne 是 default 方法（Mockito 不执行其真实实现），
+        // 必须用 doReturn 语法 stub（when 语法会先执行 default 方法拿到 null）
+        doReturn(meta).when(resourceMetaMapper).selectOne(any(), anyBoolean());
         when(resourceMetaMapper.selectById(1L)).thenReturn(meta);
         when(resourceMetaMapper.deleteById(1L)).thenReturn(1);
 

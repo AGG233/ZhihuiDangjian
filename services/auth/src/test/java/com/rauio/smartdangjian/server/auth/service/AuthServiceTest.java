@@ -69,7 +69,7 @@ class AuthServiceTest {
     void setUp() {
         valueOps = mock(ValueOperations.class);
         when(redisTemplate.opsForValue()).thenReturn(valueOps);
-        when(redisTemplate.hasKey(anyString())).thenReturn(false);
+        when(valueOps.get(anyString())).thenReturn(null);
     }
 
     // ================================================================
@@ -209,7 +209,7 @@ class AuthServiceTest {
     void loginThrowsWhenAccountLocked() {
         LoginRequest request = createLoginRequest();
         when(captchaService.validate("uuid-1", "1234")).thenReturn(true);
-        when(redisTemplate.hasKey("login:fail:admin")).thenReturn(true);
+        when(valueOps.get("login:fail:admin")).thenReturn(5L);
 
         assertThatThrownBy(() -> authService.login(request))
                 .isInstanceOf(BusinessException.class)

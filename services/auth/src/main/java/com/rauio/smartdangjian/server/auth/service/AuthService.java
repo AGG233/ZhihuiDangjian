@@ -50,7 +50,9 @@ public class AuthService {
 
         String passport = loginRequest.getPassport();
         String lockKey = LOGIN_FAIL_KEY_PREFIX + passport;
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(lockKey))) {
+        // 失败计数达到阈值才视为锁定（计数 key 在首次失败时即存在，不能仅凭 key 存在判断）
+        Object failCount = redisTemplate.opsForValue().get(lockKey);
+        if (failCount instanceof Number n && n.longValue() >= MAX_LOGIN_FAILS) {
             throw new BusinessException(AuthErrorConstants.ACCOUNT_LOCKED, "登录失败次数过多，账号已临时锁定，请15分钟后再试");
         }
 

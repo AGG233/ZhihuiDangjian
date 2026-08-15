@@ -2,13 +2,14 @@ package com.rauio.smartdangjian.crosslayer.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -93,11 +94,12 @@ class UserCacheEvictionCrossLayerTest extends CrossLayerTestBase {
 
     @AfterEach
     void cleanUpRedisKeys() {
-        Set<String> keys = redisTemplate.keys("user:data::" + uniquePassport);
+        Set<String> keys = redisTemplate.keys("user:data:::" + uniquePassport);
         if (keys != null) {
             redisTemplate.delete(keys);
         }
     }
+
 
     @Test
     @DisplayName("getByPassport 写入缓存，updatePassword 后缓存被整体驱逐")
@@ -107,19 +109,22 @@ class UserCacheEvictionCrossLayerTest extends CrossLayerTestBase {
                 .username(uniquePassport)
                 .password("old-hash")
                 .build();
-        // BaseMapper.selectOne 是 default 方法（内部走 selectList），stub selectList 才生效
-        when(userMapper.selectList(any())).thenReturn(List.of(user));
+        // BaseMapper.selectOne 是 default 方法（Mockito 不执行其真实实现），
+        // 必须用 doReturn 语法 stub（when 语法会先执行 default 方法拿到 null）
+        doReturn(user).when(userMapper).selectOne(any(), anyBoolean());
+        when(userMapper.selectById(1L)).thenReturn(user);
+        when(userMapper.updateById(any(User.class))).thenReturn(1);
 
         // 首次查询写入缓存
         userService.getByPassport(uniquePassport);
-        assertThat(redisTemplate.hasKey("user:data::" + uniquePassport)).isTrue();
+        assertThat(redisTemplate.hasKey("user:data:::" + uniquePassport)).isTrue();
 
         // 修改密码触发 @CacheEvict(allEntries = true)
         userService.updatePassword(1L, "new-raw-password");
-        assertThat(redisTemplate.hasKey("user:data::" + uniquePassport)).isFalse();
+        assertThat(redisTemplate.hasKey("user:data:::" + uniquePassport)).isFalse();
 
         // 驱逐后再次查询重新走 DB
         userService.getByPassport(uniquePassport);
-        verify(userMapper, times(2)).selectList(any());
+        verify(userMapper, times(2)).selectOne(any(), anyBoolean());
     }
 }
