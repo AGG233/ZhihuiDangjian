@@ -190,10 +190,10 @@ public class UserProfileService {
                 .count();
 
         return UserProfileResponse.InteractionStats.builder()
-                .commentCount((int) commentCount)
-                .likeReceivedCount((int) likeReceivedCount)
-                .likeGivenCount((int) likeGivenCount)
-                .activeWeeks((int) activeWeeks)
+                .commentCount(commentCount)
+                .likeReceivedCount(likeReceivedCount)
+                .likeGivenCount(likeGivenCount)
+                .activeWeeks(activeWeeks)
                 .build();
     }
 

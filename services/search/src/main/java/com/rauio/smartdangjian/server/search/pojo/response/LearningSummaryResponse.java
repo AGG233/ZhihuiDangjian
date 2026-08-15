@@ -23,16 +23,16 @@ public class LearningSummaryResponse {
     @Schema(description = "互动表现维度")
     public static class InteractionDimension {
         @Schema(description = "评论数", example = "5")
-        private int commentCount;
+        private long commentCount;
 
         @Schema(description = "获赞数（他人对本人评论的点赞）", example = "12")
-        private int likeReceivedCount;
+        private long likeReceivedCount;
 
         @Schema(description = "点赞数（本人点赞数）", example = "8")
-        private int likeGivenCount;
+        private long likeGivenCount;
 
         @Schema(description = "近8周有互动行为的周数", example = "3")
-        private int activeWeeks;
+        private long activeWeeks;
     }
 
     @Data

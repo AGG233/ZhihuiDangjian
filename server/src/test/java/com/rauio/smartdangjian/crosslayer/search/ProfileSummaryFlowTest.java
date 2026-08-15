@@ -340,9 +340,9 @@ class ProfileSummaryFlowTest extends CrossLayerTestBase {
         UserProfileResponse profile = userProfileService.getProfile("1");
 
         assertThat(profile.getInteraction()).isNotNull();
-        assertThat(profile.getInteraction().getCommentCount()).isEqualTo(2);
-        assertThat(profile.getInteraction().getLikeReceivedCount()).isEqualTo(3);
-        assertThat(profile.getInteraction().getLikeGivenCount()).isEqualTo(3);
-        assertThat(profile.getInteraction().getActiveWeeks()).isEqualTo(1);
+        assertThat(profile.getInteraction().getCommentCount()).isEqualTo(2L);
+        assertThat(profile.getInteraction().getLikeReceivedCount()).isEqualTo(3L);
+        assertThat(profile.getInteraction().getLikeGivenCount()).isEqualTo(3L);
+        assertThat(profile.getInteraction().getActiveWeeks()).isEqualTo(1L);
     }
 }

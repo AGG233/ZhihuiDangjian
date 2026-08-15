@@ -901,11 +901,11 @@ class UserProfileServiceTest {
         UserProfileResponse profile = userProfileService.getProfile(userId);
 
         assertThat(profile.getInteraction()).isNotNull();
-        assertThat(profile.getInteraction().getCommentCount()).isEqualTo(2);
-        assertThat(profile.getInteraction().getLikeGivenCount()).isEqualTo(3);
-        assertThat(profile.getInteraction().getActiveWeeks()).isEqualTo(1);
+        assertThat(profile.getInteraction().getCommentCount()).isEqualTo(2L);
+        assertThat(profile.getInteraction().getLikeGivenCount()).isEqualTo(3L);
+        assertThat(profile.getInteraction().getActiveWeeks()).isEqualTo(1L);
         // 获赞数：他人对本人评论的点赞（commentIds=[1,2]，like 计数 3）
-        assertThat(profile.getInteraction().getLikeReceivedCount()).isEqualTo(3);
+        assertThat(profile.getInteraction().getLikeReceivedCount()).isEqualTo(3L);
     }
 
     @Test
@@ -923,8 +923,9 @@ class UserProfileServiceTest {
         LearningSummaryResponse summary = userProfileService.getLearningSummary(userId);
 
         assertThat(summary.getInteraction()).isNotNull();
-        assertThat(summary.getInteraction().getCommentCount()).isEqualTo(5);
-        assertThat(summary.getInteraction().getLikeGivenCount()).isEqualTo(7);
+        assertThat(summary.getInteraction().getCommentCount()).isEqualTo(5L);
+        assertThat(summary.getInteraction().getLikeGivenCount()).isEqualTo(7L);
+        assertThat(summary.getInteraction().getLikeReceivedCount()).isZero();
         assertThat(summary.getInteraction().getActiveWeeks()).isZero();
     }
 
