@@ -167,7 +167,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         user.setPassword(BCrypt.hashpw(rawPassword));
         user.setUpdatedAt(java.time.LocalDateTime.now());
         if (!this.updateById(user)) {
-            throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "密码修改失败");
+            throw new BusinessException(UserErrorConstants.PASSWORD_CHANGE_ERROR, "密码修改失败");
         }
     }
 

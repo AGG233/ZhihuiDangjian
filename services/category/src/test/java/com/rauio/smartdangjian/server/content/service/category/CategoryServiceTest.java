@@ -152,6 +152,26 @@ class CategoryServiceTest {
         verify(categoryService, times(1)).getById(1L);
     }
 
+    @Test
+    @DisplayName("get 遇到循环引用时抛出 BusinessException")
+    void getThrowsWhenCategoryTreeHasCycle() {
+        Category root = createCategory(1L, "根目录", 0, null);
+        Category child = createCategory(2L, "子目录", 1, 1L);
+        // 异常数据：root 的 parentId 指向 child，形成环
+        root.setParentId(2L);
+        CategoryResponse rootVO = createCategoryResponse(1L, "根目录", null, null);
+        CategoryResponse childVO = createCategoryResponse(2L, "子目录", 1L, null);
+
+        doReturn(root).when(categoryService).getById(1L);
+        doReturn(rootVO).when(convertor).toResponse(root);
+        doReturn(childVO).when(convertor).toResponse(child);
+        doReturn(List.of(child, root)).when(categoryService).list();
+
+        assertThatThrownBy(() -> categoryService.get(1L))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("循环引用");
+    }
+
     // ==================== getRootList ====================
 
     @Test

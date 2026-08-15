@@ -78,13 +78,14 @@ class CaptchaServiceTest {
     }
 
     @Test
-    @DisplayName("validate testCode 配置不为空且匹配时直接返回 true")
+    @DisplayName("validate testCode 配置不为空且匹配时返回 true 并消费验证码")
     void validateReturnsTrueWhenTestCodeMatches() {
         ReflectionTestUtils.setField(captchaService, "testCode", "9999");
 
         Boolean result = captchaService.validate("any-uuid", "9999");
 
         assertThat(result).isTrue();
+        verify(redisTemplate).delete("captcha:any-uuid");
     }
 
     @Test

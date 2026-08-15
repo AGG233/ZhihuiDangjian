@@ -17,9 +17,6 @@ import lombok.Data;
 @Schema(description = "章节请求体")
 public class ChapterRequest {
 
-    @Schema(description = "章节ID，更新时传入")
-    private Long id;
-
     @Schema(description = "章节所属的课程ID")
     @NotBlank(message = "课程ID不能为空")
     private String courseId;

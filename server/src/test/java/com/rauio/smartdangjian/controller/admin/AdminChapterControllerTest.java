@@ -51,7 +51,7 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("创建章节返回成功")
         void createChapterSuccess() throws Exception {
-            when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
+            doNothing().when(chapterService).create(any(ChapterRequest.class));
 
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -131,7 +131,9 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 BusinessException 返回 400")
         void createThrowsBusinessException() throws Exception {
-            when(chapterService.create(any(ChapterRequest.class))).thenThrow(new BusinessException(4000, "课程至少需要一个章节"));
+            doThrow(new BusinessException(4000, "课程至少需要一个章节"))
+                    .when(chapterService)
+                    .create(any(ChapterRequest.class));
 
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -144,7 +146,7 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("Service 抛出 RuntimeException 返回 500")
         void createThrowsRuntimeException() throws Exception {
-            when(chapterService.create(any(ChapterRequest.class))).thenThrow(new RuntimeException("数据库连接失败"));
+            doThrow(new RuntimeException("数据库连接失败")).when(chapterService).create(any(ChapterRequest.class));
 
             mockMvc.perform(post("/api/admin/content/chapters")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -196,7 +198,7 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("标题含中文正常处理")
         void createWithChineseTitle() throws Exception {
-            when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
+            doNothing().when(chapterService).create(any(ChapterRequest.class));
             ChapterRequest dto = ChapterRequest.builder()
                     .courseId("11")
                     .title("党的二十大报告解读")
@@ -216,7 +218,7 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("标题含特殊字符正常处理")
         void createWithSpecialChars() throws Exception {
-            when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
+            doNothing().when(chapterService).create(any(ChapterRequest.class));
             ChapterRequest dto = ChapterRequest.builder()
                     .courseId("11")
                     .title("test_@#$%^&*()")
@@ -236,7 +238,7 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("标题超长字符串（1000 字符）正常处理")
         void createWithLongTitle() throws Exception {
-            when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
+            doNothing().when(chapterService).create(any(ChapterRequest.class));
             ChapterRequest dto = ChapterRequest.builder()
                     .courseId("11")
                     .title("a".repeat(1000))
@@ -268,7 +270,7 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("XSS 注入在标题字段")
         void xssInTitle() throws Exception {
-            when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
+            doNothing().when(chapterService).create(any(ChapterRequest.class));
             ChapterRequest dto = ChapterRequest.builder()
                     .courseId("11")
                     .title("<script>alert('xss')</script>")
@@ -288,7 +290,7 @@ class AdminChapterControllerTest extends BaseControllerTest {
         @Test
         @DisplayName("SQL 注入在标题字段")
         void sqlInjectionInTitle() throws Exception {
-            when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
+            doNothing().when(chapterService).create(any(ChapterRequest.class));
             ChapterRequest dto = ChapterRequest.builder()
                     .courseId("11")
                     .title("' OR '1'='1")

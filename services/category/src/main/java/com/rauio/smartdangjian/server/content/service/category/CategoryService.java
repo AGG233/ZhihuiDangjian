@@ -2,8 +2,10 @@ package com.rauio.smartdangjian.server.content.service.category;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -66,7 +68,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
         }
         Map<Long, List<Category>> childrenByParent =
                 all.stream().filter(c -> c.getParentId() != null).collect(Collectors.groupingBy(Category::getParentId));
-        return collectChildren(childrenByParent, parentId);
+        return collectChildren(childrenByParent, parentId, new HashSet<>());
     }
 
     /**
@@ -74,15 +76,24 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
      *
      * @param childrenByParent parentId -> 子目录列表 的映射
      * @param parentId 当前父目录 ID
+     * @param path 当前递归链上的目录 ID，用于检测循环引用
      * @return 当前父目录下的子目录树
      */
-    private List<CategoryResponse> collectChildren(Map<Long, List<Category>> childrenByParent, Long parentId) {
+    private List<CategoryResponse> collectChildren(
+            Map<Long, List<Category>> childrenByParent, Long parentId, Set<Long> path) {
         List<Category> directChildren = childrenByParent.getOrDefault(parentId, Collections.emptyList());
         List<CategoryResponse> result = new ArrayList<>();
         for (Category child : directChildren) {
-            CategoryResponse vo = convertor.toResponse(child);
-            vo.setChildren(collectChildren(childrenByParent, child.getId()));
-            result.add(vo);
+            if (!path.add(child.getId())) {
+                throw new BusinessException(CategoryErrorConstants.CATEGORY_ARGS_ERROR, "分类层级存在循环引用");
+            }
+            try {
+                CategoryResponse vo = convertor.toResponse(child);
+                vo.setChildren(collectChildren(childrenByParent, child.getId(), path));
+                result.add(vo);
+            } finally {
+                path.remove(child.getId());
+            }
         }
         return result;
     }

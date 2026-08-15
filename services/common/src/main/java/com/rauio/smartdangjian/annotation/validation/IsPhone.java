@@ -19,7 +19,7 @@ import com.rauio.smartdangjian.annotation.validation.Validator.IsPhoneValidator;
 @Documented
 @Constraint(validatedBy = IsPhoneValidator.class)
 public @interface IsPhone {
-    boolean required() default false;
+    boolean required() default true;
 
     String message() default "手机格式错误";
 

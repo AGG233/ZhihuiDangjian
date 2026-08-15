@@ -388,7 +388,7 @@ class UserServiceTest {
             assertThatThrownBy(() -> userService.updatePassword(1L, "raw-password"))
                     .isInstanceOf(BusinessException.class)
                     .extracting("code")
-                    .isEqualTo(UserErrorConstants.USER_NOT_EXISTS);
+                    .isEqualTo(UserErrorConstants.PASSWORD_CHANGE_ERROR);
         }
     }
 

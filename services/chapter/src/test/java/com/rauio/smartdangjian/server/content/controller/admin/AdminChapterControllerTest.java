@@ -121,8 +121,8 @@ class AdminChapterControllerTest {
     // ================================================================
 
     @Test
-    @DisplayName("create 创建章节成功时返回 true")
-    void createShouldReturnTrue() {
+    @DisplayName("create 创建章节成功时返回空 Result")
+    void createShouldReturnSuccess() {
         ChapterRequest dto = ChapterRequest.builder()
                 .courseId("1")
                 .title("新章节")
@@ -130,18 +130,19 @@ class AdminChapterControllerTest {
                 .duration(1800)
                 .orderIndex(1)
                 .build();
-        when(chapterService.create(any(ChapterRequest.class))).thenReturn(true);
+        doNothing().when(chapterService).create(any(ChapterRequest.class));
 
-        Result<Boolean> result = controller.create(dto);
+        Result<Void> result = controller.create(dto);
 
         assertThat(result).isNotNull();
-        assertThat(result.getData()).isTrue();
+        assertThat(result.getData()).isNull();
         assertThat(result.getCode()).isEqualTo("200");
+        verify(chapterService).create(dto);
     }
 
     @Test
-    @DisplayName("create 创建章节失败时返回 false")
-    void createShouldReturnFalseWhenServiceFails() {
+    @DisplayName("create Service 抛出 BusinessException 时异常向上传播")
+    void createShouldThrowWhenServiceThrows() {
         ChapterRequest dto = ChapterRequest.builder()
                 .courseId("1")
                 .title("失败章节")
@@ -149,13 +150,11 @@ class AdminChapterControllerTest {
                 .duration(1800)
                 .orderIndex(1)
                 .build();
-        when(chapterService.create(any(ChapterRequest.class))).thenReturn(false);
+        doThrow(new BusinessException(3103, "章节无法创建")).when(chapterService).create(any(ChapterRequest.class));
 
-        Result<Boolean> result = controller.create(dto);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getData()).isFalse();
-        assertThat(result.getCode()).isEqualTo("200");
+        assertThatThrownBy(() -> controller.create(dto))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("章节无法创建");
     }
 
     // ================================================================

@@ -323,6 +323,32 @@ class ResourceMetaServiceTest {
         resourceMetaService.update(RESOURCE_ID, request);
     }
 
+    @Test
+    @DisplayName("update 将 objectKey 改为已存在值时抛出异常")
+    void updateDuplicateObjectKeyThrows() {
+        ResourceMeta existing = ResourceMeta.builder()
+                .id(RESOURCE_ID)
+                .uploaderId(1L)
+                .hash(HASH)
+                .objectKey(OBJECT_KEY)
+                .originalName("old.png")
+                .resourceType(0)
+                .status(1)
+                .build();
+        doReturn(existing).when(resourceMetaService).getById(RESOURCE_ID);
+        ResourceMeta other =
+                ResourceMeta.builder().id(99L).objectKey("dup/key.png").build();
+        // 第一次 getOne 查 hash 无冲突，第二次查新 objectKey 命中其他资源
+        doReturn(null, other).when(resourceMetaService).getOne(any(LambdaQueryWrapper.class));
+
+        ResourceMetaUpdateRequest request = new ResourceMetaUpdateRequest();
+        request.setObjectKey("dup/key.png");
+
+        assertThatThrownBy(() -> resourceMetaService.update(RESOURCE_ID, request))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("对象存储键已存在");
+    }
+
     // ==================== update - failed ====================
 
     @Test

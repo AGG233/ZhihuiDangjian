@@ -19,7 +19,7 @@ import com.rauio.smartdangjian.annotation.validation.Validator.IsIdCardValidator
 @Documented
 @Constraint(validatedBy = IsIdCardValidator.class)
 public @interface IsIdCard {
-    boolean required() default false;
+    boolean required() default true;
 
     String message() default "身份证格式错误";
 

@@ -86,16 +86,15 @@ public class ResourceMetaService extends ServiceImpl<ResourceMetaMapper, Resourc
     @CacheEvict(value = "resourceMeta", allEntries = true)
     public void update(Long id, ResourceMetaUpdateRequest request) {
         ResourceMeta existing = this.get(id);
-        validateDuplicate(id, existing.getHash(), existing.getObjectKey());
+        String targetObjectKey =
+                StringUtils.isNotBlank(request.getObjectKey()) ? request.getObjectKey() : existing.getObjectKey();
+        validateDuplicate(id, existing.getHash(), targetObjectKey);
 
         ResourceMeta meta = ResourceMeta.builder()
                 .id(id)
                 .uploaderId(existing.getUploaderId())
                 .hash(existing.getHash())
-                .objectKey(
-                        StringUtils.isNotBlank(request.getObjectKey())
-                                ? request.getObjectKey()
-                                : existing.getObjectKey())
+                .objectKey(targetObjectKey)
                 .originalName(
                         StringUtils.isNotBlank(request.getOriginalName())
                                 ? request.getOriginalName()

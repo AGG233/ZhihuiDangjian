@@ -20,7 +20,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import com.rauio.smartdangjian.crosslayer.CrossLayerTestBase;
 import com.rauio.smartdangjian.exception.BusinessException;
@@ -83,7 +82,7 @@ class AuthSecurityCrossLayerTest extends CrossLayerTestBase {
     @BeforeEach
     void disableTestCodeShortcut() {
         // 关闭 TEST8888 短路，确保验证码校验走真实 Redis 消费路径
-        ReflectionTestUtils.setField(captchaService, "testCode", null);
+        captchaService.setTestCode(null);
     }
 
     @AfterEach
@@ -95,7 +94,7 @@ class AuthSecurityCrossLayerTest extends CrossLayerTestBase {
     @Test
     @DisplayName("注册 MANAGER 类型被拒绝（防匿名提权）")
     void registerRejectsManagerType() {
-        ReflectionTestUtils.setField(captchaService, "testCode", "TEST8888");
+        captchaService.setTestCode("TEST8888");
         RegisterRequest request = new RegisterRequest();
         request.setType(UserType.MANAGER);
         request.setUsername("evil-" + UNIQUE);
@@ -134,7 +133,7 @@ class AuthSecurityCrossLayerTest extends CrossLayerTestBase {
     @Test
     @DisplayName("连续 5 次登录失败后第 6 次被锁定（真实 Redis 计数）")
     void loginLocksAccountAfterFiveFails() {
-        ReflectionTestUtils.setField(captchaService, "testCode", "TEST8888");
+        captchaService.setTestCode("TEST8888");
         User user = User.builder()
                 .id(1L)
                 .username(UNIQUE)
@@ -167,7 +166,7 @@ class AuthSecurityCrossLayerTest extends CrossLayerTestBase {
     @Test
     @DisplayName("用户不存在与密码错误返回同一错误码（防枚举）")
     void loginErrorIsUniformForUnknownUser() {
-        ReflectionTestUtils.setField(captchaService, "testCode", "TEST8888");
+        captchaService.setTestCode("TEST8888");
         when(userService.getByPassport(UNIQUE)).thenReturn(null);
 
         LoginRequest request = new LoginRequest();

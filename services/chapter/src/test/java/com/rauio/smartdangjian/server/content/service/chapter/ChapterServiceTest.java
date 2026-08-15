@@ -79,7 +79,7 @@ class ChapterServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("create 创建章节及其内容块成功返回 true")
+    @DisplayName("create 创建章节及其内容块成功")
     void createChapterSuccessfully() {
         ChapterRequest dto = ChapterRequest.builder()
                 .courseId("1")
@@ -101,9 +101,8 @@ class ChapterServiceTest {
         when(contentBlockConvertor.toEntity(any(ContentBlockDto.class))).thenReturn(block);
         doReturn(true).when(contentService).create(any(ChapterContentBlock.class));
 
-        Boolean result = chapterService.create(dto);
+        chapterService.create(dto);
 
-        assertThat(result).isTrue();
         verify(contentService).create(any(ChapterContentBlock.class));
     }
 
@@ -145,6 +144,32 @@ class ChapterServiceTest {
         assertThatThrownBy(() -> chapterService.create(dto))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("章节无法创建");
+    }
+
+    @Test
+    @DisplayName("create 内容块创建失败时抛出 BusinessException")
+    void createThrowsExceptionWhenContentBlockFails() {
+        ChapterRequest dto = ChapterRequest.builder()
+                .courseId("1")
+                .title("内容块失败章节")
+                .description("描述")
+                .orderIndex(1)
+                .content(List.of(ContentBlockDto.builder().textContent("内容").build()))
+                .build();
+
+        Chapter chapter = Chapter.builder().title("内容块失败章节").build();
+        chapter.setId(1L);
+        ChapterContentBlock block = ChapterContentBlock.builder().chapterId(1L).build();
+
+        doReturn(null).when(chapterService).getOne(any(LambdaQueryWrapper.class));
+        when(chapterConvertor.toEntity(dto)).thenReturn(chapter);
+        doReturn(true).when(chapterService).save(chapter);
+        when(contentBlockConvertor.toEntity(any(ContentBlockDto.class))).thenReturn(block);
+        doReturn(false).when(contentService).create(any(ChapterContentBlock.class));
+
+        assertThatThrownBy(() -> chapterService.create(dto))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("章节内容块创建失败");
     }
 
     @Test
@@ -221,6 +246,21 @@ class ChapterServiceTest {
                 .hasMessageContaining("章节不存在");
     }
 
+    @Test
+    @DisplayName("update 更新失败时抛出 BusinessException")
+    void updateThrowsExceptionWhenUpdateFails() {
+        ChapterRequest dto = ChapterRequest.builder().title("更新章节").build();
+        Chapter entity = Chapter.builder().title("更新章节").build();
+        Chapter existing = Chapter.builder().id(1L).title("旧章节").build();
+        doReturn(existing).when(chapterService).getById(1L);
+        when(chapterConvertor.toEntity(dto)).thenReturn(entity);
+        doReturn(false).when(chapterService).updateById(any(Chapter.class));
+
+        assertThatThrownBy(() -> chapterService.update(dto, 1L))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("章节更新失败");
+    }
+
     // ================================================================
     // getByCourseId
     // ================================================================
@@ -278,5 +318,17 @@ class ChapterServiceTest {
         assertThatThrownBy(() -> chapterService.delete(999L))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("章节不存在");
+    }
+
+    @Test
+    @DisplayName("delete 删除失败时抛出 BusinessException")
+    void deleteThrowsExceptionWhenDeleteFails() {
+        Chapter existing = Chapter.builder().id(1L).title("第一章").build();
+        doReturn(existing).when(chapterService).getById(1L);
+        doReturn(false).when(chapterService).removeById(1L);
+
+        assertThatThrownBy(() -> chapterService.delete(1L))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("章节删除失败");
     }
 }

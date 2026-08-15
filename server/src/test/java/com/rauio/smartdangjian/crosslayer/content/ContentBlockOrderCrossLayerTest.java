@@ -2,11 +2,9 @@ package com.rauio.smartdangjian.crosslayer.content;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 import org.apache.ibatis.builder.MapperBuilderAssistant;
@@ -18,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
@@ -60,82 +60,21 @@ class ContentBlockOrderCrossLayerTest extends CrossLayerTestBase {
     @Autowired
     private ChapterContentBlockService chapterContentBlockService;
 
-    @Autowired
+    @MockitoBean
     private ArticleContentBlockMapper articleContentBlockMapper;
 
-    @Autowired
+    @MockitoBean
     private ArticleContentBlockConvertor articleConvertor;
 
-    @Autowired
+    @MockitoBean
     private ChapterContentBlockMapper chapterContentBlockMapper;
 
-    @Autowired
+    @MockitoBean
     private ChapterContentBlockConvertor chapterConvertor;
 
     @SpringBootConfiguration
+    @Import({ArticleContentBlockService.class, ChapterContentBlockService.class})
     static class TestConfig extends CrossLayerTestConfig {
-
-        @Bean
-        ArticleContentBlockMapper articleContentBlockMapper() {
-            return mock(ArticleContentBlockMapper.class);
-        }
-
-        @Bean
-        ArticleContentBlockConvertor articleConvertor() {
-            return mock(ArticleContentBlockConvertor.class);
-        }
-
-        @Bean
-        @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
-        ArticleContentBlockService articleContentBlockService(
-                ArticleContentBlockConvertor convertor, ArticleContentBlockMapper mapper) {
-            ArticleContentBlockService service = new ArticleContentBlockService(convertor);
-            try {
-                Field field = findBaseMapperField(service.getClass());
-                field.setAccessible(true);
-                field.set(service, mapper);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to set baseMapper on ArticleContentBlockService", e);
-            }
-            return service;
-        }
-
-        @Bean
-        ChapterContentBlockMapper chapterContentBlockMapper() {
-            return mock(ChapterContentBlockMapper.class);
-        }
-
-        @Bean
-        ChapterContentBlockConvertor chapterConvertor() {
-            return mock(ChapterContentBlockConvertor.class);
-        }
-
-        @Bean
-        @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
-        ChapterContentBlockService chapterContentBlockService(
-                ChapterContentBlockConvertor convertor, ChapterContentBlockMapper mapper) {
-            ChapterContentBlockService service = new ChapterContentBlockService(convertor);
-            try {
-                Field field = findBaseMapperField(service.getClass());
-                field.setAccessible(true);
-                field.set(service, mapper);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to set baseMapper on ChapterContentBlockService", e);
-            }
-            return service;
-        }
-
-        private static Field findBaseMapperField(Class<?> clazz) throws NoSuchFieldException {
-            Class<?> current = clazz;
-            while (current != null) {
-                try {
-                    return current.getDeclaredField("baseMapper");
-                } catch (NoSuchFieldException e) {
-                    current = current.getSuperclass();
-                }
-            }
-            throw new NoSuchFieldException("baseMapper");
-        }
 
         @Bean
         AbstractPlatformTransactionManager transactionManager() {

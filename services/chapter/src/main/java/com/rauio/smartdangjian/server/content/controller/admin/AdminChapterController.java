@@ -44,9 +44,9 @@ public class AdminChapterController {
     @Operation(summary = "创建章节", description = "具体在Schema看每个字段的作用")
     @PostMapping
     @DataScopeAccess(resource = DataScopeResources.CHAPTER_ADMIN, action = DataScopeAction.CREATE, body = "#chapter")
-    public Result<Boolean> create(@RequestBody @Valid ChapterRequest chapter) {
-        Boolean result = chapterService.create(chapter);
-        return Result.ok(result);
+    public Result<Void> create(@RequestBody @Valid ChapterRequest chapter) {
+        chapterService.create(chapter);
+        return Result.ok();
     }
 
     @Operation(summary = "更新章节")

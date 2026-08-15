@@ -19,7 +19,7 @@ import com.rauio.smartdangjian.annotation.validation.Validator.IsPasswordValidat
 @Documented
 @Constraint(validatedBy = IsPasswordValidator.class)
 public @interface IsPassword {
-    boolean required() default false;
+    boolean required() default true;
 
     String message() default "密码格式错误";
 
