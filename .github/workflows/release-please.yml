@@ -45,4 +45,5 @@ jobs:
             echo "Invalid release-please output, skip auto-merge"
             exit 0
           fi
-          gh pr merge --auto --squash --delete-branch "$PR_NUMBER"
+          # 已启用 auto-merge 的 PR 重复执行可能报错，幂等处理避免 workflow 失败
+          gh pr merge --auto --squash --delete-branch "$PR_NUMBER" || true

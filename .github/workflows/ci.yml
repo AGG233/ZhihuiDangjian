@@ -55,11 +55,6 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          # setup-gradle 默认缓存 ~/.gradle（依赖 + 本地 build cache）；
-          # 额外纳入 configuration-cache 目录，让配置缓存跨 CI run 持久化。
-          gradle-home-cache-includes: |
-            caches/configuration-cache
 
       - name: Grant execute permission
         run: chmod +x gradlew

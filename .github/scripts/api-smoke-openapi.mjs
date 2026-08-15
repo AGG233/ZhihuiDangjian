@@ -348,8 +348,10 @@ async function main() {
     let passed = 0;
     let skipped = 0;
     const failures = [];
+    // 统一按原顺序收集 SKIP/PASS/FAIL，避免并发输出打乱顺序
+    const results = [];
 
-    // 第一遍：跳过项即时打印，其余构建请求描述（不发起请求）
+    // 第一遍：跳过项收集到 results，其余构建请求描述（不发起请求）
     const tasks = [];
     for (const item of operations) {
         const {pathName, method, operation, pathItem} = item;
@@ -358,7 +360,7 @@ async function main() {
 
         if (skipReason) {
             skipped += 1;
-            console.log(`SKIP ${label} -> ${skipReason}`);
+            results.push({label, status: "SKIP", body: skipReason});
             continue;
         }
 
@@ -405,7 +407,6 @@ async function main() {
     if (!Number.isInteger(CONCURRENCY) || CONCURRENCY < 1) {
         throw new Error("API_SMOKE_CONCURRENCY must be a positive integer");
     }
-    const results = [];
     for (let i = 0; i < tasks.length; i += CONCURRENCY) {
         const batch = tasks.slice(i, i + CONCURRENCY);
         const batchResults = await Promise.all(
@@ -431,7 +432,9 @@ async function main() {
 
     // 按原顺序输出结果并汇总（5xx 与网络错误视为失败，其余通过）
     for (const result of results) {
-        if (result.status === "NETWORK_ERROR") {
+        if (result.status === "SKIP") {
+            console.log(`SKIP ${result.label} -> ${result.body}`);
+        } else if (result.status === "NETWORK_ERROR") {
             failures.push({label: result.label, status: "NETWORK_ERROR", body: result.body});
             console.log(`FAIL ${result.label} -> ${result.body}`);
         } else if (result.status >= 500) {
