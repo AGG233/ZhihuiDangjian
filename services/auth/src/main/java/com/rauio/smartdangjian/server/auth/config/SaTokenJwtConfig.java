@@ -5,6 +5,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
 import cn.dev33.satoken.jwt.StpLogicJwtForSimple;
 import cn.dev33.satoken.stp.StpLogic;
@@ -24,11 +25,14 @@ public class SaTokenJwtConfig {
 
     private static final String PLACEHOLDER = "CHANGE_ME_IN_PROD";
 
+    private final Environment environment;
+
     @Value("${sa-token.jwt-secret-key:}")
     private String jwtSecretKey;
 
-    @Value("${spring.profiles.active:}")
-    private String activeProfiles;
+    public SaTokenJwtConfig(Environment environment) {
+        this.environment = environment;
+    }
 
     /**
      * 注册 JWT 简单模式 StpLogic，替换默认随机 token 生成器。
@@ -55,7 +59,27 @@ public class SaTokenJwtConfig {
         }
     }
 
+    /**
+     * 判定是否处于 dev/test profile。
+     *
+     * <p>优先使用 {@link Environment#getActiveProfiles()}（Spring 会展开
+     * {@code spring.profiles.default} 设定的默认 profile）；当显式 active profiles
+     * 为空时回退读取 default profiles，避免在仅配置 {@code spring.profiles.default: dev}
+     * 而未显式传 {@code --spring.profiles.active=dev} 时被误判为生产环境。
+     *
+     * <p>Profile 名按逗号精确切分后 {@code equals} 匹配，避免 {@code contains} 误匹配
+     * {@code devtools} 等相似名称。
+     */
     private boolean isDevOrTestProfile() {
-        return activeProfiles.contains("dev") || activeProfiles.contains("test");
+        String[] profiles = environment.getActiveProfiles();
+        if (profiles.length == 0) {
+            profiles = environment.getDefaultProfiles();
+        }
+        for (String profile : profiles) {
+            if ("dev".equals(profile) || "test".equals(profile)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

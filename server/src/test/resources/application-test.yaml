@@ -31,7 +31,7 @@ app:
       chapter-id: 1145141919810
 
 sa-token:
-  jwt-secret-key: test-jwt-secret-key
+  jwt-secret-key: test-jwt-secret-key-0123456789abcdef
 
 auth:
   captcha:
