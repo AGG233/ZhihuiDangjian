@@ -55,6 +55,8 @@ public class HotSpotService {
     /** 学习趋势最大统计天数（防止超大查询） */
     private static final int MAX_TREND_DAYS = 365;
 
+    private final com.rauio.smartdangjian.server.user.mapper.UserMapper userMapper;
+
     private final CourseMapper courseMapper;
     private final ChapterMapper chapterMapper;
     private final CategoryCourseMapper categoryCourseMapper;
@@ -79,17 +81,21 @@ public class HotSpotService {
         }
 
         Map<Long, Integer> recentLearnerCounts = countRecentLearnersByCourse();
+        long totalUsers = userMapper.selectCount(null);
 
         return courses.stream()
                 .map(course -> {
                     int enrollment = course.getEnrollmentCount() != null ? course.getEnrollmentCount() : 0;
                     int recentLearners = recentLearnerCounts.getOrDefault(course.getId(), 0);
+                    // 学习占比口径：近30天学习人数 / 平台学员总数，保留两位小数
+                    double learnRatio = totalUsers <= 0 ? 0d : Math.round(recentLearners * 100.0 / totalUsers) / 100.0;
                     return HotCourseResponse.builder()
                             .courseId(course.getId())
                             .title(course.getTitle())
                             .enrollmentCount(enrollment)
                             .recentLearnerCount(recentLearners)
                             .hotScore(enrollment + recentLearners)
+                            .learnRatio(learnRatio)
                             .build();
                 })
                 .sorted(Comparator.comparing(HotCourseResponse::getHotScore).reversed())
