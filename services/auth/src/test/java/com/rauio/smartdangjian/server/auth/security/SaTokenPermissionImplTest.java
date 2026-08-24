@@ -2,21 +2,17 @@ package com.rauio.smartdangjian.server.auth.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
-import com.rauio.smartdangjian.utils.spec.UserType;
-
-import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,84 +20,66 @@ class SaTokenPermissionImplTest {
 
     private final SaTokenPermissionImpl permission = new SaTokenPermissionImpl();
 
-    @Mock
-    private SaSession session;
+    private MockedStatic<StpUtil> stpUtil;
+
+    @BeforeEach
+    void openMock() {
+        stpUtil = mockStatic(StpUtil.class);
+        // 未 stub 的 getExtra 默认返回 null，即「令牌未携带角色 claim」
+        stpUtil.when(() -> StpUtil.getExtra("role")).thenReturn(null);
+    }
+
+    @AfterEach
+    void closeMock() {
+        stpUtil.close();
+    }
 
     @Test
-    @DisplayName("MANAGER 用户返回 STUDENT、SCHOOL、MANAGER 三个角色")
+    @DisplayName("MANAGER 角色声明返回 STUDENT、SCHOOL、MANAGER 三个角色")
     void managerRoles() {
-        var user = new User();
-        user.setUserType(UserType.MANAGER);
+        stpUtil.when(() -> StpUtil.getExtra("role")).thenReturn("MANAGER");
 
-        try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
-            stpUtil.when(StpUtil::getSession).thenReturn(session);
-            when(session.get("user")).thenReturn(user);
+        List<String> roles = permission.getRoleList("1", "login");
 
-            List<String> roles = permission.getRoleList("1", "login");
-
-            assertThat(roles).containsExactly("STUDENT", "SCHOOL", "MANAGER");
-        }
+        assertThat(roles).containsExactly("STUDENT", "SCHOOL", "MANAGER");
     }
 
     @Test
-    @DisplayName("SCHOOL 用户返回 STUDENT、SCHOOL 两个角色")
+    @DisplayName("SCHOOL 角色声明返回 STUDENT、SCHOOL 两个角色")
     void schoolRoles() {
-        var user = new User();
-        user.setUserType(UserType.SCHOOL);
+        stpUtil.when(() -> StpUtil.getExtra("role")).thenReturn("SCHOOL");
 
-        try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
-            stpUtil.when(StpUtil::getSession).thenReturn(session);
-            when(session.get("user")).thenReturn(user);
+        List<String> roles = permission.getRoleList("1", "login");
 
-            List<String> roles = permission.getRoleList("1", "login");
-
-            assertThat(roles).containsExactly("STUDENT", "SCHOOL");
-        }
+        assertThat(roles).containsExactly("STUDENT", "SCHOOL");
     }
 
     @Test
-    @DisplayName("STUDENT 用户返回 STUDENT 一个角色")
+    @DisplayName("STUDENT 角色声明返回 STUDENT 一个角色")
     void studentRoles() {
-        var user = new User();
-        user.setUserType(UserType.STUDENT);
+        stpUtil.when(() -> StpUtil.getExtra("role")).thenReturn("STUDENT");
 
-        try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
-            stpUtil.when(StpUtil::getSession).thenReturn(session);
-            when(session.get("user")).thenReturn(user);
+        List<String> roles = permission.getRoleList("1", "login");
 
-            List<String> roles = permission.getRoleList("1", "login");
-
-            assertThat(roles).containsExactly("STUDENT");
-        }
+        assertThat(roles).containsExactly("STUDENT");
     }
 
     @Test
-    @DisplayName("Session 中无用户时返回空列表")
-    void emptyRolesWhenNoUser() {
-        try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
-            stpUtil.when(StpUtil::getSession).thenReturn(session);
-            when(session.get("user")).thenReturn(null);
+    @DisplayName("令牌未携带角色 claim 时返回空列表")
+    void emptyRolesWhenNoRoleClaim() {
+        List<String> roles = permission.getRoleList("1", "login");
 
-            List<String> roles = permission.getRoleList("1", "login");
-
-            assertThat(roles).isEmpty();
-        }
+        assertThat(roles).isEmpty();
     }
 
     @Test
-    @DisplayName("User has null userType returns empty role list")
-    void nullUserTypeReturnsEmptyRoles() {
-        var user = new User();
-        user.setUserType(null);
+    @DisplayName("未知角色声明的令牌返回空列表（不提权）")
+    void unknownRoleClaimReturnsEmptyRoles() {
+        stpUtil.when(() -> StpUtil.getExtra("role")).thenReturn("SUPER_ADMIN");
 
-        try (MockedStatic<StpUtil> stpUtil = mockStatic(StpUtil.class)) {
-            stpUtil.when(StpUtil::getSession).thenReturn(session);
-            when(session.get("user")).thenReturn(user);
+        List<String> roles = permission.getRoleList("1", "login");
 
-            List<String> roles = permission.getRoleList("1", "login");
-
-            assertThat(roles).isEmpty();
-        }
+        assertThat(roles).isEmpty();
     }
 
     @Test

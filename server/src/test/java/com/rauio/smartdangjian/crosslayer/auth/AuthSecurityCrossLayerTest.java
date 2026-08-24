@@ -75,7 +75,13 @@ class AuthSecurityCrossLayerTest extends CrossLayerTestBase {
                 UserMapper userMapper,
                 UserService userService,
                 RedisTemplate<String, Object> redisTemplate) {
-            return new AuthService(captchaService, userMapper, userService, redisTemplate);
+            return new AuthService(
+                    captchaService,
+                    userMapper,
+                    userService,
+                    redisTemplate,
+                    new com.rauio.smartdangjian.server.auth.service.RefreshTokenService(redisTemplate),
+                    new com.rauio.smartdangjian.server.auth.service.TokenVersionService(redisTemplate));
         }
     }
 

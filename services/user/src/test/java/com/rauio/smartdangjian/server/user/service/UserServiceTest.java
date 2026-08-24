@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -35,7 +34,6 @@ import com.rauio.smartdangjian.server.user.pojo.response.UserResponse;
 import com.rauio.smartdangjian.server.user.utils.spec.PartyStatus;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
-import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.crypto.digest.BCrypt;
 
@@ -144,15 +142,14 @@ class UserServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("getCurrentUser 已登录且session中有User时返回该User")
+    @DisplayName("getCurrentUser 已登录时按 loginId 回查数据库返回用户实体")
     void getCurrentUserAuthenticatedReturnsUser() {
         User user = createUser(1L, "testuser", "test@example.com", "13800138000");
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
-            SaSession session = mock(SaSession.class);
-            when(session.get("user")).thenReturn(user);
             stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
-            stpUtilMock.when(StpUtil::getSession).thenReturn(session);
+            stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("1");
+            org.mockito.Mockito.doReturn(user).when(userService).getById(1L);
 
             User result = userService.getCurrentUser();
 
@@ -161,13 +158,12 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("getCurrentUser session中的user不是User实例时返回null")
-    void getCurrentUserPrincipalNotUserReturnsNull() {
+    @DisplayName("getCurrentUser loginId 对应的用户不存在时返回null")
+    void getCurrentUserReturnsNullWhenUserMissing() {
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
-            SaSession session = mock(SaSession.class);
-            when(session.get("user")).thenReturn("not-a-user-instance");
             stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
-            stpUtilMock.when(StpUtil::getSession).thenReturn(session);
+            stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("404");
+            org.mockito.Mockito.doReturn(null).when(userService).getById(404L);
 
             User result = userService.getCurrentUser();
 

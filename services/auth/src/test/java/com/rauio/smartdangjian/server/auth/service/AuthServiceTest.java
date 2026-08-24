@@ -57,6 +57,12 @@ class AuthServiceTest {
     @Mock
     private RedisTemplate<String, Object> redisTemplate;
 
+    @Mock
+    private RefreshTokenService refreshTokenService;
+
+    @Mock
+    private TokenVersionService tokenVersionService;
+
     private ValueOperations<String, Object> valueOps;
 
     @InjectMocks
@@ -68,6 +74,12 @@ class AuthServiceTest {
         valueOps = mock(ValueOperations.class);
         lenient().when(redisTemplate.opsForValue()).thenReturn(valueOps);
         lenient().when(valueOps.get(anyString())).thenReturn(null);
+        lenient()
+                .when(tokenVersionService.current(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(0L);
+        lenient()
+                .when(refreshTokenService.issue(org.mockito.ArgumentMatchers.any()))
+                .thenReturn("refresh-token-stub");
     }
 
     // ================================================================
@@ -297,10 +309,15 @@ class AuthServiceTest {
     // ================================================================
 
     @Test
-    @DisplayName("logout 调用 StpUtil.logout")
-    void logoutDelegatesToStpUtil() {
+    @DisplayName("logout 吊销全部刷新令牌并调用 StpUtil.logout")
+    void logoutRevokesRefreshTokensAndCallsStpUtilLogout() {
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            stpUtilMock.when(StpUtil::getLoginIdDefaultNull).thenReturn(1L);
+            stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("1");
+
             authService.logout();
+
+            verify(refreshTokenService).revokeAllForUser(1L);
             stpUtilMock.verify(StpUtil::logout);
         }
     }
@@ -517,22 +534,18 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("changePassword 旧密码正确时通过 UserService 更新密码并刷新 session")
+    @DisplayName("changePassword 旧密码正确时更新密码、递增令牌版本并吊销刷新令牌")
     void changePasswordSuccessWhenOldPasswordMatches() {
         ChangePasswordRequest request = createChangePasswordRequest();
         String newRawPassword = request.getNewPassword();
-        String encodedNewPassword = newEncodedPassword();
         User user = createUser(1L, "testuser");
         user.setPassword(newEncodedPassword());
-        User updatedUser = createUser(1L, "testuser");
-        updatedUser.setPassword(encodedNewPassword);
 
         try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class);
                 MockedStatic<BCrypt> bcryptMock = mockStatic(BCrypt.class)) {
-            SaSession session = mock(SaSession.class);
             stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("1");
-            stpUtilMock.when(StpUtil::getSession).thenReturn(session);
-            when(userMapper.selectById("1")).thenReturn(user, updatedUser);
+            when(userMapper.selectById("1")).thenReturn(user);
+            when(tokenVersionService.bump(1L)).thenReturn(1L);
             bcryptMock
                     .when(() -> BCrypt.checkpw(request.getOldPassword(), user.getPassword()))
                     .thenReturn(true);
@@ -540,7 +553,8 @@ class AuthServiceTest {
             authService.changePassword(request);
 
             verify(userService).updatePassword(1L, newRawPassword);
-            verify(session).set("user", updatedUser);
+            verify(tokenVersionService).bump(1L);
+            verify(refreshTokenService).revokeAllForUser(1L);
         }
     }
 

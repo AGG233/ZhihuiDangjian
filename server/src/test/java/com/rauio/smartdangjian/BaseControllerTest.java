@@ -68,6 +68,10 @@ public abstract class BaseControllerTest {
         }
         stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
         stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn(String.valueOf(userId));
+        stpUtilMock.when(StpUtil::getLoginIdDefaultNull).thenReturn(userId);
+        // 无状态 JWT：身份要素经 extra claims 提供（与生产链路同构）
+        stpUtilMock.when(() -> StpUtil.getExtra("role")).thenReturn(userType != null ? userType.name() : null);
+        stpUtilMock.when(() -> StpUtil.getExtra("uni")).thenReturn(universityId);
         SaSession session = mock(SaSession.class);
         stpUtilMock.when(StpUtil::getSession).thenReturn(session);
     }
