@@ -8,6 +8,7 @@ import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.auth.pojo.Captcha;
 import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
+import com.rauio.smartdangjian.server.auth.pojo.request.RefreshTokenRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.RegisterRequest;
 import com.rauio.smartdangjian.server.auth.pojo.response.LoginResponse;
 import com.rauio.smartdangjian.server.auth.service.AuthService;
@@ -64,7 +65,16 @@ public class AuthController {
         return Result.ok(null);
     }
 
-    @Operation(summary = "用户登出", description = "登出成功后将返回一个空的响应体")
+    @Operation(
+            summary = "刷新令牌",
+            description = "使用登录时下发的 refreshToken 换取新的 accessToken/refreshToken 对；"
+                    + "旧 refreshToken 立即作废，重复提交已作废令牌将触发泄露保护并吊销该用户全部会话")
+    @PostMapping("/refresh")
+    public Result<LoginResponse> refresh(@RequestBody @Valid RefreshTokenRequest request) {
+        return Result.ok(authService.refresh(request.getRefreshToken()));
+    }
+
+    @Operation(summary = "用户登出", description = "吊销该用户全部刷新令牌并返回一个空的响应体；" + "无状态访问令牌由客户端自行清除")
     @PostMapping("/logout")
     public Result logout() {
         authService.logout();
