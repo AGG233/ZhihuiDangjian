@@ -1,9 +1,5 @@
 package com.rauio.smartdangjian.server.ai.config;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -21,6 +17,12 @@ import com.rauio.smartdangjian.server.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * AI 对话接口限流配置。
+ *
+ * <p>计数走 {@link AiRateLimiter}（Redisson 分布式令牌桶），多实例部署时限流
+ * 额度全局共享；主体优先取当前用户 ID，取不到时回退客户端 IP。
+ */
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -28,12 +30,10 @@ public class RateLimitConfig implements WebMvcConfigurer {
 
     private final UserService userService;
     private final ObjectMapper objectMapper;
+    private final AiRateLimiter rateLimiter;
 
     @Value("${ai.rate-limit.enabled:true}")
     private boolean enabled;
-
-    @Value("${ai.rate-limit.requests-per-minute:10}")
-    private int requestsPerMinute;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -44,8 +44,6 @@ public class RateLimitConfig implements WebMvcConfigurer {
     }
 
     private class RateLimitInterceptor implements HandlerInterceptor {
-
-        private final Map<String, ConcurrentHashMap<Long, AtomicInteger>> userCounters = new ConcurrentHashMap<>();
 
         @Override
         public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
@@ -60,17 +58,8 @@ public class RateLimitConfig implements WebMvcConfigurer {
                 userId = request.getRemoteAddr();
             }
 
-            long windowKey = System.currentTimeMillis() / 60_000;
-            ConcurrentHashMap<Long, AtomicInteger> counters =
-                    userCounters.computeIfAbsent(userId, k -> new ConcurrentHashMap<>());
-
-            counters.entrySet().removeIf(e -> e.getKey() < windowKey - 1);
-
-            AtomicInteger counter = counters.computeIfAbsent(windowKey, k -> new AtomicInteger(0));
-            int count = counter.incrementAndGet();
-
-            if (count > requestsPerMinute) {
-                log.warn("AI请求限流触发 userId={} count={}", userId, count);
+            if (!rateLimiter.tryAcquire(userId)) {
+                log.warn("AI请求限流触发 subject={}", userId);
                 response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
                 response.setContentType("application/json;charset=UTF-8");
                 response.getWriter().write(objectMapper.writeValueAsString(Result.error("429", "请求过于频繁，请稍后重试")));
