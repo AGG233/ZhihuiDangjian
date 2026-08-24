@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 学习完成事件监听器（模块文档 2.5/2.6「学习完毕后」自动触发的落地点）。
+ * 学习完成事件监听器：学员学习完毕后自动化动作（自动出题、自动评估）的落地点。
  *
  * <p>章节首次完成时异步执行两项动作，均不阻塞学习主链路、失败互不影响：
  * <ul>
