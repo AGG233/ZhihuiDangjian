@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * 知识图谱评价工具：为 Agent 提供当前用户的学习知识图谱结构摘要（节点、关系、覆盖范围），
- * 供大语言模型对用户的知识图谱进行评价分析（对应模块文档 3.4）。
+ * 供大语言模型对用户的知识图谱进行评价分析。
  */
 @Component
 @RequiredArgsConstructor

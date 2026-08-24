@@ -42,7 +42,7 @@ import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.server.user.service.UserService;
 
 /**
- * 知识图谱评价调用链跨层回归测试（模块文档 3.4）。
+ * 知识图谱评价调用链跨层回归测试。
  *
  * <p>装配真实 {@link GraphEvaluationTool} + 真实 {@link KnowledgeGraphService}，
  * Neo4jClient 以 {@link MockitoBean} 提供（fluent 查询链 mock，行数据模拟 Neo4j 返回），
