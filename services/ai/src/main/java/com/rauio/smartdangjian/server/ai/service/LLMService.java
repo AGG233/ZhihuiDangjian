@@ -45,6 +45,20 @@ public class LLMService {
         return stream(request.sessionId(), userService.getCurrentUserId(), request.message());
     }
 
+    /**
+     * 服务端主动发起的对话入口：显式指定用户 ID，不依赖请求上下文。
+     *
+     * <p>供学习完成自动评估等系统触发场景使用（无 HTTP 请求上下文）；
+     * 会话仍按 userId:sessionId 写入记忆存档。
+     *
+     * @param request 对话请求（sessionId 建议带业务前缀避免与用户会话混淆）
+     * @param userId  目标用户 ID
+     * @return 流式响应
+     */
+    public Flux<AiChatResponse> chatForUser(AiChatRequest request, String userId) {
+        return stream(request.sessionId(), userId, request.message());
+    }
+
     private Flux<AiChatResponse> stream(String providedSessionId, String userId, String input) {
         return Flux.defer(() -> {
             String sessionId = normalizeSessionId(providedSessionId);
