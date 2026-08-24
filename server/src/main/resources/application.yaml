@@ -29,12 +29,17 @@ spring:
       username: ${NEO4J_USERNAME:neo4j}
       password: ${NEO4J_PASSWORD:password}
   ai:
-    openai:
-      base-url: https://api.deepseek.com
-      api-key: ${AI_KEY:dummy-key}
-      chat:
-        options:
-          model: deepseek-chat
+    # 显式选择模型实现：Agent 编排与出题工具均绑定 @Qualifier("dashScopeChatModel")，
+    # chat/embedding 收敛到 DashScope，其余无人使用的 OpenAI 子模型（语音、图像、审核）全部禁用，
+    # 避免自动配置因缺少 spring.ai.openai.api-key 在启动时抛出断言异常。
+    model:
+      chat: dashscope
+      embedding: dashscope
+      audio:
+        speech: none
+        transcription: none
+      moderation: none
+      image: none
     dashscope:
       api-key: ${AI_EMBEDDING_KEY:${AI_KEY:dummy-key}}
 
