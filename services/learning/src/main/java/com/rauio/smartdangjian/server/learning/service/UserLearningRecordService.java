@@ -236,14 +236,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
         }
 
         if (record.getStartTime() != null && record.getEndTime() != null) {
-            long durationMillis = record.getEndTime().toInstant(ZoneOffset.UTC).toEpochMilli()
-                    - record.getStartTime().toInstant(ZoneOffset.UTC).toEpochMilli();
-            int seconds = (int) (durationMillis / 1000); // 转换为秒
-            // 防虚报：单次学习时长超过上限按上限计（客户端时钟漂移或恶意上报）
-            if (seconds > MAX_SINGLE_SESSION_SECONDS) {
-                seconds = MAX_SINGLE_SESSION_SECONDS;
-            }
-            record.setDuration(seconds);
+            record.setDuration(computeSessionSeconds(record.getStartTime(), record.getEndTime()));
         }
 
         Boolean result = this.save(record);
@@ -276,14 +269,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
 
         // 自动计算学习时长（如果提供了开始和结束时间）
         if (record.getStartTime() != null && record.getEndTime() != null) {
-            long durationMillis = record.getEndTime().toInstant(ZoneOffset.UTC).toEpochMilli()
-                    - record.getStartTime().toInstant(ZoneOffset.UTC).toEpochMilli();
-            int seconds = (int) (durationMillis / 1000); // 转换为秒
-            // 防虚报：单次学习时长超过上限按上限计（客户端时钟漂移或恶意上报）
-            if (seconds > MAX_SINGLE_SESSION_SECONDS) {
-                seconds = MAX_SINGLE_SESSION_SECONDS;
-            }
-            record.setDuration(seconds);
+            record.setDuration(computeSessionSeconds(record.getStartTime(), record.getEndTime()));
         }
 
         Boolean result = this.updateById(record);
@@ -310,5 +296,22 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
             throw new BusinessException(LearningErrorConstants.RECORD_DELETE_FAILED, "删除学习记录失败");
         }
         return result;
+    }
+
+    /**
+     * 由起止时间计算单次学习时长（秒），create 与 update 共用同一口径。
+     *
+     * <p>防虚报钳制双向生效：超过 {@link #MAX_SINGLE_SESSION_SECONDS} 按上限计；
+     * 结束时间早于开始时间（客户端时钟漂移或恶意上报）按 0 计，不产生负时长入库。
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return 钳制后的学习秒数（非负）
+     */
+    private int computeSessionSeconds(LocalDateTime startTime, LocalDateTime endTime) {
+        long durationMillis = endTime.toInstant(ZoneOffset.UTC).toEpochMilli()
+                - startTime.toInstant(ZoneOffset.UTC).toEpochMilli();
+        int seconds = (int) (durationMillis / 1000);
+        return Math.max(0, Math.min(seconds, MAX_SINGLE_SESSION_SECONDS));
     }
 }
