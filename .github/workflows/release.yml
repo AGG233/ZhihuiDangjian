@@ -186,7 +186,6 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_KEY }}
           command_timeout: 30m
-          envs: PURGE_NEO4J_DOCUMENTS
           script: |
             set -euo pipefail
             cd /www/server/panel/data/compose/test
@@ -206,28 +205,6 @@ jobs:
               sed -i "s|^APP_IMAGE=.*|APP_IMAGE=${APP_IMAGE}|" .env
             else
               echo "APP_IMAGE=${APP_IMAGE}" >> .env
-            fi
-
-            # ── Neo4j :Document 向量数据清空 ──────────────────────────────
-            # embedding 模型切换后新旧向量空间不可比，须清空后由入库接口重灌。
-            # 默认执行；迁移完成后可在仓库 Variables 设 PURGE_NEO4J_DOCUMENTS=false 关闭。
-            if [ "${PURGE_NEO4J_DOCUMENTS:-true}" = "true" ]; then
-              for k in NEO4J_URI NEO4J_USERNAME NEO4J_PASSWORD; do
-                v=$(grep -E "^${k}=" .env 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '"') || true
-                if [ -n "${v:-}" ]; then export "$k=$v"; fi
-              done
-              export NEO4J_URI="${NEO4J_URI:-bolt://localhost:7687}"
-              export NEO4J_USERNAME="${NEO4J_USERNAME:-neo4j}"
-              if [ -z "${NEO4J_PASSWORD:-}" ]; then
-                echo "::warning::未从 .env 获取到 NEO4J_PASSWORD，跳过 :Document 清空"
-              else
-                echo "Purging :Document nodes @ ${NEO4J_URI} ..."
-                docker run --rm --network host --entrypoint cypher-shell neo4j:5 \
-                  -a "${NEO4J_URI}" -u "${NEO4J_USERNAME}" -p "${NEO4J_PASSWORD}" \
-                  "MATCH (n:Document) DETACH DELETE n RETURN count(n) AS purged;"
-              fi
-            else
-              echo "PURGE_NEO4J_DOCUMENTS=false，跳过 :Document 清空"
             fi
 
             # 只拉取应用镜像，避免每次拉 neo4j/redis 大镜像
