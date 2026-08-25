@@ -5,9 +5,6 @@ app:
     default-user-id: 1987026098687483905
 server:
   port: 9000
-  ai:
-    openai:
-      api-key: ${AI_KEY:dummy-key}
 
 dromara:
   x-file-storage:
