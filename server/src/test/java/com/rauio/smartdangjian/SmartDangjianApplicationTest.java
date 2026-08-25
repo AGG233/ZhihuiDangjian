@@ -33,6 +33,15 @@ class SmartDangjianApplicationTest {
     }
 
     @Test
+    @DisplayName("主类包含 @EnableScheduling 注解（缺失则所有 @Scheduled 定时任务不会被执行）")
+    void hasEnableSchedulingAnnotation() {
+        org.springframework.scheduling.annotation.EnableScheduling annotation =
+                SmartDangjianApplication.class.getAnnotation(
+                        org.springframework.scheduling.annotation.EnableScheduling.class);
+        assertThat(annotation).as("@EnableScheduling 缺失将导致协同过滤相似度等定时任务静默失效").isNotNull();
+    }
+
+    @Test
     @DisplayName("main 方法存在并可反射调用（不启动完整 Spring 上下文）")
     void mainMethodExists() throws Exception {
         var mainMethod = SmartDangjianApplication.class.getDeclaredMethod("main", String[].class);

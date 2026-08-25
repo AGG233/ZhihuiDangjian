@@ -172,7 +172,11 @@ class RecommendServiceTest {
     @Test
     @DisplayName("协同过滤有相似用户时按学习章节推荐课程")
     void recommendByCFWithSimilarUsersReturnsRecommendedCourses() {
-        UserSimilarity sim = UserSimilarity.builder().userId1(1L).userId2(2L).build();
+        UserSimilarity sim = UserSimilarity.builder()
+                .userId1(1L)
+                .userId2(2L)
+                .similarityScore(java.math.BigDecimal.valueOf(0.8))
+                .build();
         Page<UserSimilarity> similarityPage = new Page<>(1, 10, 1);
         similarityPage.setRecords(List.of(sim));
         doReturn(similarityPage).when(userSimilarityMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
@@ -201,9 +205,77 @@ class RecommendServiceTest {
     }
 
     @Test
+    @DisplayName("协同过滤按相似度加权排序：高相似邻居推荐的课程排名更靠前")
+    void recommendByCFWeightsCoursesBySimilarityScore() {
+        UserSimilarity highSim = UserSimilarity.builder()
+                .userId1(1L)
+                .userId2(2L)
+                .similarityScore(java.math.BigDecimal.valueOf(0.9))
+                .build();
+        UserSimilarity lowSim = UserSimilarity.builder()
+                .userId1(1L)
+                .userId2(3L)
+                .similarityScore(java.math.BigDecimal.valueOf(0.1))
+                .build();
+        Page<UserSimilarity> similarityPage = new Page<>(1, 10, 2);
+        similarityPage.setRecords(List.of(highSim, lowSim));
+        doReturn(similarityPage).when(userSimilarityMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+
+        // 第一次查询为当前用户自身记录（用于排除已学课程），第二次为邻居行为记录
+        UserLearningRecord own =
+                UserLearningRecord.builder().chapterId(99L).userId(1L).build();
+        UserLearningRecord peer2Record =
+                UserLearningRecord.builder().chapterId(10L).userId(2L).build();
+        UserLearningRecord peer3Record =
+                UserLearningRecord.builder().chapterId(20L).userId(3L).build();
+        doReturn(List.of(own), List.of(peer2Record, peer3Record))
+                .when(userLearningRecordMapper)
+                .selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(userChapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
+
+        // 当前用户自身章节无课程映射，即视为无已学课程
+        doReturn(Collections.emptyList()).when(chapterMapper).selectList(any(LambdaQueryWrapper.class));
+
+        Chapter chapter10 = Chapter.builder().id(10L).courseId(100L).build();
+        Chapter chapter20 = Chapter.builder().id(20L).courseId(200L).build();
+        doReturn(List.of(chapter10, chapter20)).when(chapterMapper).selectByIds(anyCollection());
+
+        Page<Long> result = recommendService.recommendByCF(1L, 1, 10);
+
+        // 课程100 由相似度 0.9 的邻居贡献 > 课程200 由相似度 0.1 的邻居贡献
+        assertThat(result.getRecords()).containsExactly(100L, 200L);
+    }
+
+    @Test
+    @DisplayName("协同过滤：无相似度分数的邻居记录不计入课程得分")
+    void recommendByCFSkipsNeighborsWithoutScore() {
+        UserSimilarity noScore =
+                UserSimilarity.builder().userId1(1L).userId2(2L).build();
+        Page<UserSimilarity> similarityPage = new Page<>(1, 10, 1);
+        similarityPage.setRecords(List.of(noScore));
+        doReturn(similarityPage).when(userSimilarityMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+
+        UserLearningRecord learned =
+                UserLearningRecord.builder().chapterId(1L).userId(1L).build();
+        doReturn(List.of(learned)).when(userLearningRecordMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(Collections.emptyList()).when(userChapterProgressMapper).selectList(any(LambdaQueryWrapper.class));
+        doReturn(List.of(Chapter.builder().id(1L).courseId(1L).build()))
+                .when(chapterMapper)
+                .selectByIds(anyCollection());
+
+        Page<Long> result = recommendService.recommendByCF(1L, 1, 10);
+
+        assertThat(result.getRecords()).isEmpty();
+    }
+
+    @Test
     @DisplayName("协同过滤用户已学完全部相似课程时返回空页")
     void recommendByCFUserAlreadyLearnedAllReturnsEmptyPage() {
-        UserSimilarity sim = UserSimilarity.builder().userId1(1L).userId2(2L).build();
+        UserSimilarity sim = UserSimilarity.builder()
+                .userId1(1L)
+                .userId2(2L)
+                .similarityScore(java.math.BigDecimal.valueOf(0.8))
+                .build();
         Page<UserSimilarity> similarityPage = new Page<>(1, 10, 1);
         similarityPage.setRecords(List.of(sim));
         doReturn(similarityPage).when(userSimilarityMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
@@ -417,6 +489,19 @@ class RecommendServiceTest {
     // ==================== calculateSimilarity ====================
 
     @Test
+    @DisplayName("相似度计算保留每日凌晨2点的 @Scheduled 触发配置")
+    void calculateSimilarityKeepsDailySchedule() throws Exception {
+        org.springframework.scheduling.annotation.Scheduled scheduled =
+                org.springframework.scheduling.annotation.Scheduled.class.cast(RecommendService.class
+                        .getDeclaredMethod("calculateSimilarity")
+                        .getAnnotation(org.springframework.scheduling.annotation.Scheduled.class));
+        assertThat(scheduled)
+                .as("calculateSimilarity 丢失 @Scheduled 将导致 user_similarity 表无写入方")
+                .isNotNull();
+        assertThat(scheduled.cron()).isEqualTo("0 0 2 * * ?");
+    }
+
+    @Test
     @DisplayName("定时计算相似度：无行为数据时直接返回")
     void calculateSimilarityEmptyBehaviors() {
         doReturn(Collections.emptyList()).when(userLearningRecordMapper).getAllUserBehaviors();
@@ -497,7 +582,11 @@ class RecommendServiceTest {
     @Test
     @DisplayName("协同过滤相似用户的章节ID全部为空时返回空页")
     void recommendByCFAllChapterIdsEmpty() {
-        UserSimilarity sim = UserSimilarity.builder().userId1(1L).userId2(2L).build();
+        UserSimilarity sim = UserSimilarity.builder()
+                .userId1(1L)
+                .userId2(2L)
+                .similarityScore(java.math.BigDecimal.valueOf(0.8))
+                .build();
         Page<UserSimilarity> similarityPage = new Page<>(1, 10, 1);
         similarityPage.setRecords(List.of(sim));
         doReturn(similarityPage).when(userSimilarityMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
