@@ -43,7 +43,7 @@ public class AiQuizGeneratorTool {
     private final ObjectMapper objectMapper;
 
     public AiQuizGeneratorTool(
-            @Qualifier("dashScopeChatModel") ObjectProvider<ChatModel> chatModelProvider,
+            @Qualifier("openAiChatModel") ObjectProvider<ChatModel> chatModelProvider,
             ChapterService chapterService,
             ChapterContentBlockService chapterContentBlockService,
             QuizService quizService,
