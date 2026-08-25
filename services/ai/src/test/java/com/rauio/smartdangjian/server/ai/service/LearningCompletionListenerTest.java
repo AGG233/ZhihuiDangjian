@@ -3,6 +3,7 @@ package com.rauio.smartdangjian.server.ai.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
@@ -104,6 +105,67 @@ class LearningCompletionListenerTest {
         // quizCount=5：单题失败后其余题目继续生成
         verify(quizGeneratorTool, org.mockito.Mockito.times(5))
                 .generateMiniQuiz(anyString(), any(), anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("全部题目生成失败时回滚去抖键以便重试")
+    void allQuizFailureRollsBackDebounceKey() {
+        doThrow(new RuntimeException("llm down"))
+                .when(quizGeneratorTool)
+                .generateMiniQuiz(anyString(), any(), anyString(), anyString());
+
+        listener.generateQuizzes(event);
+
+        verify(redisTemplate)
+                .delete(eq(LearningCompletionListener.QUIZ_DEBOUNCE_KEY_PREFIX + event.userId() + ":"
+                        + event.chapterId()));
+    }
+
+    @Test
+    @DisplayName("部分题目成功时保留去抖窗口不回滚")
+    void partialQuizSuccessKeepsDebounceKey() {
+        doThrow(new RuntimeException("llm down"))
+                .doReturn(null)
+                .doReturn(null)
+                .when(quizGeneratorTool)
+                .generateMiniQuiz(anyString(), any(), anyString(), anyString());
+
+        listener.generateQuizzes(event);
+
+        verify(redisTemplate, never()).delete(anyString());
+    }
+
+    @Test
+    @DisplayName("评估去抖窗口内重复事件不再重复生成评估")
+    void evaluationDebounceSkipsDuplicates() {
+        when(valueOps.setIfAbsent(
+                        contains(LearningCompletionListener.EVALUATION_DEBOUNCE_KEY_PREFIX),
+                        anyString(),
+                        any(Duration.class)))
+                .thenReturn(false);
+
+        listener.generateEvaluation(event);
+
+        verify(llmService, never()).chatForUser(any(AiChatRequest.class), anyString());
+    }
+
+    @Test
+    @DisplayName("评估生成失败时回滚评估去抖键")
+    void evaluationFailureRollsBackDebounceKey() {
+        when(llmService.chatForUser(any(AiChatRequest.class), anyString()))
+                .thenReturn(Flux.error(new RuntimeException("assessment down")));
+
+        try {
+            listener.generateEvaluation(event);
+        } catch (RuntimeException expected) {
+            // 外层监听器会兜底记录日志，这里仅验证回滚动作
+        }
+
+        verify(redisTemplate)
+                .delete(eq(LearningCompletionListener.EVALUATION_DEBOUNCE_KEY_PREFIX
+                        + event.userId()
+                        + ":"
+                        + event.chapterId()));
     }
 
     @Test
