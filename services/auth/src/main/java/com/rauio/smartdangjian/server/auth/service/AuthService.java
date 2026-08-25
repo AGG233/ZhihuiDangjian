@@ -102,14 +102,17 @@ public class AuthService {
      * @return 新的令牌对
      */
     public LoginResponse refresh(String refreshToken) {
-        Long userId = refreshTokenService.validate(refreshToken);
-        User user = userMapper.selectById(userId);
-        if (user == null || user.getStatus() == AccountStatus.BANNED) {
-            refreshTokenService.revokeAllForUser(userId);
+        // 原子消费刷新令牌：校验与作废在同一 Redis 脚本内完成，并发重复提交仅一个请求能通过
+        RefreshTokenService.TokenIdentity identity = refreshTokenService.consume(refreshToken);
+        User user = userMapper.selectById(identity.userId());
+        // 与 login 口径一致：BANNED/INACTIVE 均终止会话，防止停用账号借刷新无限续期
+        if (user == null || user.getStatus() == AccountStatus.BANNED || user.getStatus() == AccountStatus.INACTIVE) {
+            refreshTokenService.revokeAllForUser(identity.userId());
             throw new BusinessException(AuthErrorConstants.UNAUTHORIZED, "账号状态异常，会话已终止");
         }
-        String newRefreshToken = refreshTokenService.rotate(refreshToken, userId);
-        long expiresIn = issueAccessToken(user, "web");
+        // 按令牌签发平台续签，app 端不因刷新丢失长效有效期
+        long expiresIn = issueAccessToken(user, identity.platform());
+        String newRefreshToken = refreshTokenService.issue(user.getId(), identity.platform());
         return buildLoginResponse(StpUtil.getTokenValue(), newRefreshToken, expiresIn);
     }
 
@@ -193,7 +196,7 @@ public class AuthService {
      */
     private LoginResponse issueTokenPair(User user, String platform) {
         long expiresIn = issueAccessToken(user, platform);
-        String refreshToken = refreshTokenService.issue(user.getId());
+        String refreshToken = refreshTokenService.issue(user.getId(), platform);
         return buildLoginResponse(StpUtil.getTokenValue(), refreshToken, expiresIn);
     }
 

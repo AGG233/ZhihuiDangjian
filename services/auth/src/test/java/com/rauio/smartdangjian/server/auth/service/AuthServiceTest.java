@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -40,6 +41,7 @@ import com.rauio.smartdangjian.utils.spec.UserType;
 
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.stp.parameter.SaLoginParameter;
 import cn.hutool.crypto.digest.BCrypt;
 
 @ExtendWith(MockitoExtension.class)
@@ -78,7 +80,7 @@ class AuthServiceTest {
                 .when(tokenVersionService.current(org.mockito.ArgumentMatchers.any()))
                 .thenReturn(0L);
         lenient()
-                .when(refreshTokenService.issue(org.mockito.ArgumentMatchers.any()))
+                .when(refreshTokenService.issue(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn("refresh-token-stub");
     }
 
@@ -320,6 +322,92 @@ class AuthServiceTest {
             verify(refreshTokenService).revokeAllForUser(1L);
             stpUtilMock.verify(StpUtil::logout);
         }
+    }
+
+    @Test
+    @DisplayName("logout 未登录时仅登出，不触碰刷新令牌")
+    void logoutWithoutSessionSkipsRevocation() {
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            stpUtilMock.when(StpUtil::getLoginIdDefaultNull).thenReturn(null);
+
+            authService.logout();
+
+            verify(refreshTokenService, never()).revokeAllForUser(any());
+            stpUtilMock.verify(StpUtil::logout);
+        }
+    }
+
+    // ================================================================
+    // refresh
+    // ================================================================
+
+    @Test
+    @DisplayName("refresh 原子消费令牌并按原平台续签访问令牌")
+    void refreshConsumesAndReissuesPerOriginalPlatform() {
+        when(refreshTokenService.consume("refresh-token")).thenReturn(new RefreshTokenService.TokenIdentity(1L, "app"));
+        User user = createUser(1L, "testuser");
+        when(userMapper.selectById(1L)).thenReturn(user);
+
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            stpUtilMock.when(StpUtil::getTokenValue).thenReturn("new-access");
+            org.mockito.ArgumentCaptor<SaLoginParameter> modelCaptor =
+                    org.mockito.ArgumentCaptor.forClass(SaLoginParameter.class);
+
+            LoginResponse result = authService.refresh("refresh-token");
+
+            stpUtilMock.verify(
+                    () -> StpUtil.login(org.mockito.ArgumentMatchers.eq((Object) 1L), modelCaptor.capture()));
+            assertThat(modelCaptor.getValue().getDeviceType()).isEqualTo("app");
+            assertThat(result.getExpiresIn()).isEqualTo(86400L);
+        }
+        verify(refreshTokenService).issue(1L, "app");
+    }
+
+    @Test
+    @DisplayName("refresh INACTIVE 账号终止会话并吊销全部刷新令牌")
+    void refreshRejectsInactiveAccountAndRevokesAll() {
+        when(refreshTokenService.consume("refresh-token")).thenReturn(new RefreshTokenService.TokenIdentity(7L, "web"));
+        User user = createUser(7L, "inactive-user");
+        user.setStatus(AccountStatus.INACTIVE);
+        when(userMapper.selectById(7L)).thenReturn(user);
+
+        assertThatThrownBy(() -> authService.refresh("refresh-token"))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(AuthErrorConstants.UNAUTHORIZED);
+
+        verify(refreshTokenService).revokeAllForUser(7L);
+    }
+
+    @Test
+    @DisplayName("refresh BANNED 账号终止会话并吊销全部刷新令牌")
+    void refreshRejectsBannedAccountAndRevokesAll() {
+        when(refreshTokenService.consume("refresh-token")).thenReturn(new RefreshTokenService.TokenIdentity(8L, "web"));
+        User user = createUser(8L, "banned-user");
+        user.setStatus(AccountStatus.BANNED);
+        when(userMapper.selectById(8L)).thenReturn(user);
+
+        assertThatThrownBy(() -> authService.refresh("refresh-token"))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(AuthErrorConstants.UNAUTHORIZED);
+
+        verify(refreshTokenService).revokeAllForUser(8L);
+    }
+
+    @Test
+    @DisplayName("refresh 归属用户已不存在时终止会话并吊销全部刷新令牌")
+    void refreshRejectsWhenUserMissing() {
+        when(refreshTokenService.consume("refresh-token"))
+                .thenReturn(new RefreshTokenService.TokenIdentity(404L, "web"));
+        when(userMapper.selectById(404L)).thenReturn(null);
+
+        assertThatThrownBy(() -> authService.refresh("refresh-token"))
+                .isInstanceOf(BusinessException.class)
+                .extracting("code")
+                .isEqualTo(AuthErrorConstants.UNAUTHORIZED);
+
+        verify(refreshTokenService).revokeAllForUser(404L);
     }
 
     // ================================================================

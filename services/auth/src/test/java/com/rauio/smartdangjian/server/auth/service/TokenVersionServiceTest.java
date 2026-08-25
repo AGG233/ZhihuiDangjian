@@ -54,4 +54,13 @@ class TokenVersionServiceTest {
         assertThat(tokenVersionService.bump(42L)).isEqualTo(4L);
         verify(valueOps).increment("auth:ver:42");
     }
+
+    @Test
+    @DisplayName("bump 自增返回 null（pipeline/事务场景）时兜底为 1")
+    void bumpFallsBackToOneWhenIncrementReturnsNull() {
+        when(redisTemplate.opsForValue()).thenReturn(valueOps);
+        when(valueOps.increment("auth:ver:42")).thenReturn(null);
+
+        assertThat(tokenVersionService.bump(42L)).isEqualTo(1L);
+    }
 }
