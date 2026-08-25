@@ -49,6 +49,9 @@ spring:
           temperature: ${AI_TEMPERATURE:0.7}
     dashscope:
       api-key: ${AI_EMBEDDING_KEY:${AI_KEY:dummy-key}}
+      embedding:
+        options:
+          model: ${AI_EMBEDDING_MODEL:qwen3.7-text-embedding}
 
 # Sa-Token 配置
 sa-token:
