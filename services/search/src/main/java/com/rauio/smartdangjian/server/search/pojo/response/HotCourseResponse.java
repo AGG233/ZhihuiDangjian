@@ -27,4 +27,7 @@ public class HotCourseResponse {
 
     @Schema(description = "热度分 = 报名人数 + 近30天学习人数")
     private Integer hotScore;
+
+    @Schema(description = "近30天学习占比 = 近30天学习人数 / 平台学员总数（如 0.85 表示 85% 的学员在学习该课程）", example = "0.85")
+    private Double learnRatio;
 }

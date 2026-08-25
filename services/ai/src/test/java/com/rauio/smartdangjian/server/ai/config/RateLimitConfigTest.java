@@ -2,6 +2,7 @@ package com.rauio.smartdangjian.server.ai.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -30,14 +31,16 @@ class RateLimitConfigTest {
     @Captor
     private ArgumentCaptor<HandlerInterceptor> interceptorCaptor;
 
+    private AiRateLimiter rateLimiter;
+
     @Test
     @DisplayName("启用限流时注册拦截器到 /api/ai/chat/** 路径")
     void addInterceptorsWhenEnabled() {
         var userService = mock(UserService.class);
         var objectMapper = mock(ObjectMapper.class);
-        var config = new RateLimitConfig(userService, objectMapper);
+        var rateLimiter = mock(AiRateLimiter.class);
+        var config = new RateLimitConfig(userService, objectMapper, rateLimiter);
         ReflectionTestUtils.setField(config, "enabled", true);
-        ReflectionTestUtils.setField(config, "requestsPerMinute", 10);
 
         var registry = mock(InterceptorRegistry.class);
         var registration = mock(InterceptorRegistration.class);
@@ -55,7 +58,7 @@ class RateLimitConfigTest {
     void skipInterceptorsWhenDisabled() {
         var userService = mock(UserService.class);
         var objectMapper = mock(ObjectMapper.class);
-        var config = new RateLimitConfig(userService, objectMapper);
+        var config = new RateLimitConfig(userService, objectMapper, mock(AiRateLimiter.class));
         ReflectionTestUtils.setField(config, "enabled", false);
 
         var registry = mock(InterceptorRegistry.class);
@@ -66,9 +69,10 @@ class RateLimitConfigTest {
     }
 
     private HandlerInterceptor captureInterceptor(UserService userService, ObjectMapper objectMapper) {
-        var config = new RateLimitConfig(userService, objectMapper);
+        rateLimiter = mock(AiRateLimiter.class);
+        org.mockito.Mockito.lenient().when(rateLimiter.tryAcquire(anyString())).thenReturn(true);
+        var config = new RateLimitConfig(userService, objectMapper, rateLimiter);
         ReflectionTestUtils.setField(config, "enabled", true);
-        ReflectionTestUtils.setField(config, "requestsPerMinute", 10);
 
         var registry = mock(InterceptorRegistry.class);
         var registration = mock(InterceptorRegistration.class);
@@ -109,12 +113,14 @@ class RateLimitConfigTest {
         when(response.getWriter()).thenReturn(writer);
         when(userService.getCurrentUserId()).thenReturn("user-1");
 
-        // 10 requests within limit (requestsPerMinute = 10)
+        // 分布式令牌桶：第 11 次获取配额失败即返回 429
+        when(rateLimiter.tryAcquire("user-1"))
+                .thenReturn(true, true, true, true, true, true, true, true, true, true, false);
+
         for (int i = 0; i < 10; i++) {
             assertThat(interceptor.preHandle(request, response, new Object())).isTrue();
         }
 
-        // 11th request exceeds limit
         assertThat(interceptor.preHandle(request, response, new Object())).isFalse();
         verify(response).setStatus(429);
     }

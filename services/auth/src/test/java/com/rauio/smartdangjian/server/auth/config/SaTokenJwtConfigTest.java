@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.core.env.Environment;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import cn.dev33.satoken.jwt.StpLogicJwtForSimple;
+import cn.dev33.satoken.jwt.StpLogicJwtForStateless;
 
 class SaTokenJwtConfigTest {
 
@@ -26,9 +26,9 @@ class SaTokenJwtConfigTest {
     }
 
     @Test
-    @DisplayName("getStpLogicJwt 注册 JWT 简单模式 StpLogic")
+    @DisplayName("getStpLogicJwt 注册 JWT 无状态模式 StpLogic")
     void getStpLogicJwt() {
-        assertThat(config.getStpLogicJwt()).isInstanceOf(StpLogicJwtForSimple.class);
+        assertThat(config.getStpLogicJwt()).isInstanceOf(StpLogicJwtForStateless.class);
     }
 
     @Test

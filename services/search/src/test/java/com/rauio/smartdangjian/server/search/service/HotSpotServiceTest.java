@@ -56,6 +56,9 @@ class HotSpotServiceTest {
     }
 
     @Mock
+    private com.rauio.smartdangjian.server.user.mapper.UserMapper userMapper;
+
+    @Mock
     private CourseMapper courseMapper;
 
     @Mock

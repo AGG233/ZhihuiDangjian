@@ -52,6 +52,9 @@ import com.rauio.smartdangjian.server.search.pojo.response.LearningTrendResponse
 @DisplayName("HotSpotService 缓存命中")
 class HotSpotServiceCacheTest {
 
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    private com.rauio.smartdangjian.server.user.mapper.UserMapper userMapper;
+
     @Configuration
     @EnableCaching
     static class CacheConfig {
@@ -90,13 +93,19 @@ class HotSpotServiceCacheTest {
 
         @Bean
         HotSpotService hotSpotService(
+                com.rauio.smartdangjian.server.user.mapper.UserMapper userMapper,
                 CourseMapper courseMapper,
                 ChapterMapper chapterMapper,
                 CategoryCourseMapper categoryCourseMapper,
                 CategoryMapper categoryMapper,
                 UserLearningRecordMapper learningRecordMapper) {
             return new HotSpotService(
-                    courseMapper, chapterMapper, categoryCourseMapper, categoryMapper, learningRecordMapper);
+                    userMapper,
+                    courseMapper,
+                    chapterMapper,
+                    categoryCourseMapper,
+                    categoryMapper,
+                    learningRecordMapper);
         }
     }
 

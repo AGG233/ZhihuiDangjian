@@ -81,12 +81,27 @@ class AuthJwtCrossLayerTest extends CrossLayerTestBase {
         }
 
         @Bean
+        com.rauio.smartdangjian.server.auth.service.RefreshTokenService refreshTokenService(
+                RedisTemplate<String, Object> redisTemplate) {
+            return new com.rauio.smartdangjian.server.auth.service.RefreshTokenService(redisTemplate);
+        }
+
+        @Bean
+        com.rauio.smartdangjian.server.auth.service.TokenVersionService tokenVersionService(
+                RedisTemplate<String, Object> redisTemplate) {
+            return new com.rauio.smartdangjian.server.auth.service.TokenVersionService(redisTemplate);
+        }
+
+        @Bean
         AuthService authService(
                 CaptchaService captchaService,
                 UserMapper userMapper,
                 UserService userService,
-                RedisTemplate<String, Object> redisTemplate) {
-            return new AuthService(captchaService, userMapper, userService, redisTemplate);
+                RedisTemplate<String, Object> redisTemplate,
+                com.rauio.smartdangjian.server.auth.service.RefreshTokenService refreshTokenService,
+                com.rauio.smartdangjian.server.auth.service.TokenVersionService tokenVersionService) {
+            return new AuthService(
+                    captchaService, userMapper, userService, redisTemplate, refreshTokenService, tokenVersionService);
         }
     }
 
@@ -146,8 +161,19 @@ class AuthJwtCrossLayerTest extends CrossLayerTestBase {
 
         assertThat(response.getAccessToken()).isNotBlank();
         assertThat(response.getAccessToken().split("\\.")).hasSize(3);
+        assertThat(response.getRefreshToken()).as("双令牌体系必须下发刷新令牌").isNotBlank();
+        assertThat(response.getExpiresIn()).isEqualTo(7200L);
 
         Object loginId = StpUtil.getLoginIdByToken(response.getAccessToken());
         assertThat(String.valueOf(loginId)).isEqualTo("42");
+    }
+
+    @Test
+    @DisplayName("无效刷新令牌被拒绝且不签发新令牌对")
+    void refreshWithUnknownTokenIsRejected() {
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> authService.refresh("not-a-real-refresh-token"))
+                .isInstanceOf(com.rauio.smartdangjian.exception.BusinessException.class)
+                .extracting("code")
+                .isEqualTo(com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants.REFRESH_TOKEN_EXPIRED);
     }
 }

@@ -65,14 +65,17 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     /**
      * 获取当前登录用户。
      *
-     * @return 当前调用接口的用户
+     * <p>无状态 JWT 下服务端不保存会话对象，按 loginId 回查数据库；
+     * 密码字段为 WRITE_ONLY 序列化，回查实体不含密码哈希，调用方不得依赖。
+     *
+     * @return 当前调用接口的用户实体；未登录或用户不存在时返回 null
      */
     public User getCurrentUser() {
         if (!StpUtil.isLogin()) {
             return null;
         }
-        Object user = StpUtil.getSession().get("user");
-        return user instanceof User ? (User) user : null;
+        String loginId = StpUtil.getLoginIdAsString();
+        return loginId == null ? null : this.getById(Long.valueOf(loginId));
     }
 
     /**

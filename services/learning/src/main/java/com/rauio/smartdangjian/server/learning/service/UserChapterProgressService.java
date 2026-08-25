@@ -3,11 +3,13 @@ package com.rauio.smartdangjian.server.learning.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.rauio.smartdangjian.event.LearningCompletedEvent;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.learning.constants.LearningErrorConstants;
 import com.rauio.smartdangjian.server.learning.mapper.UserChapterProgressMapper;
@@ -24,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class UserChapterProgressService extends ServiceImpl<UserChapterProgressMapper, UserChapterProgress> {
 
     private final UserChapterProgressConvertor convertor;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 根据进度记录 ID 获取详情。
@@ -130,7 +133,9 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
         UserChapterProgress progress = convertor.toEntity(dto);
         progress.setUpdatedAt(LocalDateTime.now());
 
-        if (progress.getProgress() != null && progress.getProgress() >= 100 && existing.getCompletedAt() == null) {
+        boolean firstCompletion =
+                progress.getProgress() != null && progress.getProgress() >= 100 && existing.getCompletedAt() == null;
+        if (firstCompletion) {
             progress.setCompletedAt(LocalDateTime.now());
             progress.setStatus("completed");
         }
@@ -138,6 +143,13 @@ public class UserChapterProgressService extends ServiceImpl<UserChapterProgressM
         Boolean result = this.updateById(progress);
         if (!result) {
             throw new BusinessException(LearningErrorConstants.PROGRESS_UPDATE_FAILED, "更新进度记录失败");
+        }
+
+        // 首次完成章节时发布学习完成事件，供 AI 出题/学习评估等下游异步消费；
+        // 事件在事务提交后（AFTER_COMMIT）才会被监听器处理
+        if (firstCompletion) {
+            eventPublisher.publishEvent(
+                    new LearningCompletedEvent(existing.getUserId(), existing.getChapterId(), LocalDateTime.now()));
         }
         return result;
     }

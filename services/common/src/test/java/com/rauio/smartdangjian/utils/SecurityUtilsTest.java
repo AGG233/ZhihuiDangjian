@@ -1,11 +1,7 @@
 package com.rauio.smartdangjian.utils;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
-
-import java.lang.reflect.Constructor;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +13,6 @@ import com.rauio.smartdangjian.security.CurrentUserPrincipal;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
 import cn.dev33.satoken.exception.SaTokenContextException;
-import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 
 class SecurityUtilsTest {
@@ -49,26 +44,26 @@ class SecurityUtilsTest {
     }
 
     @Test
-    @DisplayName("getCurrentUser 已登录时返回 Session 中的 user")
-    void getCurrentUserReturnsUserFromSession() {
-        CurrentUserPrincipal mockPrincipal = mock(CurrentUserPrincipal.class);
-        SaSession session = mock(SaSession.class);
-        when(session.get("user")).thenReturn(mockPrincipal);
+    @DisplayName("getCurrentUser 已登录时从 JWT claims 组装 principal")
+    void getCurrentUserAssemblesPrincipalFromClaims() {
         stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
-        stpUtilMock.when(StpUtil::getSession).thenReturn(session);
+        stpUtilMock.when(StpUtil::getLoginIdDefaultNull).thenReturn(7L);
+        stpUtilMock.when(() -> StpUtil.getExtra("role")).thenReturn("SCHOOL");
+        stpUtilMock.when(() -> StpUtil.getExtra("uni")).thenReturn("uni-9");
 
         CurrentUserPrincipal result = SecurityUtils.getCurrentUser();
 
-        assertThat(result).isEqualTo(mockPrincipal);
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(7L);
+        assertThat(result.getUserType()).isEqualTo(UserType.SCHOOL);
+        assertThat(result.getUniversityId()).isEqualTo("uni-9");
     }
 
     @Test
-    @DisplayName("getCurrentUser Session 中没有 user 时返回 null")
-    void getCurrentUserReturnsNullWhenUserNotInSession() {
-        SaSession session = mock(SaSession.class);
-        when(session.get("user")).thenReturn(null);
+    @DisplayName("getCurrentUser 令牌未携带角色 claim 时返回 null")
+    void getCurrentUserReturnsNullWhenRoleClaimMissing() {
         stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
-        stpUtilMock.when(StpUtil::getSession).thenReturn(session);
+        stpUtilMock.when(StpUtil::getLoginIdDefaultNull).thenReturn(7L);
 
         CurrentUserPrincipal result = SecurityUtils.getCurrentUser();
 
@@ -107,12 +102,10 @@ class SecurityUtilsTest {
     @Test
     @DisplayName("getCurrentUserType 已登录时返回用户类型")
     void getCurrentUserTypeReturnsTypeWhenLoggedIn() {
-        CurrentUserPrincipal mockPrincipal = mock(CurrentUserPrincipal.class);
-        when(mockPrincipal.getUserType()).thenReturn(UserType.MANAGER);
-        SaSession session = mock(SaSession.class);
-        when(session.get("user")).thenReturn(mockPrincipal);
         stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
-        stpUtilMock.when(StpUtil::getSession).thenReturn(session);
+        stpUtilMock.when(StpUtil::getLoginIdDefaultNull).thenReturn(7L);
+        stpUtilMock.when(() -> StpUtil.getExtra("role")).thenReturn("MANAGER");
+        stpUtilMock.when(() -> StpUtil.getExtra("uni")).thenReturn("uni-1");
 
         UserType result = SecurityUtils.getCurrentUserType();
 
@@ -148,5 +141,4 @@ class SecurityUtilsTest {
 
         assertThat(result).isNull();
     }
-
 }
