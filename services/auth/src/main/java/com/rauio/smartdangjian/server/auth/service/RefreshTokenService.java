@@ -7,9 +7,10 @@ import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.redis.connection.DataType;
 import org.springframework.data.redis.core.Cursor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,9 @@ import lombok.RequiredArgsConstructor;
  * 每次刷新以 Lua 脚本原子完成「校验并作废旧令牌 + 写入已用标记」——校验与作废之间
  * 不存在竞态窗口，并发提交同一令牌时仅一个请求能成功；检测到已作废令牌被再次提交时，
  * 视为令牌泄露，吊销该用户全部刷新令牌并拒绝请求。
+ *
+ * <p>统一使用 {@link StringRedisTemplate}：Lua 脚本的参数与返回值均以裸字符串直传，
+ * 不经过 JSON 序列化器（JSON 序列化器无法解析脚本返回的非 JSON 字面量状态码）。
  */
 @Service
 @RequiredArgsConstructor
@@ -64,7 +68,7 @@ public class RefreshTokenService {
                     "return {'EXPIRED', ''}"),
             List.class);
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
     /** 刷新令牌归属信息：用户 ID 与签发平台 */
     public record TokenIdentity(Long userId, String platform) {}
@@ -93,15 +97,14 @@ public class RefreshTokenService {
      */
     public TokenIdentity consume(String token) {
         String fingerprint = fingerprint(token);
-        List<?> result = redisTemplate.execute(
+        List<String> result = redisTemplate.execute(
                 CONSUME_SCRIPT,
                 List.of(
                         RedisConstants.AUTH_REFRESH_TOKEN_PREFIX + fingerprint,
                         RedisConstants.AUTH_REFRESH_TOKEN_USED_PREFIX + fingerprint),
-                REFRESH_TOKEN_TTL.toSeconds());
+                String.valueOf(REFRESH_TOKEN_TTL.toSeconds()));
         String status = result == null || result.isEmpty() ? "" : String.valueOf(result.get(0));
-        String owner =
-                result == null || result.size() < 2 || result.get(1) == null ? "" : String.valueOf(result.get(1));
+        String owner = result == null || result.size() < 2 ? "" : String.valueOf(result.get(1));
         if (STATUS_OK.equals(status)) {
             return decodeOwner(owner);
         }
@@ -131,6 +134,11 @@ public class RefreshTokenService {
         try (Cursor<String> cursor = redisTemplate.scan(options)) {
             while (cursor.hasNext()) {
                 String key = cursor.next();
+                // 同前缀下可能存在历史实现遗留的异构类型键（如按用户索引的 set），
+                // 仅对 string 类型读取比对，避免 GET 非字符串键抛 WRONGTYPE 中断吊销
+                if (!DataType.STRING.equals(redisTemplate.type(key))) {
+                    continue;
+                }
                 if (ownedBy(redisTemplate.opsForValue().get(key), userId)) {
                     redisTemplate.delete(key);
                 }
@@ -138,12 +146,15 @@ public class RefreshTokenService {
         }
     }
 
-    /** 归属值格式为 {@code userId:platform}；无分隔符的历史值按纯 userId 兼容匹配。 */
-    private boolean ownedBy(Object value, Long userId) {
+    /**
+     * 归属值格式为 {@code userId:platform}；无分隔符的历史值按纯 userId 兼容匹配；
+     * 滚动升级期间残留的 JSON 引号包装值先剥离再比对。
+     */
+    private boolean ownedBy(String value, Long userId) {
         if (value == null) {
             return false;
         }
-        String owner = String.valueOf(value);
+        String owner = stripJsonQuotes(value);
         int sep = owner.indexOf(VALUE_SEPARATOR);
         String idPart = sep <= 0 ? owner : owner.substring(0, sep);
         return String.valueOf(userId).equals(idPart);
@@ -153,7 +164,8 @@ public class RefreshTokenService {
         return userId + VALUE_SEPARATOR + (platform == null ? "web" : platform);
     }
 
-    private TokenIdentity decodeOwner(String owner) {
+    private TokenIdentity decodeOwner(String rawOwner) {
+        String owner = stripJsonQuotes(rawOwner);
         int sep = owner.indexOf(VALUE_SEPARATOR);
         if (sep <= 0) {
             // 历史纯 userId 值兼容：平台缺省按 web 处理
@@ -162,9 +174,18 @@ public class RefreshTokenService {
         return new TokenIdentity(Long.valueOf(owner.substring(0, sep)), owner.substring(sep + 1));
     }
 
-    private Long extractUserId(String owner) {
+    private Long extractUserId(String rawOwner) {
+        String owner = stripJsonQuotes(rawOwner);
         int sep = owner.indexOf(VALUE_SEPARATOR);
         return Long.valueOf(sep <= 0 ? owner : owner.substring(0, sep));
+    }
+
+    /** 剥离滚动升级期间旧 JSON 序列化器残留的首尾引号。 */
+    private String stripJsonQuotes(String value) {
+        if (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') {
+            return value.substring(1, value.length() - 1);
+        }
+        return value;
     }
 
     private String fingerprintKey(String token) {

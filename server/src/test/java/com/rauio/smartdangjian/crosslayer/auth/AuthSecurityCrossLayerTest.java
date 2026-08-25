@@ -74,14 +74,21 @@ class AuthSecurityCrossLayerTest extends CrossLayerTestBase {
                 CaptchaService captchaService,
                 UserMapper userMapper,
                 UserService userService,
-                RedisTemplate<String, Object> redisTemplate) {
+                RedisTemplate<String, Object> redisTemplate,
+                org.springframework.data.redis.core.StringRedisTemplate stringRedisTemplate) {
             return new AuthService(
                     captchaService,
                     userMapper,
                     userService,
                     redisTemplate,
-                    new com.rauio.smartdangjian.server.auth.service.RefreshTokenService(redisTemplate),
+                    new com.rauio.smartdangjian.server.auth.service.RefreshTokenService(stringRedisTemplate),
                     new com.rauio.smartdangjian.server.auth.service.TokenVersionService(redisTemplate));
+        }
+
+        @Bean
+        org.springframework.data.redis.core.StringRedisTemplate stringRedisTemplate(
+                org.springframework.data.redis.connection.RedisConnectionFactory connectionFactory) {
+            return new org.springframework.data.redis.core.StringRedisTemplate(connectionFactory);
         }
     }
 

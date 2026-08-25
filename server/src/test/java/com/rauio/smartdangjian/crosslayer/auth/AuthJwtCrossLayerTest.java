@@ -82,8 +82,14 @@ class AuthJwtCrossLayerTest extends CrossLayerTestBase {
 
         @Bean
         com.rauio.smartdangjian.server.auth.service.RefreshTokenService refreshTokenService(
-                RedisTemplate<String, Object> redisTemplate) {
-            return new com.rauio.smartdangjian.server.auth.service.RefreshTokenService(redisTemplate);
+                org.springframework.data.redis.core.StringRedisTemplate stringRedisTemplate) {
+            return new com.rauio.smartdangjian.server.auth.service.RefreshTokenService(stringRedisTemplate);
+        }
+
+        @Bean
+        org.springframework.data.redis.core.StringRedisTemplate stringRedisTemplate(
+                org.springframework.data.redis.connection.RedisConnectionFactory connectionFactory) {
+            return new org.springframework.data.redis.core.StringRedisTemplate(connectionFactory);
         }
 
         @Bean

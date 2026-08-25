@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -22,8 +23,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.Cursor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.script.RedisScript;
 
@@ -36,10 +37,10 @@ import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
 class RefreshTokenServiceTest {
 
     @Mock
-    private RedisTemplate<String, Object> redisTemplate;
+    private StringRedisTemplate redisTemplate;
 
     @Mock
-    private ValueOperations<String, Object> valueOps;
+    private ValueOperations<String, String> valueOps;
 
     @InjectMocks
     private RefreshTokenService refreshTokenService;
@@ -66,7 +67,7 @@ class RefreshTokenServiceTest {
 
     private void stubConsumeResult(String status, String owner) {
         lenient()
-                .when(redisTemplate.execute(any(RedisScript.class), anyList(), any(Long.class)))
+                .when(redisTemplate.execute(any(RedisScript.class), anyList(), any(String.class)))
                 .thenReturn((List) List.of(status, owner));
     }
 
@@ -131,6 +132,18 @@ class RefreshTokenServiceTest {
     }
 
     @Test
+    @DisplayName("consume 兼容滚动升级残留的 JSON 引号包装归属值")
+    void consumeToleratesLegacyJsonQuotedOwner() {
+        stubConsumeResult("OK", "\"42:app\"");
+
+        RefreshTokenService.TokenIdentity identity =
+                refreshTokenService.consume(UUID.randomUUID().toString());
+
+        assertThat(identity.userId()).isEqualTo(42L);
+        assertThat(identity.platform()).isEqualTo("app");
+    }
+
+    @Test
     @DisplayName("consume 重放的历史纯 userId 归属值同样触发全量吊销")
     void consumeReplayLegacyOwnerStillRevokesAll() {
         Cursor<String> emptyCursor = mock(Cursor.class);
@@ -149,7 +162,7 @@ class RefreshTokenServiceTest {
     @Test
     @DisplayName("consume 脚本无返回时按过期令牌处理")
     void consumeTreatsEmptyScriptResultAsExpired() {
-        when(redisTemplate.execute(any(RedisScript.class), anyList(), any(Long.class)))
+        when(redisTemplate.execute(any(RedisScript.class), anyList(), any(String.class)))
                 .thenReturn(null);
 
         assertThatThrownBy(() -> refreshTokenService.consume("null-result"))
@@ -182,6 +195,9 @@ class RefreshTokenServiceTest {
         when(cursor.next())
                 .thenReturn("auth:refresh:aaa", "auth:refresh:bbb", "auth:refresh:ccc", "auth:refresh:ddd", null);
         when(redisTemplate.scan(any(ScanOptions.class))).thenReturn(cursor);
+        lenient()
+                .when(redisTemplate.type(anyString()))
+                .thenReturn(org.springframework.data.redis.connection.DataType.STRING);
         when(valueOps.get("auth:refresh:aaa")).thenReturn("42:app");
         when(valueOps.get("auth:refresh:bbb")).thenReturn("99:web");
         when(valueOps.get("auth:refresh:ccc")).thenReturn("42");
@@ -193,5 +209,21 @@ class RefreshTokenServiceTest {
         verify(redisTemplate).delete("auth:refresh:ccc");
         verify(redisTemplate, never()).delete("auth:refresh:bbb");
         verify(redisTemplate, never()).delete("auth:refresh:ddd");
+    }
+
+    @Test
+    @DisplayName("revokeAllForUser 跳过同前缀下非 string 类型的历史遗留键")
+    void revokeAllSkipsNonStringKeys() {
+        Cursor<String> cursor = mock(Cursor.class);
+        when(cursor.hasNext()).thenReturn(true, false);
+        when(cursor.next()).thenReturn("auth:refresh:user:42", null);
+        when(redisTemplate.scan(any(ScanOptions.class))).thenReturn(cursor);
+        when(redisTemplate.type("auth:refresh:user:42"))
+                .thenReturn(org.springframework.data.redis.connection.DataType.SET);
+
+        refreshTokenService.revokeAllForUser(42L);
+
+        verify(valueOps, never()).get(anyString());
+        verify(redisTemplate, never()).delete(anyString());
     }
 }
