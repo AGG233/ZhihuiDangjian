@@ -74,6 +74,10 @@ public abstract class CrossLayerTestBase {
         stpUtilMock = mockStatic(StpUtil.class);
         stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
         stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn(String.valueOf(userId));
+        stpUtilMock.when(StpUtil::getLoginIdDefaultNull).thenReturn(userId);
+        // 无状态 JWT：身份要素经 extra claims 提供（与生产链路同构）
+        stpUtilMock.when(() -> StpUtil.getExtra("role")).thenReturn(userType != null ? userType.name() : null);
+        stpUtilMock.when(() -> StpUtil.getExtra("uni")).thenReturn(universityId);
         CurrentUserPrincipal principal = new CurrentUserPrincipal() {
             @Override
             public Long getId() {

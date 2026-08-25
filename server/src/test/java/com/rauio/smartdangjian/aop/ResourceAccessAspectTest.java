@@ -141,6 +141,10 @@ class ResourceAccessAspectTest {
         stpUtilMock.when(StpUtil::getSession).thenReturn(session);
         stpUtilMock.when(StpUtil::isLogin).thenReturn(true);
         stpUtilMock.when(StpUtil::getLoginIdAsString).thenReturn("1");
+        stpUtilMock.when(StpUtil::getLoginIdDefaultNull).thenReturn(1L);
+        // 无状态 JWT：SecurityUtils 从 extra claims 组装 principal
+        stpUtilMock.when(() -> StpUtil.getExtra("role")).thenReturn("MANAGER");
+        stpUtilMock.when(() -> StpUtil.getExtra("uni")).thenReturn("uni-001");
 
         ProceedingJoinPoint joinPoint = joinPoint("byUserId", new Object[] {"999"});
         when(joinPoint.proceed()).thenReturn("manager-access");

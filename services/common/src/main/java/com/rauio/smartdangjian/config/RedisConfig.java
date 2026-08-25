@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.rauio.smartdangjian.constants.RedisConstants;
 
 @AutoConfiguration
 @EnableCaching
@@ -68,8 +69,19 @@ public class RedisConfig {
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(valueSerializer))
                 .disableCachingNullValues();
 
-        return RedisCacheManager.builder(redisConnectionFactory)
-                .cacheDefaults(defaultConfig)
-                .build();
+        // 按缓存名差异化 TTL（分级缓存策略）：热点/趋势数据时效性强用短 TTL，
+        // 用户画像与用户资料允许分钟级滞后，其余沿用全局默认 1 小时
+        java.util.Map<String, Duration> ttlByCacheName = new java.util.LinkedHashMap<>();
+        ttlByCacheName.put("search:hot:courses:", Duration.ofMinutes(10));
+        ttlByCacheName.put("search:hot:categories:", Duration.ofMinutes(10));
+        ttlByCacheName.put("search:trend:learning:", Duration.ofMinutes(10));
+        ttlByCacheName.put(RedisConstants.USER_PROFILE_CACHE_PREFIX, Duration.ofMinutes(30));
+        ttlByCacheName.put(RedisConstants.USER_VO_CACHE_PREFIX, Duration.ofMinutes(30));
+
+        RedisCacheManager.RedisCacheManagerBuilder builder =
+                RedisCacheManager.builder(redisConnectionFactory).cacheDefaults(defaultConfig);
+        ttlByCacheName.forEach((name, ttl) -> builder.withCacheConfiguration(name, defaultConfig.entryTtl(ttl)));
+
+        return builder.build();
     }
 }

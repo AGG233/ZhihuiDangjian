@@ -7,14 +7,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
-import cn.dev33.satoken.jwt.StpLogicJwtForSimple;
+import cn.dev33.satoken.jwt.StpLogicJwtForStateless;
 import cn.dev33.satoken.stp.StpLogic;
 
 /**
- * JWT 认证配置：启用 sa-token-jwt 插件「简单模式」。
+ * JWT 认证配置：启用 sa-token-jwt 插件「Stateless 无状态模式」。
  *
- * <p>登录后签发 JWT 格式的 token（三段式、可跨服务验签），Session 仍存 Redis，
- * 保留在线会话管理能力。JWT 密钥通过 {@code sa-token.jwt-secret-key} 配置
+ * <p>登录后签发三段式 JWT，身份要素（角色、高校、令牌版本号）编入 token claims，
+ * 服务端不保存登录会话——鉴权仅依赖签名验签，配套 Redis 中的刷新令牌
+ * （{@code RefreshTokenService}，可吊销侧）与令牌版本号（{@code TokenVersionService}，
+ * 强制下线）。JWT 密钥通过 {@code sa-token.jwt-secret-key} 配置
  * （环境变量 {@code SA_TOKEN_JWT_SECRET_KEY} 注入，生产环境必须显式配置）。
  *
  * <p>为防止默认占位符在生产误用，启动时执行 fail-fast 校验：非 dev/test profile
@@ -35,13 +37,13 @@ public class SaTokenJwtConfig {
     }
 
     /**
-     * 注册 JWT 简单模式 StpLogic，替换默认随机 token 生成器。
+     * 注册 JWT 无状态模式 StpLogic。
      *
-     * @return JWT 简单模式 StpLogic
+     * @return JWT 无状态模式 StpLogic
      */
     @Bean
     public StpLogic getStpLogicJwt() {
-        return new StpLogicJwtForSimple();
+        return new StpLogicJwtForStateless();
     }
 
     /**

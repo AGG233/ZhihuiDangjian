@@ -1,16 +1,14 @@
 package com.rauio.smartdangjian.constants;
 
+/**
+ * 安全相关常量。
+ *
+ * <p>历史遗留的自研 JWT/RSA 常量已随认证切换到 Sa-Token 无状态 JWT 双令牌体系
+ * （见 auth 模块 {@code JwtClaims}/{@code RefreshTokenService}）而移除；
+ * 本类仅保留仍在使用的验证码过期时间。
+ */
 public class SecurityConstants {
-    // JWT相关常量
-    public static final String ACCESS_TOKEN_PREFIX = "jwt:access:";
-    public static final String REFRESH_TOKEN_PREFIX = "jwt:refresh:";
-
-    // RSA相关常量
-    public static final String RSA_KEY_ALGORITHM = "RSA";
-    public static final int RSA_KEY_SIZE = 2048;
 
     // JWT过期时间相关常量(毫秒)
-    public static final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 60; // 一个小时
-    public static final long REFRESH_TOKEN_EXPIRATION = 1000 * 60 * 60 * 24 * 7; // 7天
     public static final long CAPTCHA_EXPIRATION = 1000 * 60;
 }

@@ -18,4 +18,9 @@ public class RedisConstants {
     public static final String HOT_COURSE_CACHE_PREFIX = "search:hot:courses:";
     public static final String HOT_CATEGORY_CACHE_PREFIX = "search:hot:categories:";
     public static final String LEARNING_TREND_CACHE_PREFIX = "search:trend:learning:";
+
+    // 认证：无状态 JWT 双令牌体系（刷新令牌以 sha256 指纹为键，值为其归属用户 ID）
+    public static final String AUTH_REFRESH_TOKEN_PREFIX = "auth:refresh:";
+    public static final String AUTH_REFRESH_TOKEN_USED_PREFIX = "auth:refresh-used:";
+    public static final String AUTH_TOKEN_VERSION_PREFIX = "auth:ver:";
 }

@@ -10,9 +10,8 @@ class LoginResponseTest {
     @Test
     @DisplayName("Builder 模式构建 LoginResponse 字段正确设置")
     void builderSetsFields() {
-        LoginResponse response = LoginResponse.builder()
-                .accessToken("access-token-abc")
-                .build();
+        LoginResponse response =
+                LoginResponse.builder().accessToken("access-token-abc").build();
 
         assertThat(response.getAccessToken()).isEqualTo("access-token-abc");
     }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.server.auth.constants.AuthErrorConstants;
+import com.rauio.smartdangjian.server.auth.constants.JwtClaims;
 import com.rauio.smartdangjian.server.auth.pojo.request.ChangePasswordRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.LoginRequest;
 import com.rauio.smartdangjian.server.auth.pojo.request.RegisterRequest;
@@ -32,6 +33,19 @@ public class AuthService {
     /** 登录失败计数 Redis 键前缀 */
     private static final String LOGIN_FAIL_KEY_PREFIX = "login:fail:";
 
+    /** web 端访问令牌有效期（秒） */
+    private static final long WEB_ACCESS_TIMEOUT_SECONDS = 7200L;
+
+    /** app 端访问令牌有效期（秒） */
+    private static final long APP_ACCESS_TIMEOUT_SECONDS = 86400L;
+
+    /** 默认访问令牌有效期（秒） */
+    private static final long DEFAULT_ACCESS_TIMEOUT_SECONDS = WEB_ACCESS_TIMEOUT_SECONDS;
+
+    /** 各平台访问令牌有效期 */
+    private static final java.util.Map<String, Long> ACCESS_TIMEOUT_BY_PLATFORM =
+            java.util.Map.of("app", APP_ACCESS_TIMEOUT_SECONDS, "web", WEB_ACCESS_TIMEOUT_SECONDS);
+
     /** 登录失败锁定阈值 */
     private static final long MAX_LOGIN_FAILS = 5;
 
@@ -42,6 +56,8 @@ public class AuthService {
     private final UserMapper userMapper;
     private final UserService userService;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final RefreshTokenService refreshTokenService;
+    private final TokenVersionService tokenVersionService;
 
     public LoginResponse login(LoginRequest loginRequest) {
         if (!captchaService.validate(loginRequest.getCaptchaUUID(), loginRequest.getCaptchaCode())) {
@@ -76,17 +92,35 @@ public class AuthService {
 
         redisTemplate.delete(lockKey);
 
-        String platform = loginRequest.getPlatform() != null ? loginRequest.getPlatform() : "web";
-        long timeout = "app".equals(platform) ? 2592000L : 7200L;
+        return issueTokenPair(user, resolvePlatform(loginRequest.getPlatform()));
+    }
 
-        StpUtil.login(user.getId(), SaLoginModel.create().setDevice(platform).setTimeout(timeout));
-
-        StpUtil.getSession().set("user", user);
-
-        return LoginResponse.builder().accessToken(StpUtil.getTokenValue()).build();
+    /**
+     * 使用刷新令牌换取新的访问/刷新令牌对（旋转语义：旧刷新令牌作废）。
+     *
+     * @param refreshToken 客户端提交的刷新令牌
+     * @return 新的令牌对
+     */
+    public LoginResponse refresh(String refreshToken) {
+        // 原子消费刷新令牌：校验与作废在同一 Redis 脚本内完成，并发重复提交仅一个请求能通过
+        RefreshTokenService.TokenIdentity identity = refreshTokenService.consume(refreshToken);
+        User user = userMapper.selectById(identity.userId());
+        // 与 login 口径一致：BANNED/INACTIVE 均终止会话，防止停用账号借刷新无限续期
+        if (user == null || user.getStatus() == AccountStatus.BANNED || user.getStatus() == AccountStatus.INACTIVE) {
+            refreshTokenService.revokeAllForUser(identity.userId());
+            throw new BusinessException(AuthErrorConstants.UNAUTHORIZED, "账号状态异常，会话已终止");
+        }
+        // 按令牌签发平台续签，app 端不因刷新丢失长效有效期
+        long expiresIn = issueAccessToken(user, identity.platform());
+        String newRefreshToken = refreshTokenService.issue(user.getId(), identity.platform());
+        return buildLoginResponse(StpUtil.getTokenValue(), newRefreshToken, expiresIn);
     }
 
     public void logout() {
+        Object loginId = StpUtil.getLoginIdDefaultNull();
+        if (loginId != null) {
+            refreshTokenService.revokeAllForUser(Long.valueOf(String.valueOf(loginId)));
+        }
         StpUtil.logout();
     }
 
@@ -147,8 +181,64 @@ public class AuthService {
         // 走 UserService 以触发用户缓存整体驱逐，避免旧密码哈希仍被缓存命中
         userService.updatePassword(user.getId(), request.getNewPassword());
 
-        User updated = userMapper.selectById(userId);
-        StpUtil.getSession().set("user", updated);
+        // 无状态 JWT 无法单独吊销：递增版本号使用户全部存量访问令牌立即失效，
+        // 并吊销全部刷新令牌强制重新登录
+        tokenVersionService.bump(user.getId());
+        refreshTokenService.revokeAllForUser(user.getId());
+    }
+
+    /**
+     * 签发访问令牌（无状态 JWT，身份要素编入 extra claims）并配套签发刷新令牌。
+     *
+     * @param user     登录用户
+     * @param platform 登录平台（决定访问令牌有效期）
+     * @return 令牌对响应
+     */
+    private LoginResponse issueTokenPair(User user, String platform) {
+        long expiresIn = issueAccessToken(user, platform);
+        String refreshToken = refreshTokenService.issue(user.getId(), platform);
+        return buildLoginResponse(StpUtil.getTokenValue(), refreshToken, expiresIn);
+    }
+
+    /**
+     * 执行 Sa-Token 登录并返回访问令牌有效期（秒）。
+     *
+     * <p>claims 自包含 {@code role}/{@code uni}/{@code ver} 三项身份要素：
+     * Stateless 模式下服务端不保存会话，RBAC 角色与数据范围隔离所需的
+     * 用户类型、所属高校均从 JWT claims 读取；{@code ver} 为令牌版本号，
+     * 改密/封禁时递增即可使存量令牌全端失效。
+     *
+     * @param user     登录用户
+     * @param platform 登录平台
+     * @return 有效期（秒）
+     */
+    private long issueAccessToken(User user, String platform) {
+        long timeout = ACCESS_TIMEOUT_BY_PLATFORM.getOrDefault(platform, DEFAULT_ACCESS_TIMEOUT_SECONDS);
+        StpUtil.login(
+                user.getId(),
+                SaLoginModel.create()
+                        .setDevice(platform)
+                        .setTimeout(timeout)
+                        .setExtra(
+                                JwtClaims.ROLE,
+                                user.getUserType() == null
+                                        ? null
+                                        : user.getUserType().name())
+                        .setExtra(JwtClaims.UNIVERSITY_ID, user.getUniversityId())
+                        .setExtra(JwtClaims.TOKEN_VERSION, tokenVersionService.current(user.getId())));
+        return timeout;
+    }
+
+    private LoginResponse buildLoginResponse(String accessToken, String refreshToken, long expiresIn) {
+        return LoginResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .expiresIn(expiresIn)
+                .build();
+    }
+
+    private String resolvePlatform(String platform) {
+        return platform != null ? platform : "web";
     }
 
     /**

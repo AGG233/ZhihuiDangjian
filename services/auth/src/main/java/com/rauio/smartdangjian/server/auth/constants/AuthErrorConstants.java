@@ -26,4 +26,9 @@ public class AuthErrorConstants {
     public static final int ACCOUNT_LOCKED = 1017;
     public static final int REGISTER_TYPE_FORBIDDEN = 1018;
     public static final int REGISTER_FAILED = 1019;
+
+    // 刷新令牌（无状态 JWT 双令牌体系）
+    public static final int REFRESH_TOKEN_INVALID = 1020;
+    public static final int REFRESH_TOKEN_EXPIRED = 1021;
+    public static final int REFRESH_TOKEN_REUSE = 1022;
 }

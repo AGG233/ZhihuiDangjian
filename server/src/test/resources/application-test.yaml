@@ -17,13 +17,6 @@ spring:
     authentication:
       username: neo4j
       password: password
-  ai:
-    openai:
-      base-url: https://api.deepseek.com
-      api-key: dummy-key
-      chat:
-        options:
-          model: deepseek-chat
 
 app:
   content:

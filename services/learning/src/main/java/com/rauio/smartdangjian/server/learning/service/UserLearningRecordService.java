@@ -30,6 +30,9 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMapper, UserLearningRecord> {
 
+    /** 单次学习时长上报上限（秒）：超出视为客户端异常并截断 */
+    public static final int MAX_SINGLE_SESSION_SECONDS = 4 * 3600;
+
     private static final int DEFAULT_STATS_DAYS = 30;
     private static final int MAX_STATS_DAYS = 365;
 
@@ -116,8 +119,10 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
         LocalDateTime startTime = LocalDateTime.now().minusDays(effectiveDays);
         List<DayFrequencyStat> dayStats = this.getBaseMapper().selectFrequencyStats(userId, startTime);
 
-        long totalCount = dayStats.stream().mapToLong(DayFrequencyStat::getRecordCount).sum();
-        long totalDuration = dayStats.stream().mapToLong(DayFrequencyStat::getTotalDuration).sum();
+        long totalCount =
+                dayStats.stream().mapToLong(DayFrequencyStat::getRecordCount).sum();
+        long totalDuration =
+                dayStats.stream().mapToLong(DayFrequencyStat::getTotalDuration).sum();
         double avgPerDay = (double) totalCount / effectiveDays;
 
         return FrequencyStatsResponse.builder()
@@ -192,8 +197,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
      * @param chapterId 章节 ID
      * @return 学习记录列表
      */
-    public List<UserLearningRecord> getByUserIdAndCourseIdAndChapterId(
-            Long userId, Long courseId, Long chapterId) {
+    public List<UserLearningRecord> getByUserIdAndCourseIdAndChapterId(Long userId, Long courseId, Long chapterId) {
         if (courseId == null || chapterId == null) {
             return List.of();
         }
@@ -232,9 +236,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
         }
 
         if (record.getStartTime() != null && record.getEndTime() != null) {
-            long durationMillis = record.getEndTime().toInstant(ZoneOffset.UTC).toEpochMilli()
-                    - record.getStartTime().toInstant(ZoneOffset.UTC).toEpochMilli();
-            record.setDuration((int) (durationMillis / 1000)); // 转换为秒
+            record.setDuration(computeSessionSeconds(record.getStartTime(), record.getEndTime()));
         }
 
         Boolean result = this.save(record);
@@ -267,9 +269,7 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
 
         // 自动计算学习时长（如果提供了开始和结束时间）
         if (record.getStartTime() != null && record.getEndTime() != null) {
-            long durationMillis = record.getEndTime().toInstant(ZoneOffset.UTC).toEpochMilli()
-                    - record.getStartTime().toInstant(ZoneOffset.UTC).toEpochMilli();
-            record.setDuration((int) (durationMillis / 1000)); // 转换为秒
+            record.setDuration(computeSessionSeconds(record.getStartTime(), record.getEndTime()));
         }
 
         Boolean result = this.updateById(record);
@@ -296,5 +296,22 @@ public class UserLearningRecordService extends ServiceImpl<UserLearningRecordMap
             throw new BusinessException(LearningErrorConstants.RECORD_DELETE_FAILED, "删除学习记录失败");
         }
         return result;
+    }
+
+    /**
+     * 由起止时间计算单次学习时长（秒），create 与 update 共用同一口径。
+     *
+     * <p>防虚报钳制双向生效：超过 {@link #MAX_SINGLE_SESSION_SECONDS} 按上限计；
+     * 结束时间早于开始时间（客户端时钟漂移或恶意上报）按 0 计，不产生负时长入库。
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return 钳制后的学习秒数（非负）
+     */
+    private int computeSessionSeconds(LocalDateTime startTime, LocalDateTime endTime) {
+        long durationMillis = endTime.toInstant(ZoneOffset.UTC).toEpochMilli()
+                - startTime.toInstant(ZoneOffset.UTC).toEpochMilli();
+        int seconds = (int) (durationMillis / 1000);
+        return Math.max(0, Math.min(seconds, MAX_SINGLE_SESSION_SECONDS));
     }
 }

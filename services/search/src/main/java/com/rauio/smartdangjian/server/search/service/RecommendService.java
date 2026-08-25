@@ -2,7 +2,7 @@ package com.rauio.smartdangjian.server.search.service;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import org.springframework.data.neo4j.core.Neo4jClient;
@@ -131,17 +131,30 @@ public class RecommendService {
         Map<Long, Long> chapterToCourseMap =
                 chapters.stream().collect(Collectors.toMap(Chapter::getId, Chapter::getCourseId));
 
+        // 邻居相似度权重：相似度越高的邻居，其学习行为对课程得分的贡献越大
+        Map<Long, Double> weightByPeerId = new HashMap<>();
+        for (UserSimilarity similarity : similarityList) {
+            if (similarity.getUserId2() != null && similarity.getSimilarityScore() != null) {
+                weightByPeerId.put(
+                        similarity.getUserId2(), similarity.getSimilarityScore().doubleValue());
+            }
+        }
+
         Map<Long, Double> courseScoreMap = new HashMap<>();
 
-        Consumer<Long> addScore = (chapterId) -> {
+        BiConsumer<Long, Long> addScore = (peerUserId, chapterId) -> {
+            Double weight = weightByPeerId.get(peerUserId);
+            if (weight == null || weight <= 0) {
+                return;
+            }
             Long courseId = chapterToCourseMap.get(chapterId);
             if (courseId != null && !userLearnedCourseIds.contains(courseId)) {
-                courseScoreMap.merge(courseId, 1.0, Double::sum);
+                courseScoreMap.merge(courseId, weight, Double::sum);
             }
         };
 
-        records.forEach(r -> addScore.accept(r.getChapterId()));
-        progresses.forEach(p -> addScore.accept(p.getChapterId()));
+        records.forEach(r -> addScore.accept(r.getUserId(), r.getChapterId()));
+        progresses.forEach(p -> addScore.accept(p.getUserId(), p.getChapterId()));
 
         List<Long> sorted = courseScoreMap.entrySet().stream()
                 .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())
