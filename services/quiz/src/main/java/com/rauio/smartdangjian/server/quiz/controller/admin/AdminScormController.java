@@ -17,7 +17,13 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "SCORM 学习包管理接口", description = "管理员上传并解析 SCORM 学习包")
+/**
+ * SCORM 学习包管理接口。
+ *
+ * @deprecated SCORM 接口已弃用，仅为存量客户端兼容保留，后续版本将移除。
+ */
+@Deprecated
+@Tag(name = "SCORM 学习包管理接口", description = "管理员上传并解析 SCORM 学习包（已弃用，即将下线）")
 @RestController
 @RequestMapping("/api/scorm/admin")
 @RequiredArgsConstructor
@@ -26,7 +32,8 @@ public class AdminScormController {
 
     private final ScormPackageService scormPackageService;
 
-    @Operation(summary = "上传并解析 SCORM 学习包", description = "上传 .zip 学习包，解析 imsmanifest.xml 后入库并返回学习包信息")
+    @Operation(summary = "上传并解析 SCORM 学习包", description = "上传 .zip 学习包，解析 imsmanifest.xml 后入库并返回学习包信息",
+            deprecated = true)
     @PostMapping("/packages")
     public Result<ScormPackageResponse> uploadPackage(
             @Parameter(description = "SCORM 学习包文件（.zip）") @RequestPart("file") MultipartFile file) {
