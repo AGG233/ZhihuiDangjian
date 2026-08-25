@@ -38,7 +38,7 @@ import com.rauio.smartdangjian.server.content.service.chapter.ChapterService;
  * {@link VectorStore} 用 Mockito 内存桩记录 add / similaritySearch 调用，验证
  * 「构造内容 → ingestById 入库 → ragSearch 返回该内容」完整链路。
  *
- * <p>参照 VoiceChatFlowTest 的「ai 模块内自建最小 Spring 上下文」模式：不启用
+ * <p>采用「ai 模块内自建最小 Spring 上下文」模式：不启用
  * {@code @EnableAutoConfiguration}，规避 DataSource / Flyway / Neo4j / Embedding 依赖，
  * 仅装配被测链路所需 bean（ai 模块无法依赖 server 测试类）。</p>
  */
