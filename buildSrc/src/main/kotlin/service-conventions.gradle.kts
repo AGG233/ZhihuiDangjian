@@ -17,6 +17,16 @@ java {
 }
 
 repositories {
+    // com.baizhukui（knife4j-next 分叉）仅在 Maven Central 发布，阿里云镜像缺该 group，
+    // exclusiveContent 强制其直接走 Central，避免镜像 404
+    exclusiveContent {
+        forRepository {
+            mavenCentral()
+        }
+        filter {
+            includeGroup("com.baizhukui")
+        }
+    }
     maven { url = uri("https://maven.aliyun.com/repository/public") }
     mavenCentral()
 }
