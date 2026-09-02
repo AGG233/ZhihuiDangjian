@@ -46,7 +46,8 @@ class MybatisConfigTest {
         MybatisPlusInterceptor interceptor = config.mybatisPlusInterceptor();
 
         assertThat(interceptor.getInterceptors()).hasSize(1);
-        PaginationInnerInterceptor inner = (PaginationInnerInterceptor) interceptor.getInterceptors().get(0);
+        PaginationInnerInterceptor inner =
+                (PaginationInnerInterceptor) interceptor.getInterceptors().get(0);
         assertThat(inner.getMaxLimit()).isEqualTo(100L);
     }
 
@@ -54,8 +55,8 @@ class MybatisConfigTest {
     @DisplayName("insertFill 调用 strictInsertFill 填充自动填充字段")
     void insertFill() {
         var pojo = new FillEntity();
-        var metaObject = MetaObject.forObject(pojo, new DefaultObjectFactory(),
-                new DefaultObjectWrapperFactory(), new DefaultReflectorFactory());
+        var metaObject = MetaObject.forObject(
+                pojo, new DefaultObjectFactory(), new DefaultObjectWrapperFactory(), new DefaultReflectorFactory());
         config.insertFill(metaObject);
 
         assertThat(pojo.getCreatedAt()).isNotNull();
@@ -68,8 +69,8 @@ class MybatisConfigTest {
     void updateFill() {
         var pojo = new FillEntity();
         pojo.setCreatedAt(LocalDateTime.now());
-        var metaObject = MetaObject.forObject(pojo, new DefaultObjectFactory(),
-                new DefaultObjectWrapperFactory(), new DefaultReflectorFactory());
+        var metaObject = MetaObject.forObject(
+                pojo, new DefaultObjectFactory(), new DefaultObjectWrapperFactory(), new DefaultReflectorFactory());
         config.updateFill(metaObject);
 
         assertThat(pojo.getUpdatedAt()).isNotNull();
@@ -86,11 +87,28 @@ class MybatisConfigTest {
         @TableField(fill = FieldFill.INSERT)
         private String sessionId;
 
-        public LocalDateTime getCreatedAt() { return createdAt; }
-        public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-        public LocalDateTime getUpdatedAt() { return updatedAt; }
-        public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-        public String getSessionId() { return sessionId; }
-        public void setSessionId(String sessionId) { this.sessionId = sessionId; }
+        public LocalDateTime getCreatedAt() {
+            return createdAt;
+        }
+
+        public void setCreatedAt(LocalDateTime createdAt) {
+            this.createdAt = createdAt;
+        }
+
+        public LocalDateTime getUpdatedAt() {
+            return updatedAt;
+        }
+
+        public void setUpdatedAt(LocalDateTime updatedAt) {
+            this.updatedAt = updatedAt;
+        }
+
+        public String getSessionId() {
+            return sessionId;
+        }
+
+        public void setSessionId(String sessionId) {
+            this.sessionId = sessionId;
+        }
     }
 }

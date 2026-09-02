@@ -5,12 +5,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
-import com.rauio.smartdangjian.utils.spec.UserType;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,8 +27,7 @@ public class UserLearningGraphSyncController {
     @PostMapping("/users/{userId}/sync")
     @SaCheckRole("STUDENT")
     @ResourceAccess(id = "#userId")
-    public Result<Integer> syncUserGraph(
-            @Parameter(name = "userId", description = "用户ID") @PathVariable Long userId) {
+    public Result<Integer> syncUserGraph(@Parameter(name = "userId", description = "用户ID") @PathVariable Long userId) {
         return Result.ok(userLearningRecordService.syncUserLearningGraph(userId));
     }
 }

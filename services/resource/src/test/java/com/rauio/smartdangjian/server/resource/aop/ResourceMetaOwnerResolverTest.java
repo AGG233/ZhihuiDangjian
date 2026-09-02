@@ -44,8 +44,7 @@ class ResourceMetaOwnerResolverTest {
     @DisplayName("findResourceOwner 返回上传人ID")
     void findResourceOwner() {
         when(resourceMetaService.get(1L))
-                .thenReturn(
-                        ResourceMeta.builder().id(1L).uploaderId(1L).build());
+                .thenReturn(ResourceMeta.builder().id(1L).uploaderId(1L).build());
 
         String owner = resolver.findResourceOwner("1");
 

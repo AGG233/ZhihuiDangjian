@@ -3,16 +3,13 @@ package com.rauio.smartdangjian.config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import java.util.List;
+import jakarta.servlet.ServletContext;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.rauio.smartdangjian.aop.resolver.ResourceOwnerResolver;
 import com.rauio.smartdangjian.exception.GlobalExceptionHandler;
-
-import jakarta.servlet.ServletContext;
 
 class WebConfigTest {
 
@@ -42,7 +39,8 @@ class WebConfigTest {
     void addResourceHandlers() {
         var appContext = mock(org.springframework.context.ApplicationContext.class);
         var servletContext = mock(ServletContext.class);
-        var registry = new org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry(appContext, servletContext);
+        var registry = new org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry(
+                appContext, servletContext);
 
         config.addResourceHandlers(registry);
 

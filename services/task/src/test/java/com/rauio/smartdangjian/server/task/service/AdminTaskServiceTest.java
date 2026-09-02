@@ -289,8 +289,8 @@ class AdminTaskServiceTest {
                         .taskType(TaskType.CUSTOM)
                         .build()))
                 .isInstanceOf(BusinessException.class)
-                .satisfies(e -> assertThat(((BusinessException) e).getCode())
-                        .isEqualTo(TaskErrorConstants.TASK_SAVE_FAILED));
+                .satisfies(e ->
+                        assertThat(((BusinessException) e).getCode()).isEqualTo(TaskErrorConstants.TASK_SAVE_FAILED));
     }
 
     @Test
@@ -303,8 +303,8 @@ class AdminTaskServiceTest {
         assertThatThrownBy(() -> adminTaskService.update(
                         1L, TaskUpdateRequest.builder().title("新标题").build()))
                 .isInstanceOf(BusinessException.class)
-                .satisfies(e -> assertThat(((BusinessException) e).getCode())
-                        .isEqualTo(TaskErrorConstants.TASK_UPDATE_FAILED));
+                .satisfies(e ->
+                        assertThat(((BusinessException) e).getCode()).isEqualTo(TaskErrorConstants.TASK_UPDATE_FAILED));
     }
 
     @Test
@@ -315,8 +315,8 @@ class AdminTaskServiceTest {
 
         assertThatThrownBy(() -> adminTaskService.delete(1L))
                 .isInstanceOf(BusinessException.class)
-                .satisfies(e -> assertThat(((BusinessException) e).getCode())
-                        .isEqualTo(TaskErrorConstants.TASK_DELETE_FAILED));
+                .satisfies(e ->
+                        assertThat(((BusinessException) e).getCode()).isEqualTo(TaskErrorConstants.TASK_DELETE_FAILED));
     }
 
     @Test

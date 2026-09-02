@@ -21,12 +21,12 @@ import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeContext;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
 import com.rauio.smartdangjian.exception.BusinessException;
-import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
-import com.rauio.smartdangjian.server.user.mapper.UserMapper;
-import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.pojo.response.Result;
 import com.rauio.smartdangjian.server.resource.pojo.entity.ResourceMeta;
 import com.rauio.smartdangjian.server.resource.pojo.request.ResourceMetaCreateRequest;
+import com.rauio.smartdangjian.server.resource.service.ResourceMetaService;
+import com.rauio.smartdangjian.server.user.mapper.UserMapper;
+import com.rauio.smartdangjian.server.user.pojo.entity.User;
 import com.rauio.smartdangjian.utils.spec.UserType;
 
 @ExtendWith(MockitoExtension.class)
@@ -116,7 +116,11 @@ class ResourceMetaAccessAspectTest {
         when(jp.getArgs()).thenReturn(new Object[] {request});
 
         DataScopeAccess access = createAccess(DataScopeAction.CREATE, "", "#body", "");
-        User user = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        User user = User.builder()
+                .id(1L)
+                .userType(UserType.SCHOOL)
+                .universityId("uni-1")
+                .build();
         DataScopeContext ctx = new DataScopeContext(jp, access, user);
 
         aspect.before(ctx);
@@ -137,7 +141,11 @@ class ResourceMetaAccessAspectTest {
         when(jp.getArgs()).thenReturn(new Object[] {1L});
 
         DataScopeAccess access = createAccess(DataScopeAction.READ, "#id", "", "");
-        User user = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        User user = User.builder()
+                .id(1L)
+                .userType(UserType.SCHOOL)
+                .universityId("uni-1")
+                .build();
         DataScopeContext ctx = new DataScopeContext(jp, access, user);
 
         ResourceMeta meta = ResourceMeta.builder().id(1L).uploaderId(2L).build();
@@ -160,7 +168,11 @@ class ResourceMetaAccessAspectTest {
         when(jp.getArgs()).thenReturn(new Object[] {"some-hash"});
 
         DataScopeAccess access = createAccess(DataScopeAction.READ, "", "", "#hash");
-        User user = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        User user = User.builder()
+                .id(1L)
+                .userType(UserType.SCHOOL)
+                .universityId("uni-1")
+                .build();
         DataScopeContext ctx = new DataScopeContext(jp, access, user);
 
         when(resourceMetaService.getByHash("some-hash"))
@@ -184,7 +196,11 @@ class ResourceMetaAccessAspectTest {
         when(jp.getArgs()).thenReturn(new Object[] {1L});
 
         DataScopeAccess access = createAccess(DataScopeAction.UPDATE, "#id", "", "");
-        User user = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        User user = User.builder()
+                .id(1L)
+                .userType(UserType.SCHOOL)
+                .universityId("uni-1")
+                .build();
         DataScopeContext ctx = new DataScopeContext(jp, access, user);
 
         when(resourceMetaService.get(1L))
@@ -208,7 +224,11 @@ class ResourceMetaAccessAspectTest {
         when(jp.getArgs()).thenReturn(new Object[] {1L});
 
         DataScopeAccess access = createAccess(DataScopeAction.DELETE, "#id", "", "");
-        User user = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        User user = User.builder()
+                .id(1L)
+                .userType(UserType.SCHOOL)
+                .universityId("uni-1")
+                .build();
         DataScopeContext ctx = new DataScopeContext(jp, access, user);
 
         when(resourceMetaService.get(1L))
@@ -230,7 +250,11 @@ class ResourceMetaAccessAspectTest {
         when(jp.getArgs()).thenReturn(new Object[] {"some-hash"});
 
         DataScopeAccess access = createAccess(DataScopeAction.DELETE, "", "", "#hash");
-        User user = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        User user = User.builder()
+                .id(1L)
+                .userType(UserType.SCHOOL)
+                .universityId("uni-1")
+                .build();
         DataScopeContext ctx = new DataScopeContext(jp, access, user);
 
         when(resourceMetaService.getByHash("some-hash"))
@@ -252,7 +276,11 @@ class ResourceMetaAccessAspectTest {
         when(jp.getArgs()).thenReturn(new Object[] {new String[] {"hash1", "hash2"}});
 
         DataScopeAccess access = createAccess(DataScopeAction.DELETE, "", "", "#hashes");
-        User user = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        User user = User.builder()
+                .id(1L)
+                .userType(UserType.SCHOOL)
+                .universityId("uni-1")
+                .build();
         DataScopeContext ctx = new DataScopeContext(jp, access, user);
 
         when(resourceMetaService.getByHash("hash1"))
@@ -268,7 +296,11 @@ class ResourceMetaAccessAspectTest {
     void beforeSchoolDeleteNoValidQueryThrows() throws Exception {
         // No need to resolve SpEL since both id and query are blank
         DataScopeAccess access = createAccess(DataScopeAction.DELETE, "", "", "");
-        User user = User.builder().id(1L).userType(UserType.SCHOOL).universityId("uni-1").build();
+        User user = User.builder()
+                .id(1L)
+                .userType(UserType.SCHOOL)
+                .universityId("uni-1")
+                .build();
         DataScopeContext ctx = new DataScopeContext(mock(ProceedingJoinPoint.class), access, user);
 
         assertThatThrownBy(() -> aspect.before(ctx))
@@ -282,8 +314,10 @@ class ResourceMetaAccessAspectTest {
     @DisplayName("after SCHOOL SEARCH 过滤非本校资源")
     void afterSchoolSearchFiltersBySchool() {
         DataScopeContext context = mockContext(UserType.SCHOOL, 1L, "uni-1", DataScopeAction.SEARCH, "", "");
-        when(userMapper.selectById(1L)).thenReturn(User.builder().universityId("uni-1").build());
-        when(userMapper.selectById(2L)).thenReturn(User.builder().universityId("uni-2").build());
+        when(userMapper.selectById(1L))
+                .thenReturn(User.builder().universityId("uni-1").build());
+        when(userMapper.selectById(2L))
+                .thenReturn(User.builder().universityId("uni-2").build());
 
         ResourceMeta own = ResourceMeta.builder().id(1L).uploaderId(1L).build();
         ResourceMeta other = ResourceMeta.builder().id(2L).uploaderId(2L).build();
@@ -300,7 +334,8 @@ class ResourceMetaAccessAspectTest {
     @DisplayName("after SCHOOL SEARCH 所有资源非本校时返回空列表")
     void afterSchoolSearchAllFilteredOut() {
         DataScopeContext context = mockContext(UserType.SCHOOL, 1L, "uni-1", DataScopeAction.SEARCH, "", "");
-        when(userMapper.selectById(1L)).thenReturn(User.builder().universityId("uni-2").build());
+        when(userMapper.selectById(1L))
+                .thenReturn(User.builder().universityId("uni-2").build());
 
         ResourceMeta other = ResourceMeta.builder().id(1L).uploaderId(1L).build();
         Result<List<ResourceMeta>> result = Result.ok(List.of(other));

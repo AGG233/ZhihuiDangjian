@@ -54,7 +54,6 @@ class UserTest {
         assertThat(user.getUpdatedAt()).isEqualTo(now);
     }
 
-
     @Test
     @DisplayName("CurrentUserPrincipal getId 返回 id 字段值")
     void getPrincipalIdReturnsId() {

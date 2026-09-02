@@ -2,10 +2,10 @@ package com.rauio.smartdangjian.server.learning.constants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Constructor;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.lang.reflect.Constructor;
 
 @DisplayName("LearningErrorConstants 学习模块错误码常量")
 class LearningErrorConstantsTest {
