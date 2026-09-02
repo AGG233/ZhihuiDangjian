@@ -58,6 +58,7 @@ class SaTokenConfigureTest {
         verify(registration).addPathPatterns("/**");
         verify(registration)
                 .excludePathPatterns(
+                        "/doc.html",
                         "/api/auth/login",
                         "/api/auth/refresh",
                         "/api/auth/captcha/**",
