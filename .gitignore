@@ -51,7 +51,6 @@ out/
 
 ### Local docs & changelogs (ignored) ###
 /.changelog-*.md
-/CLAUDE.md
 /AGENTS.md
 /docs/
 
@@ -59,3 +58,8 @@ out/
 .gradle-home/
 pr2-worktree/
 pr3-worktree/
+docker-compose.override.yml
+buildSrc/.kotlin/
+services/resource/uploads/
+.gh-cache/
+.zcode/
