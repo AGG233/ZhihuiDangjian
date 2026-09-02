@@ -41,8 +41,7 @@ class UserChapterProgressControllerTest {
     @DisplayName("getByUserId 委托 service 获取用户所有进度")
     void getByUserId() {
         when(progressService.getByUserId(1L))
-                .thenReturn(
-                        List.of(UserChapterProgressResponse.builder().id(1L).build()));
+                .thenReturn(List.of(UserChapterProgressResponse.builder().id(1L).build()));
 
         var result = controller.getByUserId(1L);
 
@@ -64,10 +63,8 @@ class UserChapterProgressControllerTest {
     @Test
     @DisplayName("create 委托 service 创建进度")
     void create() {
-        UserChapterProgressRequest dto = UserChapterProgressRequest.builder()
-                .userId(1L)
-                .chapterId(1L)
-                .build();
+        UserChapterProgressRequest dto =
+                UserChapterProgressRequest.builder().userId(1L).chapterId(1L).build();
         when(progressService.create(dto)).thenReturn(true);
 
         var result = controller.create(dto);

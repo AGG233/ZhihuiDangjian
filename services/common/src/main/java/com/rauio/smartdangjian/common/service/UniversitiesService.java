@@ -52,9 +52,7 @@ public class UniversitiesService extends ServiceImpl<UniversitiesMapper, Univers
         if (entities == null) {
             return Collections.emptyList();
         }
-        return entities.stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return entities.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     /**

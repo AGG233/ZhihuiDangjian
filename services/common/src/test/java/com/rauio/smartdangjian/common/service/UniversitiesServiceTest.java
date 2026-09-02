@@ -13,10 +13,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
@@ -70,10 +70,8 @@ class UniversitiesServiceTest {
             List<SchoolResponse> result = universitiesService.getList();
 
             assertThat(result).hasSize(2);
-            assertThat(result).extracting(SchoolResponse::getId)
-                    .containsExactly("1", "2");
-            assertThat(result).extracting(SchoolResponse::getName)
-                    .containsExactly("清华大学", "北京大学");
+            assertThat(result).extracting(SchoolResponse::getId).containsExactly("1", "2");
+            assertThat(result).extracting(SchoolResponse::getName).containsExactly("清华大学", "北京大学");
         }
 
         @Test
@@ -155,7 +153,8 @@ class UniversitiesServiceTest {
             List<SchoolResponse> result = universitiesService.getList();
 
             assertThat(result).hasSize(1);
-            assertThat(result).singleElement()
+            assertThat(result)
+                    .singleElement()
                     .extracting(SchoolResponse::getId, SchoolResponse::getName)
                     .containsExactly(SCHOOL_ID, SCHOOL_NAME);
         }

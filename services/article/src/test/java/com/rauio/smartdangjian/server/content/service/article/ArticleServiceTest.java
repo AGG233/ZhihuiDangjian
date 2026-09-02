@@ -692,7 +692,8 @@ class ArticleServiceTest {
     void getDetailWithoutCategoryRelationReturnsNullCategoryId() {
         Article article = Article.builder().id(1L).title("无分类文章").build();
         doReturn(article).when(articleService).getById(1L);
-        when(convertor.toResponse(article)).thenReturn(ArticleResponse.builder().id(1L).title("无分类文章").build());
+        when(convertor.toResponse(article))
+                .thenReturn(ArticleResponse.builder().id(1L).title("无分类文章").build());
         when(categoryArticleMapper.selectOne(any())).thenReturn(null);
         when(articleContentBlockMapper.selectList(any())).thenReturn(Collections.emptyList());
         when(articleContentBlockConvertor.toResponseList(anyList())).thenReturn(Collections.emptyList());

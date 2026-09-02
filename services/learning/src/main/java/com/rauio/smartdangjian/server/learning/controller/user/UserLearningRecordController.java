@@ -7,7 +7,6 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import com.rauio.smartdangjian.aop.annotation.DataScopeAccess;
-import cn.dev33.satoken.annotation.SaCheckRole;
 import com.rauio.smartdangjian.aop.annotation.ResourceAccess;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
@@ -19,8 +18,8 @@ import com.rauio.smartdangjian.server.learning.pojo.response.FrequencyStatsRespo
 import com.rauio.smartdangjian.server.learning.pojo.response.UserLearningRecordResponse;
 import com.rauio.smartdangjian.server.learning.service.UserLearningRecordService;
 import com.rauio.smartdangjian.server.user.service.UserService;
-import com.rauio.smartdangjian.utils.spec.UserType;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,8 +38,7 @@ public class UserLearningRecordController {
     @GetMapping("/stats/frequency")
     @SaCheckRole("STUDENT")
     public Result<FrequencyStatsResponse> getFrequencyStats(
-            @Parameter(name = "days", description = "统计天数，默认30，最大365")
-                    @RequestParam(required = false) Integer days) {
+            @Parameter(name = "days", description = "统计天数，默认30，最大365") @RequestParam(required = false) Integer days) {
         String currentUserId = userService.getCurrentUserId();
         if (currentUserId == null) {
             throw new BusinessException(ErrorConstants.USER_NOT_EXISTS, "未登录");
@@ -52,8 +50,7 @@ public class UserLearningRecordController {
     @GetMapping("/{id}")
     @SaCheckRole("STUDENT")
     @DataScopeAccess(resource = DataScopeResources.LEARNING_RECORD, action = DataScopeAction.READ, id = "#id")
-    public Result<UserLearningRecordResponse> get(
-            @Parameter(name = "id", description = "记录ID") @PathVariable Long id) {
+    public Result<UserLearningRecordResponse> get(@Parameter(name = "id", description = "记录ID") @PathVariable Long id) {
         UserLearningRecordResponse result = recordService.get(id);
         return Result.ok(result);
     }

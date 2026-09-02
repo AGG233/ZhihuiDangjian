@@ -362,8 +362,8 @@ class TaskServiceTest {
 
         assertThatThrownBy(() -> taskService.accept(TASK_ID))
                 .isInstanceOf(BusinessException.class)
-                .satisfies(e -> assertThat(((BusinessException) e).getCode())
-                        .isEqualTo(TaskErrorConstants.TASK_SAVE_FAILED));
+                .satisfies(e ->
+                        assertThat(((BusinessException) e).getCode()).isEqualTo(TaskErrorConstants.TASK_SAVE_FAILED));
     }
 
     @Test
@@ -377,8 +377,8 @@ class TaskServiceTest {
         assertThatThrownBy(() -> taskService.submit(
                         TASK_ID, TaskSubmitRequest.builder().progress(50).build()))
                 .isInstanceOf(BusinessException.class)
-                .satisfies(e -> assertThat(((BusinessException) e).getCode())
-                        .isEqualTo(TaskErrorConstants.TASK_UPDATE_FAILED));
+                .satisfies(e ->
+                        assertThat(((BusinessException) e).getCode()).isEqualTo(TaskErrorConstants.TASK_UPDATE_FAILED));
     }
 
     @Test

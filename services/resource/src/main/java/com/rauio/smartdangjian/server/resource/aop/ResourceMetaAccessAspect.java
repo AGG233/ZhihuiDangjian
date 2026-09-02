@@ -7,10 +7,10 @@ import org.springframework.stereotype.Component;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.rauio.smartdangjian.aop.support.DataScopeAction;
-import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.aop.support.DataScopeContext;
 import com.rauio.smartdangjian.aop.support.DataScopeResolver;
 import com.rauio.smartdangjian.aop.support.DataScopeResources;
+import com.rauio.smartdangjian.common.utils.IdUtil;
 import com.rauio.smartdangjian.constants.ErrorConstants;
 import com.rauio.smartdangjian.exception.BusinessException;
 import com.rauio.smartdangjian.pojo.response.Result;

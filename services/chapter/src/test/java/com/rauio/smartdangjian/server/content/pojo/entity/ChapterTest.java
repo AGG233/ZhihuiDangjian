@@ -76,16 +76,8 @@ class ChapterTest {
     @Test
     @DisplayName("两个相同字段的 Chapter equals 和 hashCode 行为符合 @Data 预期")
     void equalsAndHashCodeBehavior() {
-        Chapter c1 = Chapter.builder()
-                .id(1L)
-                .courseId(1L)
-                .title("章节")
-                .build();
-        Chapter c2 = Chapter.builder()
-                .id(1L)
-                .courseId(1L)
-                .title("章节")
-                .build();
+        Chapter c1 = Chapter.builder().id(1L).courseId(1L).title("章节").build();
+        Chapter c2 = Chapter.builder().id(1L).courseId(1L).title("章节").build();
 
         assertThat(c1).isEqualTo(c2);
         assertThat(c1.hashCode()).isEqualTo(c2.hashCode());
@@ -103,11 +95,8 @@ class ChapterTest {
     @Test
     @DisplayName("toString 包含主要字段")
     void toStringContainsKeyFields() {
-        Chapter chapter = Chapter.builder()
-                .id(1L)
-                .title("第一章")
-                .chapterStatus("published")
-                .build();
+        Chapter chapter =
+                Chapter.builder().id(1L).title("第一章").chapterStatus("published").build();
 
         String str = chapter.toString();
 

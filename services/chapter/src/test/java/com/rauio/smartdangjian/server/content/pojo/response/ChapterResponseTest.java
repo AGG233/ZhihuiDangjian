@@ -45,11 +45,8 @@ class ChapterResponseTest {
     @Test
     @DisplayName("builder content 为 null 时正常工作")
     void builderWithNullContent() {
-        ChapterResponse vo = ChapterResponse.builder()
-                .id(1L)
-                .title("无内容章节")
-                .content(null)
-                .build();
+        ChapterResponse vo =
+                ChapterResponse.builder().id(1L).title("无内容章节").content(null).build();
 
         assertThat(vo.getContent()).isNull();
     }
@@ -57,8 +54,7 @@ class ChapterResponseTest {
     @Test
     @DisplayName("isOptional 为 true 时正确返回")
     void isOptionalTrue() {
-        ChapterResponse vo =
-                ChapterResponse.builder().id(1L).isOptional(true).build();
+        ChapterResponse vo = ChapterResponse.builder().id(1L).isOptional(true).build();
 
         assertThat(vo.getIsOptional()).isTrue();
     }

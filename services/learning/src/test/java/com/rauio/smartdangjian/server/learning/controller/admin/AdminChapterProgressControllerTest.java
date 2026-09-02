@@ -28,8 +28,7 @@ class AdminChapterProgressControllerTest {
     @DisplayName("getByChapterId 委托 service 获取章节进度")
     void getByChapterId() {
         when(progressService.getByChapterId(1L))
-                .thenReturn(
-                        List.of(UserChapterProgressResponse.builder().id(1L).build()));
+                .thenReturn(List.of(UserChapterProgressResponse.builder().id(1L).build()));
 
         var result = controller.getByChapterId(1L);
 
