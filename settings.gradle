@@ -1,4 +1,8 @@
-rootProject.name = 'zhihuidanjian'
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+rootProject.name = 'zhihuidangjian'
 
 include 'server'
 include 'services'
