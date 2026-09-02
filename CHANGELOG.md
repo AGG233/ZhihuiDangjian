@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/AGG233/ZhihuiDangjian/compare/v0.9.0...v0.10.0) (2026-09-01)
+
+
+### Features
+
+* stateless jwt auth, scheduling and cf fixes ([#111](https://github.com/AGG233/ZhihuiDangjian/issues/111)) ([e34f363](https://github.com/AGG233/ZhihuiDangjian/commit/e34f363f7a4f933eb0b2f73b7b34cae860171efa))
+
 ## [0.9.0](https://github.com/AGG233/ZhihuiDangjian/compare/v0.8.4...v0.9.0) (2026-08-15)
 
 
