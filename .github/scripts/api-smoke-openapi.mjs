@@ -218,6 +218,14 @@ function shouldSkip(pathName, method, operation) {
         return "Requires seed data not available in CI";
     }
 
+    // 写接口需要真实存在的关联实体 ID：脚本只能按 OpenAPI 示例值生成 categoryId/chapterId，
+    // 这些 ID 在 CI 库中不存在，会触发外键约束失败（HTTP 500）而非接口缺陷
+    if ((pathName.startsWith("/api/admin/content/articles") ||
+         pathName.startsWith("/api/admin/content/content-blocks")) &&
+        method !== "get") {
+        return "Requires an existing related entity (category/chapter) not available in CI";
+    }
+
     if (pathName === "/api/search/recommend") {
         return "Neo4j recommendation not available in CI";
     }
