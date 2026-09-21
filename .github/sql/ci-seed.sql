@@ -114,3 +114,8 @@ VALUES (1, 1, 'ci-chapter');
 
 INSERT IGNORE INTO resource_meta (id, hash, uploader_id, original_name, object_key, resource_type, status)
 VALUES (1, 'ci-hash', 10001, 'ci-test-file.png', 'ci/test/file.png', 0, 1);
+
+-- AI 提示词：覆盖 role 枚举映射（DB 小写 'system' ↔ PromptRoleEnum @EnumValue）。
+-- 此前该表为空，GET /api/admin/ai/prompts 不触发枚举转换，枚举不匹配问题在 CI 中不可见。
+INSERT IGNORE INTO ai_prompts (id, agent_type, category, name, role, content, enabled, sort)
+VALUES (90001, 'COMMON', '通用', 'CI系统提示词', 'system', 'CI 烟雾测试用系统提示词。', 1, 0);
