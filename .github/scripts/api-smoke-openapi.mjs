@@ -398,6 +398,9 @@ async function main() {
             method: method.toUpperCase(),
             headers,
             body: ["GET", "HEAD"].includes(method.toUpperCase()) ? undefined : requestBody,
+            // 需要携带令牌的接口，若仍收到 401 说明服务端没有识别令牌
+            // （例如 sa-token 的 token-name 与 Authorization 头不一致），必须判定为失败
+            expectAuth: authScope !== "public",
         });
     }
 
@@ -417,7 +420,7 @@ async function main() {
                         headers: task.headers,
                         body: task.body,
                     });
-                    return {label: task.label, status: response.status, body};
+                    return {label: task.label, status: response.status, body, expectAuth: task.expectAuth};
                 } catch (error) {
                     return {
                         label: task.label,
@@ -430,7 +433,9 @@ async function main() {
         results.push(...batchResults);
     }
 
-    // 按原顺序输出结果并汇总（5xx 与网络错误视为失败，其余通过）
+    // 按原顺序输出结果并汇总（5xx、网络错误，以及需鉴权接口的 401 视为失败，其余通过）
+    // 说明：400/403/404 仍容忍——路径/查询参数是脚本自动生成的，不可能全部合法；
+    // 但 401 只可能来自认证层，携带令牌仍 401 意味着服务端没识别到令牌。
     for (const result of results) {
         if (result.status === "SKIP") {
             console.log(`SKIP ${result.label} -> ${result.body}`);
@@ -440,6 +445,13 @@ async function main() {
         } else if (result.status >= 500) {
             failures.push({label: result.label, status: result.status, body: result.body});
             console.log(`FAIL ${result.label} -> HTTP ${result.status}`);
+        } else if (result.status === 401 && result.expectAuth) {
+            failures.push({
+                label: result.label,
+                status: 401,
+                body: "携带令牌的请求被判定为未登录（检查 sa-token.token-name 是否与客户端发送的请求头一致）",
+            });
+            console.log(`FAIL ${result.label} -> HTTP 401 (token not recognized)`);
         } else {
             passed += 1;
             console.log(`PASS ${result.label} -> HTTP ${result.status}`);
