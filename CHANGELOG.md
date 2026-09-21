@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.1](https://github.com/AGG233/ZhihuiDangjian/compare/v0.10.0...v0.10.1) (2026-09-21)
+
+
+### Bug Fixes
+
+* **auth:** restore authenticated requests (token header + user cache) ([#114](https://github.com/AGG233/ZhihuiDangjian/issues/114)) ([54ca8e2](https://github.com/AGG233/ZhihuiDangjian/commit/54ca8e24a8a3180b863ef431fbd2694a0ff2dcca))
+
 ## [0.10.0](https://github.com/AGG233/ZhihuiDangjian/compare/v0.9.0...v0.10.0) (2026-09-01)
 
 
