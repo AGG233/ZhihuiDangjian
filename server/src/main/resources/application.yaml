@@ -52,7 +52,11 @@ spring:
 
 # Sa-Token 配置
 sa-token:
-  token-name: Zhihui-Token
+  # 令牌请求头名固定为 Authorization（Bearer 方案），与前端接入约定保持一致：
+  # AuthController/LoginResponse 的 Swagger 描述、docs/前端接口迁移指南.md、
+  # SpringDocConfig 的 securityScheme 以及 CI 烟雾测试均按
+  # `Authorization: Bearer <accessToken>` 发送；修改此值会导致前端全部请求 401。
+  token-name: Authorization
   token-prefix: Bearer
   timeout: 7200
   is-concurrent: false

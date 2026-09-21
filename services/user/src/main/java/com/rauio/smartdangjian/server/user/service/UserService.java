@@ -32,11 +32,15 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     /**
      * 根据通行凭证识别并查询用户。
      *
+     * <p>返回的实体携带密码哈希，供登录认证校验使用，因此**不得缓存**：
+     * {@code User.password} 以 {@code @JsonProperty(WRITE_ONLY)} 序列化，写入缓存时
+     * 密码哈希会被丢弃，缓存命中后 {@code BCrypt.checkpw} 必然失败（同一账号在缓存
+     * 有效期内二次登录会被误判为密码错误）。认证路径必须实时查库。
+     *
      * @param passport 用户名、邮箱或手机号
      * @return 用户实体
      * @throws BusinessException 如果通行凭证为空
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#passport")
     public User getByPassport(String passport) {
         if (passport == null || passport.isEmpty()) {
             throw new BusinessException(UserErrorConstants.EMPTY_ARGS, "通行凭证不能为空");
@@ -79,6 +83,23 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     }
 
     /**
+     * 获取当前登录用户的资料视图。
+     *
+     * <p>供 {@code GET /api/user/users/me} 使用：无状态 JWT 下按 loginId 实时回查数据库，
+     * 与 {@link #get(Long)} 一样返回不含密码哈希的视图对象。
+     *
+     * @return 当前登录用户的响应对象
+     * @throws BusinessException 未登录或用户已不存在
+     */
+    public UserResponse getCurrentUserProfile() {
+        User user = getCurrentUser();
+        if (user == null) {
+            throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户不存在或登录状态已失效");
+        }
+        return convertor.toResponse(user);
+    }
+
+    /**
      * 获取当前登录用户 ID。
      *
      * @return 当前用户 ID，未登录时返回开发环境默认值（如有配置）
@@ -93,10 +114,11 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     /**
      * 根据用户名查询用户。
      *
+     * <p>返回实体携带密码哈希，缓存会丢失该字段（见 {@link #getByPassport}），故不缓存。
+     *
      * @param username 用户名
      * @return 用户实体
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#username")
     public User getByUsername(String username) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username));
     }
@@ -104,10 +126,11 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     /**
      * 根据邮箱查询用户。
      *
+     * <p>返回实体携带密码哈希，缓存会丢失该字段（见 {@link #getByPassport}），故不缓存。
+     *
      * @param email 邮箱
      * @return 用户实体
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#email")
     public User getByEmail(String email) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getEmail, email));
     }
@@ -115,10 +138,11 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     /**
      * 根据手机号查询用户。
      *
+     * <p>返回实体携带密码哈希，缓存会丢失该字段（见 {@link #getByPassport}），故不缓存。
+     *
      * @param phone 手机号
      * @return 用户实体
      */
-    @Cacheable(value = USER_VO_CACHE_PREFIX, key = "#phone")
     public User getByPhone(String phone) {
         return this.getOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone));
     }
