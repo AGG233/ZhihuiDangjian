@@ -83,6 +83,23 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     }
 
     /**
+     * 获取当前登录用户的资料视图。
+     *
+     * <p>供 {@code GET /api/user/users/me} 使用：无状态 JWT 下按 loginId 实时回查数据库，
+     * 与 {@link #get(Long)} 一样返回不含密码哈希的视图对象。
+     *
+     * @return 当前登录用户的响应对象
+     * @throws BusinessException 未登录或用户已不存在
+     */
+    public UserResponse getCurrentUserProfile() {
+        User user = getCurrentUser();
+        if (user == null) {
+            throw new BusinessException(UserErrorConstants.USER_NOT_EXISTS, "用户不存在或登录状态已失效");
+        }
+        return convertor.toResponse(user);
+    }
+
+    /**
      * 获取当前登录用户 ID。
      *
      * @return 当前用户 ID，未登录时返回开发环境默认值（如有配置）
