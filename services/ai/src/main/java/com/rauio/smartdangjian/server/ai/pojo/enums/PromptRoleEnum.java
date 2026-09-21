@@ -30,6 +30,18 @@ public enum PromptRoleEnum {
         this.value = value;
     }
 
+    /**
+     * 该角色在数据库 {@code ai_prompts.role} 中的枚举值。
+     *
+     * <p>刻意不命名为 {@code getValue()}：Jackson 会把 {@code getXxx()} 识别为属性，
+     * 从而改变 API 中 role 字段的序列化形式（当前输出枚举名 {@code SYSTEM}）。
+     *
+     * @return 数据库存储值（小写）
+     */
+    public String dbValue() {
+        return value;
+    }
+
     @Override
     public String toString() {
         return value;
