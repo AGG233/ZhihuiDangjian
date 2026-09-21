@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.2](https://github.com/AGG233/ZhihuiDangjian/compare/v0.10.1...v0.10.2) (2026-09-21)
+
+
+### Bug Fixes
+
+* **ai:** align prompt role enum with database values ([#115](https://github.com/AGG233/ZhihuiDangjian/issues/115)) ([5099a67](https://github.com/AGG233/ZhihuiDangjian/commit/5099a675d6d13e5bc20ac82e18aad428fcf563c3))
+
 ## [0.10.1](https://github.com/AGG233/ZhihuiDangjian/compare/v0.10.0...v0.10.1) (2026-09-21)
 
 
